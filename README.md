@@ -298,8 +298,8 @@ AdaptShot is built **in public** because I believe the best AI advances come fro
 
 ### How to Reach Me
 - 🐙 **GitHub**: Open an [Issue](https://github.com/johnson2006christopher/adaptshot/issues) or [Pull Request](https://github.com/johnson2006christopher/adaptshot/pulls)
-- 📧 **Email**: [johnson2006christopher@gmail.com] (Johnson)
-- 💬 **LinkedIn**: [https://www.linkedin.com/in/johnson-hassan-935124311/] (connect with me)
+- 📧 **Email**: [Johnson](johnson2006christopher@gmail.com)
+- 💬 **LinkedIn**: [connect with me](https://www.linkedin.com/in/johnson-hassan-935124311/)
 
 > *"I'm 18, building my first research artifact. I don't have all the answers—but I'm committed to asking better questions, learning rigorously, and contributing meaningfully to the field. If you see potential here, let's talk."*  
 > — Johnson Hassan
@@ -322,11 +322,11 @@ AdaptShot is built **in public** because I believe the best AI advances come fro
 
 ## 📜 License & Citation
 
-**License**: MIT © 2024 Johnson Hassan. Built for transparency, reproducibility, and open scientific progress.
+**License**: MIT © 2026 Johnson Hassan. Built for transparency, reproducibility, and open scientific progress.
 
 **Citation** (when referencing this work):
 ```bibtex
-@misc{hassan2024adaptshot,
+@misc{hassan2026adaptshot,
   title={AdaptShot: A Self-Improving Few-Shot Visual Learner},
   author={Hassan, Johnson},
   year={2024},
