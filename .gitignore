@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.venv/
+venv/
+
+# Data & Models
+data/
+results/*.pth
+results/*.pt
+results/*.ckpt
+results/*.onnx
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Notebooks
+notebooks/.ipynb_checkpoints/
+
+# Logs & Temp
+*.log
+tmp/
+wandb/
+mlruns/
