@@ -1,0 +1,46 @@
+# =============================================================================
+# ADAPTSHOT: Baseline Experiment Configuration
+# Purpose: Reproducible settings for Day 1 few-shot baseline
+# Author: Johnson Hassan | github.com/johnson2006christopher/adaptshot
+# =============================================================================
+
+experiment:
+  name: "day1_fewshot_baseline"
+  seed: 42
+  description: "Frozen ResNet18 backbone + linear head trained on 50 images (10/class)"
+
+dataset:
+  name: "CIFAR10_fewshot"
+  root: "./data"
+  classes: ["airplane", "automobile", "bird", "cat", "deer"]
+  train_shots: 10      # Images per class for training
+  test_shots: 5        # Images per class for evaluation
+  image_size: 128
+  normalize:
+    mean: [0.5, 0.5, 0.5]
+    std: [0.5, 0.5, 0.5]
+
+model:
+  backbone: "resnet18"
+  pretrained: true
+  freeze_backbone: true
+  classifier_head: "linear"
+  num_classes: 5
+
+training:
+  epochs: 5
+  batch_size: 16
+  learning_rate: 1.0e-3
+  optimizer: "adam"
+  loss: "cross_entropy"
+  device_fallback: true  # Auto-switch to CPU if GPU kernel incompatible
+
+uncertainty:
+  method: "entropy"
+  mc_dropout_samples: 5
+  confidence_threshold: 0.7  # Below this → trigger active learning
+
+logging:
+  save_dir: "./results/logs"
+  plot_dir: "./visualizations"
+  export_formats: ["json", "csv", "png", "pdf"]
