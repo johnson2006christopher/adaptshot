@@ -1,0 +1,7 @@
+# AdaptShot: Continual Learning Config
+method: "replay_buffer"
+parameters:
+  buffer_capacity: 100
+  replay_ratio: 0.3
+  incremental_lr: 1.0e-4
+  ewc_lambda: 0.1  # Elastic Weight Consolidation penalty
