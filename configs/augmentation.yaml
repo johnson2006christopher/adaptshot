@@ -1,0 +1,9 @@
+# AdaptShot: Augmentation Strategy Config
+strategy: "conservative_v1"
+parameters:
+  resize: [140, 140]
+  random_crop: {size: 128, padding: 8}
+  horizontal_flip: 0.5
+  rotation: 10
+  color_jitter: {brightness: 0.1, contrast: 0.1}
+  normalize: {mean: [0.5, 0.5, 0.5], std: [0.5, 0.5, 0.5]}
