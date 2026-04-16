@@ -329,7 +329,7 @@ AdaptShot is built **in public** because I believe the best AI advances come fro
 @misc{hassan2026adaptshot,
   title={AdaptShot: A Self-Improving Few-Shot Visual Learner},
   author={Hassan, Johnson},
-  year={2024},
+  year={2026},
   howpublished={\url{https://github.com/johnson2006christopher/adaptshot}},
   note={Research artifact built during 25-day public learning sprint}
 }
