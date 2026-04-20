@@ -1,4 +1,4 @@
-"""Evaluation metrics: ECE, latency, and accuracy helpers."""
+"""Deterministic evaluation metrics for platform benchmarking."""
 
 from __future__ import annotations
 
@@ -8,7 +8,18 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-__all__ = ["compute_ece", "benchmark_latency", "compute_accuracy"]
+__all__ = [
+    "set_deterministic_seed",
+    "compute_ece",
+    "benchmark_latency",
+    "compute_accuracy",
+]
+
+
+def set_deterministic_seed(seed: int = 42) -> None:
+    """Set deterministic random seeds for NumPy and PyTorch."""
+    np.random.seed(seed)
+    torch.manual_seed(seed)
 
 
 def compute_accuracy(predictions: np.ndarray, labels: np.ndarray) -> float:
