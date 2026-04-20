@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "adaptshot"
 version = "0.1.0"
-description = "Zero-config human-in-the-loop few-shot vision system."
+description = "Production-grade few-shot platform with calibrated uncertainty."
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.10"
@@ -17,12 +17,14 @@ dependencies = [
     "scikit-learn>=1.3.0",
     "gradio>=3.50.0",
     "pyyaml>=6.0.0",
+    "faiss-cpu>=1.8.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
+    "hypothesis>=6.0",
     "black>=23.0",
     "ruff>=0.1.0",
     "mypy>=1.7.0",
