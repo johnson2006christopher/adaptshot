@@ -1,0 +1,64 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+\title{AdaptShot: Zero-Config Human-in-the-Loop Few-Shot Learning with Calibrated Uncertainty}
+\author{AdaptShot Authors}
+\date{2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+AdaptShot is a CPU-first few-shot vision system designed for low-data settings with under 50 images per class. The system combines transfer learning, uncertainty-aware prediction, active human correction, and continual updates with replay plus EWC regularization. This template is pre-configured for arXiv-compatible submission and reproducible reporting.
+\end{abstract}
+
+\section{Introduction}
+Few-shot deployment requires robust uncertainty estimates and fast corrective adaptation. AdaptShot targets this gap with a deterministic, human-in-the-loop pipeline that runs on commodity CPU hardware.
+
+\section{Methodology}
+\subsection{Few-Shot Pipeline}
+Given image $x$, backbone features are extracted using ResNet18:
+\begin{equation}
+z = f_{\theta}(x), \quad z \in \mathbb{R}^{512}.
+\end{equation}
+Classification is performed by a trainable linear head over frozen backbone features.
+
+\subsection{Active Learning and Replay}
+Low-confidence predictions are flagged for correction. Corrected samples are stored in a FIFO replay buffer $\mathcal{B}$ with fixed capacity.
+
+\subsection{EWC Regularization}
+To prevent forgetting during incremental updates, we add a diagonal Fisher penalty:
+\begin{equation}
+\mathcal{L}_{\text{EWC}} = \lambda \sum_i F_i(\theta_i - \theta_i^*)^2.
+\end{equation}
+
+\section{Experiments}
+\subsection{Metrics}
+We report few-shot accuracy, expected calibration error (ECE), and CPU inference latency.
+
+\subsection{Latency and Calibration}
+Primary operational targets are under 50ms CPU latency per image and ECE below 0.05.
+
+\begin{table}[h]
+\centering
+\caption{AdaptShot Result Placeholder}
+\begin{tabular}{lccc}
+\toprule
+Setting & Accuracy & ECE & Latency (ms) \\
+\midrule
+5-shot CIFAR subset & XX.XX & 0.0X & XX.X \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Discussion}
+Discuss failure modes, uncertainty quality, and correction efficiency under constrained supervision.
+
+\section{Reproducibility}
+All runs fix random seeds, enforce deterministic kernels, and provide CLI commands in \texttt{docs/REPRODUCIBILITY.md}.
+
+\end{document}
