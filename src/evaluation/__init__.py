@@ -1,3 +1,5 @@
 """Evaluation, calibration, and benchmarking package."""
 
-__all__: list[str] = []
+from .metrics import benchmark_latency, compute_accuracy, compute_ece
+
+__all__ = ["compute_accuracy", "compute_ece", "benchmark_latency"]
