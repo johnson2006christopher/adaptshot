@@ -1,19 +1,35 @@
-import sys, os, torch, pytest
+"""Pytest fixtures for deterministic CPU-first testing."""
 
-# Ensure src/ is importable
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from __future__ import annotations
+
+import torch
+import pytest
+
+from src import configure_runtime, get_device
+
+__all__ = ["runtime_config", "device", "dummy_batch", "dummy_labels"]
+
 
 @pytest.fixture(scope="session")
-def device():
-    """Returns cuda if available, else cpu."""
-    return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+def runtime_config():
+    """Session-wide deterministic runtime settings."""
+    return configure_runtime(seed=42, deterministic=True)
+
+
+@pytest.fixture(scope="session")
+def device(runtime_config):
+    """Always return CPU for phase-1 baseline tests."""
+    _ = runtime_config
+    return get_device(prefer_gpu=False)
+
 
 @pytest.fixture
 def dummy_batch():
-    """Generates a random batch: [batch=4, channels=3, H=128, W=128]"""
+    """Deterministic tensor batch for unit tests."""
     return torch.randn(4, 3, 128, 128)
+
 
 @pytest.fixture
 def dummy_labels():
-    """Generates random labels for 5 classes."""
+    """Deterministic integer labels for 5-way classification."""
     return torch.randint(0, 5, (4,))
