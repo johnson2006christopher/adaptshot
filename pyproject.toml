@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "adaptshot"
+version = "0.0.1"
+description = "Human-aligned few-shot vision learning for resource-constrained environments"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+authors = [{name = "Johnson Christopher Hassan", email = "hello@adaptshot.dev"}]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "torch>=2.0.0",
+    "torchvision>=0.15.0",
+    "numpy>=1.24.0",
+    "Pillow>=9.0.0",
+    "gradio>=4.0.0",
+]
+
+[project.optional-dependencies]
+faiss = ["faiss-cpu>=1.7.4"]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "mypy>=1.5.0",
+    "ruff>=0.1.0",
+    "pre-commit>=3.4.0",
+]
+all = ["adaptshot[faiss,dev]"]
+
+[project.urls]
+Homepage = "https://github.com/johnson2006christopher/adaptshot"
+Documentation = "https://github.com/johnson2006christopher/adaptshot/docs"
+Repository = "https://github.com/johnson2006christopher/adaptshot.git"
+"Bug Tracker" = "https://github.com/johnson2006christopher/adaptshot/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+target-version = "py39"
+line-length = 100
+
+[tool.mypy]
+python_version = "3.9"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=src/adaptshot --cov-report=term-missing"
