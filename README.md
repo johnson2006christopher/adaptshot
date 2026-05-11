@@ -7,7 +7,6 @@
 [![PyPI](https://img.shields.io/pypi/v/adaptshot.svg)](https://pypi.org/project/adaptshot/)
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![CI](https://github.com/johnson2006christopher/adaptshot/actions/workflows/ci.yml/badge.svg)](https://github.com/johnson2006christopher/adaptshot/actions)
 [![arXiv](https://img.shields.io/badge/arXiv-Coming%20Soon-red.svg)](https://arxiv.org/)
 [![Built in Tanzania](https://img.shields.io/badge/Built%20in-Tanzania%20🇹🇿-gold.svg)](https://en.wikipedia.org/wiki/Tanzania)
 [![Code Style: Ruff](https://img.shields.io/badge/code%20style-ruff-black)](https://github.com/astral-sh/ruff)
@@ -54,7 +53,7 @@ The answer became AdaptShot.
 
 I am building this project in public. I will document every architectural decision, every failed experiment, every calibration insight, and every limitation. I do this because transparency matters more than polish, and because the AI community needs more builders who are willing to say: *"I am learning. This is hard. But the direction matters."*
 
-This library is dedicated to every researcher, engineer, and domain expert who has been told their environment is "not supported." It is built to prove that world-class, reproducible, human-aligned AI can be developed outside traditional centers of funding and privilege — using discipline, open science, and relentless iteration.
+This library is dedicated to every researcher, engineer, and domain expert who has been told their environment is "not supported." It is built to prove that world-class, reproducible, human-aligned AI can be developed outside traditional centers of funding and privilege using discipline, open science, and relentless iteration.
 
 ---
 
