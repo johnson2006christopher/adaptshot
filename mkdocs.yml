@@ -57,9 +57,13 @@ nav:
   - Getting Started:
     - Installation: getting-started/installation.md
     - Quick Start: getting-started/quickstart.md
+    - Tutorials: tutorials.md
+    - Benchmarks: getting-started/benchmarks.md
   - API Reference:
     - Core Engine: api/core.md
     - Training & Continual Learning: api/training.md
     - Configuration & Utils: api/config.md
+  - v0.1.1 Docs Roadmap: v0.1.1-docs-roadmap.md
   - Contributing: contributing.md
+  - Code of Conduct: code_of_conduct.md
   - Changelog: changelog.md
