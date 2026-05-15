@@ -162,6 +162,6 @@ arr = tensor_to_numpy(t)
 | `tensor_to_numpy` | Does not preserve gradient computation graph | Use only for inference/post-processing, not during training |
 
 ## ▶️ Next Steps
-- [Contributing Guidelines](../CONTRIBUTING.md) → Development workflow and PR standards
-- [Changelog](../CHANGELOG.md) → Version history and known limitations
+- [Contributing Guidelines](../contributing.md) → Development workflow and PR standards
+- [Changelog](../changelog.md) → Version history and known limitations
 - [GitHub Repository](https://github.com/johnson2006christopher/adaptshot) → Issue tracker, discussions, and roadmap
