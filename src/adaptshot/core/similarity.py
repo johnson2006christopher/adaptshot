@@ -90,9 +90,6 @@ def find_nearest_neighbor(
     """
     Find the single nearest neighbor in the support set and return prediction metadata.
 
-    Acts as the primary inference bridge between the embedding extractor and the
-    calibration/feedback modules.
-
     Args:
         query: [D] query embedding
         support_embeddings: [N, D] array of stored support embeddings
@@ -112,6 +109,9 @@ def find_nearest_neighbor(
         neighbor_idx = int(indices[0, 0])
     else:
         similarities = cosine_similarity_numpy(query, support_embeddings)
+        # similarities shape: [1, N] for single query
+        if similarities.ndim == 2 and similarities.shape[0] == 1:
+            similarities = similarities[0]  # Squeeze to [N]
         neighbor_idx = int(np.argmax(similarities))
         confidence = float(similarities[neighbor_idx])
 
