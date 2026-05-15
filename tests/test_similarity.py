@@ -23,9 +23,11 @@ def test_cosine_similarity_perfect_match():
     """Verify that identical vectors yield a similarity of 1.0 and orthogonal yield 0.0."""
     vec = np.array([1.0, 2.0, 3.0])
     support = np.vstack([vec, np.array([0.0, 0.0, 0.0])])
-    sims = cosine_similarity_numpy(vec, support)
-    assert np.isclose(sims[0], 1.0, atol=1e-7)
-    assert np.isclose(sims[1], 0.0, atol=1e-7)
+    sims = cosine_similarity_numpy(vec, support)  # Shape: [1, 2]
+    
+    # Index into [1, N] array to get scalar similarities
+    assert np.isclose(sims[0, 0], 1.0, atol=1e-7)  # Identical vector
+    assert np.isclose(sims[0, 1], 0.0, atol=1e-7)  # Zero vector → 0 similarity
 
 
 def test_cosine_similarity_batch():
