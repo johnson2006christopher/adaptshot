@@ -1,0 +1,15 @@
+{
+  "accuracy": 0.68,
+  "latency_avg_ms": 118.54529684009321,
+  "latency_p95_ms": 125.58526820066616,
+  "embedding_time_s": 5.591264467000656,
+  "support_size": 50,
+  "query_size": 25,
+  "config": {
+    "backbone": "resnet18",
+    "device": "cpu",
+    "use_faiss": false,
+    "n_way": 5,
+    "k_shot": 10
+  }
+}
