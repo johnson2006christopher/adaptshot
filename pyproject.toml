@@ -9,7 +9,7 @@ description = "Human-aligned few-shot vision learning for resource-constrained e
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.9"
-authors = [{name = "Johnson Christopher Hassan", email = "hello@adaptshot.dev"}]
+authors = [{name = "Johnson Christopher Hassan", email = "johnson2006christopher@gmail.com"}]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
@@ -25,7 +25,6 @@ dependencies = [
     "torchvision>=0.15.0",
     "numpy>=1.24.0",
     "Pillow>=9.0.0",
-    "gradio>=4.0.0",
 ]
 
 [project.optional-dependencies]
@@ -60,4 +59,5 @@ warn_unused_configs = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "--cov=src/adaptshot --cov-report=term-missing"
+# Comment out coverage if pytest-cov not installed:
+# addopts = "--cov=src/adaptshot --cov-report=term-missing"
