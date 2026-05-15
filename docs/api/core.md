@@ -197,4 +197,4 @@ class PredictionResult:
 ## ▶️ Next Steps
 - [Training & Continual Learning API](training.md) → `FeedbackRouter`, `CAEWCFinetuner`, `UPUGFPruner`
 - [Configuration Reference](config.md) → `AdaptShotConfig` dataclass and validation rules
-- [Contributing](../../CONTRIBUTING.md) → Extension points and PR guidelines
+- [Contributing](../contributing.md) → Extension points and PR guidelines
