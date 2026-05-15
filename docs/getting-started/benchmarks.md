@@ -87,5 +87,5 @@ In `v0.1.0`, the `CalibrationEngine` uses a sliding window (default: 20 predicti
 
 ## ▶️ Next Steps
 - [API Reference](../api/core.md) → Configure thresholds, buffers, and calibration parameters
-- [Deploy Pilot UI](ui.md) → Test benchmarks interactively with field-collected images
-- [Contribute](../../CONTRIBUTING.md) → Add new backbones, datasets, or calibration methods
+- [Tutorial-Style Guides](../tutorials.md) → Try prediction and correction workflows
+- [Contribute](../contributing.md) → Add new backbones, datasets, or calibration methods
