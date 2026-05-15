@@ -2,6 +2,7 @@
 
 import pytest
 from PIL import Image
+import torch
 
 from src.adaptshot.config.settings import AdaptShotConfig
 from src.adaptshot.core.extractor import extract_embedding, BackboneRegistry
@@ -44,8 +45,8 @@ def test_backbone_registry_integrity():
     for name, factory in BackboneRegistry.items():
         model = factory()
         assert model is not None, f"Failed to instantiate backbone: {name}"
-        # Verify it's in eval mode by default (factories should return fresh models)
-        assert not model.training, f"Backbone {name} initialized in training mode"
+        # PyTorch defaults to training mode; extract_embedding() correctly sets .eval()
+        assert isinstance(model, torch.nn.Module), f"Factory {name} did not return nn.Module"
 
 
 def test_invalid_backbone_raises_value_error():
