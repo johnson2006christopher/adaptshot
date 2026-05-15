@@ -1,8 +1,4 @@
-# 📄 Updated `README.md` for AdaptShot v0.1.0
 
-Below is a polished, truthful, and competition-ready version of your README. Changes are **minimal but impactful**: accurate badges, fixed links, correct version status, and installation instructions that match reality.
-
-```markdown
 <div align="center">
 
 # 🌿 AdaptShot
