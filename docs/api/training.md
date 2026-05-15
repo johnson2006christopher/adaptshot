@@ -166,5 +166,5 @@ Enforces capacity by returning the top-K highest-scoring examples. All input arr
 
 ## ▶️ Next Steps
 - [Configuration & Utils API](config.md) → `AdaptShotConfig`, determinism, I/O helpers
-- [Contributing](../../CONTRIBUTING.md) → Extension points for new fine-tuning or pruning strategies
-- [Changelog](../../CHANGELOG.md) → Track upcoming v0.2.0 improvements
+- [Contributing](../contributing.md) → Extension points for new fine-tuning or pruning strategies
+- [Changelog](../changelog.md) → Track upcoming v0.2.0 improvements
