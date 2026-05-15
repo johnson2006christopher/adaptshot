@@ -12,7 +12,7 @@ from torchvision import transforms
 from ..config.settings import AdaptShotConfig
 
 # Type alias for flexible image input
-ImageInput = Union[np.ndarray, Image.Image, torch.Tensor]
+ImageInput = Union[str, np.ndarray, Image.Image, torch.Tensor]
 
 # Registry for backbone factories (extensible without modifying core logic)
 BackboneRegistry = {
@@ -37,51 +37,34 @@ def extract_embedding(
     config: AdaptShotConfig,
     return_numpy: bool = True,
 ) -> Union[torch.Tensor, np.ndarray]:
-    """
-    Extract feature embedding from input image using a frozen backbone.
-
-    Args:
-        image: Input as numpy array (HWC), PIL Image, or torch tensor (CHW or HWC)
-        config: AdaptShotConfig with backbone, device, and pipeline settings
-        return_numpy: If True, return numpy array; else return torch.Tensor
-
-    Returns:
-        Embedding tensor/array of shape (embedding_dim,). ResNet18 -> 512, MobileNetV3Small -> 576.
-    """
+    """Extract feature embedding from input image using a frozen backbone."""
     # Load backbone from registry
     if config.backbone not in BackboneRegistry:
         raise ValueError(f"Unknown backbone: {config.backbone}. Available: {list(BackboneRegistry.keys())}")
 
     backbone = BackboneRegistry[config.backbone]()
-
-    # Remove classification head to extract features from global avgpool
-    if hasattr(backbone, "fc"):
-        backbone.fc = nn.Identity()
-    elif hasattr(backbone, "classifier"):
-        # MobileNet variant
-        backbone.classifier = nn.Identity()
-
+    backbone.fc = nn.Identity()
     backbone.to(config.device)
     backbone.eval()
 
-    # Preprocess image to match ImageNet training distribution
+    # Preprocess image
     preprocess = _get_preprocess_transform()
+    
+    # ✅ ADD THIS: Handle file paths
+    if isinstance(image, str):
+        image = Image.open(image).convert("RGB")
+        
     if isinstance(image, np.ndarray):
         image = Image.fromarray(image)
     elif isinstance(image, torch.Tensor):
-        # Ensure CHW format before conversion
         if image.dim() == 3 and image.shape[0] not in (1, 3):
             image = image.permute(2, 0, 1)
         image = transforms.ToPILImage()(image.cpu())
 
-    # Apply transforms and add batch dimension [C, H, W] -> [1, C, H, W]
+    # Apply transforms and add batch dimension
     image_tensor = preprocess(image).unsqueeze(0).to(config.device)
 
-    # Extract embedding (no gradients computed)
     with torch.no_grad():
-        embedding = backbone(image_tensor)  # Shape: [1, embedding_dim]
-        embedding = embedding.squeeze(0)    # Shape: [embedding_dim]
+        embedding = backbone(image_tensor).squeeze(0)
 
-    if return_numpy:
-        return embedding.detach().cpu().numpy()
-    return embedding
+    return embedding.detach().cpu().numpy() if return_numpy else embedding
