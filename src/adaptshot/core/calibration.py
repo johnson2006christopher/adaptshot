@@ -4,7 +4,7 @@ Implements temperature scaling, Expected Calibration Error (ECE) tracking,
 and a conformal prediction stub for high-stakes deployment contexts.
 """
 
-from typing import Dict, List, Optional, Tuple
+from typing import List
 
 import numpy as np
 import torch
@@ -129,7 +129,6 @@ class CalibrationEngine:
 
         bin_boundaries = np.linspace(0.0, 1.0, self.n_bins + 1)
         ece = 0.0
-        total_samples = len(confidences)
 
         for i in range(self.n_bins):
             in_bin = (confidences > bin_boundaries[i]) & (confidences <= bin_boundaries[i + 1])
