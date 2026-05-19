@@ -9,7 +9,7 @@ is available and the preview similarity already exceeds the configured bound.
 """
 
 from importlib import import_module
-from typing import Any, Optional, Tuple, Union, cast
+from typing import Any, Optional, Union, cast
 
 import numpy as np
 import torch
@@ -64,27 +64,27 @@ def get_support_embedding_cache() -> Optional[np.ndarray]:
     """Return a copy of the cached support embedding used by eco mode."""
     if _SUPPORT_EMBEDDING_CACHE is None:
         return None
-    return cast(np.ndarray, _SUPPORT_EMBEDDING_CACHE.copy())
+    return _SUPPORT_EMBEDDING_CACHE.copy()
 
 
 def get_support_preview_cache() -> Optional[np.ndarray]:
     """Return a copy of the cached support preview signature used by eco mode."""
     if _SUPPORT_PREVIEW_CACHE is None:
         return None
-    return cast(np.ndarray, _SUPPORT_PREVIEW_CACHE.copy())
+    return _SUPPORT_PREVIEW_CACHE.copy()
 
 
 def _normalize_to_pil(image: ImageInput) -> Image.Image:
     """Convert supported image inputs to a PIL RGB image."""
     if isinstance(image, str):
-        return cast(Image.Image, Image.open(image).convert("RGB"))
+        return Image.open(image).convert("RGB")
     if isinstance(image, np.ndarray):
-        return cast(Image.Image, Image.fromarray(image).convert("RGB"))
+        return Image.fromarray(image).convert("RGB")
     if isinstance(image, torch.Tensor):
         if image.dim() == 3 and image.shape[0] not in (1, 3):
             image = image.permute(2, 0, 1)
-        return cast(Image.Image, transforms.ToPILImage()(image.cpu()).convert("RGB"))
-    return cast(Image.Image, image.convert("RGB"))
+        return transforms.ToPILImage()(image.cpu()).convert("RGB")
+    return image.convert("RGB")
 
 
 def _get_preprocess_transform(img_size: int = 224) -> Any:
@@ -132,8 +132,8 @@ def extract_embedding(
     image_tensor = preprocess(pil_image).unsqueeze(0).to(config.device)
 
     with torch.no_grad():
-        embedding = backbone(image_tensor).squeeze(0)
+        embedding = cast(torch.Tensor, backbone(image_tensor).squeeze(0))
 
     if return_numpy:
-        return cast(np.ndarray, embedding.detach().cpu().numpy())
+        return embedding.detach().cpu().numpy()
     return embedding
