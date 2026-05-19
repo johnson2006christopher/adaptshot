@@ -4,7 +4,6 @@ Validates buffer management, fine-tune triggering, calibrator updates,
 and edge-case handling for the human-in-the-loop routing logic.
 """
 
-import pytest
 from unittest.mock import MagicMock
 
 from src.adaptshot.training.feedback_router import Correction, FeedbackRouter
