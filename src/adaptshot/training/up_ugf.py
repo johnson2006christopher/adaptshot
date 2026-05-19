@@ -11,7 +11,7 @@ Designed for CPU-first edge deployment with strict memory ceilings.
 
 import logging
 import time
-from typing import Dict, List, Optional, Tuple
+from typing import Optional, Tuple
 
 import numpy as np
 
