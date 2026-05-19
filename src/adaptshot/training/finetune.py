@@ -6,7 +6,7 @@ Fisher Information diagonal computation is weighted by human feedback confidence
 """
 
 import logging
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 import torch
 import torch.nn as nn
