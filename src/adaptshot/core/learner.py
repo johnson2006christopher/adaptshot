@@ -592,7 +592,7 @@ class FewShotLearner:
 
         return embedding.astype(np.float32, copy=False)
 
-    def _embedding_dim(self, default_dim: Optional[int] = 512) -> Optional[int]:
+    def _embedding_dim(self, default_dim: int = 512) -> int:
         if self._sim_embeddings:
             return int(self._sim_embeddings[0].shape[0])
         return default_dim
