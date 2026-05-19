@@ -64,14 +64,14 @@ def get_support_embedding_cache() -> Optional[np.ndarray]:
     """Return a copy of the cached support embedding used by eco mode."""
     if _SUPPORT_EMBEDDING_CACHE is None:
         return None
-    return _SUPPORT_EMBEDDING_CACHE.copy()
+    return cast(np.ndarray, _SUPPORT_EMBEDDING_CACHE.copy())
 
 
 def get_support_preview_cache() -> Optional[np.ndarray]:
     """Return a copy of the cached support preview signature used by eco mode."""
     if _SUPPORT_PREVIEW_CACHE is None:
         return None
-    return _SUPPORT_PREVIEW_CACHE.copy()
+    return cast(np.ndarray, _SUPPORT_PREVIEW_CACHE.copy())
 
 
 def _normalize_to_pil(image: ImageInput) -> Image.Image:
