@@ -9,10 +9,9 @@ Provides a production-ready dashboard for:
 
 import os
 import tempfile
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, cast
 
 import gradio as gr
-import numpy as np
 from PIL import Image
 
 from src.adaptshot.config.settings import AdaptShotConfig
@@ -35,7 +34,7 @@ class AdaptShotUI:
             # For the UI demo, we keep it uninitialized until files are uploaded.
         return self.learner
 
-    def load_support_files(self, files: List) -> str:
+    def load_support_files(self, files: List[object]) -> str:
         """Handle support image uploads and index embeddings."""
         if not files:
             return "❌ No files uploaded."
@@ -141,7 +140,7 @@ def build_ui() -> gr.Blocks:
             outputs=correction_status
         )
 
-    return ui
+    return cast(gr.Blocks, ui)
 
 
 if __name__ == "__main__":
