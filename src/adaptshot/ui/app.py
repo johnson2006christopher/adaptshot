@@ -40,7 +40,7 @@ class AdaptShotUI:
             return "❌ No files uploaded."
         
         paths: List[str] = []
-        labels: List[str] = []
+        labels: List[Union[str, int]] = []
         for f in files:
             # Gradio returns NamedTuple or string path depending on version
             path = str(f.name if hasattr(f, "name") else f)
@@ -52,7 +52,8 @@ class AdaptShotUI:
         try:
             learner = self._ensure_learner()
             learner.load_support_images(paths, labels)
-            return f"✅ Indexed {len(paths)} support images for classes: {', '.join(set(labels))}"
+            class_names = sorted({str(label) for label in labels})
+            return f"✅ Indexed {len(paths)} support images for classes: {', '.join(class_names)}"
         except Exception as e:
             return f"❌ Error: {str(e)}"
 
