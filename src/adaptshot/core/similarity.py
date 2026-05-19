@@ -6,7 +6,7 @@ import numpy as np
 
 # Attempt to import FAISS-CPU; gracefully degrade to pure NumPy if unavailable
 try:
-    import faiss
+    import faiss  # type: ignore[import-untyped]
     FAISS_AVAILABLE = True
 except ImportError:
     FAISS_AVAILABLE = False
