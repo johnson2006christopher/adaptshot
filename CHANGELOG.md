@@ -7,12 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Planned for v0.1.1
+### Planned for v0.2.0
 - ONNX export support for broader edge deployment (Android, WebAssembly)
 - Improved UP-UGF redundancy computation (approximate nearest-neighbor fallback for larger buffers)
 - Conformal prediction integration beyond current stub implementation
 - Swahili and French UI localization for Gradio dashboard
 - Automated GitHub Actions workflow for CI testing, linting, and docs deployment
+- Federated buffer sharing for multi-device deployments
+- Plugin architecture for experimental backends
+
+---
+
+## [0.1.1] - 2026-05-20
+
+### Added
+- **Comprehensive Documentation**: Complete 11-chapter tutorial suite covering:
+  - Getting Started with synthetic crop disease demo
+  - Human-in-the-loop learning with correction routing
+  - Continual learning with buffer management and calibration updates
+  - Production-ready patterns with error handling and energy profiling
+  - Reference FAQ with glossary and troubleshooting
+  - Core API deep dive with method-by-method walkthrough
+  - Source code tour for module navigation
+  - Configuration, determinism, and safe I/O utilities
+  - Benchmarks and reproducibility guide
+  - Module map for source tree navigation
+  - UI pilot dashboard (Gradio-based interface)
+- **About Page**: Creator's story, mission, values, and vision for sustainable AI
+- **Enhanced Navigation**: Updated MkDocs site with About section and all tutorial chapters
+- **Logo & Branding**: AdaptShot logo integration in site navigation and browser tab
+- **Reference Materials**: Comprehensive FAQ, API tables, and troubleshooting guides
+
+### Changed
+- **Documentation Structure**: Reorganized docs with clearer hierarchy (Getting Started → Tutorials → API Reference)
+- **mkdocs.yml**: Enhanced theme configuration with logo and favicon support
+- **MkDocs Theme**: Material theme features enabled for better navigation and code display
+
+### Improved
+- **Code Accessibility**: All tutorials reference actual source files in `src/adaptshot/` with verified APIs
+- **User Experience**: Better navigation flow from About page through Getting Started to production deployment
+- **Community Focus**: Documentation written for global audience, emphasizing resource-constrained deployment
 
 ---
 
