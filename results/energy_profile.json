@@ -1,0 +1,42 @@
+{
+  "baseline": {
+    "seed": 42,
+    "platform": "Linux-6.18.7-76061807-generic-x86_64-with-glibc2.39",
+    "cpu_frequency_mhz": 3240.547,
+    "cpu_utilization_fraction": 1.0,
+    "wall_time_s": 1.3852466309981537,
+    "process_time_s": 2.7775120040000005,
+    "tdp_watts": 15.0,
+    "latency_avg_s": 0.1385160279995034,
+    "latency_p95_s": 0.15677517749827527,
+    "support_embedding_time_s": 0.6816773089994967,
+    "peak_memory_bytes": 1582507,
+    "current_memory_bytes": 1520830,
+    "joules_estimate": 20.777404199925513,
+    "co2_g_estimate": 0.008310961679970206,
+    "accuracy": 0.1,
+    "eco_mode": false,
+    "early_exit_threshold": 0.95
+  },
+  "eco": {
+    "seed": 42,
+    "platform": "Linux-6.18.7-76061807-generic-x86_64-with-glibc2.39",
+    "cpu_frequency_mhz": 3733.675,
+    "cpu_utilization_fraction": 1.0,
+    "wall_time_s": 1.2924805379989266,
+    "process_time_s": 2.638503009000001,
+    "tdp_watts": 15.0,
+    "latency_avg_s": 0.1292394869000418,
+    "latency_p95_s": 0.1397562280510101,
+    "support_embedding_time_s": 0.6725537969978177,
+    "peak_memory_bytes": 616289,
+    "current_memory_bytes": 150690,
+    "joules_estimate": 19.38592303500627,
+    "co2_g_estimate": 0.007754369214002509,
+    "accuracy": 0.1,
+    "eco_mode": false,
+    "early_exit_threshold": 0.95
+  },
+  "eco_latency_reduction_fraction": 0.06697088584936078,
+  "deterministic": true
+}
