@@ -1,6 +1,10 @@
 # AdaptShot Documentation
 
-AdaptShot is a CPU-first, human-in-the-loop few-shot vision learning library. This documentation covers the v0.1.0 public APIs that exist in `src/adaptshot/`, plus runnable examples that measure latency and memory on your own machine.
+![AdaptShot logo](images/adaptshot-logo.png)
+
+Created by Johnson Hassan.
+
+AdaptShot is a CPU-first, human-in-the-loop few-shot vision learning library. This documentation covers the public APIs that exist in `src/adaptshot/`, plus runnable examples that measure latency and memory on your own machine.
 
 ## Start Here
 
@@ -16,7 +20,7 @@ AdaptShot is a CPU-first, human-in-the-loop few-shot vision learning library. Th
 - [Configuration & Utilities](api/config.md)
 
 !!! warning "Use The Source As Truth"
-    v0.1.0 is an early release. If documentation and behavior differ, verify against `src/adaptshot/` and open an issue with the mismatch.
+    If documentation and behavior differ, verify against `src/adaptshot/` and open an issue with the mismatch.
 
 ## Verification Checklist
 
