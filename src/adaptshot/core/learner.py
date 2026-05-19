@@ -583,7 +583,7 @@ class FewShotLearner:
                 "Extractor returned non-finite values. Verify image integrity and preprocessing."
             )
 
-        expected_dim = self._embedding_dim(default_dim=None)
+        expected_dim = self._embedding_dim() if self._sim_embeddings else None
         if expected_dim is not None and int(embedding.shape[0]) != expected_dim:
             raise AdaptShotError(
                 "Embedding dimensionality mismatch. "
