@@ -8,14 +8,13 @@ and deterministic: the fast path only activates when a cached support embedding
 is available and the preview similarity already exceeds the configured bound.
 """
 
-from typing import Optional, Tuple, Union, cast
+from importlib import import_module
+from typing import Any, Optional, Tuple, Union, cast
 
 import numpy as np
 import torch
 import torch.nn as nn
-import torchvision.models as models
 from PIL import Image
-from torchvision import transforms
 
 from ..config.settings import AdaptShotConfig
 
@@ -23,6 +22,8 @@ from ..config.settings import AdaptShotConfig
 ImageInput = Union[str, np.ndarray, Image.Image, torch.Tensor]
 
 # Registry for backbone factories (extensible without modifying core logic)
+models = import_module("torchvision.models")
+transforms = import_module("torchvision.transforms")
 BackboneRegistry = {
     "resnet18": lambda: models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1),
     "mobilenet_v3_small": lambda: models.mobilenet_v3_small(
@@ -86,7 +87,7 @@ def _normalize_to_pil(image: ImageInput) -> Image.Image:
     return cast(Image.Image, image.convert("RGB"))
 
 
-def _get_preprocess_transform(img_size: int = 224) -> transforms.Compose:
+def _get_preprocess_transform(img_size: int = 224) -> Any:
     """Return standard preprocessing transforms for ImageNet-pretrained backbones."""
     return transforms.Compose([
         transforms.Resize((img_size, img_size), interpolation=transforms.InterpolationMode.BILINEAR),
