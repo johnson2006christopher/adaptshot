@@ -9,7 +9,7 @@ Provides a production-ready dashboard for:
 
 import os
 import tempfile
-from typing import List, Tuple, Union, cast
+from typing import List, Optional, Tuple, Union, cast
 
 import gradio as gr
 from PIL import Image
@@ -23,7 +23,7 @@ class AdaptShotUI:
 
     def __init__(self, config: AdaptShotConfig) -> None:
         self.config = config
-        self.learner: Union[FewShotLearner, None] = None
+        self.learner: Optional[FewShotLearner] = None
         self.support_dir: str = tempfile.mkdtemp(prefix="adaptshot_support_")
 
     def _ensure_learner(self) -> FewShotLearner:
@@ -39,10 +39,11 @@ class AdaptShotUI:
         if not files:
             return "❌ No files uploaded."
         
-        paths, labels = [], []
+        paths: List[str] = []
+        labels: List[str] = []
         for f in files:
             # Gradio returns NamedTuple or string path depending on version
-            path = f.name if hasattr(f, 'name') else f
+            path = str(f.name if hasattr(f, "name") else f)
             # Simple heuristic: use folder name as label, or prompt user in advanced version
             label = os.path.basename(os.path.dirname(path)) or "unknown"
             paths.append(path)
@@ -83,6 +84,7 @@ class AdaptShotUI:
             return "❌ No prediction made yet to correct."
         
         try:
+            assert self.learner is not None
             res = self.learner.correct(
                 image_path=self._last_image_path,
                 true_label=true_label,
