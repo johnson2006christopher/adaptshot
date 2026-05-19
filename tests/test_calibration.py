@@ -5,7 +5,6 @@ and conformal prediction fallback logic.
 """
 
 import numpy as np
-import pytest
 
 from src.adaptshot.core.calibration import CalibrationEngine
 
