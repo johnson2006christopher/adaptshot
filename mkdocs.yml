@@ -8,6 +8,8 @@ site_dir: site
 
 theme:
   name: material
+  logo: images/adaptshot-logo.png
+  favicon: images/adaptshot-logo.png
   palette:
     - scheme: default
       primary: indigo
@@ -54,11 +56,24 @@ markdown_extensions:
 
 nav:
   - Home: index.md
+  - About: about.md
   - Getting Started:
     - Installation: getting-started/installation.md
     - Quick Start: getting-started/quickstart.md
-    - Tutorials: tutorials.md
     - Benchmarks: getting-started/benchmarks.md
+  - Tutorials:
+    - Tutorial Index: tutorials.md
+    - 01 Getting Started: tutorials/01_getting_started.md
+    - 02 Human in the Loop: tutorials/02_human_in_the_loop.md
+    - 03 Continual Learning: tutorials/03_continual_learning.md
+    - 04 Production Ready: tutorials/04_production_ready.md
+    - 05 Reference FAQ: tutorials/05_reference_faq.md
+    - 06 Core API Deep Dive: tutorials/06_core_api_deep_dive.md
+    - 07 Source Tour: tutorials/07_source_tour.md
+    - 08 Configuration, Determinism, and Safe I/O: tutorials/08_configuration_determinism_io.md
+    - 09 Benchmarks and Reproducibility: tutorials/09_benchmarks_and_reproducibility.md
+    - 10 Module Map: tutorials/10_module_map.md
+    - 11 UI Pilot Dashboard: tutorials/11_ui_pilot_dashboard.md
   - API Reference:
     - Core Engine: api/core.md
     - Training & Continual Learning: api/training.md

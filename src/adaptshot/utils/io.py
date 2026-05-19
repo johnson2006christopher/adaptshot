@@ -3,7 +3,7 @@
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, Union
+from typing import Any, Dict, Union, cast
 
 import numpy as np
 import torch
@@ -76,7 +76,7 @@ def load_json(path: Union[str, Path]) -> Dict[str, Any]:
     path_obj = validate_path(path, must_exist=True)
 
     with open(path_obj, "r", encoding="utf-8") as f:
-        return json.load(f)
+        return cast(Dict[str, Any], json.load(f))
 
 
 def tensor_to_numpy(tensor: torch.Tensor) -> np.ndarray:

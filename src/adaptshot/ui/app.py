@@ -9,10 +9,9 @@ Provides a production-ready dashboard for:
 
 import os
 import tempfile
-from typing import List, Tuple, Union
+from typing import List, Optional, Tuple, Union, cast
 
 import gradio as gr
-import numpy as np
 from PIL import Image
 
 from src.adaptshot.config.settings import AdaptShotConfig
@@ -24,7 +23,7 @@ class AdaptShotUI:
 
     def __init__(self, config: AdaptShotConfig) -> None:
         self.config = config
-        self.learner: Union[FewShotLearner, None] = None
+        self.learner: Optional[FewShotLearner] = None
         self.support_dir: str = tempfile.mkdtemp(prefix="adaptshot_support_")
 
     def _ensure_learner(self) -> FewShotLearner:
@@ -35,15 +34,16 @@ class AdaptShotUI:
             # For the UI demo, we keep it uninitialized until files are uploaded.
         return self.learner
 
-    def load_support_files(self, files: List) -> str:
+    def load_support_files(self, files: List[object]) -> str:
         """Handle support image uploads and index embeddings."""
         if not files:
             return "❌ No files uploaded."
         
-        paths, labels = [], []
+        paths: List[str] = []
+        labels: List[Union[str, int]] = []
         for f in files:
             # Gradio returns NamedTuple or string path depending on version
-            path = f.name if hasattr(f, 'name') else f
+            path = str(f.name if hasattr(f, "name") else f)
             # Simple heuristic: use folder name as label, or prompt user in advanced version
             label = os.path.basename(os.path.dirname(path)) or "unknown"
             paths.append(path)
@@ -52,7 +52,8 @@ class AdaptShotUI:
         try:
             learner = self._ensure_learner()
             learner.load_support_images(paths, labels)
-            return f"✅ Indexed {len(paths)} support images for classes: {', '.join(set(labels))}"
+            class_names = sorted({str(label) for label in labels})
+            return f"✅ Indexed {len(paths)} support images for classes: {', '.join(class_names)}"
         except Exception as e:
             return f"❌ Error: {str(e)}"
 
@@ -84,6 +85,7 @@ class AdaptShotUI:
             return "❌ No prediction made yet to correct."
         
         try:
+            assert self.learner is not None
             res = self.learner.correct(
                 image_path=self._last_image_path,
                 true_label=true_label,
@@ -141,7 +143,7 @@ def build_ui() -> gr.Blocks:
             outputs=correction_status
         )
 
-    return ui
+    return cast(gr.Blocks, ui)
 
 
 if __name__ == "__main__":

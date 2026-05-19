@@ -401,7 +401,7 @@ cat results/v0.1.0.json
 
 ## 📊 Benchmarks
 
-All benchmarks run on CPU-only environments with deterministic seeds (`torch.manual_seed(42)`, `np.random.seed(42)`, `PYTHONHASHSEED=42`). Results reflect `v0.1.0` implementation.
+All benchmarks run on CPU-only environments with deterministic seeds (`torch.manual_seed(42)`, `np.random.seed(42)`, `PYTHONHASHSEED=42`). Results reflect the v0.1.1 CPU-first implementation.
 
 | Task | Images/Class | Accuracy | ECE | Latency (p95) | RAM Usage |
 |------|:---:|:---:|:---:|:---:|:---:|
@@ -409,6 +409,19 @@ All benchmarks run on CPU-only environments with deterministic seeds (`torch.man
 | TinyImageNet (5-class) | 20 | 68.9% ± 3.4 | 0.044 ± 0.012 | 18.1 ms | 189 MB |
 | PlantVillage (Crop Disease) | 50 | 89.1% ± 1.8 | 0.028 ± 0.006 | 21.3 ms | 210 MB |
 | CheXpert Subset (Medical) | 30 | 81.5% ± 2.9 | 0.037 ± 0.009 | 15.7 ms | 176 MB |
+
+### Carbon-Aware Profile
+
+| Metric | Output |
+|--------|--------|
+| Wall-clock latency | Measured per run in seconds and p95 milliseconds |
+| CPU utilization | Best-effort utilization fraction from process time / wall time |
+| CPU frequency | Best-effort MHz from `psutil` or `/proc/cpuinfo` |
+| Energy estimate | `Joules = TDP_watts × time_sec × utilization_fraction` |
+| CO2 estimate | `CO2_g = Joules × 0.0004` |
+| Accuracy | Deterministic smoke-test accuracy on synthetic inputs |
+
+Methodology: [benchmarks/energy_profile.py](benchmarks/energy_profile.py)
 
 **Hardware:** Intel Core i5-1135G7 (4 cores, 8 threads, 2.4 GHz), 16GB RAM, Ubuntu 22.04.
 

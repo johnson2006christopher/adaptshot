@@ -6,7 +6,7 @@ Fisher Information diagonal computation is weighted by human feedback confidence
 """
 
 import logging
-from typing import Dict, List, Optional
+from typing import Any, Dict, Optional
 
 import torch
 import torch.nn as nn
@@ -56,7 +56,7 @@ class CAEWCFinetuner:
         self._fisher: Optional[Dict[str, torch.Tensor]] = None
         self._old_params: Optional[Dict[str, torch.Tensor]] = None
 
-    def update_fisher(self, data_loader: DataLoader) -> Dict[str, torch.Tensor]:
+    def update_fisher(self, data_loader: DataLoader[Any]) -> Dict[str, torch.Tensor]:
         """
         Approximate diagonal Fisher Information Matrix for the model parameters.
         This should be called on the support set (old knowledge) before fine-tuning.
@@ -82,7 +82,7 @@ class CAEWCFinetuner:
             
             output = self.model(inputs)
             loss = F.cross_entropy(output, targets)
-            loss.backward()
+            loss.backward()  # type: ignore[no-untyped-call]
 
             for name, param in self.model.named_parameters():
                 if param.requires_grad and param.grad is not None:
@@ -123,7 +123,7 @@ class CAEWCFinetuner:
             confidence_weights = torch.ones(new_embeddings.size(0))
             
         dataset = TensorDataset(new_embeddings, new_labels, confidence_weights)
-        loader = DataLoader(dataset, batch_size=self.batch_size, shuffle=True)
+        loader: DataLoader[Any] = DataLoader(dataset, batch_size=self.batch_size, shuffle=True)
 
         for epoch in range(self.epochs):
             epoch_loss = 0.0
@@ -146,7 +146,7 @@ class CAEWCFinetuner:
                         ewc_loss += torch.sum(self._fisher[name] * (param - self._old_params[name]) ** 2) * weight_factor
 
                 total_loss = task_loss + self.ewc_lambda * ewc_loss
-                total_loss.backward()
+                total_loss.backward()  # type: ignore[no-untyped-call]
                 optimizer.step()
                 epoch_loss += total_loss.item()
 
@@ -166,7 +166,7 @@ class CAEWCFinetuner:
                 optimizer.zero_grad()
                 output = self.model(inputs)
                 loss = F.cross_entropy(output, targets)
-                loss.backward()
+                loss.backward()  # type: ignore[no-untyped-call]
                 optimizer.step()
         
         self.model.eval()

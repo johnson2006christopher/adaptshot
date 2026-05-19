@@ -29,6 +29,10 @@ class AdaptShotConfig:
     use_faiss: bool = False # Toggle FAISS-CPU acceleration
     faiss_nprobe: int = 8   # FAISS IVF index probing depth (if used later)
 
+    # Energy-aware inference
+    eco_mode: bool = False
+    early_exit_threshold: float = 0.95
+
     # Calibration & uncertainty
     calibration_method: Literal["temperature", "conformal", "none"] = "temperature"
     ece_n_bins: int = 15    # Number of bins for Expected Calibration Error
@@ -47,6 +51,8 @@ class AdaptShotConfig:
             raise ValueError("n_way and k_shot must be positive integers.")
         if self.max_buffer_size < 10:
             raise ValueError("max_buffer_size must be >= 10 for meaningful few-shot operation.")
+        if not 0.5 <= self.early_exit_threshold <= 1.0:
+            raise ValueError("early_exit_threshold must be within [0.5, 1.0].")
         if self.device == "cuda" and not torch.cuda.is_available():
             import warnings
             warnings.warn(

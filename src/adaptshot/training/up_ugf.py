@@ -11,7 +11,7 @@ Designed for CPU-first edge deployment with strict memory ceilings.
 
 import logging
 import time
-from typing import Dict, List, Optional, Tuple
+from typing import Optional, Tuple
 
 import numpy as np
 
@@ -75,7 +75,7 @@ class UPUGFPruner:
 
         N = embeddings.shape[0]
         if N == 0:
-            return np.array([])
+            return np.asarray([])
 
         # 1. Uncertainty component: prefer informative examples near boundary
         # Clamp to [0, 1] and invert (lower uncertainty → higher score)
@@ -97,7 +97,7 @@ class UPUGFPruner:
 
         # Composite score (multiplicative)
         scores = unc_score * rec_score * red_score
-        return scores
+        return np.asarray(scores)
 
     def prune(
         self,
@@ -127,8 +127,8 @@ class UPUGFPruner:
         keep_idx = np.argsort(scores)[-self.capacity:]
         
         return (
-            embeddings[keep_idx],
-            labels[keep_idx],
-            uncertainties[keep_idx],
-            last_access_times[keep_idx]
+            np.asarray(embeddings[keep_idx]),
+            np.asarray(labels[keep_idx]),
+            np.asarray(uncertainties[keep_idx]),
+            np.asarray(last_access_times[keep_idx]),
         )

@@ -1,12 +1,12 @@
 """CPU-optimized cosine similarity search with optional FAISS acceleration."""
 
-from typing import Tuple
+from typing import Tuple, cast
 
 import numpy as np
 
 # Attempt to import FAISS-CPU; gracefully degrade to pure NumPy if unavailable
 try:
-    import faiss
+    import faiss  # type: ignore[import-untyped]
     FAISS_AVAILABLE = True
 except ImportError:
     FAISS_AVAILABLE = False
@@ -34,7 +34,7 @@ def cosine_similarity_numpy(query: np.ndarray, support: np.ndarray) -> np.ndarra
     support_norm = support / (np.linalg.norm(support, axis=1, keepdims=True) + 1e-8)
 
     # Matrix multiplication of normalized vectors = cosine similarity
-    return query_norm @ support_norm.T
+    return cast(np.ndarray, query_norm @ support_norm.T)
 
 
 def cosine_similarity_faiss(
@@ -78,7 +78,7 @@ def cosine_similarity_faiss(
     index = faiss.IndexFlatIP(D)  # Inner Product for normalized vectors
     index.add(support)
 
-    return index.search(query, min(k, support.shape[0]))
+    return cast(Tuple[np.ndarray, np.ndarray], index.search(query, min(k, support.shape[0])))
 
 
 def find_nearest_neighbor(

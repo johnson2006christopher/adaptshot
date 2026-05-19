@@ -1,11 +1,11 @@
 # Tutorial-Style Guides
 
-These tutorials are designed to be copied, pasted, and run. They avoid unverified performance claims and only use APIs that exist in AdaptShot v0.1.0.
+These tutorials are designed to be copied, pasted, and run. They avoid unverified performance claims and only use APIs that exist in AdaptShot v0.1.1.
 
 !!! warning "Correction Labels In v0.1.0"
     `FewShotLearner.correct()` currently works reliably with integer-like labels because `FeedbackRouter` updates calibration with `int(predicted_label)` and `int(corrected_label)`. Use a label map for display names until string-label corrections are fixed.
 
-## Tutorial: Crop Disease Detection With Synthetic Images
+## Tutorial 01: Getting Started With Synthetic Images
 
 This tutorial simulates a two-class crop disease task: `maize_healthy` and `maize_blight`. It uses synthetic images so the full prediction and correction workflow can run anywhere.
 
@@ -126,6 +126,46 @@ Fine-tuned: False
 - [ ] Prediction succeeds before correction.
 - [ ] Correction succeeds with integer labels.
 - [ ] Latency and memory are measured on the user's machine.
+
+## Tutorial 02: Human-in-the-Loop Crop Monitoring
+
+See [tutorials/02_human_in_the_loop.md](tutorials/02_human_in_the_loop.md) for the correction loop.
+
+## Tutorial 03: Continual Learning And Persistence
+
+See [tutorials/03_continual_learning.md](tutorials/03_continual_learning.md) for correction buffering, calibration updates, and safe save/load.
+
+## Tutorial 04: Production Readiness And Debugging
+
+See [tutorials/04_production_ready.md](tutorials/04_production_ready.md) for error handling, eco mode, energy profiling, and deployment checks.
+
+## Tutorial 05: Reference And FAQ
+
+See [tutorials/05_reference_faq.md](tutorials/05_reference_faq.md) for the glossary, API table, and troubleshooting quick lookup.
+
+## Tutorial 06: Core API Deep Dive
+
+New users often want one more chapter that walks method-by-method through the library. See the next tutorial for a compact but practical API tour.
+
+## Tutorial 07: Source Tour And Internal Pipeline
+
+See [tutorials/07_source_tour.md](tutorials/07_source_tour.md) for a guided reading of the real prediction pipeline, calibration, ACT, corrections, pruning, and persistence.
+
+## Tutorial 08: Configuration, Determinism, And Safe I/O
+
+See [tutorials/08_configuration_determinism_io.md](tutorials/08_configuration_determinism_io.md) for the control panel, reproducibility helpers, and safe file handling utilities.
+
+## Tutorial 09: Benchmarks And Reproducibility
+
+See [tutorials/09_benchmarks_and_reproducibility.md](tutorials/09_benchmarks_and_reproducibility.md) for the smoke benchmark, energy profiling, and reproducible measurement workflow.
+
+## Tutorial 10: Module Map
+
+See [tutorials/10_module_map.md](tutorials/10_module_map.md) for a guided map of the source tree and which file owns which behavior.
+
+## Tutorial 11: UI Pilot Dashboard
+
+See [tutorials/11_ui_pilot_dashboard.md](tutorials/11_ui_pilot_dashboard.md) for the optional Gradio dashboard that wraps the learner in a browser UI.
 
 ## Tutorial: CIFAR-10 Smoke Benchmark
 

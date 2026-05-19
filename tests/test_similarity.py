@@ -1,7 +1,6 @@
 """Unit tests for core/similarity.py."""
 
 import numpy as np
-import pytest
 
 from src.adaptshot.core.similarity import (
     cosine_similarity_numpy,
