@@ -8,6 +8,13 @@ from .core.calibration import CalibrationEngine
 from .core.act import ACTEngine
 from .training.feedback_router import FeedbackRouter
 from .training.up_ugf import UPUGFPruner
+from .utils.exceptions import (
+    AdaptShotError,
+    BufferCapacityError,
+    CalibrationNotReadyError,
+    ConfigValidationError,
+    InvalidImageError,
+)
 
 __all__ = [
     "AdaptShotConfig",
@@ -16,4 +23,9 @@ __all__ = [
     "ACTEngine",
     "FeedbackRouter",
     "UPUGFPruner",
+    "AdaptShotError",
+    "InvalidImageError",
+    "ConfigValidationError",
+    "CalibrationNotReadyError",
+    "BufferCapacityError",
 ]
