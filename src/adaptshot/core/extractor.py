@@ -8,14 +8,14 @@ and deterministic: the fast path only activates when a cached support embedding
 is available and the preview similarity already exceeds the configured bound.
 """
 
-from typing import Optional, Union
+from typing import Optional, Tuple, Union, cast
 
 import numpy as np
 import torch
 import torch.nn as nn
-import torchvision.models as models  # type: ignore[import-untyped]
+import torchvision.models as models
 from PIL import Image
-from torchvision import transforms  # type: ignore[import-untyped]
+from torchvision import transforms
 
 from ..config.settings import AdaptShotConfig
 
@@ -32,13 +32,14 @@ BackboneRegistry = {
 
 _SUPPORT_EMBEDDING_CACHE: Optional[np.ndarray] = None
 _SUPPORT_PREVIEW_CACHE: Optional[np.ndarray] = None
+_RESAMPLE_BILINEAR = getattr(getattr(Image, "Resampling", Image), "BILINEAR")
 
 
 def compute_preview_signature(image: ImageInput, size: int = 16) -> np.ndarray:
     """Compute a low-cost preview signature for early-exit similarity checks."""
-    pil_image = _normalize_to_pil(image).resize((size, size), Image.BILINEAR)
+    pil_image = _normalize_to_pil(image).resize((size, size), _RESAMPLE_BILINEAR)
     preview = np.asarray(pil_image, dtype=np.float32) / 255.0
-    return preview.reshape(-1)
+    return cast(np.ndarray, preview.reshape(-1))
 
 
 def set_support_embedding_cache(
@@ -62,27 +63,27 @@ def get_support_embedding_cache() -> Optional[np.ndarray]:
     """Return a copy of the cached support embedding used by eco mode."""
     if _SUPPORT_EMBEDDING_CACHE is None:
         return None
-    return _SUPPORT_EMBEDDING_CACHE.copy()
+    return cast(np.ndarray, _SUPPORT_EMBEDDING_CACHE.copy())
 
 
 def get_support_preview_cache() -> Optional[np.ndarray]:
     """Return a copy of the cached support preview signature used by eco mode."""
     if _SUPPORT_PREVIEW_CACHE is None:
         return None
-    return _SUPPORT_PREVIEW_CACHE.copy()
+    return cast(np.ndarray, _SUPPORT_PREVIEW_CACHE.copy())
 
 
 def _normalize_to_pil(image: ImageInput) -> Image.Image:
     """Convert supported image inputs to a PIL RGB image."""
     if isinstance(image, str):
-        return Image.open(image).convert("RGB")
+        return cast(Image.Image, Image.open(image).convert("RGB"))
     if isinstance(image, np.ndarray):
-        return Image.fromarray(image).convert("RGB")
+        return cast(Image.Image, Image.fromarray(image).convert("RGB"))
     if isinstance(image, torch.Tensor):
         if image.dim() == 3 and image.shape[0] not in (1, 3):
             image = image.permute(2, 0, 1)
-        return transforms.ToPILImage()(image.cpu()).convert("RGB")
-    return image.convert("RGB")
+        return cast(Image.Image, transforms.ToPILImage()(image.cpu()).convert("RGB"))
+    return cast(Image.Image, image.convert("RGB"))
 
 
 def _get_preprocess_transform(img_size: int = 224) -> transforms.Compose:
@@ -114,7 +115,9 @@ def extract_embedding(
         support_norm = np.linalg.norm(support_preview) + 1e-8
         quick_similarity = float(np.dot(query_preview, support_preview) / (preview_norm * support_norm))
         if quick_similarity >= config.early_exit_threshold:
-            return support_embedding.copy() if return_numpy else torch.from_numpy(support_embedding.copy())
+            if return_numpy:
+                return cast(np.ndarray, support_embedding.copy())
+            return torch.from_numpy(support_embedding.copy())
 
     backbone = BackboneRegistry[config.backbone]()
     backbone.fc = nn.Identity()
@@ -130,4 +133,6 @@ def extract_embedding(
     with torch.no_grad():
         embedding = backbone(image_tensor).squeeze(0)
 
-    return embedding.detach().cpu().numpy() if return_numpy else embedding
+    if return_numpy:
+        return cast(np.ndarray, embedding.detach().cpu().numpy())
+    return embedding
