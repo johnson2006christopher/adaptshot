@@ -74,7 +74,7 @@ def get_support_preview_cache() -> Optional[np.ndarray]:
     return cast(np.ndarray, _SUPPORT_PREVIEW_CACHE.copy())
 
 
-def _normalize_to_pil(image: ImageInput) -> Image.Image:
+def _normalize_to_pil(image: ImageInput) -> Any:
     """Convert supported image inputs to a PIL RGB image."""
     if isinstance(image, str):
         return Image.open(image).convert("RGB")
