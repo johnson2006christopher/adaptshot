@@ -31,7 +31,7 @@ from ..utils.exceptions import (
 )
 from .act import ACTEngine
 from .calibration import CalibrationEngine
-from .extractor import extract_embedding
+from .extractor import compute_preview_signature, extract_embedding, set_support_embedding_cache
 from .similarity import find_nearest_neighbor
 
 logger = logging.getLogger(__name__)
@@ -74,6 +74,7 @@ class FewShotLearner:
         self._sim_labels: List[Union[str, int]] = []
         self._sim_access_times: List[float] = []
         self._sim_uncertainties: List[float] = []
+        self._sim_preview_signatures: List[np.ndarray] = []
 
         self.pruner = UPUGFPruner(
             capacity=self.config.max_buffer_size,
@@ -127,6 +128,7 @@ class FewShotLearner:
         self._sim_labels.clear()
         self._sim_access_times.clear()
         self._sim_uncertainties.clear()
+        self._sim_preview_signatures.clear()
 
         current_time = time.time()
         expected_dim: Optional[int] = None
@@ -134,6 +136,7 @@ class FewShotLearner:
         for path, label in zip(image_paths, labels):
             self._validate_label(label)
             image = self._load_rgb_image_from_path(path)
+            preview_signature = compute_preview_signature(image)
             embedding = self._extract_embedding_checked(image=image, source=path)
 
             if expected_dim is None:
@@ -148,6 +151,7 @@ class FewShotLearner:
             self._sim_labels.append(label)
             self._sim_access_times.append(current_time)
             self._sim_uncertainties.append(0.5)
+            self._sim_preview_signatures.append(preview_signature)
 
         if not self._sim_embeddings:
             raise ConfigValidationError(
@@ -157,6 +161,11 @@ class FewShotLearner:
 
         self._rebuild_label_index()
         self._init_or_rebuild_model_head(embedding_dim=self._embedding_dim())
+        if self._sim_embeddings:
+            set_support_embedding_cache(
+                self._sim_embeddings[0],
+                self._sim_preview_signatures[0],
+            )
         self._is_initialized = True
 
     def predict(self, image: Union[str, Image.Image, np.ndarray]) -> PredictionResult:
@@ -214,6 +223,10 @@ class FewShotLearner:
         )
 
         self._sim_access_times[neighbor_idx] = time.time()
+        set_support_embedding_cache(
+            self._sim_embeddings[neighbor_idx],
+            self._sim_preview_signatures[neighbor_idx],
+        )
 
         return PredictionResult(
             prediction=pred_label,
@@ -284,7 +297,11 @@ class FewShotLearner:
         )
 
         result = self.router.route_feedback(correction)
-        self._append_correction_to_similarity_buffer(query_emb, true_label)
+        self._append_correction_to_similarity_buffer(
+            query_emb,
+            true_label,
+            compute_preview_signature(image),
+        )
 
         try:
             self._apply_buffer_management()
@@ -313,6 +330,7 @@ class FewShotLearner:
                 "labels": self._sim_labels,
                 "times": self._sim_access_times,
                 "uncertainties": self._sim_uncertainties,
+                "previews": [preview.tolist() for preview in self._sim_preview_signatures],
             },
             "label_index": {
                 "label_to_idx": self._label_to_idx,
@@ -368,6 +386,9 @@ class FewShotLearner:
         learner._sim_labels = list(state["buffer"]["labels"])
         learner._sim_access_times = [float(v) for v in state["buffer"]["times"]]
         learner._sim_uncertainties = [float(v) for v in state["buffer"]["uncertainties"]]
+        learner._sim_preview_signatures = [
+            np.asarray(preview, dtype=np.float32) for preview in state["buffer"].get("previews", [])
+        ]
 
         emb_path = target.with_suffix(".embeddings.npy")
         if not emb_path.exists():
@@ -381,6 +402,11 @@ class FewShotLearner:
         learner._rebuild_label_index()
         if learner._sim_embeddings:
             learner._init_or_rebuild_model_head(embedding_dim=learner._embedding_dim())
+            if learner._sim_preview_signatures:
+                set_support_embedding_cache(
+                    learner._sim_embeddings[0],
+                    learner._sim_preview_signatures[0],
+                )
 
             head_path = target.with_suffix(".head.pt")
             if head_path.exists() and learner._model_head is not None:
@@ -656,12 +682,19 @@ class FewShotLearner:
         self,
         embedding: np.ndarray,
         label: Union[str, int],
+        preview_signature: np.ndarray,
     ) -> None:
         self._sim_embeddings.append(embedding)
         self._sim_labels.append(label)
         self._sim_access_times.append(time.time())
         self._sim_uncertainties.append(0.5)
+        self._sim_preview_signatures.append(preview_signature.astype(np.float32, copy=False))
         self._ensure_label_index(label)
+        if self._sim_embeddings:
+            set_support_embedding_cache(
+                self._sim_embeddings[0],
+                self._sim_preview_signatures[0],
+            )
 
     def _trigger_finetune(self, corrections: List[Correction]) -> None:
         if self.finetuner is None or self._model_head is None:
@@ -728,23 +761,19 @@ class FewShotLearner:
         label_np = np.array(self._sim_labels, dtype=object)
 
         try:
-            pruned_emb, pruned_labels, pruned_unc, pruned_times = self.pruner.prune(
-                emb_np,
-                label_np,
-                unc_np,
-                time_np,
-            )
-            self._validate_prune_shapes(pruned_emb, pruned_labels, pruned_unc, pruned_times)
-
-            self._sim_embeddings = [np.array(row, dtype=np.float32) for row in pruned_emb]
-            self._sim_labels = list(pruned_labels.tolist())
-            self._sim_uncertainties = [float(v) for v in pruned_unc.tolist()]
-            self._sim_access_times = [float(v) for v in pruned_times.tolist()]
+            scores = self.pruner.compute_scores(emb_np, unc_np, time_np)
+            keep_idx = np.argsort(scores)[-self.config.max_buffer_size :]
+            self._sim_embeddings = [np.array(emb_np[idx], dtype=np.float32) for idx in keep_idx]
+            self._sim_labels = [label_np[idx] for idx in keep_idx]
+            self._sim_uncertainties = [float(unc_np[idx]) for idx in keep_idx]
+            self._sim_access_times = [float(time_np[idx]) for idx in keep_idx]
+            self._sim_preview_signatures = [self._sim_preview_signatures[idx] for idx in keep_idx]
         except Exception as exc:
             self._sim_embeddings = self._sim_embeddings[-self.config.max_buffer_size :]
             self._sim_labels = self._sim_labels[-self.config.max_buffer_size :]
             self._sim_uncertainties = self._sim_uncertainties[-self.config.max_buffer_size :]
             self._sim_access_times = self._sim_access_times[-self.config.max_buffer_size :]
+            self._sim_preview_signatures = self._sim_preview_signatures[-self.config.max_buffer_size :]
             self._rebuild_label_index()
             raise BufferCapacityError(
                 "UP-UGF pruning failed. Applied deterministic FIFO fallback to enforce "
