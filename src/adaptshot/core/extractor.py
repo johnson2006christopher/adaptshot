@@ -8,6 +8,7 @@ and deterministic: the fast path only activates when a cached support embedding
 is available and the preview similarity already exceeds the configured bound.
 """
 
+from functools import lru_cache
 from importlib import import_module
 from typing import Any, Optional, Union, cast
 
@@ -25,15 +26,27 @@ ImageInput = Union[str, np.ndarray, Image.Image, torch.Tensor]
 models = import_module("torchvision.models")
 transforms = import_module("torchvision.transforms")
 BackboneRegistry = {
-    "resnet18": lambda: models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1),
-    "mobilenet_v3_small": lambda: models.mobilenet_v3_small(
-        weights=models.MobileNet_V3_Small_Weights.IMAGENET1K_V1
-    ),
+    "resnet18": lambda: models.resnet18(weights=None),
+    "mobilenet_v3_small": lambda: models.mobilenet_v3_small(weights=None),
 }
 
 _SUPPORT_EMBEDDING_CACHE: Optional[np.ndarray] = None
 _SUPPORT_PREVIEW_CACHE: Optional[np.ndarray] = None
 _RESAMPLE_BILINEAR = getattr(getattr(Image, "Resampling", Image), "BILINEAR")
+
+
+@lru_cache(maxsize=4)
+def _build_backbone(backbone_name: str, device: str) -> Any:
+    """Build and cache a frozen backbone on the requested device."""
+
+    backbone = BackboneRegistry[backbone_name]()
+    if hasattr(backbone, "fc"):
+        backbone.fc = nn.Identity()
+    elif hasattr(backbone, "classifier"):
+        backbone.classifier = nn.Identity()
+    backbone.to(device)
+    backbone.eval()
+    return backbone
 
 
 def compute_preview_signature(image: ImageInput, size: int = 16) -> np.ndarray:
@@ -120,10 +133,7 @@ def extract_embedding(
                 return cast(np.ndarray, support_embedding.copy())
             return torch.from_numpy(support_embedding.copy())
 
-    backbone = BackboneRegistry[config.backbone]()
-    backbone.fc = nn.Identity()
-    backbone.to(config.device)
-    backbone.eval()
+    backbone = _build_backbone(config.backbone, config.device)
 
     # Preprocess image
     preprocess = _get_preprocess_transform()
