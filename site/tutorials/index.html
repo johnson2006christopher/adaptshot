@@ -1767,7 +1767,8 @@
 
 
 <h1 id="tutorial-style-guides">Tutorial-Style Guides<a class="headerlink" href="#tutorial-style-guides" title="Permanent link">&para;</a></h1>
-<p>These tutorials are designed to be copied, pasted, and run. They avoid unverified performance claims and only use APIs that exist in AdaptShot v0.1.1.</p>
+<p>These tutorials are designed to be copied, pasted, and run. They avoid unverified performance claims and only use APIs that exist in the unreleased AdaptShot v0.1.1 branch.</p>
+<p>AdaptShot is still native-first here: use the Python API as the source of truth, then layer optional Studio workflows on top only when you need the browser UI.</p>
 <div class="admonition warning">
 <p class="admonition-title">Correction Labels In v0.1.0</p>
 <p><code>FewShotLearner.correct()</code> currently works reliably with integer-like labels because <code>FeedbackRouter</code> updates calibration with <code>int(predicted_label)</code> and <code>int(corrected_label)</code>. Use a label map for display names until string-label corrections are fixed.</p>
@@ -1951,7 +1952,7 @@
 <h2 id="tutorial-plantvillage-folder-layout">Tutorial: PlantVillage Folder Layout<a class="headerlink" href="#tutorial-plantvillage-folder-layout" title="Permanent link">&para;</a></h2>
 <p>AdaptShot v0.1.0 does not include a PlantVillage downloader or folder loader. You can still use PlantVillage images by passing file paths and integer labels directly.</p>
 <blockquote>
-<p>⚠️ Planned for v0.1.1+
+<p>⚠️ Planned for the unreleased v0.1.1 branch
 Add a documented helper or benchmark loader for PlantVillage-style folder datasets.</p>
 </blockquote>
 <h3 id="step-1-install_2">Step 1: Install<a class="headerlink" href="#step-1-install_2" title="Permanent link">&para;</a></h3>
