@@ -1,9 +1,9 @@
 # Quick Start
 
-This quick start uses generated images, so it does not need a downloaded dataset. It exercises the v0.1.0 workflow that exists in `src/adaptshot/core/learner.py`: load support images, predict, route a correction, and profile latency plus memory.
+This quick start uses generated images, so it does not need a downloaded dataset. It exercises the unreleased v0.1.1 native workflow in `src/adaptshot/core/learner.py`: load support images, predict, route a correction, and profile latency plus memory.
 
-!!! warning "String Label Correction Limitation"
-    In v0.1.0, `FewShotLearner.correct()` routes labels through calibration code that casts labels with `int(...)`. For copy-paste runnable correction examples, use integer labels and map them to human-readable names in your app code.
+!!! note "String Labels Are Supported"
+    In the v0.1.1 branch, `FewShotLearner.correct()` accepts string or integer labels. You can keep human-readable labels in the UI and map them directly into the learner.
 
 ## Step 1: Install
 
@@ -130,7 +130,7 @@ This creates:
 - `checkpoints/demo.head.pt`
 
 !!! warning "Load Caveat"
-    v0.1.0 includes `FewShotLearner.load(path)`, but state restoration needs additional validation before tutorials rely on it for production workflows. Track this in the v0.1.1 roadmap.
+    The v0.1.1 branch includes `FewShotLearner.load(path)` with checkpoint integrity validation and schema migration support.
 
 ## Verification Checklist
 

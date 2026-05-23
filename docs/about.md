@@ -153,7 +153,7 @@ Uncertainty-Guided Forgetting (UP-UGF). Score embeddings by uncertainty × recen
 
 **Result:** <250MB RAM footprint indefinitely. No OOM crashes on my 4GB laptop.
 
-### v0.1.1 (May 20, 2026 - Today): Production-Ready
+### v0.1.1 (May 20, 2026 - Today): Release Candidate
 
 I added:
 - ✅ Complete 5-phase tutorial suite (beginner to production)
@@ -161,6 +161,8 @@ I added:
 - ✅ Robust error handling with custom exceptions
 - ✅ Comprehensive documentation
 - ✅ This story
+
+This branch is still unreleased. The focus now is standard release readiness: keep the native API stable, keep the docs honest, and let Studio remain an optional convenience layer.
 
 **Why?**  
 Because code without documentation is code that nobody can use.  

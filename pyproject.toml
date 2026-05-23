@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "adaptshot"
-version = "0.1.0"
+version = "0.1.1"
 description = "Human-aligned few-shot vision learning for resource-constrained environments"
 readme = "README.md"
 license = {text = "MIT"}
@@ -30,6 +30,7 @@ dependencies = [
 [project.optional-dependencies]
 faiss = ["faiss-cpu>=1.7.4"]
 ui = ["gradio>=3.50.0"]
+gui = ["gradio>=3.50.0", "pandas>=2.0.0", "onnx>=1.16.0", "onnxscript>=0.3.0"]
 dev = [
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
@@ -37,7 +38,10 @@ dev = [
     "ruff>=0.1.0",
     "pre-commit>=3.4.0",
 ]
-all = ["adaptshot[faiss,ui,dev]"]
+all = ["adaptshot[faiss,gui,dev]"]
+
+[project.scripts]
+adaptshot-studio = "adaptshot.studio.app:launch"
 
 [project.urls]
 Homepage = "https://github.com/johnson2006christopher/adaptshot"

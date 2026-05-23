@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Planned for v0.1.1
+### Planned for the unreleased v0.1.1 branch
 - ONNX export support for broader edge deployment (Android, WebAssembly)
 - Improved UP-UGF redundancy computation (approximate nearest-neighbor fallback for larger buffers)
 - Conformal prediction integration beyond current stub implementation

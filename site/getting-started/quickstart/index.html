@@ -1269,10 +1269,10 @@
 
 
 <h1 id="quick-start">Quick Start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h1>
-<p>This quick start uses generated images, so it does not need a downloaded dataset. It exercises the v0.1.0 workflow that exists in <code>src/adaptshot/core/learner.py</code>: load support images, predict, route a correction, and profile latency plus memory.</p>
-<div class="admonition warning">
-<p class="admonition-title">String Label Correction Limitation</p>
-<p>In v0.1.0, <code>FewShotLearner.correct()</code> routes labels through calibration code that casts labels with <code>int(...)</code>. For copy-paste runnable correction examples, use integer labels and map them to human-readable names in your app code.</p>
+<p>This quick start uses generated images, so it does not need a downloaded dataset. It exercises the unreleased v0.1.1 native workflow in <code>src/adaptshot/core/learner.py</code>: load support images, predict, route a correction, and profile latency plus memory.</p>
+<div class="admonition note">
+<p class="admonition-title">String Labels Are Supported</p>
+<p>In the v0.1.1 branch, <code>FewShotLearner.correct()</code> accepts string or integer labels. You can keep human-readable labels in the UI and map them directly into the learner.</p>
 </div>
 <h2 id="step-1-install">Step 1: Install<a class="headerlink" href="#step-1-install" title="Permanent link">&para;</a></h2>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span>adaptshot
@@ -1388,7 +1388,7 @@
 </ul>
 <div class="admonition warning">
 <p class="admonition-title">Load Caveat</p>
-<p>v0.1.0 includes <code>FewShotLearner.load(path)</code>, but state restoration needs additional validation before tutorials rely on it for production workflows. Track this in the v0.1.1 roadmap.</p>
+<p>The v0.1.1 branch includes <code>FewShotLearner.load(path)</code> with checkpoint integrity validation and schema migration support.</p>
 </div>
 <h2 id="verification-checklist">Verification Checklist<a class="headerlink" href="#verification-checklist" title="Permanent link">&para;</a></h2>
 <ul>

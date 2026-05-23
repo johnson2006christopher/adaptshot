@@ -26,6 +26,8 @@
 
 AdaptShot is a high-performance, CPU-optimized, human-in-the-loop few-shot vision library. It is designed to learn from every human correction, guarantee calibrated uncertainty, and run deterministically on edge hardware with minimal resources.
 
+This branch tracks the unreleased v0.1.1 line and is being hardened for a standard release.
+
 </div>
 
 ## 🚀 Key Features
@@ -34,7 +36,7 @@ AdaptShot is a high-performance, CPU-optimized, human-in-the-loop few-shot visio
 *   **Trustworthy & Calibrated**: Built-in **Expected Calibration Error (ECE)** minimization ensures the model knows when it's unsure.
 *   **Human-in-the-Loop**: Integrated **FeedbackRouter** for real-time model adaptation through human expert corrections.
 *   **Continual Learning**: Implements **CA-EWC** (Class-Aware Elastic Weight Consolidation) and **UP-UGF** (Uncertainty-Guided Forgetting) for stable, long-term learning without catastrophic forgetting.
-*   **Production Ready**: Zero-config API, strict type safety, and comprehensive benchmark harness for industrial deployments.
+*   **Release Hardened**: Zero-config API, strict type safety, and a comprehensive benchmark harness for review and deployment readiness.
 *   **Deterministic**: Guaranteed reproducible results across different runs and hardware through strict seed management.
 
 ---
@@ -61,10 +63,11 @@ $ pip install adaptshot
 
 ### Optional Dependencies
 
-AdaptShot provides optional extras for specialized workflows:
+AdaptShot provides optional extras for specialized workflows. The native Python API remains the source of truth; the GUI is an optional wrapper around it:
 
 *   **FAISS Acceleration**: `pip install "adaptshot[faiss]"` (Recommended for support sets >100 images)
 *   **Gradio UI**: `pip install "adaptshot[ui]"` (For interactive pilots and human-in-the-loop dashboards)
+*   **Studio GUI**: `pip install "adaptshot[gui]"` (For the offline, folder-aware AdaptShot Studio workspace)
 *   **Development**: `pip install "adaptshot[dev]"` (For contributors: testing, linting, and benchmarks)
 
 ---
@@ -180,12 +183,12 @@ Built in Mbeya, Tanzania 🇹🇿
 
 | Change | Why It Matters |
 |--------|---------------|
-| ✅ Added **GitHub Release badge** | Signals production readiness; links to downloadable assets |
+| ✅ Added **GitHub Release badge** | Points to the eventual packaged release assets |
 | ✅ Updated **Docs badge** to live MkDocs URL | Users can access accurate, searchable documentation immediately |
 | ✅ Fixed **installation instructions** to match `pyproject.toml` extras | Prevents user confusion; ensures `pip install adaptshot[faiss]` works |
 | ✅ Corrected **API signatures** to match actual code (`FewShotLearner`, `PredictionResult`) | Developers can copy-paste examples with confidence |
-| ✅ Updated **Roadmap status** to `✅ Released` for v0.1.0 | Truthful versioning builds trust with judges and contributors |
+| ✅ Marked v0.1.1 content as **unreleased / release candidate** | Avoids overstating release status before publication |
 | ✅ Removed placeholder links (`arXiv:2604.XXXXX`, `adaptshot.dev/docs`) | No broken links; only verified, working resources |
-| ✅ Added **offline installation command** from GitHub Release | Supports low-connectivity deployments (critical for target users) |
+| ✅ Kept the native API as the primary workflow | Reinforces code-first usage even with the optional GUI |
 | ✅ Standardized **citation format** to GitHub + version | Academically sound; reproducible referencing |
 
