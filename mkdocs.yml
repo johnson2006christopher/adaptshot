@@ -5,6 +5,9 @@ repo_url: https://github.com/johnson2006christopher/adaptshot
 repo_name: johnson2006christopher/adaptshot
 docs_dir: docs
 site_dir: site
+not_in_nav: |
+  AUDIT_REPORT.md
+  tutorials/12_studio_guide.md
 
 theme:
   name: material
@@ -41,6 +44,15 @@ plugins:
             show_root_heading: true
             merge_init_into_class: true
             docstring_style: google
+
+validation:
+  nav:
+    omitted_files: warn
+  links:
+    not_found: ignore
+    absolute_links: ignore
+    unrecognized_links: warn
+    anchors: warn
 
 markdown_extensions:
   - pymdownx.highlight:
