@@ -32,6 +32,7 @@ logger = logging.getLogger(__name__)
 
 SESSION_PATH = Path.home() / ".adaptshot" / "studio_session.json"
 EXPORT_ROOT = Path.home() / ".adaptshot" / "studio_exports"
+IMAGE_EXTENSIONS = {".bmp", ".gif", ".jpeg", ".jpg", ".png", ".webp", ".tif", ".tiff"}
 
 
 def default_config_values() -> Dict[str, Any]:
@@ -147,6 +148,55 @@ def validate_file_bundle(paths: Sequence[Union[str, Path]], max_total_mb: int = 
     return normalized
 
 
+def discover_images_in_folder(folder: Union[str, Path], recursive: bool = True) -> List[Path]:
+    """Discover image files inside a local folder.
+
+    Args:
+        folder: Folder path to scan.
+        recursive: Whether to traverse subfolders.
+
+    Returns:
+        Sorted list of image paths.
+    """
+
+    folder_path = Path(folder).expanduser()
+    if not folder_path.exists():
+        raise ConfigValidationError(f"Folder not found: {folder_path}")
+    if not folder_path.is_dir():
+        raise ConfigValidationError(f"Expected a folder path, got: {folder_path}")
+
+    iterator = folder_path.rglob("*") if recursive else folder_path.glob("*")
+    images = [path for path in iterator if path.is_file() and path.suffix.lower() in IMAGE_EXTENSIONS]
+    return sorted(images)
+
+
+def collect_image_sources(
+    file_paths: Sequence[Union[str, Path]],
+    folder_text: str = "",
+    recursive: bool = True,
+) -> List[Path]:
+    """Combine uploaded files with folder-based imports.
+
+    Args:
+        file_paths: Uploaded files.
+        folder_text: One or more local folder paths separated by commas or new lines.
+        recursive: Whether to search folders recursively.
+
+    Returns:
+        Normalized list of image paths.
+    """
+
+    collected = [Path(path).expanduser() for path in file_paths]
+    folder_candidates = [part.strip() for part in folder_text.replace("\n", ",").split(",") if part.strip()]
+    for folder in folder_candidates:
+        collected.extend(discover_images_in_folder(folder, recursive=recursive))
+
+    unique: Dict[str, Path] = {}
+    for path in collected:
+        unique[str(path.resolve())] = path.resolve()
+    return sorted(unique.values(), key=lambda path: str(path))
+
+
 def infer_labels(paths: Sequence[Path], strategy: str, manual_labels: str = "") -> List[str]:
     """Infer labels from uploaded images."""
 
@@ -168,6 +218,16 @@ def infer_labels(paths: Sequence[Path], strategy: str, manual_labels: str = "") 
         return [path.stem for path in paths]
 
     raise ConfigValidationError(f"Unknown label strategy '{strategy}'.")
+
+
+def summarize_folder_imports(paths: Sequence[Path]) -> Dict[str, int]:
+    """Summarize how many images were imported from each folder."""
+
+    summary: Dict[str, int] = {}
+    for path in paths:
+        key = str(path.parent)
+        summary[key] = summary.get(key, 0) + 1
+    return dict(sorted(summary.items(), key=lambda item: item[0]))
 
 
 def _split_labels(text: str) -> List[str]:
