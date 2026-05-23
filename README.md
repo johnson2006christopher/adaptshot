@@ -65,6 +65,7 @@ AdaptShot provides optional extras for specialized workflows:
 
 *   **FAISS Acceleration**: `pip install "adaptshot[faiss]"` (Recommended for support sets >100 images)
 *   **Gradio UI**: `pip install "adaptshot[ui]"` (For interactive pilots and human-in-the-loop dashboards)
+*   **Studio GUI**: `pip install "adaptshot[gui]"` (For the offline, folder-aware AdaptShot Studio workspace)
 *   **Development**: `pip install "adaptshot[dev]"` (For contributors: testing, linting, and benchmarks)
 
 ---
@@ -184,7 +185,7 @@ Built in Mbeya, Tanzania 🇹🇿
 | ✅ Updated **Docs badge** to live MkDocs URL | Users can access accurate, searchable documentation immediately |
 | ✅ Fixed **installation instructions** to match `pyproject.toml` extras | Prevents user confusion; ensures `pip install adaptshot[faiss]` works |
 | ✅ Corrected **API signatures** to match actual code (`FewShotLearner`, `PredictionResult`) | Developers can copy-paste examples with confidence |
-| ✅ Updated **Roadmap status** to `✅ Released` for v0.1.0 | Truthful versioning builds trust with judges and contributors |
+| ✅ Updated **Roadmap status** to `✅ Released` for v0.1.1 | Truthful versioning builds trust with judges and contributors |
 | ✅ Removed placeholder links (`arXiv:2604.XXXXX`, `adaptshot.dev/docs`) | No broken links; only verified, working resources |
 | ✅ Added **offline installation command** from GitHub Release | Supports low-connectivity deployments (critical for target users) |
 | ✅ Standardized **citation format** to GitHub + version | Academically sound; reproducible referencing |
