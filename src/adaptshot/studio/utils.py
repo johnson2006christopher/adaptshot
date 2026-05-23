@@ -10,6 +10,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import importlib
 import os
 import platform
 import resource
@@ -22,6 +23,7 @@ from typing import Any, Dict, List, Literal, Mapping, Optional, Sequence, Tuple,
 
 import numpy as np
 import torch
+import torch.nn.functional as F
 from PIL import Image, UnidentifiedImageError
 
 from ..config.settings import AdaptShotConfig
@@ -230,6 +232,174 @@ def summarize_folder_imports(paths: Sequence[Path]) -> Dict[str, int]:
     return dict(sorted(summary.items(), key=lambda item: item[0]))
 
 
+class DeploymentSimilarityModel(torch.nn.Module):
+    """TorchScript/ONNX-friendly similarity matcher for deployment exports."""
+
+    support_embeddings: Any
+    support_labels: Any
+    temperature: Any
+
+    def __init__(self, support_embeddings: np.ndarray, support_labels: Sequence[int], temperature: float) -> None:
+        """Store support embeddings and class indices as buffers."""
+
+        super().__init__()
+        support_tensor = torch.as_tensor(support_embeddings, dtype=torch.float32)
+        label_tensor = torch.as_tensor(list(support_labels), dtype=torch.long)
+        self.register_buffer("support_embeddings", support_tensor)
+        self.register_buffer("support_labels", label_tensor)
+        self.register_buffer("temperature", torch.tensor(float(temperature), dtype=torch.float32))
+
+    def forward(self, query_embedding: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Return top label index, raw similarity, and calibrated confidence."""
+
+        if query_embedding.dim() == 1:
+            query_embedding = query_embedding.unsqueeze(0)
+
+        query = F.normalize(query_embedding.float(), dim=-1)
+        support = F.normalize(self.support_embeddings.float(), dim=-1)
+        similarities = torch.matmul(query, support.transpose(0, 1))
+        top_scores, top_indices = torch.max(similarities, dim=-1)
+        predicted_labels = self.support_labels[top_indices]
+        calibrated = torch.clamp((top_scores + 1.0) * 0.5, 0.0, 1.0)
+        return predicted_labels, top_scores, calibrated
+
+
+def build_deployment_model(learner: FewShotLearner) -> DeploymentSimilarityModel:
+    """Create a deployment-friendly similarity matcher from the live learner."""
+
+    embeddings = np.asarray(getattr(learner, "_sim_embeddings", []), dtype=np.float32)
+    if embeddings.size == 0:
+        raise ConfigValidationError("Cannot export deployment model without support embeddings.")
+
+    label_to_idx = dict(getattr(learner, "_label_to_idx", {}))
+    support_labels_raw = list(getattr(learner, "_sim_labels", []))
+    support_labels = [int(label_to_idx[label]) for label in support_labels_raw]
+    temperature = float(learner.calibrator.current_temperature)
+    return DeploymentSimilarityModel(embeddings, support_labels, temperature)
+
+
+def export_deployment_bundle(learner: FewShotLearner, export_format: str, session: Optional["StudioSession"] = None) -> Path:
+    """Export a deployment bundle in native, TorchScript, or ONNX format."""
+
+    EXPORT_ROOT.mkdir(parents=True, exist_ok=True)
+    stamp = time.strftime("%Y%m%d-%H%M%S")
+    stem = EXPORT_ROOT / f"adaptshot_studio_{export_format}_{stamp}"
+    checkpoint_path = stem.with_suffix(".json")
+    report_path = stem.with_suffix(".md")
+    usage_path = stem.with_name(f"{stem.name}_usage.txt")
+    labels_path = stem.with_name(f"{stem.name}_labels.json")
+    zip_path = stem.with_suffix(".zip")
+
+    learner.save(str(checkpoint_path))
+    report_path.write_text(build_report_markdown(learner, session=session), encoding="utf-8")
+    usage_path.write_text(
+        "Install command:\n"
+        "  pip install adaptshot\n\n"
+        "Native checkpoint load example:\n"
+        "  from adaptshot.core.learner import FewShotLearner\n"
+        "  learner = FewShotLearner.load('PATH_TO_CHECKPOINT.json')\n",
+        encoding="utf-8",
+    )
+
+    label_to_idx = dict(getattr(learner, "_label_to_idx", {}))
+    idx_to_label = {int(idx): str(label) for label, idx in label_to_idx.items()}
+    labels_path.write_text(json.dumps(idx_to_label, indent=2, sort_keys=True), encoding="utf-8")
+
+    extra_files: List[Path] = [
+        checkpoint_path,
+        checkpoint_path.with_suffix(".embeddings.npy"),
+        checkpoint_path.with_suffix(".head.pt"),
+        report_path,
+        usage_path,
+        labels_path,
+    ]
+
+    if export_format == "native":
+        pass
+    elif export_format == "torchscript":
+        model = build_deployment_model(learner)
+        model.eval()
+        support_embeddings = model.support_embeddings
+        example_input = torch.zeros(1, int(support_embeddings.shape[1]), dtype=torch.float32)
+        scripted = torch.jit.trace(model, (example_input,))  # type: ignore[no-untyped-call]
+        torchscript_path = stem.with_suffix(".pt")
+        scripted.save(str(torchscript_path))
+        extra_files.append(torchscript_path)
+    elif export_format == "onnx":
+        model = build_deployment_model(learner)
+        model.eval()
+        onnx_path = stem.with_suffix(".onnx")
+        support_embeddings = model.support_embeddings
+        dummy = torch.zeros(1, int(support_embeddings.shape[1]), dtype=torch.float32)
+        try:
+            torch.onnx.export(
+                model,
+            (dummy,),
+                str(onnx_path),
+                input_names=["query_embedding"],
+                output_names=["predicted_label", "raw_similarity", "calibrated_confidence"],
+                dynamic_axes={"query_embedding": {0: "batch"}, "predicted_label": {0: "batch"}, "raw_similarity": {0: "batch"}, "calibrated_confidence": {0: "batch"}},
+                opset_version=18,
+            )
+        except Exception as exc:
+            raise ConfigValidationError(
+                f"ONNX export failed. Ensure the runtime supports torch.onnx.export. Details: {exc}"
+            ) from exc
+        extra_files.append(onnx_path)
+    else:
+        raise ConfigValidationError(f"Unknown export format '{export_format}'.")
+
+    with zipfile.ZipFile(zip_path, mode="w", compression=zipfile.ZIP_DEFLATED) as archive:
+        for file_path in extra_files:
+            if file_path.exists():
+                archive.write(file_path, arcname=file_path.name)
+
+    return zip_path
+
+
+def load_project_bundle(bundle_path: Union[str, Path]) -> FewShotLearner:
+    """Load a native checkpoint bundle or extracted checkpoint JSON."""
+
+    target = Path(bundle_path)
+    if not target.exists():
+        raise ConfigValidationError(f"Project bundle not found: {target}")
+
+    if target.is_dir():
+        candidate_json = next(iter(sorted(target.glob("*.json"))), None)
+        if candidate_json is None:
+            raise ConfigValidationError(f"No checkpoint JSON found in directory: {target}")
+        return FewShotLearner.load(str(candidate_json))
+
+    if target.suffix.lower() == ".zip":
+        with zipfile.ZipFile(target, mode="r") as archive:
+            extract_dir = Path.home() / ".adaptshot" / "studio_imports" / f"{target.stem}_{int(time.time())}"
+            extract_dir.mkdir(parents=True, exist_ok=True)
+            archive.extractall(extract_dir)
+            candidate_json = next(iter(sorted(extract_dir.glob("*.json"))), None)
+            if candidate_json is None:
+                raise ConfigValidationError("The bundle zip did not contain a checkpoint JSON file.")
+            return FewShotLearner.load(str(candidate_json))
+
+    if target.suffix.lower() == ".json":
+        return FewShotLearner.load(str(target))
+
+    raise ConfigValidationError(
+        "Unsupported project bundle format. Use a .zip export bundle or a checkpoint .json file."
+    )
+
+
+def benchmark_smoke_metrics(config: AdaptShotConfig) -> Dict[str, Any]:
+    """Run the existing deterministic energy smoke test for truthful metrics."""
+
+    try:
+        benchmark_module = importlib.import_module("benchmarks.energy_profile")
+    except Exception as exc:  # pragma: no cover - benchmark module should exist in this repo
+        raise ConfigValidationError(f"Benchmark smoke test could not be imported: {exc}") from exc
+
+    run_smoke_test = cast(Any, getattr(benchmark_module, "run_smoke_test"))
+    return cast(Dict[str, Any], run_smoke_test(config))
+
+
 def _split_labels(text: str) -> List[str]:
     """Split a user-provided label specification into individual labels."""
 
@@ -424,6 +594,15 @@ def build_report_markdown(learner: FewShotLearner, session: Optional["StudioSess
     thresholds = learner.act.get_all_thresholds()
     ece = learner.calibrator.current_ece
     health = runtime_health_snapshot()
+    benchmark_lines = ["- Benchmark smoke test: not run yet."]
+    if session is not None and session.benchmark_snapshot:
+        benchmark_lines = [
+            f"- Benchmark accuracy: {float(session.benchmark_snapshot.get('accuracy', 0.0)):.4f}",
+            f"- Benchmark avg latency: {float(session.benchmark_snapshot.get('latency_avg_s', 0.0)) * 1000.0:.2f} ms",
+            f"- Benchmark p95 latency: {float(session.benchmark_snapshot.get('latency_p95_s', 0.0)) * 1000.0:.2f} ms",
+            f"- Benchmark energy estimate: {float(session.benchmark_snapshot.get('joules_estimate', 0.0)):.4f} J",
+            f"- Benchmark CO2 estimate: {float(session.benchmark_snapshot.get('co2_g_estimate', 0.0)):.6f} g",
+        ]
     lines = [
         "# AdaptShot Studio Export Report",
         "",
@@ -442,9 +621,8 @@ def build_report_markdown(learner: FewShotLearner, session: Optional["StudioSess
         f"- ACT thresholds tracked: {len(thresholds)}",
         "",
         "## Metrics",
-        "- Accuracy: [TODO: Implement in src/adaptshot/benchmarking or evaluation code before claiming this metric.]",
-        "- Energy: [TODO: Implement in src/adaptshot/energy measurement utilities before claiming this metric.]",
         f"- Idle RSS: {health['rss_mb']:.2f} MB",
+        *benchmark_lines,
     ]
 
     if session is not None:
@@ -558,6 +736,7 @@ class StudioSession:
     buffer_rows: List[Dict[str, Any]] = field(default_factory=list)
     buffer_summary: Dict[str, Any] = field(default_factory=dict)
     health_snapshot: Dict[str, Any] = field(default_factory=runtime_health_snapshot)
+    benchmark_snapshot: Dict[str, Any] = field(default_factory=dict)
 
     def snapshot(self) -> Dict[str, Any]:
         """Return a JSON-serializable session snapshot."""
@@ -578,6 +757,7 @@ class StudioSession:
             "buffer_rows": list(self.buffer_rows),
             "buffer_summary": dict(self.buffer_summary),
             "health_snapshot": dict(self.health_snapshot),
+            "benchmark_snapshot": dict(self.benchmark_snapshot),
         }
 
     @classmethod
@@ -600,6 +780,7 @@ class StudioSession:
         session.buffer_rows = [dict(row) for row in payload.get("buffer_rows", [])]
         session.buffer_summary = dict(payload.get("buffer_summary", {}))
         session.health_snapshot = dict(payload.get("health_snapshot", runtime_health_snapshot()))
+        session.benchmark_snapshot = dict(payload.get("benchmark_snapshot", {}))
         return session
 
 
