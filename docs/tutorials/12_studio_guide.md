@@ -5,6 +5,8 @@ nav_order: 12
 
 AdaptShot Studio is the optional offline GUI for AdaptShot. It lives in [src/adaptshot/studio/app.py](src/adaptshot/studio/app.py) and wraps the same learner surface used by the Python API.
 
+Studio is a convenience layer, not the primary interface. If you are writing code, start with `FewShotLearner` and use Studio only when you want a browser workflow.
+
 !!! note
     Studio is optional and CPU-first. Install it with `pip install "adaptshot[gui]"`.
 
@@ -32,7 +34,7 @@ The implementation only calls backend methods that already exist in the codebase
 - `ACTEngine.get_all_thresholds()` and `ACTEngine.reset_class()`
 - `UPUGFPruner.compute_scores()` and `FewShotLearner._apply_buffer_management()` for buffer enforcement
 
-When a feature does not exist yet, Studio shows a literal TODO marker such as `[TODO: Implement in src/adaptshot/core/learner.py]` instead of inventing behavior.
+Studio now exposes the native checkpoint bundle, TorchScript, and ONNX export paths that the current code supports. When a feature does not exist yet, it shows a literal TODO marker such as `[TODO: Implement in src/adaptshot/core/learner.py]` instead of inventing behavior.
 
 ## 2. Install The GUI Extra
 
@@ -40,7 +42,7 @@ When a feature does not exist yet, Studio shows a literal TODO marker such as `[
 pip install "adaptshot[gui]"
 ```
 
-The `gui` extra adds Gradio and Pandas, which are used for the browser interface and tables.
+The `gui` extra adds Gradio, Pandas, and the lightweight ONNX exporter dependencies used by the browser interface and deployment bundles.
 
 ## 3. Launch Studio
 
@@ -103,7 +105,7 @@ The correction tab sends a selected prediction through `FewShotLearner.correct()
 
 The calibration tab refreshes the learner's ACT thresholds and refits temperature when enough observations exist. The buffer tab displays a snapshot of the current replay buffer and can trigger the existing buffer management path.
 
-The export tab currently supports the native AdaptShot checkpoint bundle. ONNX and TorchScript are surfaced as TODOs because the core library does not expose those export paths yet.
+The export tab supports native checkpoint bundles, TorchScript, and ONNX. It also lets you load a saved project bundle back into Studio so you can continue where you left off.
 
 ## 8. Logs And Diagnostics
 
