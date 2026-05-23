@@ -1,6 +1,8 @@
 # Tutorial-Style Guides
 
-These tutorials are designed to be copied, pasted, and run. They avoid unverified performance claims and only use APIs that exist in AdaptShot v0.1.1.
+These tutorials are designed to be copied, pasted, and run. They avoid unverified performance claims and only use APIs that exist in the unreleased AdaptShot v0.1.1 branch.
+
+AdaptShot is still native-first here: use the Python API as the source of truth, then layer optional Studio workflows on top only when you need the browser UI.
 
 !!! warning "Correction Labels In v0.1.0"
     `FewShotLearner.correct()` currently works reliably with integer-like labels because `FeedbackRouter` updates calibration with `int(predicted_label)` and `int(corrected_label)`. Use a label map for display names until string-label corrections are fixed.
@@ -231,7 +233,7 @@ cat results/smoke_test.json
 
 AdaptShot v0.1.0 does not include a PlantVillage downloader or folder loader. You can still use PlantVillage images by passing file paths and integer labels directly.
 
-> ⚠️ Planned for v0.1.1+
+> ⚠️ Planned for the unreleased v0.1.1 branch
 > Add a documented helper or benchmark loader for PlantVillage-style folder datasets.
 
 ### Step 1: Install
