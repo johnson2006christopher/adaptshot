@@ -614,7 +614,7 @@ def build_ui() -> Any:
     controller = StudioController()
     session = controller.session
 
-    with gr.Blocks(title="AdaptShot Studio", analytics_enabled=False) as demo:
+    with gr.Blocks(title="AdaptShot Studio") as demo:
         gr.HTML(_studio_intro())
         gr.Markdown(
             "This workspace wraps the existing AdaptShot learner. Where a backend feature does not exist yet, the UI shows a TODO instead of pretending it is implemented."
