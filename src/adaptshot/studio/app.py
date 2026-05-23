@@ -29,9 +29,11 @@ from .utils import (
     config_to_json,
     create_learner,
     collect_image_sources,
+    benchmark_smoke_metrics,
     estimate_buffer_memory_mb,
     estimate_runtime_profile,
-    export_native_bundle,
+    export_deployment_bundle,
+    load_project_bundle as load_project_bundle_file,
     file_metadata_rows,
     gallery_items,
     infer_labels,
@@ -198,7 +200,7 @@ class StudioController:
         calibration_method: str,
         seed: int,
         session: StudioSession,
-    ) -> Tuple[str, str, str, StudioSession]:
+    ) -> Tuple[Any, ...]:
         """Validate configuration inputs and display heuristic estimates."""
 
         values = self._config_values(backbone, eco_mode, max_buffer_size, calibration_method, seed)
@@ -242,7 +244,7 @@ class StudioController:
         calibration_method: str,
         seed: int,
         session: StudioSession,
-    ) -> Tuple[str, str, Any, Any, str, StudioSession]:
+    ) -> Tuple[Any, ...]:
         """Load support images into a fresh learner and summarize the class set."""
 
         paths = collect_image_sources(
@@ -309,6 +311,56 @@ class StudioController:
             self._store(session)
             return message, "", [], [], "", session
 
+    async def load_project_bundle(
+        self,
+        bundle_file: Optional[Any],
+        session: StudioSession,
+    ) -> Tuple[Any, ...]:
+        """Load a saved project checkpoint or bundle into the current session."""
+
+        if bundle_file is None:
+            message = "❌ Upload a saved project bundle or checkpoint file first."
+            session.last_error = message
+            append_log(session, message, level="error")
+            return message, "", [], "", session
+
+        bundle_path = Path(str(getattr(bundle_file, "name", bundle_file)))
+        try:
+            learner = load_project_bundle_file(bundle_path)
+            session.learner = learner
+            session.config_values = {
+                "backbone": learner.config.backbone,
+                "eco_mode": learner.config.eco_mode,
+                "max_buffer_size": learner.config.max_buffer_size,
+                "calibration_method": learner.config.calibration_method,
+                "seed": learner.config.seed,
+            }
+            session.support_paths = []
+            session.support_labels = [str(label) for label in getattr(learner, "_sim_labels", [])]
+            session.support_rows = []
+            session.buffer_rows, session.buffer_summary = buffer_snapshot(learner)
+            session.benchmark_snapshot = {}
+            session.last_error = ""
+            append_log(session, f"Loaded project bundle from {bundle_path.name}.")
+            persist_session_snapshot(session, SESSION_PATH)
+            self._store(session)
+
+            support_summary = build_support_summary(session.buffer_rows)
+            return (
+                f"✅ Loaded project bundle: {bundle_path.name}",
+                config_to_json(learner.config),
+                _make_dataframe(session.buffer_rows),
+                support_summary,
+                session,
+            )
+        except (ConfigValidationError, AdaptShotError, InvalidImageError, ValueError) as exc:
+            message = f"❌ {exc}"
+            session.last_error = str(exc)
+            append_log(session, message, level="error")
+            persist_session_snapshot(session, SESSION_PATH)
+            self._store(session)
+            return message, "", [], "", session
+
     async def run_inference(
         self,
         query_folder_text: str,
@@ -317,7 +369,7 @@ class StudioController:
         query_files: Optional[Sequence[Any]],
         batch_mode: bool,
         session: StudioSession,
-    ) -> Tuple[str, Any, Any, Any, str, str, StudioSession]:
+    ) -> Tuple[Any, ...]:
         """Run inference on one image or a batch of query images."""
 
         learner = session.learner
@@ -389,7 +441,7 @@ class StudioController:
         custom_label: str,
         confidence_weight: float,
         session: StudioSession,
-    ) -> Tuple[str, str, str, str, str, StudioSession]:
+    ) -> Tuple[Any, ...]:
         """Submit a correction into the existing learner feedback router."""
 
         learner = session.learner
@@ -449,7 +501,7 @@ class StudioController:
         learning_rate: float,
         show_boundaries: bool,
         session: StudioSession,
-    ) -> Tuple[str, str, Any, str, StudioSession]:
+    ) -> Tuple[Any, ...]:
         """Recalibrate the learner and refresh ACT thresholds."""
 
         learner = session.learner
@@ -497,7 +549,7 @@ class StudioController:
             session,
         )
 
-    async def prune_buffer(self, pruning_enabled: bool, session: StudioSession) -> Tuple[str, Any, str, StudioSession]:
+    async def prune_buffer(self, pruning_enabled: bool, session: StudioSession) -> Tuple[Any, ...]:
         """Prune the learner buffer using the existing capacity controls."""
 
         learner = session.learner
@@ -530,7 +582,7 @@ class StudioController:
         self._store(session)
         return message, _make_dataframe(session.buffer_rows), _format_json(session.buffer_summary), session
 
-    async def export_model(self, export_format: str, session: StudioSession) -> Tuple[str, str, str, Optional[str], StudioSession]:
+    async def export_model(self, export_format: str, session: StudioSession) -> Tuple[Any, ...]:
         """Export the current learner state to a zip package or TODO message."""
 
         learner = session.learner
@@ -540,18 +592,24 @@ class StudioController:
             append_log(session, message, level="error")
             return message, "", "", None, session
 
-        if export_format != "native":
-            message = "[TODO: Implement in src/adaptshot/core/learner.py] ONNX and TorchScript export are not available yet."
-            append_log(session, message, level="warning")
-            session.last_error = message
+        try:
+            normalized_format = {
+                "onnx stub": "onnx",
+            }.get(export_format, export_format)
+            archive_path = await _to_thread(export_deployment_bundle, learner, normalized_format, session)
+        except (ConfigValidationError, AdaptShotError) as exc:
+            message = f"❌ {exc}"
+            session.last_error = str(exc)
+            append_log(session, message, level="error")
+            persist_session_snapshot(session, SESSION_PATH)
+            self._store(session)
             return message, build_report_markdown(learner, session=session), "", None, session
 
-        archive_path = await _to_thread(export_native_bundle, learner, session)
         report_text = build_report_markdown(learner, session=session)
         install_command = "pip install adaptshot"
         session.export_paths = [str(archive_path)]
         session.last_error = ""
-        append_log(session, f"Exported native bundle to {archive_path}.")
+        append_log(session, f"Exported {normalized_format} bundle to {archive_path}.")
         persist_session_snapshot(session, SESSION_PATH)
         self._store(session)
         return (
@@ -562,7 +620,38 @@ class StudioController:
             session,
         )
 
-    async def export_logs(self, session: StudioSession) -> Tuple[str, str, StudioSession]:
+    async def benchmark_snapshot(self, session: StudioSession) -> Tuple[Any, ...]:
+        """Run the deterministic benchmark smoke test and store the results."""
+
+        learner = session.learner
+        if learner is None:
+            message = "❌ Load a support set or project bundle before running the benchmark snapshot."
+            session.last_error = message
+            append_log(session, message, level="error")
+            return message, "", [], session
+
+        try:
+            snapshot = await _to_thread(benchmark_smoke_metrics, learner.config)
+            session.benchmark_snapshot = snapshot
+            session.last_error = ""
+            append_log(session, "Benchmark smoke snapshot completed.")
+            persist_session_snapshot(session, SESSION_PATH)
+            self._store(session)
+            summary = (
+                f"Accuracy: {float(snapshot['accuracy']):.4f} | "
+                f"Avg latency: {float(snapshot['latency_avg_s']) * 1000.0:.2f} ms | "
+                f"Energy: {float(snapshot['joules_estimate']):.4f} J"
+            )
+            return summary, json.dumps(snapshot, indent=2, sort_keys=True), _make_dataframe([snapshot]), session
+        except (ConfigValidationError, AdaptShotError, ValueError) as exc:
+            message = f"❌ {exc}"
+            session.last_error = str(exc)
+            append_log(session, message, level="error")
+            persist_session_snapshot(session, SESSION_PATH)
+            self._store(session)
+            return message, "", [], session
+
+    async def export_logs(self, session: StudioSession) -> Tuple[Any, ...]:
         """Export the current log buffer to a local file."""
 
         if not session.logs:
@@ -575,7 +664,7 @@ class StudioController:
         self._store(session)
         return f"✅ Log file written to {log_path.name}.", str(log_path), session
 
-    async def health_check(self, session: StudioSession) -> Tuple[str, str, str, StudioSession]:
+    async def health_check(self, session: StudioSession) -> Tuple[Any, ...]:
         """Refresh local diagnostics for the diagnostics tab."""
 
         session.health_snapshot = runtime_health_snapshot()
@@ -650,16 +739,25 @@ def build_ui() -> Any:
                     )
                     seed = gr.Number(value=session.config_values["seed"], precision=0, label="seed")
                     validate_config_btn = gr.Button("Validate Config", variant="primary")
+                    project_bundle = gr.File(file_count="single", label="Load saved project bundle", type="filepath")
+                    load_bundle_btn = gr.Button("Load Project Bundle")
 
                 with gr.Column(scale=1, elem_classes=["studio-card"]):
                     config_preview = gr.Textbox(label="Config preview", lines=16, interactive=False)
                     runtime_profile = gr.Textbox(label="RAM / latency estimate", lines=8, interactive=False)
                     config_feedback = gr.Textbox(label="Validation result", lines=6, interactive=False)
+                    bundle_status = gr.Textbox(label="Bundle load status", lines=4, interactive=False)
+                    bundle_table = gr.Dataframe(label="Loaded project summary", interactive=False)
 
             validate_config_btn.click(
                 fn=controller.validate_config,
                 inputs=[backbone, eco_mode, max_buffer_size, calibration_method, seed, state],
                 outputs=[config_preview, runtime_profile, config_feedback, state],
+            )
+            load_bundle_btn.click(
+                fn=controller.load_project_bundle,
+                inputs=[project_bundle, state],
+                outputs=[bundle_status, config_preview, bundle_table, config_feedback, state],
             )
 
         with gr.Tab("2. Dataset & Class Management"):
@@ -812,7 +910,7 @@ def build_ui() -> Any:
             with gr.Row():
                 with gr.Column(scale=1, elem_classes=["studio-card"]):
                     export_format = gr.Dropdown(
-                        choices=["native", "torchscript", "onnx stub"],
+                        choices=["native", "torchscript", "onnx"],
                         value="native",
                         label="Export format",
                     )
@@ -842,9 +940,12 @@ def build_ui() -> Any:
             with gr.Row():
                 with gr.Column(scale=1, elem_classes=["studio-card"]):
                     refresh_health_btn = gr.Button("Refresh Health Check", variant="primary")
+                    benchmark_btn = gr.Button("Run Benchmark Snapshot")
                     export_log_btn = gr.Button("Export Log")
                     health_snapshot = gr.Textbox(label="Health snapshot", lines=10, interactive=False)
                     diagnostic_summary = gr.Textbox(label="Diagnostic summary", lines=5, interactive=False)
+                    benchmark_summary = gr.Textbox(label="Benchmark smoke snapshot", lines=4, interactive=False)
+                    benchmark_table = gr.Dataframe(label="Benchmark metrics", interactive=False)
 
                 with gr.Column(scale=1, elem_classes=["studio-card"]):
                     log_console = gr.Textbox(label="Real-time console log", lines=18, interactive=False)
@@ -863,6 +964,11 @@ def build_ui() -> Any:
                 fn=controller.health_check,
                 inputs=[state],
                 outputs=[health_snapshot, diagnostic_summary, log_console, state],
+            )
+            benchmark_btn.click(
+                fn=controller.benchmark_snapshot,
+                inputs=[state],
+                outputs=[benchmark_summary, health_snapshot, benchmark_table, state],
             )
             export_log_btn.click(
                 fn=controller.export_logs,
