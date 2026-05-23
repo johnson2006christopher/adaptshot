@@ -1,6 +1,6 @@
 # Installation
 
-AdaptShot v0.1.0 is a Python package for CPU-first few-shot image classification.
+AdaptShot v0.1.1 is a Python package for CPU-first few-shot image classification.
 
 ## Requirements
 
@@ -9,7 +9,7 @@ AdaptShot v0.1.0 is a Python package for CPU-first few-shot image classification
 - Internet access for the first run if torchvision downloads pretrained backbone weights
 
 !!! note "Version"
-    These commands target AdaptShot `v0.1.0`.
+    These commands target AdaptShot `v0.1.1`.
 
 ## Install From PyPI
 
@@ -19,10 +19,10 @@ pip install adaptshot
 
 ## Install From The GitHub Release Wheel
 
-Use this when you want to pin the exact v0.1.0 artifact.
+Use this when you want to pin the exact v0.1.1 artifact.
 
 ```bash
-pip install https://github.com/johnson2006christopher/adaptshot/releases/download/v0.1.0/adaptshot-0.1.0-py3-none-any.whl
+pip install https://github.com/johnson2006christopher/adaptshot/releases/download/v0.1.1/adaptshot-0.1.1-py3-none-any.whl
 ```
 
 ## Optional Extras
@@ -33,6 +33,9 @@ pip install "adaptshot[faiss]"
 
 # Gradio UI dependencies
 pip install "adaptshot[ui]"
+
+# Offline Studio GUI
+pip install "adaptshot[gui]"
 
 # Development tools
 pip install "adaptshot[dev]"
@@ -61,16 +64,16 @@ PY
 Expected output:
 
 ```text
-0.1.0
+0.1.1
 FewShotLearner
 ```
 
-!!! warning "First Prediction May Download Weights"
-    `resnet18` and `mobilenet_v3_small` use torchvision pretrained weights. If they are not already cached, the first call that extracts an embedding may download model weights.
+!!! note "Offline By Default"
+    The current release builds backbones without pretrained weight downloads, so the first embedding extraction stays offline.
 
 ## Verification Checklist
 
 - [ ] `python --version` shows Python 3.9 or newer.
 - [ ] `pip install adaptshot` completes without dependency errors.
-- [ ] The verification command prints `0.1.0`.
+- [ ] The verification command prints `0.1.1`.
 - [ ] You can import `FewShotLearner`.
