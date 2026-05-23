@@ -28,6 +28,7 @@ from .utils import (
     choose_prediction_row,
     config_to_json,
     create_learner,
+    collect_image_sources,
     estimate_buffer_memory_mb,
     estimate_runtime_profile,
     export_native_bundle,
@@ -42,6 +43,7 @@ from .utils import (
     runtime_health_snapshot,
     save_log_file,
     summarize_labels,
+    summarize_folder_imports,
     validate_file_bundle,
 )
 
@@ -229,6 +231,8 @@ class StudioController:
 
     async def load_support_set(
         self,
+        support_folder_text: str,
+        support_folder_recursive: bool,
         support_files: Optional[Sequence[Any]],
         label_strategy: str,
         manual_labels: str,
@@ -241,9 +245,13 @@ class StudioController:
     ) -> Tuple[str, str, Any, Any, str, StudioSession]:
         """Load support images into a fresh learner and summarize the class set."""
 
-        paths = _coerce_file_paths(support_files)
+        paths = collect_image_sources(
+            _coerce_file_paths(support_files),
+            folder_text=support_folder_text,
+            recursive=support_folder_recursive,
+        )
         if not paths:
-            message = "❌ No support images were uploaded."
+            message = "❌ No support images were provided. Upload files or enter a local folder path."
             session.last_error = message
             append_log(session, message, level="error")
             return message, "", [], [], "", session
@@ -278,12 +286,19 @@ class StudioController:
             distribution = summarize_labels(labels)
             gallery = gallery_items(normalized_paths, labels)
             support_summary = build_support_summary(session.support_rows)
+            folder_summary = summarize_folder_imports(normalized_paths)
             return (
-                f"✅ Indexed {len(normalized_paths)} support images.",
+                f"✅ Indexed {len(normalized_paths)} support images from {len(folder_summary)} folder(s).",
                 support_summary,
                 _make_dataframe(session.support_rows),
                 gallery,
-                _format_json({"class_distribution": distribution, "embedding_count": len(getattr(learner, '_sim_embeddings', []))}),
+                _format_json(
+                    {
+                        "class_distribution": distribution,
+                        "folder_distribution": folder_summary,
+                        "embedding_count": len(getattr(learner, "_sim_embeddings", [])),
+                    }
+                ),
                 session,
             )
         except (AdaptShotError, ValueError, ConfigValidationError, InvalidImageError) as exc:
@@ -296,6 +311,8 @@ class StudioController:
 
     async def run_inference(
         self,
+        query_folder_text: str,
+        query_folder_recursive: bool,
         query_image: Optional[Any],
         query_files: Optional[Sequence[Any]],
         batch_mode: bool,
@@ -310,10 +327,14 @@ class StudioController:
             append_log(session, message, level="error")
             return message, [], [], [], "", "", session
 
-        paths = _coerce_file_paths(query_files)
+        paths = collect_image_sources(
+            _coerce_file_paths(query_files),
+            folder_text=query_folder_text,
+            recursive=query_folder_recursive,
+        )
         if batch_mode:
             if not paths:
-                message = "❌ Batch mode is on, but no query files were uploaded."
+                message = "❌ Batch mode is on, but no query images were provided. Upload files or enter a local folder path."
                 session.last_error = message
                 append_log(session, message, level="error")
                 return message, [], [], [], "", "", session
@@ -321,7 +342,7 @@ class StudioController:
             if query_image is not None:
                 paths = _coerce_file_paths([query_image])
             if not paths:
-                message = "❌ Upload a query image first."
+                message = "❌ Upload a query image or provide a folder path first."
                 session.last_error = message
                 append_log(session, message, level="error")
                 return message, [], [], [], "", "", session
@@ -644,6 +665,15 @@ def build_ui() -> Any:
         with gr.Tab("2. Dataset & Class Management"):
             with gr.Row():
                 with gr.Column(scale=1, elem_classes=["studio-card"]):
+                    support_folder_text = gr.Textbox(
+                        label="Support folder path(s)",
+                        placeholder="Example: /home/user/dataset/class_a, /home/user/dataset/class_b",
+                        lines=2,
+                    )
+                    support_folder_recursive = gr.Checkbox(
+                        value=True,
+                        label="Scan support folders recursively",
+                    )
                     support_files = gr.File(file_count="multiple", label="Support images", type="filepath")
                     label_strategy = gr.Dropdown(
                         choices=["folder", "stem", "manual"],
@@ -667,13 +697,22 @@ def build_ui() -> Any:
 
             load_support_btn.click(
                 fn=controller.load_support_set,
-                inputs=[support_files, label_strategy, manual_labels, backbone, eco_mode, max_buffer_size, calibration_method, seed, state],
+                inputs=[support_folder_text, support_folder_recursive, support_files, label_strategy, manual_labels, backbone, eco_mode, max_buffer_size, calibration_method, seed, state],
                 outputs=[support_status, support_summary, support_table, support_gallery, embedding_summary, state],
             )
 
         with gr.Tab("3. Train & Predict"):
             with gr.Row():
                 with gr.Column(scale=1, elem_classes=["studio-card"]):
+                    query_folder_text = gr.Textbox(
+                        label="Query folder path(s)",
+                        placeholder="Example: /home/user/test_images or /home/user/test_folder_a, /home/user/test_folder_b",
+                        lines=2,
+                    )
+                    query_folder_recursive = gr.Checkbox(
+                        value=True,
+                        label="Scan query folders recursively",
+                    )
                     query_image = gr.Image(type="filepath", label="Query image")
                     query_files = gr.File(file_count="multiple", label="Batch query images", type="filepath")
                     batch_mode = gr.Checkbox(
@@ -693,7 +732,7 @@ def build_ui() -> Any:
 
             run_inference_btn.click(
                 fn=controller.run_inference,
-                inputs=[query_image, query_files, batch_mode, state],
+                inputs=[query_folder_text, query_folder_recursive, query_image, query_files, batch_mode, state],
                 outputs=[inference_status, prediction_table, prediction_gallery, prediction_summary, latency_summary, prediction_selector, state],
             )
 
@@ -845,14 +884,30 @@ def launch(server_name: str = "127.0.0.1", server_port: int = 7860, inbrowser: b
 
     gr = _require_gradio()
     demo = build_ui()
-    demo.launch(
-        server_name=server_name,
-        server_port=server_port,
-        inbrowser=inbrowser,
-        share=False,
-        css=STUDIO_CSS,
-        theme=gr.themes.Base(),
-    )
+    ports_to_try = [server_port] + [port for port in range(server_port + 1, server_port + 6)]
+    launch_error: Optional[Exception] = None
+
+    for port in ports_to_try:
+        try:
+            demo.launch(
+                server_name=server_name,
+                server_port=port,
+                inbrowser=inbrowser,
+                share=False,
+                css=STUDIO_CSS,
+                theme=gr.themes.Base(),
+            )
+            return
+        except OSError as exc:
+            error_text = str(exc)
+            if "Cannot find empty port" not in error_text and "Address already in use" not in error_text:
+                raise
+            launch_error = exc
+
+    raise RuntimeError(
+        f"Unable to launch AdaptShot Studio on ports {ports_to_try[0]}-{ports_to_try[-1]}. "
+        "Please free the port or pass a different server_port."
+    ) from launch_error
 
 
 if __name__ == "__main__":
