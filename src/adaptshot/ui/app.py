@@ -11,11 +11,11 @@ import os
 import tempfile
 from typing import List, Optional, Tuple, Union, cast
 
-import gradio as gr
+import gradio as gr  # type: ignore[import-not-found]
 from PIL import Image
 
-from src.adaptshot.config.settings import AdaptShotConfig
-from src.adaptshot.core.learner import FewShotLearner
+from ..config.settings import AdaptShotConfig
+from ..core.learner import FewShotLearner
 
 
 class AdaptShotUI:
