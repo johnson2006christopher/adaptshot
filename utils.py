@@ -64,7 +64,10 @@ def build_config(values: Mapping[str, Any]) -> AdaptShotConfig:
     """
 
     backbone = cast(Literal["resnet18", "mobilenet_v3_small"], str(values.get("backbone", "resnet18")))
-    calibration_method = cast(Literal["temperature", "conformal", "none"], str(values.get("calibration_method", "temperature")))
+    calibration_method = cast(
+        Literal["temperature", "scaling_binning", "conformal", "none"],
+        str(values.get("calibration_method", "temperature")),
+    )
 
     return AdaptShotConfig(
         backbone=backbone,
