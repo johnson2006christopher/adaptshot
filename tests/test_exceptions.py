@@ -88,7 +88,7 @@ def test_predict_falls_back_when_calibration_not_ready(
     )
     monkeypatch.setattr(
         "src.adaptshot.core.learner.find_nearest_neighbor",
-        lambda query, support_embeddings, support_labels, use_faiss=False: (
+        lambda query, support_embeddings, support_labels, use_faiss=False, metric="cosine": (
             support_labels[0],
             0.0,
             0,
@@ -125,7 +125,7 @@ def test_correct_raises_on_bad_confidence_weight(rgb_image_path: str, monkeypatc
     )
     monkeypatch.setattr(
         "src.adaptshot.core.learner.find_nearest_neighbor",
-        lambda query, support_embeddings, support_labels, use_faiss=False: (
+        lambda query, support_embeddings, support_labels, use_faiss=False, metric="cosine": (
             support_labels[0],
             0.8,
             0,
@@ -150,7 +150,7 @@ def test_buffer_capacity_error_is_caught_in_correct(
     )
     monkeypatch.setattr(
         "src.adaptshot.core.learner.find_nearest_neighbor",
-        lambda query, support_embeddings, support_labels, use_faiss=False: (
+        lambda query, support_embeddings, support_labels, use_faiss=False, metric="cosine": (
             support_labels[0],
             0.8,
             0,
