@@ -112,7 +112,7 @@ def _require_gradio() -> Any:
     """Import Gradio lazily and raise a friendly error if it is missing."""
 
     try:
-        import gradio as gr
+        import gradio as gr  # type: ignore[import-not-found]
     except ImportError as exc:  # pragma: no cover - exercised only without gui deps
         raise RuntimeError(
             "AdaptShot Studio requires the optional gui extra. Install it with `pip install -e \".[gui]\"`."
@@ -515,7 +515,7 @@ class StudioController:
         for class_idx in list(learner.act.get_all_thresholds().keys()):
             learner.act.reset_class(class_idx, base_threshold=float(base_threshold))
 
-        if learner.calibrator.method == "temperature":
+        if learner.calibrator.method in {"temperature", "scaling_binning"}:
             min_samples = max(10, learner.calibrator.window_size // 2)
             if len(learner.calibrator._window_confidences) < min_samples:
                 message = (
@@ -525,10 +525,18 @@ class StudioController:
                 append_log(session, message, level="warning")
             else:
                 await _to_thread(learner.calibrator._refit_temperature)
-                message = "✅ Recalibration completed with temperature refit."
+                if learner.calibrator.method == "scaling_binning":
+                    await _to_thread(learner.calibrator._fit_scaling_binning)
+                    message = "✅ Recalibration completed with scaling-binning refit."
+                else:
+                    message = "✅ Recalibration completed with temperature refit."
                 append_log(session, message)
+        elif learner.calibrator.method == "conformal":
+            await _to_thread(learner.calibrator._refit_conformal_margin)
+            message = "✅ Recalibration completed with conformal margin update."
+            append_log(session, message)
         else:
-            message = "⚠️ Calibration method is conformal, so no temperature refit was applied."
+            message = "ℹ️ Calibration method is set to none, so no post-hoc refit was applied."
             append_log(session, message, level="warning")
 
         thresholds = learner.act.get_all_thresholds()
@@ -733,7 +741,7 @@ def build_ui() -> Any:
                         label="max_buffer_size",
                     )
                     calibration_method = gr.Dropdown(
-                        choices=["temperature", "conformal"],
+                        choices=["temperature", "scaling_binning", "conformal", "none"],
                         value=session.config_values["calibration_method"],
                         label="Calibration method",
                     )
