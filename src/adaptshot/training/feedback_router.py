@@ -77,13 +77,16 @@ class FeedbackRouter:
 
         # Update online calibration state
         calibration_updated = False
+        calibration_summary: Dict[str, float] = {}
         if self.calibrator is not None:
             self.calibrator.update(
                 raw_confidence=correction.raw_confidence,
-                predicted_label=int(correction.predicted_label),
-                true_label=int(correction.corrected_label),
+                predicted_label=correction.predicted_label,
+                true_label=correction.corrected_label,
             )
             calibration_updated = True
+            if hasattr(self.calibrator, "calibration_summary"):
+                calibration_summary = self.calibrator.calibration_summary()
 
         # Trigger CA-EWC fine-tuning if threshold is met
         fine_tuned = False
@@ -97,6 +100,7 @@ class FeedbackRouter:
             "buffer_size": len(self.buffer),
             "pending_corrections": len(self.pending_corrections),
             "calibration_updated": calibration_updated,
+            "calibration_summary": calibration_summary,
             "fine_tuned": fine_tuned,
             "total_corrections": self.total_corrections,
         }
