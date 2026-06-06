@@ -19,6 +19,7 @@ class CalibrationEngine:
         method: str = "temperature",
         evaluation_bins: Optional[int] = None,
         scaling_binning_bins: Optional[int] = None,
+        min_fit_samples: Optional[int] = None,
     ) -> None:
         self.n_bins = max(2, int(n_bins))
         self.window_size = max(1, int(window_size))
@@ -34,6 +35,14 @@ class CalibrationEngine:
         self._conformal_margin = 0.1
         self._scaling_binning_edges: Optional[np.ndarray] = None
         self._scaling_binning_values: Optional[np.ndarray] = None
+        # Minimum number of samples required before attempting temperature
+        # refit or conformal margin refit. In few-shot / human-in-the-loop
+        # settings the default is intentionally small to allow early adaptivity.
+        if min_fit_samples is None:
+            # default: at least 5 samples or a quarter of the window size
+            self.min_fit_samples = max(5, max(1, int(self.window_size // 4)))
+        else:
+            self.min_fit_samples = int(min_fit_samples)
 
     def _to_unit_confidence(self, raw_confidence: float) -> float:
         value = float(raw_confidence)
@@ -62,8 +71,8 @@ class CalibrationEngine:
             self._window_confidences.pop(0)
             self._window_correct.pop(0)
 
-        min_fit_samples = max(10, self.window_size // 2)
-        if len(self._window_confidences) >= min_fit_samples:
+        # Use a configurable minimum sample requirement for refitting.
+        if len(self._window_confidences) >= self.min_fit_samples:
             if self.method in {"temperature", "scaling_binning"}:
                 self._refit_temperature()
             if self.method == "scaling_binning":
@@ -115,7 +124,7 @@ class CalibrationEngine:
     def _refit_temperature(self) -> None:
         """Refit temperature using grid search on the sliding window."""
 
-        if len(self._window_confidences) < 10:
+        if len(self._window_confidences) < self.min_fit_samples:
             return
 
         confs = np.asarray(self._window_confidences, dtype=np.float64)
@@ -143,7 +152,7 @@ class CalibrationEngine:
     def _refit_conformal_margin(self) -> None:
         """Update a conservative conformal-style correction margin."""
 
-        if len(self._window_confidences) < 10:
+        if len(self._window_confidences) < self.min_fit_samples:
             self._conformal_margin = 0.1
             return
 
