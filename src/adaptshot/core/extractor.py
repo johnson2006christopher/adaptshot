@@ -8,9 +8,10 @@ and deterministic: the fast path only activates when a cached support embedding
 is available and the preview similarity already exceeds the configured bound.
 """
 
+from dataclasses import dataclass, field
 from functools import lru_cache
 from importlib import import_module
-from typing import Any, Optional, Union, cast
+from typing import Any, Dict, Optional, Union, cast
 
 import numpy as np
 import torch
@@ -25,14 +26,51 @@ ImageInput = Union[str, np.ndarray, Image.Image, torch.Tensor]
 # Registry for backbone factories (extensible without modifying core logic)
 models = import_module("torchvision.models")
 transforms = import_module("torchvision.transforms")
-BackboneRegistry = {
+BackboneRegistry: Dict[str, Any] = {
     "resnet18": lambda: models.resnet18(weights=None),
     "mobilenet_v3_small": lambda: models.mobilenet_v3_small(weights=None),
 }
 
-_SUPPORT_EMBEDDING_CACHE: Optional[np.ndarray] = None
-_SUPPORT_PREVIEW_CACHE: Optional[np.ndarray] = None
+# Output dimensionality for each backbone (used for dynamic dimension inference)
+BACKBONE_OUTPUT_DIM: Dict[str, int] = {
+    "resnet18": 512,
+    "mobilenet_v3_small": 576,
+}
+
 _RESAMPLE_BILINEAR = getattr(getattr(Image, "Resampling", Image), "BILINEAR")
+
+
+@dataclass
+class EmbeddingCache:
+    """Instance-scoped cache for eco-mode early-exit support embeddings.
+
+    Each FewShotLearner should own its own EmbeddingCache to avoid
+    cross-instance interference that occurred with module-level globals.
+    """
+
+    embedding: Optional[np.ndarray] = field(default=None, repr=False)
+    preview: Optional[np.ndarray] = field(default=None, repr=False)
+
+    def set(
+        self,
+        embedding: Optional[np.ndarray],
+        preview_signature: Optional[np.ndarray] = None,
+    ) -> None:
+        """Register a support embedding and its preview for eco-mode checks."""
+        if embedding is None:
+            self.embedding = None
+            self.preview = None
+            return
+        self.embedding = np.asarray(embedding, dtype=np.float32).copy()
+        if preview_signature is not None:
+            self.preview = np.asarray(preview_signature, dtype=np.float32).copy()
+        else:
+            self.preview = None
+
+    def clear(self) -> None:
+        """Reset both cached values."""
+        self.embedding = None
+        self.preview = None
 
 
 @lru_cache(maxsize=4)
@@ -56,35 +94,36 @@ def compute_preview_signature(image: ImageInput, size: int = 16) -> np.ndarray:
     return cast(np.ndarray, preview.reshape(-1))
 
 
+# Module-level default cache for backward compatibility (benchmarks, scripts).
+# FewShotLearner instances should create and pass their own EmbeddingCache.
+_DEFAULT_CACHE = EmbeddingCache()
+
+
 def set_support_embedding_cache(
     embedding: Optional[np.ndarray],
     preview_signature: Optional[np.ndarray] = None,
 ) -> None:
-    """Register the top-1 support embedding and preview for eco-mode early exit."""
-    global _SUPPORT_EMBEDDING_CACHE, _SUPPORT_PREVIEW_CACHE
-    if embedding is None:
-        _SUPPORT_EMBEDDING_CACHE = None
-        _SUPPORT_PREVIEW_CACHE = None
-        return
-    _SUPPORT_EMBEDDING_CACHE = np.asarray(embedding, dtype=np.float32).copy()
-    if preview_signature is not None:
-        _SUPPORT_PREVIEW_CACHE = np.asarray(preview_signature, dtype=np.float32).copy()
-    else:
-        _SUPPORT_PREVIEW_CACHE = None
+    """Register the top-1 support embedding and preview for eco-mode early exit.
+
+    This function updates a module-level default cache for backward compatibility.
+    Production code should prefer passing an EmbeddingCache instance directly
+    to extract_embedding() via the `cache` parameter.
+    """
+    _DEFAULT_CACHE.set(embedding, preview_signature)
 
 
 def get_support_embedding_cache() -> Optional[np.ndarray]:
     """Return a copy of the cached support embedding used by eco mode."""
-    if _SUPPORT_EMBEDDING_CACHE is None:
+    if _DEFAULT_CACHE.embedding is None:
         return None
-    return cast(np.ndarray, _SUPPORT_EMBEDDING_CACHE.copy())
+    return cast(np.ndarray, _DEFAULT_CACHE.embedding.copy())
 
 
 def get_support_preview_cache() -> Optional[np.ndarray]:
     """Return a copy of the cached support preview signature used by eco mode."""
-    if _SUPPORT_PREVIEW_CACHE is None:
+    if _DEFAULT_CACHE.preview is None:
         return None
-    return cast(np.ndarray, _SUPPORT_PREVIEW_CACHE.copy())
+    return cast(np.ndarray, _DEFAULT_CACHE.preview.copy())
 
 
 def _normalize_to_pil(image: ImageInput) -> Any:
@@ -113,16 +152,27 @@ def extract_embedding(
     image: ImageInput,
     config: AdaptShotConfig,
     return_numpy: bool = True,
+    cache: Optional[EmbeddingCache] = None,
 ) -> Union[torch.Tensor, np.ndarray]:
-    """Extract feature embedding from input image using a frozen backbone."""
+    """Extract feature embedding from input image using a frozen backbone.
+
+    Args:
+        image: Input image (path, PIL, NumPy, or Tensor).
+        config: AdaptShotConfig with backbone and device settings.
+        return_numpy: If True, return np.ndarray; otherwise return torch.Tensor.
+        cache: Optional EmbeddingCache for eco-mode early exit. If None,
+            falls back to the module-level default cache for backward compat.
+    """
     # Load backbone from registry
     if config.backbone not in BackboneRegistry:
         raise ValueError(f"Unknown backbone: {config.backbone}. Available: {list(BackboneRegistry.keys())}")
 
     pil_image = _normalize_to_pil(image)
 
-    support_embedding = _SUPPORT_EMBEDDING_CACHE
-    support_preview = _SUPPORT_PREVIEW_CACHE
+    # Use the provided cache or fall back to the module-level default.
+    active_cache = cache if cache is not None else _DEFAULT_CACHE
+    support_embedding = active_cache.embedding
+    support_preview = active_cache.preview
     if config.eco_mode and support_embedding is not None and support_preview is not None:
         query_preview = compute_preview_signature(pil_image)
         preview_norm = np.linalg.norm(query_preview) + 1e-8
