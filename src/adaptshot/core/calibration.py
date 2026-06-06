@@ -51,7 +51,8 @@ class CalibrationEngine:
         return float(np.clip((value + 1.0) / 2.0, 0.0, 1.0))
 
     def _clip_logit_input(self, confidence: np.ndarray) -> np.ndarray:
-        return np.clip(confidence, 1e-6, 1.0 - 1e-6)
+        result: np.ndarray = np.clip(confidence, 1e-6, 1.0 - 1e-6)
+        return result
 
     def update(
         self,
