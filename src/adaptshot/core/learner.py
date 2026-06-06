@@ -37,7 +37,12 @@ from ..utils.exceptions import (
 from ..utils.migrations import migrate_v0_1_0_to_v0_1_1
 from .act import ACTEngine
 from .calibration import CalibrationEngine
-from .extractor import compute_preview_signature, extract_embedding, set_support_embedding_cache
+from .extractor import (
+    BACKBONE_OUTPUT_DIM,
+    EmbeddingCache,
+    compute_preview_signature,
+    extract_embedding,
+)
 from .similarity import (
     compute_class_prototypes,
     euclidean_distance_numpy,
@@ -185,9 +190,7 @@ class FewShotLearner:
         self._rebuild_label_index()
         self._rebuild_prototypes()
         self._update_ood_threshold()
-        self._rebuild_prototypes()
         self._init_or_rebuild_model_head(embedding_dim=self._embedding_dim())
-        self._update_ood_threshold()
         if self._sim_embeddings:
             set_support_embedding_cache(
                 self._sim_embeddings[0],
