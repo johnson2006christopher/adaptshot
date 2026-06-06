@@ -8,7 +8,7 @@ import numpy as np
 
 # Attempt to import FAISS-CPU; gracefully degrade to pure NumPy if unavailable.
 try:
-    import faiss  # type: ignore[import-not-found,import-untyped]
+    import faiss  # type: ignore[import-not-found]
 
     FAISS_AVAILABLE = True
 except ImportError:  # pragma: no cover - optional dependency
@@ -25,7 +25,8 @@ def _ensure_2d(query: np.ndarray) -> np.ndarray:
 
 def _l2_normalize_rows(values: np.ndarray) -> np.ndarray:
     norms = np.linalg.norm(values, axis=1, keepdims=True) + 1e-8
-    return values / norms
+    result: np.ndarray = values / norms
+    return result
 
 
 def cosine_similarity_numpy(query: np.ndarray, support: np.ndarray) -> np.ndarray:
