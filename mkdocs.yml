@@ -7,6 +7,7 @@ docs_dir: docs
 site_dir: site
 not_in_nav: |
   AUDIT_REPORT.md
+  release-checklist-v0.1.1.md
 
 theme:
   name: material
@@ -91,6 +92,12 @@ nav:
     - Core Engine: api/core.md
     - Training & Continual Learning: api/training.md
     - Configuration & Utils: api/config.md
+  - Guides:
+    - Real-World Use Cases: guides/real-world-use-cases.md
+    - Human-in-the-Loop Deep Dive: guides/human-in-the-loop.md
+    - Error Handling & Troubleshooting: guides/troubleshooting.md
+  - Reference:
+    - Config Reference (All 22 Fields): reference/config-reference.md
   - v0.1.1 Docs Roadmap: v0.1.1-docs-roadmap.md
   - Contributing: contributing.md
   - Code of Conduct: code_of_conduct.md
