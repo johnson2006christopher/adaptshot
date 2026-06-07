@@ -1,6 +1,6 @@
 # Tutorial-Style Guides
 
-These tutorials are designed to be copied, pasted, and run. They avoid unverified performance claims and only use APIs that exist in the unreleased AdaptShot v0.1.1 branch.
+These tutorials are designed to be copied, pasted, and run. They use only APIs that exist in AdaptShot v0.1.1.
 
 AdaptShot is still native-first here: use the Python API as the source of truth, then layer optional Studio workflows on top only when you need the browser UI.
 
@@ -233,8 +233,7 @@ cat results/smoke_test.json
 
 AdaptShot v0.1.0 does not include a PlantVillage downloader or folder loader. You can still use PlantVillage images by passing file paths and integer labels directly.
 
-> ⚠️ Planned for the unreleased v0.1.1 branch
-> Add a documented helper or benchmark loader for PlantVillage-style folder datasets.
+> AdaptShot v0.1.1 supports string labels throughout. Use string labels directly, or use a label map for display names.
 
 ### Step 1: Install
 
