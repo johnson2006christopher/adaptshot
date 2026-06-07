@@ -9,6 +9,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/adaptshot.svg)](https://pypi.org/project/adaptshot/)
 [![GitHub Release](https://img.shields.io/github/v/release/johnson2006christopher/adaptshot?label=GitHub%20Release)](https://github.com/johnson2006christopher/adaptshot/releases)
+[![PyPI Downloads](https://static.pepy.tech/personalized-badge/adaptshot?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/adaptshot)
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Docs](https://img.shields.io/badge/docs-MkDocs-blue)](https://johnson2006christopher.github.io/adaptshot/)
