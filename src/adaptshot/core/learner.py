@@ -122,6 +122,7 @@ class FewShotLearner:
         self._label_to_idx: Dict[Union[str, int], int] = {}
         self._idx_to_label: Dict[int, Union[str, int]] = {}
         self._is_initialized = False
+        self._embedding_cache = EmbeddingCache()
 
     def __repr__(self) -> str:
         """Return concise internal state for debugging and observability."""
@@ -192,7 +193,7 @@ class FewShotLearner:
         self._update_ood_threshold()
         self._init_or_rebuild_model_head(embedding_dim=self._embedding_dim())
         if self._sim_embeddings:
-            set_support_embedding_cache(
+            self._embedding_cache.set(
                 self._sim_embeddings[0],
                 self._sim_preview_signatures[0],
             )
@@ -273,7 +274,7 @@ class FewShotLearner:
 
         self._sim_access_times[neighbor_idx] = time.time()
         self._sim_uncertainties[neighbor_idx] = float(np.clip(1.0 - calibrated_conf, 0.0, 1.0))
-        set_support_embedding_cache(
+        self._embedding_cache.set(
             self._sim_embeddings[neighbor_idx],
             self._sim_preview_signatures[neighbor_idx],
         )
@@ -727,7 +728,7 @@ class FewShotLearner:
 
     def _extract_embedding_checked(self, image: Image.Image, source: str) -> np.ndarray:
         try:
-            embedding = extract_embedding(image, self.config)
+            embedding = extract_embedding(image, self.config, cache=self._embedding_cache)
         except (ValueError, RuntimeError, OSError) as exc:
             raise InvalidImageError(
                 f"Failed to extract embedding for '{source}'. Ensure the image is valid RGB input."
@@ -759,10 +760,15 @@ class FewShotLearner:
 
         return embedding.astype(np.float32, copy=False)
 
-    def _embedding_dim(self, default_dim: int = 512) -> int:
+    def _embedding_dim(self) -> int:
+        """Return the expected embedding dimensionality for the current backbone.
+
+        If the support set is already populated, uses the actual embedding shape.
+        Otherwise falls back to the known dimension for the configured backbone.
+        """
         if self._sim_embeddings:
             return int(self._sim_embeddings[0].shape[0])
-        return default_dim
+        return BACKBONE_OUTPUT_DIM.get(self.config.backbone, 512)
 
     def _ensure_initialized(self) -> None:
         if not self._is_initialized:
@@ -1071,7 +1077,7 @@ class FewShotLearner:
             learner._update_ood_threshold()
         if learner._sim_embeddings:
             learner._init_or_rebuild_model_head(embedding_dim=learner._embedding_dim())
-            set_support_embedding_cache(
+            learner._embedding_cache.set(
                 learner._sim_embeddings[0],
                 learner._sim_preview_signatures[0],
             )
@@ -1142,7 +1148,7 @@ class FewShotLearner:
         self._sim_preview_signatures.append(preview_signature.astype(np.float32, copy=False))
         self._ensure_label_index(label)
         if self._sim_embeddings:
-            set_support_embedding_cache(
+            self._embedding_cache.set(
                 self._sim_embeddings[0],
                 self._sim_preview_signatures[0],
             )
