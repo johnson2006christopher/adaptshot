@@ -11,8 +11,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ONNX export support for broader edge deployment (Android, WebAssembly)
 - Improved UP-UGF redundancy computation (approximate nearest-neighbor fallback for larger buffers)
 - Conformal prediction integration beyond current stub implementation
-- Swahili and French UI localization for Gradio dashboard
+- French UI localization for Gradio dashboard (Swahili ships in v0.1.2)
 - Automated GitHub Actions workflow for CI testing, linting, and docs deployment
+
+---
+
+## [0.1.2] - Unreleased
+
+### Planned
+- **Swahili UI Localization**: Gradio dashboard interface fully translated to Swahili, serving Tanzanian and East African users in their primary language
+- **Gradio UI Enhancements**: Improved widget layout, accessibility labels, and localization infrastructure to support future language additions
+- **Localization Framework**: i18n string extraction and translation pipeline for the Gradio dashboard
+
+> **Note**: French localization is **explicitly excluded** from v0.1.2. The focus is Swahili-first — serving East African communities before expanding to Francophone regions. French remains on the v0.2.0 roadmap.
 
 ---
 

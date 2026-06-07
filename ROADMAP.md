@@ -19,6 +19,18 @@ See [CHANGELOG.md](CHANGELOG.md#0111---2026-06-06) for the full release notes. H
 
 ---
 
+## v0.1.2 (Target: July 2026) -- Localization & Accessibility
+
+### UI Localization
+
+- **Swahili Gradio Dashboard**: Full Swahili translation of all Gradio UI labels, buttons, help text, and error messages
+- **Localization Framework**: i18n string extraction pipeline and `.po`/`.mo` translation workflow for Gradio
+- **Accessibility Pass**: ARIA labels, keyboard navigation, and screen-reader compatibility for the Gradio dashboard
+
+> **Excluded**: French localization is deferred to v0.2.0+. v0.1.2 is Swahili-first to serve East African users.
+
+---
+
 ## v0.2.0 (Target: Q3 2026) -- Research Platform
 
 ### Core Features
@@ -36,7 +48,6 @@ See [CHANGELOG.md](CHANGELOG.md#0111---2026-06-06) for the full release notes. H
 ### Community & Infrastructure
 
 - **CI/CD Pipeline**: Automated GitHub Actions for `ruff`, `mypy`, `pytest`, and docs deployment on every push
-- **Swahili Documentation**: First-pass Swahili translation of Getting Started and Beginner 101 pages
 - **Community Benchmarks**: Energy challenge inviting community submissions for lowest Joules/inference
 
 ---
@@ -53,7 +64,7 @@ See [CHANGELOG.md](CHANGELOG.md#0111---2026-06-06) for the full release notes. H
 
 - **Plugin Architecture**: `EmbeddingBackend` protocol for alternative runtimes (ONNX Runtime, OpenVINO, Core ML)
 - **Federated Buffer Sharing**: Privacy-preserving multi-device buffer aggregation for community deployments
-- **Multilingual UI**: Swahili, French, and low-literacy icon-driven Gradio/Studio interfaces
+- **Multilingual UI**: French and low-literacy icon-driven Gradio/Studio interfaces (Swahili ships in v0.1.2)
 
 ### Governance
 

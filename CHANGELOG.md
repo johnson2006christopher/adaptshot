@@ -12,10 +12,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ARM profiling guide with Raspberry Pi benchmark results
 - Improved UP-UGF redundancy computation (approximate nearest-neighbor fallback for larger buffers)
 - Conformal prediction implementation beyond current stub
-- Swahili documentation localization
+- French documentation and UI localization (planned post-v0.1.2; Swahili ships in v0.1.2)
 - Automated GitHub Actions workflow for CI testing, linting, and docs deployment
 - Federated buffer sharing for multi-device deployments
 - Plugin architecture for experimental backends
+
+---
+
+## [0.1.2] - Unreleased
+
+### Planned
+- **Swahili UI Localization**: Gradio dashboard interface fully translated to Swahili, serving Tanzanian and East African users in their primary language
+- **Gradio UI Enhancements**: Improved widget layout, accessibility labels, and localization infrastructure to support future language additions
+- **Localization Framework**: i18n string extraction and translation pipeline for the Gradio dashboard
+
+> **Note**: French localization is **explicitly excluded** from v0.1.2. The focus is Swahili-first — serving East African communities before expanding to Francophone regions. French remains on the v0.2.0 roadmap.
 
 ---
 
