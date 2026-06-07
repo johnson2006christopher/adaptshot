@@ -1,8 +1,4 @@
-# 📄 File 10: `docs/api/config.md`
-
-### 📝 Content
-```markdown
-# Configuration & Utilities API (v0.1.0)
+# Configuration & Utilities API (v0.1.1)
 
 This document covers AdaptShot's immutable configuration schema, deterministic execution utilities, and I/O helpers. These components provide the foundational guarantees for reproducibility, safe file handling, and cross-framework data conversion.
 
@@ -152,7 +148,7 @@ arr = tensor_to_numpy(t)
 
 ---
 
-## ⚠️ v0.1.0 Constraints & Notes
+## Constraints & Notes
 
 | Component | Limitation | Workaround / Note |
 |-----------|------------|-------------------|
@@ -161,7 +157,7 @@ arr = tensor_to_numpy(t)
 | `validate_path` | Does not handle cloud storage paths (S3, GCS) | Use local filesystem or mount cloud storage to local directory |
 | `tensor_to_numpy` | Does not preserve gradient computation graph | Use only for inference/post-processing, not during training |
 
-## ▶️ Next Steps
-- [Contributing Guidelines](../contributing.md) → Development workflow and PR standards
-- [Changelog](../changelog.md) → Version history and known limitations
-- [GitHub Repository](https://github.com/johnson2006christopher/adaptshot) → Issue tracker, discussions, and roadmap
+## Next Steps
+- [Contributing Guidelines](../contributing.md) -> Development workflow and PR standards
+- [Changelog](../changelog.md) -> Version history and known limitations
+- [GitHub Repository](https://github.com/johnson2006christopher/adaptshot) -> Issue tracker, discussions, and roadmap
