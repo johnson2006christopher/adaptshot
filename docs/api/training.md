@@ -1,8 +1,4 @@
-# 📄 File 9: `docs/api/training.md`
-
-### 📝 Content
-```markdown
-# Training & Continual Learning API (v0.1.0)
+# Training & Continual Learning API (v0.1.1)
 
 This document covers AdaptShot's human-in-the-loop routing, bounded replay buffer management, and correction-aware fine-tuning components. These modules operate behind the scenes in `FewShotLearner` but are exposed for advanced customization, research ablation, or integration into external pipelines.
 
@@ -154,7 +150,7 @@ Enforces capacity by returning the top-K highest-scoring examples. All input arr
 
 ---
 
-## ⚠️ v0.1.0 Constraints & Notes
+## Constraints & Notes
 
 | Constraint | Explanation |
 |------------|-------------|
@@ -164,7 +160,7 @@ Enforces capacity by returning the top-K highest-scoring examples. All input arr
 | **Pruning Fallback** | During initial buffer population (< capacity), no pruning occurs. FIFO eviction applies only when capacity is strictly exceeded. |
 | **Confidence Weight Calibration** | `confidence_weight` is user-provided. The library does not currently validate human certainty against historical accuracy. |
 
-## ▶️ Next Steps
-- [Configuration & Utils API](config.md) → `AdaptShotConfig`, determinism, I/O helpers
-- [Contributing](../contributing.md) → Extension points for new fine-tuning or pruning strategies
-- [Changelog](../changelog.md) → Track upcoming v0.2.0 improvements
+## Next Steps
+- [Configuration & Utils API](config.md) -> `AdaptShotConfig`, determinism, I/O helpers
+- [Contributing](../contributing.md) -> Extension points for new fine-tuning or pruning strategies
+- [Changelog](../changelog.md) -> Track upcoming v0.2.0 improvements
