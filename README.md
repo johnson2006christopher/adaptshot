@@ -236,8 +236,6 @@ Built in Mbeya, Tanzania 🇹🇿
 <p><i>"The best AI doesn't guess confidently. It learns humbly, admits uncertainty, and improves through every human correction."</i></p>
 </div>
 
-```
-
 ---
 
 ## 🔍 Summary of Key Updates
