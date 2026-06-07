@@ -248,7 +248,7 @@ Built in Mbeya, Tanzania 🇹🇿
 | ✅ Updated **Docs badge** to live MkDocs URL | Users can access accurate, searchable documentation immediately |
 | ✅ Fixed **installation instructions** to match `pyproject.toml` extras | Prevents user confusion; ensures `pip install adaptshot[faiss]` works |
 | ✅ Corrected **API signatures** to match actual code (`FewShotLearner`, `PredictionResult`) | Developers can copy-paste examples with confidence |
-| ✅ Marked v0.1.1 content as **unreleased / release candidate** | Avoids overstating release status before publication |
+| ✅ Marked v0.1.1 content as **stable / released** | Confirms publication status is accurate |
 | ✅ Removed placeholder links (`arXiv:2604.XXXXX`, `adaptshot.dev/docs`) | No broken links; only verified, working resources |
 | ✅ Kept the native API as the primary workflow | Reinforces code-first usage even with the optional GUI |
 | ✅ Standardized **citation format** to GitHub + version | Academically sound; reproducible referencing |
