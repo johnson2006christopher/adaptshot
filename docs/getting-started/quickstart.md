@@ -1,6 +1,6 @@
 # Quick Start
 
-This quick start uses generated images, so it does not need a downloaded dataset. It exercises the unreleased v0.1.1 native workflow in `src/adaptshot/core/learner.py`: load support images, predict, route a correction, and profile latency plus memory.
+This quick start uses generated images, so it does not need a downloaded dataset. It exercises the v0.1.1 native workflow in `src/adaptshot/core/learner.py`: load support images, predict, route a correction, and profile latency plus memory.
 
 !!! note "String Labels Are Supported"
     In the v0.1.1 branch, `FewShotLearner.correct()` accepts string or integer labels. You can keep human-readable labels in the UI and map them directly into the learner.
