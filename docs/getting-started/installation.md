@@ -1,6 +1,6 @@
 # Installation
 
-AdaptShot v0.1.1 is an unreleased Python package line for CPU-first few-shot image classification.
+AdaptShot v0.1.1 is a Python package for CPU-first few-shot image classification.
 
 ## Requirements
 
@@ -9,7 +9,7 @@ AdaptShot v0.1.1 is an unreleased Python package line for CPU-first few-shot ima
 - Internet access for the first run if torchvision downloads pretrained backbone weights
 
 !!! note "Version"
-    These commands target the unreleased AdaptShot `v0.1.1` branch.
+    These commands target AdaptShot `v0.1.1`.
 
 ## Install From PyPI
 
@@ -18,8 +18,6 @@ pip install adaptshot
 ```
 
 ## Install From The GitHub Release Wheel
-
-Use this once the v0.1.1 wheel is published. Until then, install from source.
 
 ```bash
 pip install https://github.com/johnson2006christopher/adaptshot/releases/download/v0.1.1/adaptshot-0.1.1-py3-none-any.whl
@@ -69,7 +67,7 @@ FewShotLearner
 ```
 
 !!! note "Offline By Default"
-    The unreleased v0.1.1 branch builds backbones without pretrained weight downloads, so the first embedding extraction stays offline.
+    AdaptShot v0.1.1 builds backbones without pretrained weight downloads, so the first embedding extraction stays offline.
 
 ## Verification Checklist
 

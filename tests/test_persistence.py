@@ -26,7 +26,7 @@ def support_images(tmp_path: Path) -> list[str]:
 
 @pytest.fixture
 def patched_embeddings(monkeypatch: pytest.MonkeyPatch) -> None:
-    def fake_extract(image: Any, config: AdaptShotConfig, return_numpy: bool = True) -> np.ndarray:
+    def fake_extract(image: Any, config: AdaptShotConfig, return_numpy: bool = True, cache: Any = None) -> np.ndarray:
         if isinstance(image, Image.Image):
             color = image.getpixel((0, 0))
         else:

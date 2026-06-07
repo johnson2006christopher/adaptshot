@@ -33,6 +33,7 @@ class CAEWCFinetuner:
         device: str = "cpu",
         ewc_lambda: float = 0.1,
         learning_rate: float = 1e-4,
+        weight_decay: float = 1e-3,
         epochs: int = 5,
         batch_size: int = 16,
     ) -> None:
@@ -49,6 +50,7 @@ class CAEWCFinetuner:
         self.device = device
         self.ewc_lambda = ewc_lambda
         self.learning_rate = learning_rate
+        self.weight_decay = weight_decay
         self.epochs = epochs
         self.batch_size = batch_size
 
@@ -116,7 +118,11 @@ class CAEWCFinetuner:
             return
 
         self.model.train()
-        optimizer = torch.optim.Adam(self.model.parameters(), lr=self.learning_rate)
+        optimizer = torch.optim.Adam(
+            self.model.parameters(),
+            lr=self.learning_rate,
+            weight_decay=self.weight_decay,
+        )
         
         # Create DataLoader for new data
         if confidence_weights is None:
@@ -156,7 +162,11 @@ class CAEWCFinetuner:
     def _standard_finetune(self, new_embeddings: torch.Tensor, new_labels: torch.Tensor) -> None:
         """Standard fine-tuning without EWC."""
         self.model.train()
-        optimizer = torch.optim.Adam(self.model.parameters(), lr=self.learning_rate)
+        optimizer = torch.optim.Adam(
+            self.model.parameters(),
+            lr=self.learning_rate,
+            weight_decay=self.weight_decay,
+        )
         dataset = TensorDataset(new_embeddings, new_labels)
         loader = DataLoader(dataset, batch_size=self.batch_size, shuffle=True)
         

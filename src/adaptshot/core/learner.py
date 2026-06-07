@@ -21,6 +21,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import numpy as np
 import torch
 from PIL import Image, UnidentifiedImageError
+from torch.utils.data import DataLoader, TensorDataset
 
 from ..config.settings import AdaptShotConfig
 from ..training.feedback_router import Correction, FeedbackRouter
@@ -36,8 +37,18 @@ from ..utils.exceptions import (
 from ..utils.migrations import migrate_v0_1_0_to_v0_1_1
 from .act import ACTEngine
 from .calibration import CalibrationEngine
-from .extractor import compute_preview_signature, extract_embedding, set_support_embedding_cache
-from .similarity import find_nearest_neighbor
+from .extractor import (
+    BACKBONE_OUTPUT_DIM,
+    EmbeddingCache,
+    compute_preview_signature,
+    extract_embedding,
+)
+from .similarity import (
+    compute_class_prototypes,
+    euclidean_distance_numpy,
+    find_nearest_neighbor,
+    find_nearest_prototype,
+)
 
 logger = logging.getLogger(__name__)
 SCHEMA_VERSION = "0.1.1"
@@ -53,6 +64,10 @@ class PredictionResult:
     neighbor_idx: int
     uncertainty_flag: bool
     act_action: str
+    distance_to_prototype: float = 0.0
+    prototype_margin: float = 0.0
+    ood_flag: bool = False
+    debiased_ece: float = 0.0
 
 
 class FewShotLearner:
@@ -73,6 +88,7 @@ class FewShotLearner:
             window_size=self.config.max_buffer_size * 2,
             temperature_init=self.config.temperature_init,
             method=self.config.calibration_method,
+            evaluation_bins=self.config.calibration_eval_bins,
         )
         self.act = ACTEngine(n_classes=200)
 
@@ -81,6 +97,10 @@ class FewShotLearner:
         self._sim_access_times: List[float] = []
         self._sim_uncertainties: List[float] = []
         self._sim_preview_signatures: List[np.ndarray] = []
+        self._prototype_embeddings: np.ndarray = np.empty((0, 0), dtype=np.float32)
+        self._prototype_labels: np.ndarray = np.asarray([], dtype=object)
+        self._prototype_counts: np.ndarray = np.asarray([], dtype=np.int64)
+        self._ood_distance_threshold: float = self.config.ood_absolute_min_distance
 
         self.pruner = UPUGFPruner(
             capacity=self.config.max_buffer_size,
@@ -102,6 +122,7 @@ class FewShotLearner:
         self._label_to_idx: Dict[Union[str, int], int] = {}
         self._idx_to_label: Dict[int, Union[str, int]] = {}
         self._is_initialized = False
+        self._embedding_cache = EmbeddingCache()
 
     def __repr__(self) -> str:
         """Return concise internal state for debugging and observability."""
@@ -112,6 +133,8 @@ class FewShotLearner:
             f"classes={len(self._label_to_idx)}, "
             f"device='{self.config.device}', "
             f"backbone='{self.config.backbone}', "
+            f"inference_mode='{self.config.inference_mode}', "
+            f"metric='{self.config.similarity_metric}', "
             f"buffer_capacity={self.config.max_buffer_size}"
             ")"
         )
@@ -166,9 +189,11 @@ class FewShotLearner:
             )
 
         self._rebuild_label_index()
+        self._rebuild_prototypes()
+        self._update_ood_threshold()
         self._init_or_rebuild_model_head(embedding_dim=self._embedding_dim())
         if self._sim_embeddings:
-            set_support_embedding_cache(
+            self._embedding_cache.set(
                 self._sim_embeddings[0],
                 self._sim_preview_signatures[0],
             )
@@ -196,23 +221,34 @@ class FewShotLearner:
 
         normalized_image = self._normalize_predict_image(image)
         query_emb = self._extract_embedding_checked(image=normalized_image, source="predict")
-
         support_embeddings = np.array(self._sim_embeddings, dtype=np.float32)
         support_labels = np.array(self._sim_labels, dtype=object)
-        _, raw_conf, neighbor_idx = find_nearest_neighbor(
-            query=query_emb,
-            support_embeddings=support_embeddings,
-            support_labels=support_labels,
-            use_faiss=self.config.use_faiss,
-        )
 
-        if neighbor_idx < 0 or neighbor_idx >= len(self._sim_labels):
-            raise AdaptShotError(
-                "Nearest-neighbor index is out of bounds. "
-                "Rebuild support set with load_support_images()."
+        if self.config.inference_mode == "prototypical" and self._prototype_embeddings.size > 0:
+            pred_label_raw, raw_conf, _, distance_to_prototype, prototype_margin = find_nearest_prototype(
+                query=query_emb,
+                prototypes=self._prototype_embeddings,
+                prototype_labels=self._prototype_labels,
+                metric=self.config.similarity_metric,
             )
-
-        pred_label = self._sim_labels[neighbor_idx]
+            pred_label = self._coerce_label(pred_label_raw)
+            neighbor_idx = self._nearest_support_index_for_label(query_emb, pred_label)
+        else:
+            _, raw_conf, neighbor_idx = find_nearest_neighbor(
+                query=query_emb,
+                support_embeddings=support_embeddings,
+                support_labels=support_labels,
+                use_faiss=self.config.use_faiss,
+                metric=self.config.similarity_metric,
+            )
+            if neighbor_idx < 0 or neighbor_idx >= len(self._sim_labels):
+                raise AdaptShotError(
+                    "Nearest-neighbor index is out of bounds. "
+                    "Rebuild support set with load_support_images()."
+                )
+            pred_label = self._coerce_label(self._sim_labels[neighbor_idx])
+            distance_to_prototype = self._distance_to_label_prototype(query_emb, pred_label)
+            prototype_margin = 0.0
 
         try:
             calibrated_conf = self._calibrate_or_raise(raw_conf)
@@ -228,19 +264,34 @@ class FewShotLearner:
             recent_correct_rate=1.0 - recent_unc,
         )
 
+        ood_flag = self._is_out_of_distribution(
+            distance_to_prototype=distance_to_prototype,
+            prototype_margin=prototype_margin,
+        )
+        if ood_flag:
+            accept = False
+            act_action = "REQUEST_FEEDBACK_OOD"
+
         self._sim_access_times[neighbor_idx] = time.time()
-        set_support_embedding_cache(
+        self._sim_uncertainties[neighbor_idx] = float(np.clip(1.0 - calibrated_conf, 0.0, 1.0))
+        self._embedding_cache.set(
             self._sim_embeddings[neighbor_idx],
             self._sim_preview_signatures[neighbor_idx],
         )
+
+        calibration_summary = self.calibrator.calibration_summary()
 
         return PredictionResult(
             prediction=pred_label,
             raw_confidence=float(raw_conf),
             calibrated_confidence=float(calibrated_conf),
             neighbor_idx=int(neighbor_idx),
-            uncertainty_flag=not accept,
+            uncertainty_flag=(not accept) or ood_flag,
             act_action=act_action,
+            distance_to_prototype=float(distance_to_prototype),
+            prototype_margin=float(prototype_margin),
+            ood_flag=bool(ood_flag),
+            debiased_ece=float(calibration_summary["debiased_ece"]),
         )
 
     def correct(
@@ -283,6 +334,7 @@ class FewShotLearner:
             support_embeddings,
             support_labels,
             use_faiss=self.config.use_faiss,
+            metric=self.config.similarity_metric,
         )
 
         predicted_label = self._sim_labels[int(neighbor_idx)]
@@ -308,13 +360,76 @@ class FewShotLearner:
             true_label,
             compute_preview_signature(image),
         )
+        self._rebuild_prototypes()
+        self._update_ood_threshold()
 
         try:
             self._apply_buffer_management()
         except BufferCapacityError as exc:
             result["buffer_management_warning"] = str(exc)
+        else:
+            self._update_ood_threshold()
+
+        if self.config.recalibrate_after_feedback:
+            result["calibration_summary"] = self.calibrator.calibration_summary()
 
         return result
+
+    def correct_comparative(
+        self,
+        image_path: str,
+        preferred_label: Union[str, int],
+        alternative_label: Union[str, int],
+        confidence_weight: float = 1.0,
+    ) -> Dict[str, Any]:
+        """Apply comparative human feedback inspired by ordinal supervision.
+
+        The annotator answers a relative question ("more like A than B"), which
+        is mapped to a standard correction update toward `preferred_label`.
+        """
+
+        self._ensure_initialized()
+        self._validate_label(preferred_label)
+        self._validate_label(alternative_label)
+
+        if preferred_label == alternative_label:
+            raise ConfigValidationError(
+                "preferred_label and alternative_label must be different for comparative feedback."
+            )
+
+        known_labels = set(self._sim_labels)
+        if alternative_label not in known_labels:
+            raise ConfigValidationError(
+                "alternative_label must already exist in the support set for comparative feedback."
+            )
+
+        preview = self._load_rgb_image_from_path(image_path)
+        preview_emb = self._extract_embedding_checked(image=preview, source=image_path)
+        preferred_distance = self._distance_to_label_prototype(preview_emb, preferred_label)
+        alternative_distance = self._distance_to_label_prototype(preview_emb, alternative_label)
+
+        result = self.correct(
+            image_path=image_path,
+            true_label=preferred_label,
+            confidence_weight=confidence_weight,
+        )
+        result["comparative_feedback"] = {
+            "preferred_label": preferred_label,
+            "alternative_label": alternative_label,
+            "preferred_distance": preferred_distance,
+            "alternative_distance": alternative_distance,
+            "supports_preference": preferred_distance <= alternative_distance,
+        }
+        return result
+
+    def calibration_report(self) -> Dict[str, float]:
+        """Return calibration and uncertainty diagnostics for monitoring."""
+
+        report = self.calibrator.calibration_summary()
+        report["ood_distance_threshold"] = float(self._ood_distance_threshold)
+        report["support_size"] = float(len(self._sim_embeddings))
+        report["prototype_count"] = float(len(self._prototype_labels))
+        return report
 
     def save(self, path: str) -> None:
         """Persist learner state to disk.
@@ -342,6 +457,14 @@ class FewShotLearner:
                 "times": self._sim_access_times,
                 "uncertainties": self._sim_uncertainties,
                 "previews": [preview.tolist() for preview in self._sim_preview_signatures],
+            },
+            "prototypes": {
+                "labels": self._prototype_labels.tolist(),
+                "counts": self._prototype_counts.tolist(),
+                "embeddings": self._prototype_embeddings.tolist()
+                if self._prototype_embeddings.size > 0
+                else [],
+                "ood_distance_threshold": self._ood_distance_threshold,
             },
             "label_index": {
                 "label_to_idx": self._label_to_idx,
@@ -467,6 +590,22 @@ class FewShotLearner:
                 "max_buffer_size must be a positive integer. "
                 f"Received {config.max_buffer_size}."
             )
+        if config.similarity_metric not in {"cosine", "euclidean"}:
+            raise ConfigValidationError(
+                "similarity_metric must be 'cosine' or 'euclidean'. "
+                f"Received {config.similarity_metric}."
+            )
+        if config.inference_mode not in {"nearest_neighbor", "prototypical"}:
+            raise ConfigValidationError(
+                "inference_mode must be 'nearest_neighbor' or 'prototypical'. "
+                f"Received {config.inference_mode}."
+            )
+        if config.calibration_eval_bins < config.ece_n_bins:
+            raise ConfigValidationError(
+                "calibration_eval_bins must be >= ece_n_bins. "
+                f"Received calibration_eval_bins={config.calibration_eval_bins}, "
+                f"ece_n_bins={config.ece_n_bins}."
+            )
 
     def _validate_support_inputs(
         self,
@@ -478,15 +617,15 @@ class FewShotLearner:
                 "image_paths cannot be empty. Provide at least one support image path. "
                 "See docs/getting-started/quickstart.md."
             )
-        if not labels:
-            raise ConfigValidationError(
-                "labels cannot be empty. Provide one label per support image. "
-                "See docs/getting-started/quickstart.md."
-            )
         if len(image_paths) != len(labels):
             raise ConfigValidationError(
                 "image_paths and labels must have the same length. "
                 f"Got {len(image_paths)} image_paths and {len(labels)} labels."
+            )
+        if not labels:
+            raise ConfigValidationError(
+                "labels cannot be empty. Provide one label per support image. "
+                "See docs/getting-started/quickstart.md."
             )
 
     def _validate_label(self, label: Union[str, int]) -> None:
@@ -589,7 +728,7 @@ class FewShotLearner:
 
     def _extract_embedding_checked(self, image: Image.Image, source: str) -> np.ndarray:
         try:
-            embedding = extract_embedding(image, self.config)
+            embedding = extract_embedding(image, self.config, cache=self._embedding_cache)
         except (ValueError, RuntimeError, OSError) as exc:
             raise InvalidImageError(
                 f"Failed to extract embedding for '{source}'. Ensure the image is valid RGB input."
@@ -621,10 +760,15 @@ class FewShotLearner:
 
         return embedding.astype(np.float32, copy=False)
 
-    def _embedding_dim(self, default_dim: int = 512) -> int:
+    def _embedding_dim(self) -> int:
+        """Return the expected embedding dimensionality for the current backbone.
+
+        If the support set is already populated, uses the actual embedding shape.
+        Otherwise falls back to the known dimension for the configured backbone.
+        """
         if self._sim_embeddings:
             return int(self._sim_embeddings[0].shape[0])
-        return default_dim
+        return BACKBONE_OUTPUT_DIM.get(self.config.backbone, 512)
 
     def _ensure_initialized(self) -> None:
         if not self._is_initialized:
@@ -636,7 +780,7 @@ class FewShotLearner:
     def _calibrate_or_raise(self, raw_confidence: float) -> float:
         min_samples = max(10, self.calibrator.window_size // 2)
         observed = len(self.calibrator._window_confidences)
-        if self.calibrator.method == "temperature" and observed < min_samples:
+        if self.calibrator.method in {"temperature", "scaling_binning"} and observed < min_samples:
             raise CalibrationNotReadyError(
                 "Calibration window is not ready. "
                 f"Need at least {min_samples} observations, got {observed}. "
@@ -645,7 +789,10 @@ class FewShotLearner:
         return float(self.calibrator.calibrate(raw_confidence))
 
     def _raw_to_unit_interval(self, raw_confidence: float) -> float:
-        return float(np.clip((raw_confidence + 1.0) / 2.0, 0.0, 1.0))
+        value = float(raw_confidence)
+        if 0.0 <= value <= 1.0:
+            return value
+        return float(np.clip((value + 1.0) / 2.0, 0.0, 1.0))
 
     def _rebuild_label_index(self) -> None:
         self._label_to_idx.clear()
@@ -656,6 +803,131 @@ class FewShotLearner:
                 idx = len(self._label_to_idx)
                 self._label_to_idx[label] = idx
                 self._idx_to_label[idx] = label
+
+    def _rebuild_prototypes(self) -> None:
+        if not self._sim_embeddings:
+            self._prototype_embeddings = np.empty((0, 0), dtype=np.float32)
+            self._prototype_labels = np.asarray([], dtype=object)
+            self._prototype_counts = np.asarray([], dtype=np.int64)
+            return
+
+        prototypes, labels, counts = compute_class_prototypes(
+            np.asarray(self._sim_embeddings, dtype=np.float32),
+            np.asarray(self._sim_labels, dtype=object),
+        )
+        self._prototype_embeddings = prototypes
+        self._prototype_labels = labels
+        self._prototype_counts = counts
+
+    def _label_key(self, label: object) -> object:
+        if hasattr(label, "item"):
+            return label.item()
+        return label
+
+    def _coerce_label(self, label: object) -> Union[str, int]:
+        normalized = self._label_key(label)
+        if isinstance(normalized, (str, int)):
+            return normalized
+        raise AdaptShotError(
+            "Unsupported label type produced during inference. "
+            f"Expected str|int, got {type(normalized).__name__}."
+        )
+
+    def _prototype_index_for_label(self, label: Union[str, int]) -> Optional[int]:
+        label_key = self._label_key(label)
+        for idx, proto_label in enumerate(self._prototype_labels):
+            if self._label_key(proto_label) == label_key:
+                return idx
+        return None
+
+    def _distance_to_label_prototype(
+        self,
+        query_embedding: np.ndarray,
+        label: Union[str, int],
+    ) -> float:
+        if self._prototype_embeddings.size == 0:
+            return 0.0
+
+        proto_idx = self._prototype_index_for_label(label)
+        if proto_idx is None:
+            return 0.0
+
+        prototype = self._prototype_embeddings[proto_idx][np.newaxis, :]
+        distances = euclidean_distance_numpy(query_embedding, prototype, normalize=True)
+        return float(distances.reshape(-1)[0])
+
+    def _nearest_support_index_for_label(
+        self,
+        query_embedding: np.ndarray,
+        label: Union[str, int],
+    ) -> int:
+        candidates = [idx for idx, value in enumerate(self._sim_labels) if value == label]
+        if not candidates:
+            raise AdaptShotError(
+                "Predicted class label was not found in support buffer. "
+                "Reload support images before predicting again."
+            )
+        if len(candidates) == 1:
+            return int(candidates[0])
+
+        candidate_embeddings = np.asarray([self._sim_embeddings[idx] for idx in candidates], dtype=np.float32)
+        if self.config.similarity_metric == "euclidean":
+            distances = euclidean_distance_numpy(query_embedding, candidate_embeddings, normalize=True)
+            local_idx = int(np.argmin(distances.reshape(-1)))
+            return int(candidates[local_idx])
+
+        similarities = np.asarray(
+            query_embedding[np.newaxis, :] @ candidate_embeddings.T,
+            dtype=np.float32,
+        ).reshape(-1)
+        query_norm = np.linalg.norm(query_embedding) + 1e-8
+        candidate_norms = np.linalg.norm(candidate_embeddings, axis=1) + 1e-8
+        cosine_scores = similarities / (query_norm * candidate_norms)
+        local_idx = int(np.argmax(cosine_scores))
+        return int(candidates[local_idx])
+
+    def _update_ood_threshold(self) -> None:
+        if not self.config.enable_ood_detection:
+            self._ood_distance_threshold = float("inf")
+            return
+        if self._prototype_embeddings.size == 0 or not self._sim_embeddings:
+            self._ood_distance_threshold = self.config.ood_absolute_min_distance
+            return
+
+        distances: List[float] = []
+        for embedding, label in zip(self._sim_embeddings, self._sim_labels):
+            proto_idx = self._prototype_index_for_label(label)
+            if proto_idx is None:
+                continue
+            prototype = self._prototype_embeddings[proto_idx][np.newaxis, :]
+            distance = euclidean_distance_numpy(embedding, prototype, normalize=True)
+            distances.append(float(distance.reshape(-1)[0]))
+
+        if not distances:
+            self._ood_distance_threshold = self.config.ood_absolute_min_distance
+            return
+
+        quantile_threshold = float(
+            np.quantile(
+                np.asarray(distances, dtype=np.float64),
+                self.config.ood_threshold_quantile,
+            )
+        )
+        self._ood_distance_threshold = max(
+            self.config.ood_absolute_min_distance,
+            quantile_threshold,
+        )
+
+    def _is_out_of_distribution(
+        self,
+        distance_to_prototype: float,
+        prototype_margin: float,
+    ) -> bool:
+        if not self.config.enable_ood_detection:
+            return False
+        distance_flag = float(distance_to_prototype) > float(self._ood_distance_threshold)
+        margin_flag = np.isfinite(prototype_margin) and float(prototype_margin) < 0.01
+        return bool(distance_flag or margin_flag)
 
     def _ensure_label_index(self, label: Union[str, int]) -> int:
         if label in self._label_to_idx:
@@ -795,9 +1067,17 @@ class FewShotLearner:
         learner._sim_embeddings = [np.asarray(row, dtype=np.float32) for row in embeddings]
 
         learner._rebuild_label_index()
+        learner._rebuild_prototypes()
+        prototypes_state = state.get("prototypes")
+        if isinstance(prototypes_state, dict):
+            ood_threshold = prototypes_state.get("ood_distance_threshold")
+            if isinstance(ood_threshold, (float, int)):
+                learner._ood_distance_threshold = float(ood_threshold)
+        else:
+            learner._update_ood_threshold()
         if learner._sim_embeddings:
             learner._init_or_rebuild_model_head(embedding_dim=learner._embedding_dim())
-            set_support_embedding_cache(
+            learner._embedding_cache.set(
                 learner._sim_embeddings[0],
                 learner._sim_preview_signatures[0],
             )
@@ -824,6 +1104,7 @@ class FewShotLearner:
             device=self.config.device,
             ewc_lambda=0.1,
             learning_rate=1e-4,
+            weight_decay=1e-3,
             epochs=5,
         )
 
@@ -850,6 +1131,7 @@ class FewShotLearner:
             device=self.config.device,
             ewc_lambda=0.1,
             learning_rate=1e-4,
+            weight_decay=1e-3,
             epochs=5,
         )
 
@@ -866,7 +1148,7 @@ class FewShotLearner:
         self._sim_preview_signatures.append(preview_signature.astype(np.float32, copy=False))
         self._ensure_label_index(label)
         if self._sim_embeddings:
-            set_support_embedding_cache(
+            self._embedding_cache.set(
                 self._sim_embeddings[0],
                 self._sim_preview_signatures[0],
             )
@@ -874,6 +1156,19 @@ class FewShotLearner:
     def _trigger_finetune(self, corrections: List[Correction]) -> None:
         if self.finetuner is None or self._model_head is None:
             return
+
+        if self._sim_embeddings and self._sim_labels:
+            support_tensor = torch.tensor(np.stack(self._sim_embeddings), dtype=torch.float32)
+            support_label_tensor = torch.tensor(
+                [self._ensure_label_index(label) for label in self._sim_labels],
+                dtype=torch.long,
+            )
+            fisher_loader: DataLoader[Any] = DataLoader(
+                TensorDataset(support_tensor, support_label_tensor),
+                batch_size=min(32, len(self._sim_embeddings)),
+                shuffle=False,
+            )
+            self.finetuner.update_fisher(fisher_loader)
 
         emb_list: List[np.ndarray] = []
         label_list: List[int] = []

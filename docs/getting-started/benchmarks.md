@@ -1,10 +1,6 @@
-# 📄 File 7: `docs/getting-started/benchmarks.md`
-
-### 📝 Content
-```markdown
 # Benchmarks & Reproducibility
 
-AdaptShot is engineered for transparency and reproducibility. All performance metrics are measured on CPU-only hardware with deterministic seeding. This document provides exact reproduction commands, expected results, and hardware-tier expectations for `v0.1.0`.
+AdaptShot is engineered for transparency and reproducibility. All performance metrics are measured on CPU-only hardware with deterministic seeding. This document provides exact reproduction commands, expected results, and hardware-tier expectations for v0.1.1.
 
 ## 🧪 Running Benchmarks
 
@@ -68,7 +64,7 @@ cat results/baseline.json
 
 ## 📉 Understanding Calibration & ECE Behavior
 
-In `v0.1.0`, the `CalibrationEngine` uses a sliding window (default: 20 predictions) to fit temperature scaling online:
+In v0.1.1, the `CalibrationEngine` uses a sliding window (default: 200 predictions when `max_buffer_size=100`) to fit temperature scaling online:
 - **Steps 1–9**: ECE may fluctuate as the window populates. Confidence scores are uncalibrated but tracked.
 - **Steps 10+**: Temperature refits automatically. ECE typically drops as the model adapts to local confidence-accuracy dynamics.
 - **Domain Shift**: If query distribution changes sharply, ECE will temporarily rise until the window adjusts. This is expected and indicates the system is correctly detecting uncertainty rather than masking it.
@@ -85,7 +81,7 @@ In `v0.1.0`, the `CalibrationEngine` uses a sliding window (default: 20 predicti
 | `Determinism check: ❌ FAIL` | Unpinned PyTorch version or custom CUDA ops | Use `torch==2.12.0+cpu`, run with `--device cpu`, verify `set_deterministic_seed(42)` is called before inference |
 | `ECE remains > 0.15 after 30 steps` | Severe distribution shift or noisy corrections | Increase `calibration_method="conformal"` in config, or lower `ACTEngine.base_threshold` to trigger more feedback |
 
-## ▶️ Next Steps
-- [API Reference](../api/core.md) → Configure thresholds, buffers, and calibration parameters
-- [Tutorial-Style Guides](../tutorials.md) → Try prediction and correction workflows
-- [Contribute](../contributing.md) → Add new backbones, datasets, or calibration methods
+## Next Steps
+- [API Reference](../api/core.md) -> Configure thresholds, buffers, and calibration parameters
+- [Tutorial-Style Guides](../tutorials.md) -> Try prediction and correction workflows
+- [Contribute](../contributing.md) -> Add new backbones, datasets, or calibration methods

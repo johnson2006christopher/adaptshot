@@ -19,14 +19,14 @@ def test_initial_state():
     assert engine.method == "temperature"
 
 
-def test_ece_computation_perfect_calibration():
-    """If confidence exactly matches accuracy, ECE should be 0."""
+def test_ece_computation_perfect_accuracy_not_perfect_calibration():
+    """If confidence is 0.8 but accuracy is 1.0, ECE should reflect a 0.2 gap."""
     engine = CalibrationEngine(n_bins=5)
     # 10 predictions, all 0.8 confident, all correct
     confs = np.full(10, 0.8)
     correct = np.ones(10, dtype=int)
     ece = engine.compute_ece(confs, correct)
-    assert np.isclose(ece, 0.0, atol=1e-7)
+    assert np.isclose(ece, 0.2, atol=1e-7)
 
 
 def test_ece_computation_overconfident():

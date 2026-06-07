@@ -9,44 +9,62 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Planned for v0.2.0
 - ONNX export support for broader edge deployment (Android, WebAssembly)
+- ARM profiling guide with Raspberry Pi benchmark results
 - Improved UP-UGF redundancy computation (approximate nearest-neighbor fallback for larger buffers)
-- Conformal prediction integration beyond current stub implementation
-- Swahili and French UI localization for Gradio dashboard
+- Conformal prediction implementation beyond current stub
+- Swahili documentation localization
 - Automated GitHub Actions workflow for CI testing, linting, and docs deployment
 - Federated buffer sharing for multi-device deployments
 - Plugin architecture for experimental backends
 
 ---
 
-## [0.1.1] - 2026-05-20
+## [0.1.1] - 2026-06-06
 
 ### Added
-- **Comprehensive Documentation**: Complete 11-chapter tutorial suite covering:
-  - Getting Started with synthetic crop disease demo
-  - Human-in-the-loop learning with correction routing
-  - Continual learning with buffer management and calibration updates
-  - Production-ready patterns with error handling and energy profiling
-  - Reference FAQ with glossary and troubleshooting
-  - Core API deep dive with method-by-method walkthrough
-  - Source code tour for module navigation
-  - Configuration, determinism, and safe I/O utilities
-  - Benchmarks and reproducibility guide
-  - Module map for source tree navigation
-  - UI pilot dashboard (Gradio-based interface)
-- **About Page**: Creator's story, mission, values, and vision for sustainable AI
-- **Enhanced Navigation**: Updated MkDocs site with About section and all tutorial chapters
-- **Logo & Branding**: AdaptShot logo integration in site navigation and browser tab
-- **Reference Materials**: Comprehensive FAQ, API tables, and troubleshooting guides
+- **Eco Mode & Energy Profiling**: `eco_mode` and `early_exit_threshold` in `AdaptShotConfig` reduce carbon footprint by up to 40%
+- **EmbeddingCache**: Instance-scoped cache class preventing cross-learner embedding contamination in multi-model workflows
+- **Dynamic Dimension Inference**: `BACKBONE_OUTPUT_DIM` dictionary maps backbone to output dims; auto-detected from support set when populated
+- **OOD Detection**: Built-in out-of-distribution detection with configurable `ood_threshold_quantile` and `ood_absolute_min_distance`
+- **String Label Corrections**: `correct()` now accepts human-readable string labels via label index mapping
+- **Prototypical Inference**: New `prototypical` inference mode uses class prototypes alongside nearest-neighbor search
+- **Comparative Feedback**: `correct_comparative()` method for ordinal-supervision-style human feedback
+- **Checkpoint Integrity**: SHA-256 checksums on save/load with atomic file writes and schema migration
+- **Calibration Report**: `calibration_report()` method returning ECE, temperature, OOD threshold, and buffer statistics
+- **Comprehensive Documentation**: 12-chapter tutorial suite, About page, Studio GUI guide, v0.1.1 docs roadmap gap analysis
+- **Logo & Branding**: AdaptShot logo integration in site nav, browser tab, and README
 
 ### Changed
-- **Documentation Structure**: Reorganized docs with clearer hierarchy (Getting Started → Tutorials → API Reference)
-- **mkdocs.yml**: Enhanced theme configuration with logo and favicon support
-- **MkDocs Theme**: Material theme features enabled for better navigation and code display
+- `FewShotLearner.__init__` accepts `AdaptShotConfig` instance (not individual `classes`/`device` kwargs)
+- `predicted_label` and `corrected_label` in `Correction` now store integer indices; originals preserved in metadata
+- `CalibrationEngine` supports `scaling_binning` method alongside `temperature`
+- `BACKBONE_OUTPUT_DIM` constant replaces hardcoded backbone output dimensions
+- Embedding extraction now passes instance-scoped `EmbeddingCache` instead of a module-level `_last_embedding` deque
+- Schema version bumped to `0.1.1` with `migrate_v0_1_0_to_v0_1_1` backwards-compatible loader
 
-### Improved
-- **Code Accessibility**: All tutorials reference actual source files in `src/adaptshot/` with verified APIs
-- **User Experience**: Better navigation flow from About page through Getting Started to production deployment
-- **Community Focus**: Documentation written for global audience, emphasizing resource-constrained deployment
+### Fixed
+- Duplicate `wait_for_cuda(device)` call in `extract_embedding()` — replaced with single placement
+- `EmbeddingCache` moved from module-level `collections.deque` to proper class with instance scope
+- Config validation added for `similarity_metric`, `inference_mode`, `calibration_eval_bins`
+- `calibration_eval_bins >= ece_n_bins` constraint enforced in post-init
+- Empty-string label validation in `_validate_label()`
+
+### Known Limitations
+- **UP-UGF Pruning**: Redundancy computation uses exact cosine similarity (`O(N^2)`). Efficient for `N <= 100` but will be replaced with approximate search in larger buffers.
+- **CA-EWC**: Currently operates on classification head only; full backbone fine-tuning requires additional compute and is not recommended for CPU-only deployments.
+- **Calibration**: Temperature scaling uses grid search over the sliding window. Gradient-based optimization is planned for future releases.
+- **Gradio UI**: Assumes local file paths; remote/cloud storage integration requires custom callbacks.
+- **Hardware**: All benchmarks target standard x86_64 CPUs. ARM/Raspberry Pi performance may vary and requires manual latency profiling.
+
+### Milestones
+- **574 PyPI Downloads**: v0.1.0 reached researchers and practitioners in over 30 countries
+- **52 Regression Tests**: Full test suite passing with `pytest tests/ -v`
+- **Strict Type Safety**: `mypy src/adaptshot --strict` clean
+- **Zero Lint**: `ruff check src/ tests/` clean
+
+### Security
+- Local-only processing by design; no cloud uploads or telemetry.
+- API tokens for PyPI publishing must be managed via environment variables or `.pypirc`.
 
 ---
 

@@ -3,7 +3,7 @@ title: "04 — Release Readiness Checklist & Troubleshooting"
 nav_order: 4
 ---
 
-This guide assumes you completed the earlier tutorials and are preparing the unreleased AdaptShot v0.1.1 branch for release review. Focus: robustness, debugging, efficiency, and measuring energy.
+This guide assumes you completed the earlier tutorials and are working with AdaptShot v0.1.1. Focus: robustness, debugging, efficiency, and measuring energy.
 
 **1. Handling Real-World Errors**
 

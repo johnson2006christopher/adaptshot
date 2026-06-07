@@ -1,10 +1,6 @@
-# 📄 File 8: `docs/api/core.md`
+# Core API Reference (v0.1.1)
 
-### 📝 Content
-```markdown
-# Core API Reference (v0.1.0)
-
-This document describes the public interfaces for AdaptShot's inference and calibration engine. All signatures, parameters, and behaviors reflect the current `v0.1.0` implementation. Internal/private methods (`_`-prefixed) are omitted as they are subject to change without notice.
+This document describes the public interfaces for AdaptShot's inference and calibration engine. All signatures, parameters, and behaviors reflect the current `v0.1.1` implementation. Internal/private methods (`_`-prefixed) are omitted as they are subject to change without notice.
 
 ---
 
@@ -15,31 +11,23 @@ The primary entry point for loading support data, running predictions, routing c
 ### Initialization
 ```python
 from adaptshot import FewShotLearner
+from adaptshot.config.settings import AdaptShotConfig
 
-learner = FewShotLearner(
-    classes: List[str],
-    device: str = "cpu",
-    seed: int = 42,
-    backbone: str = "resnet18",
-    max_buffer_size: int = 100,
-    use_faiss: bool = False,
-    calibration_method: str = "temperature",
-    ece_n_bins: int = 15,
-    temperature_init: float = 1.0
+config = AdaptShotConfig(
+    backbone="resnet18",
+    device="cpu",
+    seed=42,
+    max_buffer_size=100,
+    use_faiss=False,
 )
+learner = FewShotLearner(config=config)
 ```
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `classes` | `List[str]` | *(required)* | Target class labels for the few-shot task |
-| `device` | `str` | `"cpu"` | Execution device (`"cpu"`, `"cuda"`, `"mps"`) |
-| `seed` | `int` | `42` | Random seed for deterministic execution |
-| `backbone` | `str` | `"resnet18"` | Feature extractor (`"resnet18"` or `"mobilenet_v3_small"`) |
-| `max_buffer_size` | `int` | `100` | Maximum replay buffer capacity for corrections |
-| `use_faiss` | `bool` | `False` | Enable FAISS-CPU similarity search (requires `adaptshot[faiss]`) |
-| `calibration_method` | `str` | `"temperature"` | Post-hoc scaling method (`"temperature"` or `"conformal"`) |
-| `ece_n_bins` | `int` | `15` | Number of bins for Expected Calibration Error computation |
-| `temperature_init` | `float` | `1.0` | Initial temperature scaling parameter |
+| `config` | `AdaptShotConfig` | `None` | Immutable configuration dataclass; kwargs accepted if config is `None` |
+
+See [Configuration Reference](config.md) for the complete `AdaptShotConfig` field listing.
 
 ### `load_support_images(image_paths, labels)`
 Ingests the initial few-shot support set and builds the similarity index.
@@ -72,7 +60,7 @@ Routes a human correction into the continual learning pipeline.
 ```python
 feedback = learner.correct(
     image_path: str,
-    true_label: str,
+    true_label: Union[str, int],
     confidence_weight: float = 1.0
 )
 ```
@@ -187,14 +175,16 @@ class PredictionResult:
 
 ---
 
-## ⚠️ v0.1.0 Constraints & Notes
+## Constraints & Notes
 - **Determinism**: All randomness is controlled by `seed`. Call `set_deterministic_seed()` before inference for reproducible results.
 - **Image Input**: `predict()` and `load_support_images()` accept file paths, `PIL.Image` objects, or NumPy arrays (HWC, `uint8`). Grayscale images are converted to 3-channel RGB.
-- **Calibration Warm-up**: Temperature scaling stabilizes after ~10–15 predictions enter the sliding window. Initial `calibrated_confidence` values may be close to raw similarity scores.
+- **Calibration Warm-up**: Temperature scaling stabilizes after ~10-15 predictions enter the sliding window. Initial `calibrated_confidence` values may be close to raw similarity scores.
 - **Memory Limit**: `max_buffer_size` strictly bounds RAM usage. When exceeded, UP-UGF pruning evicts low-utility examples (falls back to FIFO during initial population).
 - **No GPU Training**: CA-EWC fine-tuning runs on the classification head only. Backbone weights remain frozen throughout the lifecycle.
+- **String Labels**: `correct()` accepts both string and integer labels. String labels are mapped to integer indices internally via the label index.
+- **OOD Detection**: When `enable_ood_detection` is `True`, predictions with unusual distance-to-prototype are flagged and automatically routed for human review.
 
-## ▶️ Next Steps
-- [Training & Continual Learning API](training.md) → `FeedbackRouter`, `CAEWCFinetuner`, `UPUGFPruner`
-- [Configuration Reference](config.md) → `AdaptShotConfig` dataclass and validation rules
-- [Contributing](../contributing.md) → Extension points and PR guidelines
+## Next Steps
+- [Training & Continual Learning API](training.md) -> `FeedbackRouter`, `CAEWCFinetuner`, `UPUGFPruner`
+- [Configuration Reference](config.md) -> `AdaptShotConfig` dataclass and validation rules
+- [Contributing](../contributing.md) -> Extension points and PR guidelines

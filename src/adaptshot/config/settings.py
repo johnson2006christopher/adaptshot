@@ -28,15 +28,24 @@ class AdaptShotConfig:
     # Similarity search
     use_faiss: bool = False # Toggle FAISS-CPU acceleration
     faiss_nprobe: int = 8   # FAISS IVF index probing depth (if used later)
+    similarity_metric: Literal["cosine", "euclidean"] = "euclidean"
+    inference_mode: Literal["nearest_neighbor", "prototypical"] = "prototypical"
 
     # Energy-aware inference
     eco_mode: bool = False
     early_exit_threshold: float = 0.95
 
     # Calibration & uncertainty
-    calibration_method: Literal["temperature", "conformal", "none"] = "temperature"
+    calibration_method: Literal["temperature", "scaling_binning", "conformal", "none"] = "temperature"
     ece_n_bins: int = 15    # Number of bins for Expected Calibration Error
+    calibration_eval_bins: int = 100
     temperature_init: float = 1.0
+    recalibrate_after_feedback: bool = True
+
+    # OOD detection
+    enable_ood_detection: bool = True
+    ood_threshold_quantile: float = 0.98
+    ood_absolute_min_distance: float = 0.25
 
     # Memory management (UP-UGF)
     max_buffer_size: int = 100
@@ -53,6 +62,14 @@ class AdaptShotConfig:
             raise ValueError("max_buffer_size must be >= 10 for meaningful few-shot operation.")
         if not 0.5 <= self.early_exit_threshold <= 1.0:
             raise ValueError("early_exit_threshold must be within [0.5, 1.0].")
+        if self.ece_n_bins <= 1:
+            raise ValueError("ece_n_bins must be > 1.")
+        if self.calibration_eval_bins < self.ece_n_bins:
+            raise ValueError("calibration_eval_bins must be >= ece_n_bins.")
+        if not 0.5 <= self.ood_threshold_quantile <= 1.0:
+            raise ValueError("ood_threshold_quantile must be in [0.5, 1.0].")
+        if self.ood_absolute_min_distance < 0.0:
+            raise ValueError("ood_absolute_min_distance must be >= 0.0.")
         if self.device == "cuda" and not torch.cuda.is_available():
             import warnings
             warnings.warn(
