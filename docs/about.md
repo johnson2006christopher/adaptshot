@@ -162,7 +162,7 @@ I added:
 - ✅ Comprehensive documentation
 - ✅ This story
 
-This branch is still unreleased. The focus now is standard release readiness: keep the native API stable, keep the docs honest, and let Studio remain an optional convenience layer.
+AdaptShot v0.1.1 is now released on PyPI. The focus remains on standard release quality: keep the native API stable, keep the docs honest, and let Studio remain an optional convenience layer.
 
 **Why?**  
 Because code without documentation is code that nobody can use.  
