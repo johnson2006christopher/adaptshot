@@ -323,7 +323,7 @@ def run_demo(interactive: bool = True) -> None:
     test_path, true_label = blight_queries[0]
 
     print()
-    print(f"  📱 Farmer photographs a leaf that looks sick...")
+    print("  📱 Farmer photographs a leaf that looks sick...")
     print()
 
     result = learner.predict(test_path)
@@ -335,8 +335,8 @@ def run_demo(interactive: bool = True) -> None:
     print(f"  Action:      {info.get('action', 'Consult extension officer.')}")
 
     if result.uncertainty_flag:
-        print(f"  ⚠️  UNCERTAINTY FLAG: The model is not very sure.")
-        print(f"     This is AdaptShot being HONEST about its limits.")
+        print("  ⚠️  UNCERTAINTY FLAG: The model is not very sure.")
+        print("     This is AdaptShot being HONEST about its limits.")
 
     print()
     print("  💡 Notice: The model gives a calibrated confidence score.")
@@ -363,7 +363,7 @@ def run_demo(interactive: bool = True) -> None:
         true_label=true_label,
         confidence_weight=0.8,
     )
-    print(f"     ✅ Correction recorded. Model updated.")
+    print("     ✅ Correction recorded. Model updated.")
 
     print()
     print("  💡 This is 'human-in-the-loop' — the most important feature.")
@@ -390,10 +390,10 @@ def run_demo(interactive: bool = True) -> None:
     print(f"  Confidence:  {result_ood.calibrated_confidence:.1%}")
 
     if result_ood.ood_flag:
-        print(f"  🚫 OUT-OF-DISTRIBUTION: 'I don't know what this is.'")
-        print(f"     The model correctly refuses to guess.")
+        print("  🚫 OUT-OF-DISTRIBUTION: 'I don't know what this is.'")
+        print("     The model correctly refuses to guess.")
     else:
-        print(f"  ℹ️  OOD flag not raised for this image.")
+        print("  ℹ️  OOD flag not raised for this image.")
 
     print()
     print("  💡 AdaptShot knows when it's out of its depth.")
@@ -452,8 +452,8 @@ def run_demo(interactive: bool = True) -> None:
     # ------------------------------------------------------------------
     print()
     print(f"  📁 Demo images saved to: {tmpdir}")
-    print(f"  🔬 Try it yourself: `pip install adaptshot`")
-    print(f"  📖 Full docs: https://johnson2006christopher.github.io/adaptshot/")
+    print("  🔬 Try it yourself: `pip install adaptshot`")
+    print("  📖 Full docs: https://johnson2006christopher.github.io/adaptshot/")
     print()
 
     # Cleanup note
