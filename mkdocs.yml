@@ -88,6 +88,7 @@ nav:
     - 10 Module Map: tutorials/10_module_map.md
     - 11 UI Pilot Dashboard: tutorials/11_ui_pilot_dashboard.md
     - 12 Studio Guide: tutorials/12_studio_guide.md
+    - 13 MziziGuard Crop Demo: tutorials/13_crop_disease_demo.md
   - API Reference:
     - Core Engine: api/core.md
     - Training & Continual Learning: api/training.md
