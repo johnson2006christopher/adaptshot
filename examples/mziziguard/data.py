@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import os
 import random
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 import numpy as np
 from PIL import Image, ImageDraw
