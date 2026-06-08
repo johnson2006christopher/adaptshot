@@ -270,17 +270,17 @@ def _batch_diagnose(files: List[str]) -> str:
 # Build the UI
 # ===================================================================
 
+_CSS = """
+.severity-low { color: #22c55e; }
+.severity-moderate { color: #eab308; }
+.severity-high { color: #f97316; }
+.severity-critical { color: #ef4444; }
+footer { visibility: hidden; }
+"""
+
 
 def build_app() -> gr.Blocks:
     """Construct the full MziziGuard Gradio application."""
-
-    css = """
-    .severity-low { color: #22c55e; }
-    .severity-moderate { color: #eab308; }
-    .severity-high { color: #f97316; }
-    .severity-critical { color: #ef4444; }
-    footer { visibility: hidden; }
-    """
 
     with gr.Blocks(
         title="MziziGuard — Crop Disease Detection",
@@ -556,5 +556,5 @@ if __name__ == "__main__":
         server_port=args.port,
         share=args.share,
         theme=gr.themes.Soft(),
-        css=css,
+        css=_CSS,
     )
