@@ -18,7 +18,6 @@ from __future__ import annotations
 
 import os
 import sys
-import tempfile
 from typing import List, Optional, Tuple, cast
 
 # Make AdaptShot importable from this script's context
@@ -41,7 +40,7 @@ except ImportError:
 # ---------------------------------------------------------------------------
 # Local imports
 # ---------------------------------------------------------------------------
-from examples.mziziguard.engine import MziziGuard
+from examples.mziziguard.engine import MziziGuard  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Globals (per-process, single-user Gradio app)
@@ -72,7 +71,7 @@ def _setup_with_samples(n_support: int) -> str:
         return (
             f"✅ Generated {count} support images across {len(labels)} classes:\n"
             + "\n".join(f"  • {label}" for label in labels)
-            + f"\n\n🧠 Model ready. Switch to the **Diagnose** tab to test."
+            + "\n\n🧠 Model ready. Switch to the **Diagnose** tab to test."
         )
     except Exception as exc:
         return f"❌ Setup failed: {exc}"
@@ -90,7 +89,7 @@ def _setup_from_folder(folder_path: str, max_per_class: int) -> str:
             f"✅ Loaded {count} images from folder.\n"
             + f"Detected {len(labels)} classes:\n"
             + "\n".join(f"  • {label}" for label in labels)
-            + f"\n\n🧠 Model ready. Switch to the **Diagnose** tab."
+            + "\n\n🧠 Model ready. Switch to the **Diagnose** tab."
         )
     except Exception as exc:
         return f"❌ Loading failed: {exc}"
