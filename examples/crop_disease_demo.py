@@ -318,7 +318,7 @@ def run_demo(interactive: bool = True) -> None:
     query_labels = generate_dataset._query_labels  # type: ignore[attr-defined]
 
     blight_queries = [
-        (p, l) for p, l in zip(query_paths, query_labels) if l == "northern_leaf_blight"
+        (p, label) for p, label in zip(query_paths, query_labels) if label == "northern_leaf_blight"
     ]
     test_path, true_label = blight_queries[0]
 
@@ -358,7 +358,7 @@ def run_demo(interactive: bool = True) -> None:
     # Simulate a correction
     print()
     print(f"  🧑‍🏫 Officer says: 'This is actually {true_label}.'")
-    correction_result = learner.correct(
+    _correction = learner.correct(
         image_path=test_path,
         true_label=true_label,
         confidence_weight=0.8,
