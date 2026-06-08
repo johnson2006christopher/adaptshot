@@ -358,8 +358,12 @@ def run_demo(interactive: bool = True) -> None:
     # Simulate a correction
     print()
     print(f"  🧑‍🏫 Officer says: 'This is actually {true_label}.'")
-    learner.correct(predicted_label=result.prediction, true_label=true_label, confidence_weight=0.8)
-    print(f"     ✅ Correction recorded. The model learned from this feedback.")
+    correction_result = learner.correct(
+        image_path=test_path,
+        true_label=true_label,
+        confidence_weight=0.8,
+    )
+    print(f"     ✅ Correction recorded. Model updated.")
 
     print()
     print("  💡 This is 'human-in-the-loop' — the most important feature.")
@@ -406,11 +410,10 @@ def run_demo(interactive: bool = True) -> None:
 
     print()
     print("  The system tracks its own performance:")
-    print(f"    • Calibration Error (ECE):  {report.get('current_ece', 'N/A')}")
-    print(f"    • Temperature:              {report.get('temperature', 'N/A')}")
-    print(f"    • Corrections in buffer:    {report.get('buffer_size', 'N/A')}")
-    print(f"    • OOD threshold:            {report.get('ood_threshold', 'N/A'):.3f}"
-          if isinstance(report.get('ood_threshold'), float) else "")
+    print(f"    • Window size (corrections): {report.get('window_size', 'N/A')}")
+    print(f"    • Calibration Error (ECE):   {report.get('ece', 'N/A')}")
+    print(f"    • Temperature:               {report.get('temperature', 'N/A')}")
+    print(f"    • Support size:              {report.get('support_size', 'N/A')}")
 
     print()
     print("  💡 AdaptShot is self-aware. You can monitor its health")
