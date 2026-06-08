@@ -284,8 +284,6 @@ def build_app() -> gr.Blocks:
 
     with gr.Blocks(
         title="MziziGuard — Crop Disease Detection",
-        theme=gr.themes.Soft(),
-        css=css,
     ) as app:
         # ── Header ──
         gr.Markdown(
@@ -557,4 +555,6 @@ if __name__ == "__main__":
         server_name="0.0.0.0",
         server_port=args.port,
         share=args.share,
+        theme=gr.themes.Soft(),
+        css=css,
     )
