@@ -452,8 +452,8 @@ def run_demo(interactive: bool = True) -> None:
     # ------------------------------------------------------------------
     print()
     print(f"  📁 Demo images saved to: {tmpdir}")
-    print("  🔬 Try it yourself: `pip install adaptshot`")
-    print("  📖 Full docs: https://johnson2006christopher.github.io/adaptshot/")
+    print("  🔬 Try the full web app: `python -m examples.mziziguard.app`")
+    print("  📖 Docs: https://johnson2006christopher.github.io/adaptshot/")
     print()
 
     # Cleanup note
