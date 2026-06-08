@@ -1,18 +1,26 @@
 ---
-title: "13 — MziziGuard: Crop Disease Detection Demo"
+title: "13 — MziziGuard: Crop Disease Detection App"
 nav_order: 13
 ---
 
 # MziziGuard: Crop Disease Detection with AdaptShot
 
-This tutorial walks through a complete, self-contained demo that showcases AdaptShot's core value: helping smallholder farmers identify crop diseases from just a few photos — no internet, no GPU, no expensive hardware.
+MziziGuard is a **complete, working application** built on AdaptShot that helps smallholder farmers identify maize diseases from just a few photos — no internet, no GPU, no expensive hardware.
+
+It comes in two modes:
+
+| Mode | Command | Best for |
+|------|---------|----------|
+| **Terminal demo** | `python examples/crop_disease_demo.py` | Presentations, quick test |
+| **Full web app** | `python -m examples.mziziguard.app` | Real usage, training, field deployment |
 
 **You will learn:**
-- How few-shot learning works in practice (5 photos per disease class)
-- How to use human-in-the-loop corrections with `FewShotLearner.correct()`
+- How to run the full Gradio web application with 5-tab interface
+- How few-shot learning works in practice (5 photos per class)
+- How to use human-in-the-loop corrections (the core power of AdaptShot)
 - How OOD detection prevents wrong answers in the field
 - How to read calibration reports for system monitoring
-- How to present AdaptShot to non-technical audiences
+- How to adapt MziziGuard for your own crops and use cases
 
 ---
 
@@ -22,26 +30,44 @@ In Tanzania and across East Africa, maize is the staple food. But diseases like 
 
 Almost every farmer has a basic smartphone. What if they could just take a photo and get an instant, accurate diagnosis — without needing internet?
 
-That's what MziziGuard demonstrates.
+That's what MziziGuard solves.
 
 ---
 
-## Running the Demo
+## Running the Full Web Application
 
-The demo is fully self-contained — it generates synthetic leaf images so there are **zero external dependencies** beyond AdaptShot itself.
+Install dependencies and start the Gradio web server:
 
 ```bash
-# Install AdaptShot if you haven't already
-pip install adaptshot
+# Install AdaptShot with Gradio UI support
+pip install -e ".[ui]"
 
-# Run the demo (interactive mode with pause prompts)
-python examples/crop_disease_demo.py
+# Launch the web application
+python -m examples.mziziguard.app
 
-# Run without pause prompts (for testing)
-python examples/crop_disease_demo.py --no-pause
+# Or with a custom port and public link
+python -m examples.mziziguard.app --port 8080 --share
 ```
 
-The demo has **6 stages**, each telling a piece of the story:
+Then open **http://localhost:7860** in your browser. You'll see 5 tabs:
+
+| Tab | What it does |
+|-----|-------------|
+| ⚙️ **Setup** | Generate synthetic samples or load real images from folders |
+| 🔍 **Diagnose** | Upload a crop photo → instant Swahili diagnosis with confidence |
+| 👩‍🏫 **Teach** | Correct wrong predictions — the model learns immediately |
+| 🏥 **Health** | System calibration dashboard & session metrics |
+| 📦 **Batch** | Process multiple photos at once, export results |
+
+### Quick Start: The Terminal Demo
+
+For a 6-stage narrated presentation (great for demos):
+
+```bash
+python examples/crop_disease_demo.py
+# Press Enter between stages for a live presentation
+# Use --no-pause for non-interactive mode
+```
 
 | Stage | What happens | Key concept |
 |-------|-------------|-------------|
@@ -146,46 +172,136 @@ You don't need to be an ML expert to know if the system is healthy. The calibrat
 
 ---
 
-## Adapting MziziGuard for Your Own Use Case
+## Using the Python API
 
-The demo is designed to be a template. Here's how to adapt it:
+MziziGuard has a clean Python API for programmatic use. Here's the full workflow:
 
-### Swap the image generator for real data
+### Configuration (config.yaml)
 
-Replace the synthetic leaf generators with your own PIL images:
+Edit `examples/mziziguard/config.yaml` to add your own crops:
 
-```python
-from PIL import Image
-
-def load_my_images(class_name, folder):
-    paths, labels = [], []
-    for fname in os.listdir(folder):
-        if fname.endswith((".jpg", ".png")):
-            paths.append(os.path.join(folder, fname))
-            labels.append(class_name)
-    return paths, labels
-
-# Load 5-10 images per class from your folders
-all_paths, all_labels = [], []
-for class_name in ["healthy_crop", "disease_a", "disease_b"]:
-    p, l = load_my_images(class_name, f"data/{class_name}/")
-    all_paths.extend(p)
-    all_labels.extend(l)
+```yaml
+crops:
+  maize:
+    swahili: "mahindi"
+    diseases:
+      healthy_maize:
+        swahili: "mahindi yenye afya"
+        action: "Hakuna matibabu yanayohitajika."
+        severity: "low"
+      northern_leaf_blight:
+        swahili: "ugonjwa wa mabaka ya kahawia"
+        action: "Ondoa majani yaliyoathirika. Tumia dawa ya kuvu."
+        severity: "moderate"
 ```
 
-### Change the disease information
-
-Update the `DISEASE_INFO` dictionary in the demo script to match your use case:
+### Initialize and Predict
 
 ```python
-DISEASE_INFO = {
-    "healthy_crop": {
-        "swahili": "mazao yenye afya",
-        "action": "No treatment needed.",
-        "impact": "Your crop is healthy!",
-    },
-    # Add your own diseases here...
-}
+from examples.mziziguard import MziziGuard
+
+# Load from config
+guard = MziziGuard("examples/mziziguard/config.yaml")
+
+# Option A: Generate synthetic samples for quick start
+guard.initialize_with_samples(n_support=5)
+
+# Option B: Load real images from a folder structure
+# (folder/{class_name}/*.png)
+guard.load_images_from_dir("path/to/crop_photos/", max_per_class=10)
+
+# Diagnose
+result = guard.diagnose("photo_of_leaf.jpg")
+print(f"Diagnosis: {result.swahili}")
+print(f"Confidence: {result.confidence:.1%}")
+print(f"Action: {result.action}")
+```
+
+### Teach the Model (Human-in-the-Loop)
+
+```python
+# When the prediction is wrong, correct it:
+result = guard.teach(
+    image_path="photo_of_leaf.jpg",
+    true_label="northern_leaf_blight",
+    confidence_weight=0.9,  # How sure are you?
+)
+
+# The model updates IMMEDIATELY — next prediction will be better
+```
+
+### Batch Processing
+
+```python
+# Process a whole folder of farmer photos
+results = guard.batch_diagnose([
+    "farmer_1.jpg", "farmer_2.jpg", "farmer_3.jpg",
+])
+for r in results:
+    print(f"{r.swahili}: {r.confidence:.1%} — {r.action}")
+
+# Export to CSV for record-keeping
+csv_data = guard.batch_to_csv(results)
+with open("diagnoses.csv", "w") as f:
+    f.write(csv_data)
+```
+
+### Save and Resume
+
+```python
+# Save the trained model for next session
+guard.save_model("models/session_2024.json")
+
+# Later, resume from that save
+restored_count = guard.load_model("models/session_2024.json")
+print(f"Restored {restored_count} support images")
+```
+
+### System Health
+
+```python
+health = guard.system_health()
+print(f"Calibration ECE: {health['calibration']['ece']}")
+print(f"Session accuracy: {health['session']['accuracy']}")
+print(f"Eco mode: {health['config']['eco_mode']}")
+```
+
+## Adapting MziziGuard for Your Own Use Case
+
+### Add your own crops and diseases
+
+Edit `config.yaml` to define new crops:
+
+```yaml
+crops:
+  coffee:
+    swahili: "kahawa"
+    diseases:
+      coffee_leaf_rust:
+        swahili: "kutu ya majani ya kahawa"
+        action: "Tumia dawa ya kuvu yenye shaba. Punguza kivuli."
+        description: "Orange-yellow powdery spots on leaf undersides."
+        severity: "high"
+      healthy_coffee:
+        swahili: "kahawa yenye afya"
+        action: "Endelea na utunzaji wa kawaida."
+        severity: "low"
+```
+
+### Load real images
+
+Organize your photos like this and use `load_images_from_dir()`:
+
+```
+my_photos/
+├── healthy_coffee/
+│   ├── img_001.jpg
+│   └── img_002.jpg
+├── coffee_leaf_rust/
+│   ├── img_003.jpg
+│   └── img_004.jpg
+└── coffee_berry_disease/
+    └── img_005.jpg
 ```
 
 ### Other use cases that work with the same template
@@ -196,7 +312,7 @@ DISEASE_INFO = {
 - **Skin condition triage** — community health workers in rural clinics
 - **Manufacturing defect detection** — quality control for small industries
 
-Any problem where a non-expert needs to classify images with just a few examples is a candidate for AdaptShot.
+Any problem where a non-expert needs to classify images with just a few examples is a candidate for MziziGuard + AdaptShot.
 
 ---
 
@@ -218,25 +334,40 @@ If you're presenting this demo to a non-technical audience:
 
 ---
 
-## What This Demo Teaches About AdaptShot
+## Project Structure
 
-| Feature | How the demo shows it |
+```
+examples/mziziguard/
+├── __init__.py        # Public API (MziziGuard, DiagnosisResult)
+├── config.yaml         # Crop/disease definitions & engine settings
+├── engine.py           # Core engine wrapping FewShotLearner
+├── data.py             # Sample generation + real image folder loader
+└── app.py              # Gradio web UI (5-tab interface)
+```
+
+## What This Project Demonstrates About AdaptShot
+
+| Feature | How MziziGuard uses it |
 |---------|----------------------|
-| Few-shot learning | Only 5 images per disease class |
-| CPU-only | Runs on the presenter's laptop, no GPU |
-| Offline capable | No internet connection needed |
-| Human-in-the-loop | Officer corrects a wrong prediction |
-| Calibrated confidence | Shows confidence %, not just labels |
-| OOD detection | Refuses to classify soil/non-leaf images |
-| Eco mode | `eco_mode=True` in config |
-| Calibration report | `calibration_report()` at the end |
-| Zero external deps | Synthetic images via PIL, no dataset download |
+| Few-shot learning | Only 5–10 images per disease class |
+| CPU-only | Runs on any laptop, no GPU required |
+| Offline capable | Full functionality with no internet |
+| Human-in-the-loop | Teach tab corrects wrong predictions instantly |
+| Calibrated confidence | Shows confidence % with every diagnosis |
+| OOD detection | Flags non-crop images instead of guessing |
+| Eco mode | `eco_mode: true` in config.yaml |
+| Calibration report | Health tab shows ECE, temperature, metrics |
+| Model persistence | `save_model()` / `load_model()` — resumes between sessions |
+| Batch processing | Process entire folders of farmer photos at once |
+| YAML configuration | Easy to add new crops/diseases without code changes |
+| Swahili localization | Every diagnosis includes Swahili name + treatment advice |
 
 ---
 
 ## Next Steps
 
-- Try the [Human-in-the-Loop Deep Dive](../guides/human-in-the-loop.md) for a deeper technical walkthrough
-- Read [Real-World Use Cases](../guides/real-world-use-cases.md) for more application ideas
-- Explore the [Beginner 101](../getting-started/beginner-101.md) guide if you're new to few-shot learning
+- Launch the full app: `python -m examples.mziziguard.app`
+- Edit `config.yaml` to add your own crops and diseases
+- Try loading real images with `load_images_from_dir()` instead of synthetic
+- Present the terminal demo to non-technical audiences using `--no-pause`
 - Check the [Full API Reference](../api/core.md) for all `FewShotLearner` methods
