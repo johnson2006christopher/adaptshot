@@ -1,4 +1,4 @@
-# Training & Continual Learning API (v0.1.1)
+# Training & Continual Learning API (v0.1.2)
 
 This document covers AdaptShot's human-in-the-loop routing, bounded replay buffer management, and correction-aware fine-tuning components. These modules operate behind the scenes in `FewShotLearner` but are exposed for advanced customization, research ablation, or integration into external pipelines.
 
