@@ -452,6 +452,11 @@ class FewShotLearner:
         # Run prediction first to get labels and confidences
         result = self.predict(image)
 
+        # Derive ACT threshold and OOD score from the prediction
+        class_idx = self._label_to_idx.get(result.prediction, 0)
+        act_threshold = self.act.get_threshold(class_idx)
+        ood_score = result.uncertainty_report.get("ood_score", 0.0) if result.ood_flag else None
+
         return self.explainer.explain(
             query_embedding=query_emb,
             support_embeddings=support_embeddings,
@@ -461,6 +466,8 @@ class FewShotLearner:
             calibrated_confidence=result.calibrated_confidence,
             act_action=result.act_action,
             is_ood=result.ood_flag,
+            act_threshold=act_threshold,
+            ood_score=ood_score,
         )
 
     def correct(
