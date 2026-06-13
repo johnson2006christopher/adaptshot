@@ -57,9 +57,13 @@ class TestContrastivePrototypeLearner:
     def test_is_fitted_initially_false(self, learner: ContrastivePrototypeLearner) -> None:
         assert learner.is_fitted is False
 
-    def test_projection_head_output_shape(self, learner: ContrastivePrototypeLearner) -> None:
-        """Projection head maps from embedding_dim to projection_dim."""
-        x = np.random.randn(5, 256).astype(np.float32)
+    def test_projection_head_after_refine(
+        self, learner: ContrastivePrototypeLearner, synthetic_data: tuple
+    ) -> None:
+        """Projection head projects to projection_dim after refine_prototypes."""
+        embeddings, labels = synthetic_data
+        learner.refine_prototypes(embeddings, labels, seed=42)
+        x = np.random.randn(5, 64).astype(np.float32)
         projected = learner._project(x)
         assert projected.shape == (5, learner.config.projection_dim)
 
@@ -70,7 +74,7 @@ class TestContrastivePrototypeLearner:
         embeddings, labels = synthetic_data
         prototypes, proto_labels = learner.refine_prototypes(embeddings, labels, seed=42)
         assert prototypes.shape[0] == 2  # 2 classes
-        assert prototypes.shape[1] == 64  # embedding dim
+        assert prototypes.shape[1] == learner.config.projection_dim
         assert len(proto_labels) == 2
         assert learner.is_fitted is True
 
@@ -82,7 +86,7 @@ class TestContrastivePrototypeLearner:
         prototypes, proto_labels = learner.refine_prototypes(embeddings, labels, seed=42)
 
         # Query near class_0 center
-        query = np.array([[-2.0] + [0.0] * 63], dtype=np.float32).reshape(-1)
+        query = np.array([-2.0] + [0.0] * 63, dtype=np.float32).reshape(-1)
         pred, conf, idx = learner.nearest_prototype(query, prototypes, proto_labels)
         assert pred == "class_0"
         assert 0.0 <= conf <= 1.0
