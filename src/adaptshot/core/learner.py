@@ -1137,6 +1137,58 @@ class FewShotLearner:
         margin_flag = np.isfinite(prototype_margin) and float(prototype_margin) < 0.01
         return bool(distance_flag or margin_flag)
 
+    def _self_calibrate_conformal(
+        self,
+        support_embeddings: np.ndarray,
+        support_labels: np.ndarray,
+    ) -> None:
+        """Bootstrap conformal calibration from support set via leave-one-out.
+
+        For each support example, computes its nonconformity score against
+        class prototypes (excluding itself from prototype computation where
+        possible, then using the full prototype as an approximation). This
+        populates the conformal engine's calibration buffer so that
+        predict_set() can produce meaningful multi-class prediction sets
+        from the very first inference call.
+
+        Args:
+            support_embeddings: [N, D] support set embeddings (512-dim).
+            support_labels: [N] support class labels.
+        """
+        if len(support_embeddings) < self.conformal.min_calibration_size:
+            # Not enough data for useful calibration — singleton sets until
+            # enough corrections come in via correct().
+            return
+
+        self.conformal.reset()
+        proto_labels = self._prototype_labels
+
+        for i in range(len(support_embeddings)):
+            emb_i = np.asarray(support_embeddings[i], dtype=np.float32)
+            label_i = support_labels[i]
+
+            # Compute distances to all class prototypes
+            distances_i = self._compute_all_prototype_distances(emb_i)
+            if len(distances_i) == 0:
+                continue
+
+            if self.conformal.score_method == "softmax":
+                score = self.conformal.softmax_nonconformity(
+                    distances_i, proto_labels, label_i
+                )
+            else:
+                proto_idx = self._prototype_index_for_label(label_i)
+                if proto_idx is not None and proto_idx < len(distances_i):
+                    dist_to_own = float(distances_i[proto_idx])
+                    ref_threshold = float(np.median(distances_i)) + float(np.std(distances_i))
+                    score = self.conformal.distance_nonconformity(
+                        dist_to_own, ref_threshold
+                    )
+                else:
+                    score = 1.0
+
+            self.conformal.update_calibration(score, label_i)
+
     def _ensure_label_index(self, label: Union[str, int]) -> int:
         if label in self._label_to_idx:
             return self._label_to_idx[label]
@@ -1324,9 +1376,9 @@ class FewShotLearner:
             return
 
         old_head = self._model_head
-        expanded_head = torch.nn.Linear(old_head.in_features, new_num_classes)
+        expanded_head = _get_torch_nn().Linear(old_head.in_features, new_num_classes)
 
-        with torch.no_grad():
+        with _get_torch().no_grad():
             expanded_head.weight[: old_head.out_features] = old_head.weight
             expanded_head.bias[: old_head.out_features] = old_head.bias
 
@@ -1364,13 +1416,15 @@ class FewShotLearner:
             return
 
         if self._sim_embeddings and self._sim_labels:
-            support_tensor = torch.tensor(np.stack(self._sim_embeddings), dtype=torch.float32)
-            support_label_tensor = torch.tensor(
+            _t = _get_torch()
+            support_tensor = _t.tensor(np.stack(self._sim_embeddings), dtype=_t.float32)
+            support_label_tensor = _t.tensor(
                 [self._ensure_label_index(label) for label in self._sim_labels],
-                dtype=torch.long,
+                dtype=_t.long,
             )
-            fisher_loader: DataLoader[Any] = DataLoader(
-                TensorDataset(support_tensor, support_label_tensor),
+            DL, TD = _get_data_loader()
+            fisher_loader = DL(
+                TD(support_tensor, support_label_tensor),
                 batch_size=min(32, len(self._sim_embeddings)),
                 shuffle=False,
             )
@@ -1396,9 +1450,10 @@ class FewShotLearner:
         if not emb_list:
             return
 
-        new_embs = torch.tensor(np.stack(emb_list), dtype=torch.float32)
-        new_labels = torch.tensor(label_list, dtype=torch.long)
-        weights = torch.tensor(weight_list, dtype=torch.float32)
+        _t = _get_torch()
+        new_embs = _t.tensor(np.stack(emb_list), dtype=_t.float32)
+        new_labels = _t.tensor(label_list, dtype=_t.long)
+        weights = _t.tensor(weight_list, dtype=_t.float32)
 
         self.finetuner.finetune(new_embs, new_labels, weights)
 
