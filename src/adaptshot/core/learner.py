@@ -1003,7 +1003,8 @@ class FewShotLearner:
         query_2d = np.asarray(query_embedding, dtype=np.float32).reshape(1, -1)
         diffs = query_2d - self._prototype_embeddings
         distances = np.sqrt(np.sum(diffs ** 2, axis=1))
-        return distances.astype(np.float32)
+        result: np.ndarray = np.asarray(distances, dtype=np.float32)
+        return result
 
     def _update_ood_threshold(self) -> None:
         if not self.config.enable_ood_detection:
