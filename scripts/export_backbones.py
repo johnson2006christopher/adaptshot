@@ -44,11 +44,15 @@ def export_backbone(name: str, factory) -> None:
         opset_version=17,
         input_names=["input"],
         output_names=["output"],
-        dynamic_shapes={"input": {0: "batch_size"}, "output": {0: "batch_size"}},
-        external_data=False,
+        dynamic_axes={"input": {0: "batch_size"}, "output": {0: "batch_size"}},
     )
 
-    size_mb = output_path.stat().st_size / (1024 * 1024)
+    # Report combined size including external data file if present.
+    size_bytes = output_path.stat().st_size
+    data_path = Path(str(output_path) + ".data")
+    if data_path.exists():
+        size_bytes += data_path.stat().st_size
+    size_mb = size_bytes / (1024 * 1024)
     print(f"  EXPORTED  {name}.onnx  ({size_mb:.1f} MB)")
 
 
