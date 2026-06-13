@@ -399,6 +399,8 @@ class ExplainabilityEngine:
         calibrated_confidence: float,
         act_action: str = "ACCEPT",
         is_ood: bool = False,
+        act_threshold: Optional[float] = None,
+        ood_score: Optional[float] = None,
     ) -> ExplanationResult:
         """Generate a complete explanation for a prediction.
 
@@ -414,6 +416,8 @@ class ExplainabilityEngine:
             calibrated_confidence: Post-calibration confidence.
             act_action: ACT decision string.
             is_ood: Whether input was flagged as OOD.
+            act_threshold: Current ACT threshold for the predicted class.
+            ood_score: Raw OOD score from Mahalanobis distance.
 
         Returns:
             ExplanationResult with all explanation components.
@@ -425,7 +429,8 @@ class ExplainabilityEngine:
 
         # Confidence decomposition
         conf_decomp = self.decompose_confidence(
-            raw_confidence, calibrated_confidence, act_action, is_ood
+            raw_confidence, calibrated_confidence, act_action, is_ood,
+            act_threshold=act_threshold, ood_score=ood_score,
         )
 
         # Counterfactual
