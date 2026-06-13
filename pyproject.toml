@@ -28,7 +28,7 @@ dependencies = [
 torch = ["torch>=2.0.0", "torchvision>=0.15.0"]
 faiss = ["faiss-cpu>=1.7.4"]
 ui = ["gradio>=3.50.0"]
-gui = ["gradio>=3.50.0", "pandas>=2.0.0", "onnx>=1.16.0", "onnxscript>=0.3.0"]
+gui = ["gradio>=3.50.0", "pandas>=2.0.0", "onnx>=1.16.0", "onnxscript>=0.3.0", "onnxruntime>=1.14.0"]
 dev = [
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
@@ -51,7 +51,7 @@ Repository = "https://github.com/johnson2006christopher/adaptshot.git"
 where = ["src"]
 
 [tool.setuptools.package-data]
-"adaptshot" = ["data/*.onnx"]
+"adaptshot" = ["data/*.onnx", "data/*.onnx.data"]
 
 [tool.ruff]
 target-version = "py39"
@@ -69,6 +69,10 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "torchvision.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "onnxruntime"
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
