@@ -1048,9 +1048,7 @@ class FewShotLearner:
         source_path: Path,
     ) -> None:
         learner = self
-        learner.calibrator.temperature = torch.nn.Parameter(
-            torch.tensor(float(state["calibration"]["temperature"]))
-        )
+        learner.calibrator.temperature = float(state["calibration"]["temperature"])
         learner.calibrator._ece_history = list(state["calibration"].get("ece_history", []))
 
         for key, threshold in state["act_thresholds"].items():
