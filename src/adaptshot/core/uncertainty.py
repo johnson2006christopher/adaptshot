@@ -3,8 +3,12 @@
 Implements three complementary uncertainty estimates that together provide
 a holistic view of prediction reliability:
 
-1. **Epistemic** (model uncertainty): Monte Carlo Dropout variance across
-   multiple forward passes. High when the model hasn't seen similar data.
+1. **Epistemic** (model uncertainty): Embedding perturbation sensitivity.
+   Measures how much the query embedding shifts under small Gaussian
+   perturbations. High sensitivity indicates the model lacks robust
+   representations for this input (epistemic uncertainty).
+   (Note: Full MC Dropout is planned for a future torch-dependent release;
+   the current perturbation-based proxy operates entirely in numpy.)
 
 2. **Aleatoric** (data uncertainty): Entropy of the softmax distribution
    over nearest-k neighbors. High when class boundaries are ambiguous.
@@ -16,7 +20,7 @@ Out-of-distribution (OOD) detection uses class-conditional Mahalanobis
 distances with a configurable threshold. Inputs exceeding the threshold
 across all known classes are flagged as OOD.
 
-Design: numpy-first with optional torch acceleration for MC Dropout.
+Design: numpy-first with optional torch acceleration planned for MC Dropout.
 """
 
 from __future__ import annotations
@@ -32,7 +36,7 @@ class UncertaintyReport:
     """Structured uncertainty decomposition for a single prediction.
 
     Attributes:
-        epistemic: MC Dropout variance (model uncertainty), [0, 1].
+        epistemic: Embedding perturbation sensitivity (model uncertainty), [0, 1].
         aleatoric: Entropy over nearest-k softmax (data uncertainty), [0, 1].
         distributional: Mahalanobis-based OOD score, [0, 1].
         composite: Weighted fusion of all three signals, [0, 1].
@@ -40,7 +44,7 @@ class UncertaintyReport:
         ood_score: Raw Mahalanobis distance percentile.
         nearest_class_margin: Margin between top-2 class Mahalanobis distances.
         entropy: Raw entropy of k-NN softmax distribution.
-        variance: Raw MC dropout variance (before normalization).
+        variance: Raw embedding perturbation variance (before normalization).
     """
 
     epistemic: float = 0.0
@@ -78,6 +82,12 @@ class UncertaintyQuantifier:
     The composite score is computed as:
         U = w_e * U_epistemic + w_a * U_aleatoric + w_d * U_distributional
     normalized by (w_e + w_a + w_d).
+
+    Modes:
+        - "entropy": Aleatoric uncertainty only (k-NN entropy).
+        - "mahalanobis": Distributional OOD detection only.
+        - "mcdropout": Epistemic proxy (embedding perturbation sensitivity).
+        - "ensemble": All three signals fused together.
     """
 
     def __init__(
@@ -88,19 +98,21 @@ class UncertaintyQuantifier:
         ood_percentile: float = 95.0,
         min_ood_samples: int = 10,
         k_neighbors: int = 5,
-        mc_samples: int = 10,
+        perturbation_samples: int = 10,
+        perturbation_scale: float = 0.01,
         mahalanobis_regularization: float = 1e-4,
     ) -> None:
         """Initialize the uncertainty quantifier.
 
         Args:
-            epistemic_weight: Weight for MC Dropout uncertainty in composite.
+            epistemic_weight: Weight for epistemic uncertainty in composite.
             aleatoric_weight: Weight for k-NN entropy in composite.
             distributional_weight: Weight for Mahalanobis OOD in composite.
             ood_percentile: Percentile threshold for OOD detection [0, 100].
             min_ood_samples: Minimum samples before OOD detection activates.
             k_neighbors: Number of neighbors for entropy computation.
-            mc_samples: Number of MC Dropout forward passes.
+            perturbation_samples: Number of perturbed embeddings for epistemic proxy.
+            perturbation_scale: Std of Gaussian noise for embedding perturbation.
             mahalanobis_regularization: Ridge term for covariance inverse.
         """
         self.w_e = epistemic_weight
@@ -109,7 +121,8 @@ class UncertaintyQuantifier:
         self.ood_percentile = ood_percentile
         self.min_ood_samples = min_ood_samples
         self.k = k_neighbors
-        self.mc_samples = mc_samples
+        self.perturbation_samples = perturbation_samples
+        self.perturbation_scale = perturbation_scale
         self.reg = mahalanobis_regularization
 
         # Class-conditional Gaussian parameters for Mahalanobis
@@ -281,36 +294,72 @@ class UncertaintyQuantifier:
         return is_ood_flag, ood_score
 
     # ------------------------------------------------------------------
-    # Epistemic uncertainty (MC Dropout variance)
+    # Epistemic uncertainty (embedding perturbation sensitivity)
     # ------------------------------------------------------------------
 
-    @staticmethod
-    def compute_mc_variance(
-        mc_embeddings: List[np.ndarray],
+    def estimate_epistemic(
+        self,
+        query_embedding: np.ndarray,
+        seed: int = 42,
     ) -> Tuple[float, float]:
-        """Compute variance across MC Dropout samples.
+        """Estimate epistemic uncertainty via embedding perturbation sensitivity.
 
-        The sample variance of L2-normed embeddings indicates model uncertainty:
-        if the model consistently produces similar embeddings despite dropout,
-        uncertainty is low. High variance across MC samples indicates epistemic
-        uncertainty.
+        Adds small Gaussian noise to the query embedding and measures how much
+        the normalized direction shifts. High sensitivity indicates the embedding
+        lacks robustness — the model has high epistemic uncertainty for this input.
+
+        This is a numpy-based proxy for MC Dropout. Full MC Dropout through the
+        backbone requires torch and is planned for a future release.
 
         Args:
-            mc_embeddings: List of [D] embeddings from MC forward passes.
+            query_embedding: [D] query embedding vector.
+            seed: Random seed for perturbation reproducibility.
 
         Returns:
-            (variance_norm, normalized_variance in [0, 1])
+            (raw_variance, normalized_variance in [0, 1])
         """
-        if len(mc_embeddings) < 2:
+        rng = np.random.default_rng(seed)
+        query = np.asarray(query_embedding, dtype=np.float32)
+        query_norm = float(np.linalg.norm(query)) + 1e-8
+
+        perturbed_embeddings: List[np.ndarray] = []
+        for _ in range(self.perturbation_samples):
+            noise = rng.normal(0.0, self.perturbation_scale, size=query.shape).astype(np.float32)
+            perturbed = query + noise * query_norm  # scale noise to embedding magnitude
+            # L2 normalize to focus on directional sensitivity
+            perturbed_norm = float(np.linalg.norm(perturbed)) + 1e-8
+            perturbed_embeddings.append((perturbed / perturbed_norm).astype(np.float32))
+
+        stacked = np.stack(perturbed_embeddings, axis=0)  # [M, D]
+        mean_emb = stacked.mean(axis=0)
+        # Frobenius norm of variance across perturbed embeddings
+        var = float(np.mean(np.sum((stacked - mean_emb) ** 2, axis=1)))
+        # Normalize: variance of direction cosines bounded in [0, 2]
+        var_norm = float(np.clip(var / 2.0, 0.0, 1.0))
+        return var, var_norm
+
+    @staticmethod
+    def compute_perturbation_variance(
+        perturbed_embeddings: List[np.ndarray],
+    ) -> Tuple[float, float]:
+        """Compute variance across a set of perturbed or sampled embeddings.
+
+        The sample variance of L2-normalized embeddings indicates model uncertainty:
+        if the embedding direction is stable under perturbation, uncertainty is low.
+
+        Args:
+            perturbed_embeddings: List of [D] embeddings from perturbation or passes.
+
+        Returns:
+            (variance_raw, normalized_variance in [0, 1])
+        """
+        if len(perturbed_embeddings) < 2:
             return 0.0, 0.0
 
-        stacked = np.stack(mc_embeddings, axis=0)  # [M, D]
+        stacked = np.stack(perturbed_embeddings, axis=0)  # [M, D]
         mean_emb = stacked.mean(axis=0)
-        # Frobenius norm of variance
-        var = np.mean(np.sum((stacked - mean_emb) ** 2, axis=1))
-        # Normalize by embedding magnitude
-        norm_factor = float(np.linalg.norm(mean_emb)) + 1e-8
-        var_norm = float(np.clip(var / norm_factor, 0.0, 1.0))
+        var = float(np.mean(np.sum((stacked - mean_emb) ** 2, axis=1)))
+        var_norm = float(np.clip(var / 2.0, 0.0, 1.0))
         return var, var_norm
 
     # ------------------------------------------------------------------
@@ -383,50 +432,67 @@ class UncertaintyQuantifier:
         query_embedding: np.ndarray,
         support_embeddings: np.ndarray,
         support_labels: np.ndarray,
-        mc_embeddings: Optional[List[np.ndarray]] = None,
+        mode: str = "ensemble",
     ) -> UncertaintyReport:
-        """Compute the full multi-signal uncertainty decomposition.
+        """Compute the multi-signal uncertainty decomposition.
+
+        Signals are computed selectively based on the mode parameter:
+        - "entropy": Aleatoric (k-NN entropy) only.
+        - "mahalanobis": Distributional (Mahalanobis OOD) only.
+        - "mcdropout": Epistemic (perturbation sensitivity) only.
+        - "ensemble": All three signals fused.
 
         Args:
             query_embedding: [D] query embedding (single forward pass).
             support_embeddings: [N, D] support set.
             support_labels: [N] class labels.
-            mc_embeddings: Optional list of [D] embeddings from MC Dropout passes.
+            mode: Uncertainty computation mode (default "ensemble").
 
         Returns:
-            UncertaintyReport with all signals and composite score.
+            UncertaintyReport with computed signals and composite score.
         """
         report = UncertaintyReport()
+        compute_epistemic = mode in ("mcdropout", "ensemble")
+        compute_aleatoric = mode in ("entropy", "ensemble")
+        compute_distributional = mode in ("mahalanobis", "ensemble")
 
-        # Epistemic: MC Dropout variance
-        if mc_embeddings and len(mc_embeddings) > 1:
-            var_raw, var_norm = self.compute_mc_variance(mc_embeddings)
+        # Epistemic: embedding perturbation sensitivity
+        if compute_epistemic:
+            var_raw, var_norm = self.estimate_epistemic(query_embedding)
             report.variance = var_raw
             report.epistemic = var_norm
 
         # Aleatoric: k-NN entropy
-        entropy_raw, entropy_norm = self.compute_knn_entropy(
-            query_embedding, support_embeddings, support_labels
-        )
-        report.entropy = entropy_raw
-        report.aleatoric = entropy_norm
+        if compute_aleatoric:
+            entropy_raw, entropy_norm = self.compute_knn_entropy(
+                query_embedding, support_embeddings, support_labels
+            )
+            report.entropy = entropy_raw
+            report.aleatoric = entropy_norm
 
         # Distributional: Mahalanobis OOD
-        min_dist, closest_class, margin = self.min_mahalanobis_distance(query_embedding)
-        is_ood_flag, ood_score = self.is_ood(query_embedding)
-        report.distributional = ood_score
-        report.is_ood = is_ood_flag
-        report.ood_score = ood_score
-        report.nearest_class_margin = margin
+        if compute_distributional:
+            min_dist, closest_class, margin = self.min_mahalanobis_distance(query_embedding)
+            is_ood_flag, ood_score = self.is_ood(query_embedding)
+            report.distributional = ood_score
+            report.is_ood = is_ood_flag
+            report.ood_score = ood_score
+            report.nearest_class_margin = margin
 
-        # Composite score: weighted average
-        total_w = self.w_e + self.w_a + self.w_d
+        # Composite score: weighted average of computed signals
+        total_w = 0.0
+        composite = 0.0
+        if compute_epistemic:
+            composite += self.w_e * report.epistemic
+            total_w += self.w_e
+        if compute_aleatoric:
+            composite += self.w_a * report.aleatoric
+            total_w += self.w_a
+        if compute_distributional:
+            composite += self.w_d * report.distributional
+            total_w += self.w_d
         if total_w > 0:
-            report.composite = (
-                self.w_e * report.epistemic
-                + self.w_a * report.aleatoric
-                + self.w_d * report.distributional
-            ) / total_w
+            report.composite = composite / total_w
 
         return report
 
