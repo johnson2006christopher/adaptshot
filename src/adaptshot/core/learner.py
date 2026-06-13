@@ -173,7 +173,7 @@ class FewShotLearner:
         )
 
         self.finetuner: Optional[CAEWCFinetuner] = None
-        self._model_head: Optional[torch.nn.Linear] = None
+        self._model_head: Optional[Any] = None  # torch.nn.Linear (lazy)
 
         self.router = FeedbackRouter(
             buffer_capacity=self.config.max_buffer_size,
@@ -266,9 +266,18 @@ class FewShotLearner:
         label_arr = np.array(self._sim_labels, dtype=object)
         self.uncertainty_q.fit_class_distributions(support_arr, label_arr)
         if self.config.inference_mode == "contrastive":
-            self._prototype_embeddings, self._prototype_labels = (
-                self.contrastive.refine_prototypes(support_arr, label_arr, seed=self.config.seed)
+            # Store contrastive-refined prototypes separately (128-dim projection space)
+            # so _prototype_embeddings stays 512-dim for conformal/OOD distance math
+            (
+                self._contrastive_prototype_embeddings,
+                self._contrastive_prototype_labels,
+            ) = self.contrastive.refine_prototypes(
+                support_arr, label_arr, seed=self.config.seed
             )
+
+        # v0.2.0: Self-calibration — leave-one-out conformal scores on support set
+        if self._prototype_embeddings.size > 0:
+            self._self_calibrate_conformal(support_arr, label_arr)
 
         self._is_initialized = True
 
@@ -299,13 +308,13 @@ class FewShotLearner:
 
         if self.config.inference_mode == "contrastive" and self.contrastive.is_fitted:
             pred_label_raw, raw_conf, proto_idx = self.contrastive.nearest_prototype(
-                query_emb, self._prototype_embeddings, self._prototype_labels
+                query_emb, self._contrastive_prototype_embeddings, self._contrastive_prototype_labels
             )
             pred_label = self._coerce_label(pred_label_raw)
             neighbor_idx = self._nearest_support_index_for_label(query_emb, pred_label)
             distance_to_prototype = self._distance_to_label_prototype(query_emb, pred_label)
             # Contrastive prototype margin: confidence gap to second-closest class
-            sims = self.contrastive.project_query(query_emb) @ self._prototype_embeddings.T
+            sims = self.contrastive.project_query(query_emb) @ self._contrastive_prototype_embeddings.T
             sorted_sims = np.sort(sims)[::-1]
             prototype_margin = float(sorted_sims[0] - sorted_sims[1]) if len(sorted_sims) > 1 else 0.0
         elif self.config.inference_mode == "prototypical" and self._prototype_embeddings.size > 0:
