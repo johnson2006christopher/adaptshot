@@ -14,7 +14,7 @@ Integration points:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Set, Tuple, Union, cast
+from typing import Dict, List, Set, Union
 
 import numpy as np
 
