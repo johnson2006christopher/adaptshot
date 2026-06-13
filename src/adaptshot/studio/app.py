@@ -112,7 +112,7 @@ def _require_gradio() -> Any:
     """Import Gradio lazily and raise a friendly error if it is missing."""
 
     try:
-        import gradio as gr  # type: ignore[import-not-found]
+        import gradio as gr  # type: ignore
     except ImportError as exc:  # pragma: no cover - exercised only without gui deps
         raise RuntimeError(
             "AdaptShot Studio requires the optional gui extra. Install it with `pip install -e \".[gui]\"`."
