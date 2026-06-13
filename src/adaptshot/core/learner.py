@@ -99,7 +99,7 @@ class FewShotLearner:
             method=self.config.calibration_method,
             evaluation_bins=self.config.calibration_eval_bins,
         )
-        self.act = ACTEngine(n_classes=200)
+        self.act = ACTEngine(n_classes=max(10, self.config.n_way))
 
         # v0.2.0: Advanced engines
         self.conformal = ConformalEngine(
