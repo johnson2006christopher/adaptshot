@@ -123,7 +123,8 @@ class TestUncertaintyQuantifier:
         entropy, norm_entropy = quantifier.compute_knn_entropy(query, embeddings, labels)
         # Entropy should be non-negative (floating point may produce tiny negatives)
         assert entropy >= -1e-12
-        assert 0.0 <= norm_entropy <= 1.0
+        assert norm_entropy >= -1e-12
+        assert norm_entropy <= 1.0
 
     def test_quantify_returns_all_signals(
         self, quantifier: UncertaintyQuantifier, synthetic_data: tuple
