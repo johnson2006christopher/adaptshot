@@ -454,7 +454,9 @@ class FewShotLearner:
         # Derive ACT threshold and OOD score from the prediction
         class_idx = self._label_to_idx.get(result.prediction, 0)
         act_threshold = self.act.get_threshold(class_idx)
-        ood_score = result.uncertainty_report.get("ood_score", 0.0) if result.ood_flag else None
+        ood_score: Optional[float] = None
+        if result.ood_flag and result.uncertainty_report is not None:
+            ood_score = float(result.uncertainty_report.get("ood_score", 0.0))
 
         return self.explainer.explain(
             query_embedding=query_emb,
