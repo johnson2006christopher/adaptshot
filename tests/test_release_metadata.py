@@ -1,4 +1,4 @@
-"""Release metadata tests for v0.1.2."""
+"""Release metadata tests for v0.2.0-dev."""
 
 from __future__ import annotations
 
@@ -13,5 +13,5 @@ def test_package_version_matches_release() -> None:
     pyproject_path = Path(__file__).resolve().parents[1] / "pyproject.toml"
     pyproject_text = pyproject_path.read_text(encoding="utf-8")
 
-    assert __version__ == "0.1.2"
-    assert 'version = "0.1.2"' in pyproject_text
+    assert __version__ == "0.2.0-dev"
+    assert 'version = "0.2.0-dev"' in pyproject_text
