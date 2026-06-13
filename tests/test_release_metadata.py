@@ -13,5 +13,5 @@ def test_package_version_matches_release() -> None:
     pyproject_path = Path(__file__).resolve().parents[1] / "pyproject.toml"
     pyproject_text = pyproject_path.read_text(encoding="utf-8")
 
-    assert __version__ == "0.1.1"
+    assert __version__ == "0.1.2"
     assert 'version = "0.1.1"' in pyproject_text
