@@ -38,6 +38,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `np.unique` unpacking bug in uncertainty module (single return value incorrectly destructured).
 - Mypy strict-mode compliance across all 31 source files.
 - Pre-existing test failures from schema version and inference_mode API mismatches.
+- **Contrastive inference wired**: `predict()` now correctly routes to contrastive nearest-prototype when `inference_mode="contrastive"` (was silently falling through to nearest-neighbor).
+- **Epistemic uncertainty implemented**: Replaced unimplemented MC Dropout claim with working embedding perturbation sensitivity proxy (`estimate_epistemic()`).
+- **Uncertainty mode gating**: `uncertainty_mode` config field now gates signal computation in `UncertaintyQuantifier.quantify()`, avoiding wasted compute.
+- **Cross-conformal mode**: Implemented k-fold cross-conformal quantile averaging in `ConformalEngine` when `conformal_mode="cross"`.
+- **OOD detection unified**: `predict()` now uses Mahalanobis-based OOD detection via `UncertaintyQuantifier.is_ood()` as the primary path instead of the legacy distance-threshold method.
+- **Confidence decomposition clarified**: Simplified math in `decompose_confidence()` to `calibrated + penalties`, eliminating confusing intermediate calculations.
+- **Documentation accuracy**: Replaced "gradient-based saliency" claims with honest "embedding-space saliency" language; updated epistemic uncertainty description from MC Dropout to perturbation sensitivity.
+- **Config default fixed**: `uncertainty_mode` default changed from `"entropy"` to `"ensemble"` (now consistent with README).
 
 ---
 
