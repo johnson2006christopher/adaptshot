@@ -25,7 +25,7 @@ for gradient-based saliency.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple, Union, cast
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
@@ -415,8 +415,7 @@ class ExplainabilityEngine:
 
         # Build summary
         same_class_attrs = [a for a in attributions if a.is_same_class]
-        other_class_attrs = [a for a in attributions if not a.is_same_class]
-
+        
         summary_parts: List[str] = []
         summary_parts.append(
             f"Predicted '{predicted_label}' with confidence {calibrated_confidence:.3f}."
