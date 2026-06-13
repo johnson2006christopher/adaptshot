@@ -1303,7 +1303,7 @@ class FewShotLearner:
 
     def _init_or_rebuild_model_head(self, embedding_dim: int) -> None:
         num_classes = max(1, len(self._label_to_idx))
-        self._model_head = torch.nn.Linear(embedding_dim, num_classes)
+        self._model_head = _get_torch_nn().Linear(embedding_dim, num_classes)
         self._model_head.eval()
         self.finetuner = CAEWCFinetuner(
             model=self._model_head,
