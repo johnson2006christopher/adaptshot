@@ -14,12 +14,13 @@ four complementary methods:
    a different class prediction — what would need to be different for the
    model to predict class B instead of class A.
 
-4. **Saliency Mapping** (requires torch): Gradient-based input attribution
-   showing which pixels most influenced the embedding, propagated back
-   through the frozen backbone.
+4. **Embedding-Space Saliency**: Per-channel feature importance derived
+   from the distance between query embedding and class prototype.
+   (Full gradient-based saliency through the backbone requires torch
+   and is planned for a future release.)
 
-Design: numpy-first for attributions and counterfactuals; torch-optional
-for gradient-based saliency.
+Design: numpy-first for attributions, counterfactuals, and embedding-space
+saliency; torch-optional for future gradient-based saliency.
 """
 
 from __future__ import annotations
@@ -246,6 +247,10 @@ class ExplainabilityEngine:
     ) -> ConfidenceDecomposition:
         """Break down confidence into its constituent components.
 
+        The final confidence is: calibrated_confidence + act_adjustment + ood_adjustment,
+        clamped to [0, 1]. Each adjustment is displayed separately so users can
+        understand why confidence changed from the raw similarity score.
+
         Args:
             raw_confidence: Pre-calibration confidence from similarity.
             calibrated_confidence: Post-calibration confidence.
@@ -258,19 +263,17 @@ class ExplainabilityEngine:
         raw = float(np.clip(raw_confidence, 0.0, 1.0))
         cal = float(np.clip(calibrated_confidence, 0.0, 1.0))
 
-        # Calibration adjustment
+        # Calibration adjustment: how much temperature scaling changed confidence
         cal_adj = cal - raw
 
-        # ACT penalty: if ACT rejected, estimate the penalty
-        if act_action != "ACCEPT":
-            act_penalty = -0.15  # Approximate penalty for feedback request
-        else:
-            act_penalty = 0.0
+        # ACT penalty: if ACT rejected, apply a penalty for conservatism
+        act_penalty = -0.15 if act_action != "ACCEPT" else 0.0
 
-        # OOD penalty
+        # OOD penalty: heavily penalize out-of-distribution inputs
         ood_penalty = -0.25 if is_ood else 0.0
 
-        final = float(np.clip(raw + cal_adj + act_penalty + ood_penalty, 0.0, 1.0))
+        # Final confidence = calibrated + post-hoc adjustments, clamped to valid range
+        final = float(np.clip(cal + act_penalty + ood_penalty, 0.0, 1.0))
 
         return ConfidenceDecomposition(
             raw_similarity=raw,
