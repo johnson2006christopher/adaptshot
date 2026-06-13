@@ -41,10 +41,11 @@ def export_backbone(name: str, factory) -> None:
         dummy_input,
         str(output_path),
         export_params=True,
-        opset_version=14,
+        opset_version=17,
         input_names=["input"],
         output_names=["output"],
-        dynamic_axes={"input": {0: "batch_size"}, "output": {0: "batch_size"}},
+        dynamic_shapes={"input": {0: "batch_size"}, "output": {0: "batch_size"}},
+        external_data=False,
     )
 
     size_mb = output_path.stat().st_size / (1024 * 1024)
