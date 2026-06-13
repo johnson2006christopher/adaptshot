@@ -239,6 +239,40 @@ class ConformalEngine:
         idx = max(0, min(idx, n - 1))
         return float(sorted_scores[idx])
 
+    def _compute_cross_quantile(self, scores: List[float]) -> float:
+        """Compute cross-conformal quantile via k-fold averaging.
+
+        Partitions calibration scores into n_bins folds, computes the
+        conformal quantile per fold, and averages them. This provides
+        more stable estimates than a single split, at the cost of
+        slightly conservative coverage (average of valid bounds).
+
+        Args:
+            scores: Nonconformity scores from calibration set.
+
+        Returns:
+            Cross-conformal quantile threshold q_hat.
+        """
+        n = len(scores)
+        if n < self.n_bins * 2:
+            # Not enough data for cross-conformal; fall back to split
+            return self._compute_quantile(scores)
+
+        rng = np.random.default_rng(42)
+        indices = rng.permutation(n)
+        scores_arr = np.asarray(scores, dtype=np.float64)
+        fold_size = n // self.n_bins
+
+        q_hats: List[float] = []
+        for fold in range(self.n_bins):
+            start = fold * fold_size
+            end = start + fold_size if fold < self.n_bins - 1 else n
+            fold_scores = scores_arr[indices[start:end]].tolist()
+            q_fold = self._compute_quantile(fold_scores)
+            q_hats.append(q_fold)
+
+        return float(np.mean(q_hats))
+
     # ------------------------------------------------------------------
     # Prediction set generation
     # ------------------------------------------------------------------
@@ -275,8 +309,11 @@ class ConformalEngine:
             result.coverage_estimate = 1.0 - self.alpha
             return result
 
-        # Compute global quantile threshold
-        q_hat = self._compute_quantile(self._calibration_scores)
+        # Compute quantile threshold based on mode
+        if self.mode == "cross":
+            q_hat = self._compute_cross_quantile(self._calibration_scores)
+        else:
+            q_hat = self._compute_quantile(self._calibration_scores)
         result.q_hat = q_hat
         result.coverage_estimate = self.empirical_coverage
 
