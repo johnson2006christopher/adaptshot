@@ -6,7 +6,7 @@ Created by Johnson Hassan.
 
 AdaptShot is a CPU-first, human-in-the-loop few-shot vision learning library. This documentation covers the public APIs that exist in `src/adaptshot/`, plus runnable examples that measure latency and memory on your own machine.
 
-This documentation tracks the v0.1.1 release. Use the native Python API as the source of truth; Studio is optional.
+This documentation tracks the v0.1.2 release. Use the native Python API as the source of truth; Studio is optional.
 
 ## How AdaptShot Works
 
