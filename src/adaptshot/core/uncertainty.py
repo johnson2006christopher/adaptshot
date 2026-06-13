@@ -21,8 +21,8 @@ Design: numpy-first with optional torch acceleration for MC Dropout.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple, Union, cast
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
