@@ -659,6 +659,11 @@ class FewShotLearner:
                 if self._prototype_embeddings.size > 0
                 else [],
                 "ood_distance_threshold": self._ood_distance_threshold,
+                # v0.2.0: Contrastive prototypes (128-dim projection space)
+                "contrastive_labels": self._contrastive_prototype_labels.tolist(),
+                "contrastive_embeddings": self._contrastive_prototype_embeddings.tolist()
+                if self._contrastive_prototype_embeddings.size > 0
+                else [],
             },
             "label_index": {
                 "label_to_idx": self._label_to_idx,
