@@ -156,17 +156,18 @@ class TestExplainabilityEngine:
         assert result.counterfactual is not None
         assert result.counterfactual.counterfactual_class == "dog"
 
-    def test_explain_rejects_empty_support(self, engine: ExplainabilityEngine) -> None:
-        """Empty support set raises an error."""
+    def test_explain_handles_empty_support(self, engine: ExplainabilityEngine) -> None:
+        """Empty support set returns empty attributions without error."""
         query = np.ones(32, dtype=np.float32)
-        with pytest.raises(ValueError, match="empty"):
-            engine.explain(
-                query_embedding=query,
-                support_embeddings=np.empty((0, 32), dtype=np.float32),
-                support_labels=np.array([], dtype=object),
-                predicted_label="cat",
-                raw_confidence=0.5,
-                calibrated_confidence=0.5,
-                act_action="ACCEPT",
-                is_ood=False,
-            )
+        result = engine.explain(
+            query_embedding=query,
+            support_embeddings=np.empty((0, 32), dtype=np.float32),
+            support_labels=np.array([], dtype=object),
+            predicted_label="cat",
+            raw_confidence=0.5,
+            calibrated_confidence=0.5,
+            act_action="ACCEPT",
+            is_ood=False,
+        )
+        assert result.attributions == []
+        assert result.prediction == "cat"
