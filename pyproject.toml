@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "adaptshot"
-version = "0.1.1"
+version = "0.1.2"
 description = "Human-aligned few-shot vision learning for resource-constrained environments"
 readme = "README.md"
 license = "MIT"
@@ -20,13 +20,12 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [
-    "torch>=2.0.0",
-    "torchvision>=0.15.0",
     "numpy>=1.24.0",
     "Pillow>=9.0.0",
 ]
 
 [project.optional-dependencies]
+torch = ["torch>=2.0.0", "torchvision>=0.15.0"]
 faiss = ["faiss-cpu>=1.7.4"]
 ui = ["gradio>=3.50.0"]
 gui = ["gradio>=3.50.0", "pandas>=2.0.0", "onnx>=1.16.0", "onnxscript>=0.3.0"]
@@ -37,7 +36,7 @@ dev = [
     "ruff>=0.1.0",
     "pre-commit>=3.4.0",
 ]
-all = ["adaptshot[faiss,gui,dev]"]
+all = ["adaptshot[torch,faiss,gui,dev]"]
 
 [project.scripts]
 adaptshot-studio = "adaptshot.studio.app:launch"
@@ -51,6 +50,9 @@ Repository = "https://github.com/johnson2006christopher/adaptshot.git"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+"adaptshot" = ["data/*.onnx"]
+
 [tool.ruff]
 target-version = "py39"
 line-length = 100
@@ -60,6 +62,14 @@ python_version = "3.10"
 strict = true
 warn_return_any = true
 warn_unused_configs = true
+
+[[tool.mypy.overrides]]
+module = "onnxruntime"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "torchvision.*"
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
