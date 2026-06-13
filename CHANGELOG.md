@@ -46,6 +46,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Confidence decomposition clarified**: Simplified math in `decompose_confidence()` to `calibrated + penalties`, eliminating confusing intermediate calculations.
 - **Documentation accuracy**: Replaced "gradient-based saliency" claims with honest "embedding-space saliency" language; updated epistemic uncertainty description from MC Dropout to perturbation sensitivity.
 - **Config default fixed**: `uncertainty_mode` default changed from `"entropy"` to `"ensemble"` (now consistent with README).
+- **Conformal calibration wired**: Self-calibration on `load_support_images()` populates calibration buffer via leave-one-out scores; `correct()` feeds ground-truth nonconformity scores into the conformal engine. Prediction sets now produce meaningful multi-class outputs instead of degenerate singletons.
+- **Torch lazy imports in learner.py**: Moved `import torch`, `DataLoader`, `TensorDataset` out of module level into lazy getters (`_get_torch()`, `_get_torch_nn()`, `_get_data_loader()`). `FewShotLearner` is now importable without a hard torch dependency — PyTorch is truly optional.
+- **Contrastive mode shape mismatch fixed**: Contrastive prototypes (128-dim projection space) now stored in separate `_contrastive_prototype_*` fields; embedding-space prototypes (`_prototype_embeddings`) always remain 512-dim for conformal/OOD distance math. Eliminates the 512-vs-128 dimension mismatch in distance computations.
+- **ACTEngine dynamic class allocation**: Changed from `n_classes=200` to `n_classes=max(10, config.n_way)`; dynamic expansion handles additional classes at runtime.
+- **`compute_saliency_numpy()` implemented**: Returns per-dimension embedding-space feature importance via `|query - support|` normalized to [0,1]. No longer returns `None`.
+- **Epistemic uncertainty stochastic**: `estimate_epistemic()` seed default changed from `42` to `None` — each call produces a genuinely different perturbation pattern, capturing stochastic sensitivity.
+- **Confidence decomposition penalties derived from state**: ACT penalty now proportional to (confidence - threshold) gap when threshold available; OOD penalty proportional to Mahalanobis OOD score. Falls back to conservative defaults when state unavailable.
 
 ---
 
