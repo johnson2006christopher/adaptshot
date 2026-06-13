@@ -17,12 +17,10 @@ import warnings
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union, cast
 
 import numpy as np
-import torch
 from PIL import Image, UnidentifiedImageError
-from torch.utils.data import DataLoader, TensorDataset
 
 from ..config.settings import AdaptShotConfig
 from ..training.feedback_router import Correction, FeedbackRouter
@@ -54,6 +52,46 @@ from .similarity import (
     find_nearest_neighbor,
     find_nearest_prototype,
 )
+
+if TYPE_CHECKING:
+    import torch
+    from torch.utils.data import DataLoader, TensorDataset
+
+# ---------------------------------------------------------------------------
+# Lazy import helpers – torch is resolved only when first needed.
+# This keeps the module importable without a hard torch dependency.
+# ---------------------------------------------------------------------------
+
+_TORCH: Any = None
+_TORCH_NN: Any = None
+_TORCH_UTILS_DATA: Any = None
+
+
+def _get_torch() -> Any:
+    global _TORCH
+    if _TORCH is None:
+        import torch as _t
+
+        _TORCH = _t
+    return _TORCH
+
+
+def _get_torch_nn() -> Any:
+    global _TORCH_NN
+    if _TORCH_NN is None:
+        from torch import nn as _nn
+
+        _TORCH_NN = _nn
+    return _TORCH_NN
+
+
+def _get_data_loader() -> Any:
+    global _TORCH_UTILS_DATA
+    if _TORCH_UTILS_DATA is None:
+        from torch.utils.data import DataLoader as _DL, TensorDataset as _TD
+
+        _TORCH_UTILS_DATA = (_DL, _TD)
+    return _TORCH_UTILS_DATA
 
 logger = logging.getLogger(__name__)
 SCHEMA_VERSION = "0.2.0"
