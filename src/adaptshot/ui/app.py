@@ -11,7 +11,7 @@ import os
 import tempfile
 from typing import List, Optional, Tuple, Union, cast
 
-import gradio as gr  # type: ignore
+import gradio as gr
 from PIL import Image
 
 from ..config.settings import AdaptShotConfig
