@@ -17,39 +17,45 @@ class TestFeatureAttribution:
 
     def test_defaults_are_empty(self) -> None:
         attr = FeatureAttribution()
-        assert attr.top_k_indices == []
-        assert attr.top_k_labels == []
-        assert attr.top_k_similarities == []
-        assert attr.attribution_summary == ""
+        assert attr.index == 0
+        assert attr.label == ""
+        assert attr.weight == 0.0
+        assert attr.distance == 0.0
+        assert attr.is_same_class is False
 
-    def test_to_dict_serializes_correctly(self) -> None:
+    def test_custom_values(self) -> None:
         attr = FeatureAttribution(
-            top_k_indices=[0, 1],
-            top_k_labels=["cat", "dog"],
-            top_k_similarities=[0.9, 0.3],
-            attribution_summary="cat (0.90)",
+            index=5, label="cat", weight=0.8, distance=0.2, is_same_class=True
         )
-        d = attr.to_dict()
-        assert d["top_k_indices"] == [0, 1]
-        assert d["top_k_labels"] == ["cat", "dog"]
-        assert d["attribution_summary"] == "cat (0.90)"
+        assert attr.index == 5
+        assert attr.label == "cat"
+        assert attr.weight == 0.8
+        assert attr.distance == 0.2
+        assert attr.is_same_class is True
 
 
 class TestExplanationResult:
     """Tests for the ExplanationResult dataclass."""
 
+    def test_defaults_are_empty(self) -> None:
+        result = ExplanationResult()
+        assert result.prediction == ""
+        assert result.attributions == []
+        assert result.summary == ""
+
     def test_to_dict_includes_all_fields(self) -> None:
+        attr = FeatureAttribution(index=0, label="cat", weight=0.9)
         result = ExplanationResult(
-            predicted_label="cat",
-            feature_attribution=FeatureAttribution(top_k_labels=["cat"]),
-            confidence_decomposition={},
-            counterfactual={},
+            prediction="cat",
+            attributions=[attr],
             summary="Test summary",
         )
         d = result.to_dict()
-        assert d["predicted_label"] == "cat"
-        assert "feature_attribution" in d
+        assert d["prediction"] == "cat"
+        assert "attributions" in d
         assert "summary" in d
+        assert len(d["attributions"]) == 1
+        assert d["attributions"][0]["label"] == "cat"
 
 
 class TestExplainabilityEngine:
@@ -57,7 +63,7 @@ class TestExplainabilityEngine:
 
     @pytest.fixture
     def engine(self) -> ExplainabilityEngine:
-        return ExplainabilityEngine(k_neighbors=3)
+        return ExplainabilityEngine(top_k_attributions=3)
 
     @pytest.fixture
     def synthetic_data(self) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -90,14 +96,14 @@ class TestExplainabilityEngine:
             act_action="ACCEPT",
             is_ood=False,
         )
-        assert result.predicted_label == "cat"
+        assert result.prediction == "cat"
         assert isinstance(result.summary, str)
         assert len(result.summary) > 0
 
-    def test_explain_includes_feature_attribution(
+    def test_explain_includes_attributions(
         self, engine: ExplainabilityEngine, synthetic_data: tuple
     ) -> None:
-        """Feature attribution should identify supporting examples."""
+        """Feature attributions should identify supporting examples."""
         query, support, labels = synthetic_data
         result = engine.explain(
             query_embedding=query,
@@ -109,10 +115,10 @@ class TestExplainabilityEngine:
             act_action="ACCEPT",
             is_ood=False,
         )
-        assert len(result.feature_attribution.top_k_indices) > 0
+        assert len(result.attributions) > 0
         # Top support examples should all be "cat" class
-        for label in result.feature_attribution.top_k_labels:
-            assert label == "cat"
+        for attr in result.attributions:
+            assert attr.label == "cat"
 
     def test_explain_includes_confidence_decomposition(
         self, engine: ExplainabilityEngine, synthetic_data: tuple
@@ -129,8 +135,8 @@ class TestExplainabilityEngine:
             act_action="ACCEPT",
             is_ood=False,
         )
-        assert "raw_confidence" in result.confidence_decomposition
-        assert "calibrated_confidence" in result.confidence_decomposition
+        assert result.confidence_decomposition is not None
+        assert result.confidence_decomposition.raw_similarity > 0.0
 
     def test_explain_includes_counterfactual(
         self, engine: ExplainabilityEngine, synthetic_data: tuple
@@ -147,9 +153,8 @@ class TestExplainabilityEngine:
             act_action="ACCEPT",
             is_ood=False,
         )
-        assert "nearest_alternative" in result.counterfactual
-        # Nearest alternative should be "dog"
-        assert result.counterfactual["nearest_alternative"] == "dog"
+        assert result.counterfactual is not None
+        assert result.counterfactual.counterfactual_class == "dog"
 
     def test_explain_rejects_empty_support(self, engine: ExplainabilityEngine) -> None:
         """Empty support set raises an error."""
