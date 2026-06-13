@@ -71,10 +71,6 @@ ignore_missing_imports = true
 module = "torchvision.*"
 ignore_missing_imports = true
 
-[[tool.mypy.overrides]]
-module = "onnxruntime"
-ignore_missing_imports = true
-
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 # Uncomment if pytest-cov is installed:
