@@ -37,8 +37,8 @@ v0.2.0-dev is the current release, hardened with 92 regression tests, strict typ
 *   **Trustworthy & Calibrated**: Built-in **Expected Calibration Error (ECE)** minimization and **conformal prediction** with finite-sample coverage guarantees.
 *   **Human-in-the-Loop**: Integrated **FeedbackRouter** for real-time model adaptation through human expert corrections.
 *   **Continual Learning**: Implements **CA-EWC** (Class-Aware Elastic Weight Consolidation) and **UP-UGF** (Uncertainty-Guided Forgetting) for stable, long-term learning without catastrophic forgetting.
-*   **Multi-Signal Uncertainty**: Epistemic (MC Dropout), aleatoric (k-NN entropy), and distributional (Mahalanobis distance) uncertainty quantification with OOD detection.
-*   **Explainable AI**: Feature attribution, confidence decomposition, and counterfactual explanations for every prediction.
+*   **Multi-Signal Uncertainty**: Epistemic (embedding perturbation sensitivity), aleatoric (k-NN entropy), and distributional (Mahalanobis distance) uncertainty quantification with OOD detection. *(Full MC Dropout planned for future torch-dependent release.)*
+*   **Explainable AI**: Feature attribution (which support examples influenced the prediction), confidence decomposition, counterfactual explanations, and embedding-space saliency analysis.
 *   **Contrastive Prototypes**: Learned class representations via InfoNCE contrastive loss with EMA momentum updates.
 *   **Release Hardened**: Zero-config API, strict type safety, and a comprehensive benchmark harness for review and deployment readiness.
 *   **Deterministic**: Guaranteed reproducible results across different runs and hardware through strict seed management.
@@ -127,9 +127,9 @@ if result.uncertainty_flag:
 
 - **Conformal Prediction**: Distribution-free prediction sets with guaranteed coverage at configurable significance levels
 - **Contrastive Prototype Learning**: InfoNCE-trained class prototypes with 2-layer MLP projection head
-- **Advanced Uncertainty**: Three complementary signals — epistemic, aleatoric, and distributional — fused into a single report
-- **XAI Explainability**: Feature attribution showing which support examples influenced each prediction
-- **New `inference_mode="contrastive"`**: Contrastive prototype-based classification alongside nearest-neighbor and prototypical
+- **Advanced Uncertainty**: Three complementary signals — epistemic (perturbation sensitivity), aleatoric (k-NN entropy), and distributional (Mahalanobis OOD) — fused with mode-gated computation
+- **XAI Explainability**: Feature attribution, confidence decomposition, counterfactual analysis, and embedding-space saliency
+- **Cross-conformal prediction mode**: K-fold cross-conformal quantile averaging for more stable prediction sets
 - **37 new tests** (92 total) across conformal, contrastive, uncertainty, and explainability modules
 - **12 new documentation pages**: Architecture deep-dive, algorithm theory, API reference, 5 tutorials, 2 GUI guides
 
