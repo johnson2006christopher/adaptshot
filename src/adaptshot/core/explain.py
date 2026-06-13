@@ -244,6 +244,8 @@ class ExplainabilityEngine:
         calibrated_confidence: float,
         act_action: str,
         is_ood: bool = False,
+        act_threshold: Optional[float] = None,
+        ood_score: Optional[float] = None,
     ) -> ConfidenceDecomposition:
         """Break down confidence into its constituent components.
 
@@ -251,11 +253,16 @@ class ExplainabilityEngine:
         clamped to [0, 1]. Each adjustment is displayed separately so users can
         understand why confidence changed from the raw similarity score.
 
+        Penalties are derived from actual ACT and OOD state when available,
+        falling back to conservative defaults otherwise.
+
         Args:
             raw_confidence: Pre-calibration confidence from similarity.
             calibrated_confidence: Post-calibration confidence.
             act_action: ACT decision ("ACCEPT" or "REQUEST_FEEDBACK").
             is_ood: Whether input was flagged as out-of-distribution.
+            act_threshold: Current ACT threshold for the predicted class.
+            ood_score: Raw OOD score from Mahalanobis distance (0=in-dist, 1=far OOD).
 
         Returns:
             ConfidenceDecomposition showing each component's effect.
@@ -266,11 +273,21 @@ class ExplainabilityEngine:
         # Calibration adjustment: how much temperature scaling changed confidence
         cal_adj = cal - raw
 
-        # ACT penalty: if ACT rejected, apply a penalty for conservatism
-        act_penalty = -0.15 if act_action != "ACCEPT" else 0.0
+        # ACT penalty: derived from the gap between confidence and threshold
+        if act_threshold is not None and act_action != "ACCEPT":
+            act_penalty = float(np.clip(cal - act_threshold, -0.5, 0.0))
+        elif act_action != "ACCEPT":
+            act_penalty = -0.15  # conservative fallback
+        else:
+            act_penalty = 0.0
 
-        # OOD penalty: heavily penalize out-of-distribution inputs
-        ood_penalty = -0.25 if is_ood else 0.0
+        # OOD penalty: proportional to the OOD score
+        if ood_score is not None and is_ood:
+            ood_penalty = float(np.clip(-0.5 * ood_score, -0.5, 0.0))
+        elif is_ood:
+            ood_penalty = -0.25  # conservative fallback
+        else:
+            ood_penalty = 0.0
 
         # Final confidence = calibrated + post-hoc adjustments, clamped to valid range
         final = float(np.clip(cal + act_penalty + ood_penalty, 0.0, 1.0))
@@ -465,30 +482,33 @@ class ExplainabilityEngine:
     def compute_saliency_numpy(
         query_embedding: np.ndarray,
         support_embedding: np.ndarray,
-        input_shape: Tuple[int, int, int] = (224, 224, 3),
-    ) -> Optional[np.ndarray]:
-        """Compute approximate saliency map using embedding-space gradients.
+    ) -> np.ndarray:
+        """Compute embedding-space feature importance via |query - support|.
 
-        This is a lightweight numpy-based approximation. For full gradient-
-        based saliency through the backbone, install torch and use
-        compute_saliency_torch().
+        Returns per-dimension importance scores [D] showing which embedding
+        dimensions most differentiate the query from the reference support
+        example. Higher values indicate dimensions that contribute more to
+        the distance between the two embeddings.
 
-        The numpy approximation computes per-channel sensitivity by
-        comparing the query embedding to a perturbed version where each
-        channel is zeroed out. Channels that cause the largest embedding
-        shift when removed are considered most important.
+        This is NOT a pixel-level saliency map — it operates entirely in
+        embedding space. For true gradient-based saliency through the
+        backbone, install torch and use compute_saliency_torch() (planned
+        for a future release).
 
         Args:
             query_embedding: [D] original query embedding.
             support_embedding: [D] reference support embedding.
-            input_shape: (H, W, C) of the original input.
 
         Returns:
-            Saliency map of shape input_shape, or None if unavailable.
+            [D] per-dimension importance scores normalized to [0, 1].
         """
-        # Numpy approximation: return the embedding itself reshaped
-        # This is a placeholder — full saliency requires torch
-        return None  # pragma: no cover — requires torch for real implementation
+        query = np.asarray(query_embedding, dtype=np.float32).reshape(-1)
+        support = np.asarray(support_embedding, dtype=np.float32).reshape(-1)
+        importance = np.abs(query - support)
+        max_val = float(importance.max())
+        if max_val > 1e-8:
+            importance = importance / max_val
+        return importance.astype(np.float32)
 
     @staticmethod
     def compute_saliency(
