@@ -16,6 +16,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.0-dev] - Unreleased
+
+### Added
+- **Conformal Prediction**: `ConformalEngine` with split/cross modes, softmax and distance nonconformity scores, class-conditional quantiles, and finite-sample coverage guarantees.
+- **Contrastive Prototype Learning**: `ContrastivePrototypeLearner` with InfoNCE loss, 2-layer MLP projection head, EMA momentum updates, and hard negative mining.
+- **Multi-Signal Uncertainty**: `UncertaintyQuantifier` with epistemic (MC Dropout), aleatoric (k-NN entropy), and distributional (Mahalanobis) signals. OOD detection via class-conditional Gaussians.
+- **XAI Explainability**: `ExplainabilityEngine` with feature attribution, confidence decomposition, and counterfactual analysis.
+- **New Config Fields**: `conformal_alpha`, `conformal_mode`, `uncertainty_mode`, `explainability_enabled`. `inference_mode` now supports `"contrastive"`.
+- **Enhanced PredictionResult**: Now includes `conformal_set`, `uncertainty_report`, and `nearest_neighbors`.
+- **Public `explain()` Method**: `FewShotLearner.explain()` returns `ExplanationResult` with attributions, confidence breakdown, and counterfactuals.
+- **Documentation**: Architecture deep-dive, algorithm theory (mathematical foundations), full API reference, 5 new tutorials, Studio/pilot GUI guides with screenshot specs.
+- **Tests**: 92 tests passing (up from 52), covering all new modules.
+
+### Changed
+- Schema version bumped to `"0.2.0"`.
+- Default `inference_mode` is now `"prototypical"`.
+- `PredictionResult` fields expanded with v0.2.0 additions.
+
+---
+
 ## [0.1.2] - Unreleased
 
 ### Planned
