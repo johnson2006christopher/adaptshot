@@ -21,12 +21,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.2] - Unreleased
 
-### Planned
-- **Swahili UI Localization**: Gradio dashboard interface fully translated to Swahili, serving Tanzanian and East African users in their primary language
-- **Gradio UI Enhancements**: Improved widget layout, accessibility labels, and localization infrastructure to support future language additions
-- **Localization Framework**: i18n string extraction and translation pipeline for the Gradio dashboard
+### Added
+- **Lazy torch imports**: `extractor.py` uses deferred imports for PyTorch and torchvision,
+  keeping the module importable without a hard torch dependency at install time.
+- **ONNX Runtime backend** (`backends/onnx_backend.py`): Lightweight feature extraction
+  via bundled ONNX backbone models when torch is not installed.
+- **Backend abstraction layer** (`backends/__init__.py`): Unified interface for ONNX Runtime
+  and PyTorch backends with auto-detection.
+- **ONNX export script** (`scripts/export_backbones.py`): Generates pre-trained backbone
+  ONNX models for torch-free inference.
+- **Optional `[torch]` extra**: PyTorch and torchvision moved to optional dependencies;
+  core library requires only numpy + Pillow.
+- **Package data support**: `.onnx` model files bundled via `[tool.setuptools.package-data]`.
 
-> **Note**: French localization is **explicitly excluded** from v0.1.2. The focus is Swahili-first — serving East African communities before expanding to Francophone regions. French remains on the v0.2.0 roadmap.
+### Changed
+- **Pretrained backbone weights**: Changed from `weights=None` (random) to
+  `weights="IMAGENET1K_V1"` — essential for the ImageNet-normalized preprocessing pipeline
+  and for producing meaningful few-shot embeddings.
+- **Calibration engine**: Replaced `torch.nn.Parameter(torch.tensor(...))` with a plain
+  `float` for the temperature parameter; no autograd needed for grid-search calibration.
+- **Config validation**: Lazy `import torch` for CUDA availability check in `AdaptShotConfig`;
+  graceful warning when torch is not installed.
+- **Fine-tuning module**: Conditional torch import with `_TORCH_AVAILABLE` guard;
+  `CAEWCFinetuner` raises a clear `ImportError` message when torch is missing.
+- **PIL API**: Uses `Image.Resampling.BILINEAR` via `getattr` lookup for cross-version compatibility.
+- **Version bump**: `__version__` updated to `"0.1.2"` in both `pyproject.toml` and `__init__.py`.
+
+### Fixed
+- **Installation performance**: Core dependencies reduced from 4 (torch, torchvision, numpy, Pillow)
+  to 2 (numpy, Pillow). PyTorch is now optional via `pip install "adaptshot[torch]"`.
+- **Backbone consistency**: All backbones now use pre-trained ImageNet weights, matching the
+  preprocessing pipeline expectations.
+
+### Planned for v0.1.2 release
+- **Swahili UI Localization**: Gradio dashboard interface fully translated to Swahili,
+  serving Tanzanian and East African users in their primary language.
+- **Gradio UI Enhancements**: Improved widget layout, accessibility labels, and
+  localization infrastructure.
+- **Localization Framework**: i18n string extraction and translation pipeline for
+  the Gradio dashboard.
 
 ---
 
