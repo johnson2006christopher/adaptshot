@@ -2,7 +2,8 @@
 
 Exposes a single, high-level interface that orchestrates embedding extraction,
 similarity search, calibration, ACT gating, human feedback routing, CA-EWC
-fine-tuning, and UP-UGF buffer management.
+fine-tuning, UP-UGF buffer management, conformal prediction, contrastive
+prototype learning, advanced uncertainty quantification, and explainability.
 """
 
 from __future__ import annotations
@@ -37,6 +38,10 @@ from ..utils.exceptions import (
 from ..utils.migrations import migrate_v0_1_0_to_v0_1_1
 from .act import ACTEngine
 from .calibration import CalibrationEngine
+from .conformal import ConformalEngine, ConformalPredictionSet
+from .contrastive import ContrastivePrototypeLearner
+from .uncertainty import UncertaintyQuantifier
+from .explain import ExplainabilityEngine, ExplanationResult
 from .extractor import (
     BACKBONE_OUTPUT_DIM,
     EmbeddingCache,
@@ -51,7 +56,7 @@ from .similarity import (
 )
 
 logger = logging.getLogger(__name__)
-SCHEMA_VERSION = "0.1.1"
+SCHEMA_VERSION = "0.2.0"
 
 
 @dataclass
@@ -68,6 +73,10 @@ class PredictionResult:
     prototype_margin: float = 0.0
     ood_flag: bool = False
     debiased_ece: float = 0.0
+    # v0.2.0 fields
+    conformal_set: Optional[List[Union[str, int]]] = None
+    uncertainty_report: Optional[Dict[str, float]] = None
+    nearest_neighbors: Optional[List[Dict[str, Any]]] = None
 
 
 class FewShotLearner:
@@ -91,6 +100,17 @@ class FewShotLearner:
             evaluation_bins=self.config.calibration_eval_bins,
         )
         self.act = ACTEngine(n_classes=200)
+
+        # v0.2.0: Advanced engines
+        self.conformal = ConformalEngine(
+            alpha=self.config.conformal_alpha,
+            mode=self.config.conformal_mode,
+        )
+        self.contrastive = ContrastivePrototypeLearner()
+        self.uncertainty_q = UncertaintyQuantifier(
+            ood_percentile=self.config.ood_threshold_quantile * 100,
+        )
+        self.explainer = ExplainabilityEngine()
 
         self._sim_embeddings: List[np.ndarray] = []
         self._sim_labels: List[Union[str, int]] = []
@@ -197,6 +217,16 @@ class FewShotLearner:
                 self._sim_embeddings[0],
                 self._sim_preview_signatures[0],
             )
+
+        # v0.2.0: Fit advanced engines on support data
+        support_arr = np.array(self._sim_embeddings, dtype=np.float32)
+        label_arr = np.array(self._sim_labels, dtype=object)
+        self.uncertainty_q.fit_class_distributions(support_arr, label_arr)
+        if self.config.inference_mode == "contrastive":
+            self._prototype_embeddings, self._prototype_labels = (
+                self.contrastive.refine_prototypes(support_arr, label_arr, seed=self.config.seed)
+            )
+
         self._is_initialized = True
 
     def predict(self, image: Union[str, Image.Image, np.ndarray]) -> PredictionResult:
@@ -281,6 +311,36 @@ class FewShotLearner:
 
         calibration_summary = self.calibrator.calibration_summary()
 
+        # v0.2.0: Conformal prediction set
+        prototype_distances = self._compute_all_prototype_distances(query_emb)
+        proto_labels = self._prototype_labels
+        if self.config.inference_mode == "contrastive" and self.contrastive.is_fitted:
+            cf_pred, cf_conf, _ = self.contrastive.nearest_prototype(
+                query_emb, self._prototype_embeddings, self._prototype_labels
+            )
+        conformal_result = self.conformal.predict_set(
+            prototype_distances, proto_labels, pred_label, calibrated_conf
+        )
+        conformal_list = sorted(conformal_result.prediction_set, key=str)
+
+        # v0.2.0: Uncertainty report
+        uncertainty_report = self.uncertainty_q.quantify(
+            query_emb, support_embeddings, support_labels
+        )
+
+        # v0.2.0: Nearest neighbors for explainability
+        k_nn = min(5, len(support_embeddings))
+        nn_distances = np.sqrt(np.sum((support_embeddings - query_emb) ** 2, axis=1))
+        nn_top_idx = np.argsort(nn_distances)[:k_nn]
+        nearest_neighbors = [
+            {
+                "index": int(idx),
+                "label": str(self._sim_labels[idx]),
+                "distance": float(nn_distances[idx]),
+            }
+            for idx in nn_top_idx
+        ]
+
         return PredictionResult(
             prediction=pred_label,
             raw_confidence=float(raw_conf),
@@ -292,6 +352,9 @@ class FewShotLearner:
             prototype_margin=float(prototype_margin),
             ood_flag=bool(ood_flag),
             debiased_ece=float(calibration_summary["debiased_ece"]),
+            conformal_set=conformal_list,
+            uncertainty_report=uncertainty_report.to_dict(),
+            nearest_neighbors=nearest_neighbors,
         )
 
     def correct(
