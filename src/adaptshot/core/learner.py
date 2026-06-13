@@ -54,8 +54,7 @@ from .similarity import (
 )
 
 if TYPE_CHECKING:
-    import torch
-    from torch.utils.data import DataLoader, TensorDataset
+    pass
 
 # ---------------------------------------------------------------------------
 # Lazy import helpers – torch is resolved only when first needed.
