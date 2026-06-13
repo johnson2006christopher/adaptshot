@@ -38,7 +38,7 @@ from ..utils.exceptions import (
 from ..utils.migrations import migrate_v0_1_0_to_v0_1_1
 from .act import ACTEngine
 from .calibration import CalibrationEngine
-from .conformal import ConformalEngine, ConformalPredictionSet
+from .conformal import ConformalEngine
 from .contrastive import ContrastivePrototypeLearner
 from .uncertainty import UncertaintyQuantifier
 from .explain import ExplainabilityEngine, ExplanationResult
