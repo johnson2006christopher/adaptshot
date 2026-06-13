@@ -1338,6 +1338,17 @@ class FewShotLearner:
                 learner._ood_distance_threshold = float(ood_threshold)
         else:
             learner._update_ood_threshold()
+
+        # v0.2.0: Restore contrastive prototypes if saved
+        if isinstance(prototypes_state, dict):
+            c_labels = prototypes_state.get("contrastive_labels", [])
+            c_embs = prototypes_state.get("contrastive_embeddings", [])
+            if c_labels and c_embs and len(c_labels) == len(c_embs):
+                learner._contrastive_prototype_labels = np.asarray(c_labels, dtype=object)
+                learner._contrastive_prototype_embeddings = np.asarray(
+                    c_embs, dtype=np.float32
+                )
+
         if learner._sim_embeddings:
             learner._init_or_rebuild_model_head(embedding_dim=learner._embedding_dim())
             learner._embedding_cache.set(
