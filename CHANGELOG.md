@@ -5,17 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.2.0-dev] - Unreleased
 
-### Planned for v0.2.0
-- ONNX export support for broader edge deployment (Android, WebAssembly)
-- ARM profiling guide with Raspberry Pi benchmark results
-- Improved UP-UGF redundancy computation (approximate nearest-neighbor fallback for larger buffers)
-- Conformal prediction implementation beyond current stub
-- French documentation and UI localization (planned post-v0.1.2; Swahili ships in v0.1.2)
-- Automated GitHub Actions workflow for CI testing, linting, and docs deployment
-- Federated buffer sharing for multi-device deployments
-- Plugin architecture for experimental backends
+### Added
+- **Conformal Prediction Engine** (`conformal.py`): Distribution-free conformal prediction with split and cross modes,
+  softmax/distance nonconformity scores, and adaptive prediction sets at configurable significance levels.
+- **Contrastive Prototype Networks** (`contrastive.py`): Siamese-style contrastive loss with InfoNCE, learnable
+  temperature, 2-layer MLP projection head (128-dim bottleneck), and EMA momentum prototype updates.
+- **Advanced Uncertainty Quantification** (`uncertainty.py`): Multi-signal uncertainty with epistemic (MC Dropout),
+  aleatoric (k-NN entropy), and distributional (Mahalanobis distance) signals; OOD detection via class-conditional
+  Gaussian distributions.
+- **XAI Explainability** (`explain.py`): Gradient-based saliency, feature attribution (top-k neighbor influence),
+  confidence decomposition, and counterfactual explanation support.
+- **New Config Fields**: `conformal_alpha`, `conformal_mode`, `uncertainty_mode`, `explainability_enabled`
+  (26 total fields, up from 22).
+- **New inference mode**: `inference_mode="contrastive"` for contrastive prototype-based classification.
+- **37 new tests** across 4 test files: `test_conformal.py` (12), `test_contrastive.py` (7),
+  `test_uncertainty.py` (10), `test_explain.py` (8).
+- **12 new documentation pages**: Architecture deep-dive, algorithm theory, full API reference,
+  5 advanced tutorials (conformal prediction, uncertainty, explainability, contrastive learning,
+  end-to-end workflow), 2 comprehensive GUI guides (Studio, Pilot Dashboard).
+
+### Changed
+- Schema version bumped to `0.2.0` with backwards-compatible migration.
+- Package version updated to `0.2.0-dev` in `pyproject.toml` and `__init__.py`.
+- `FewShotLearner` now accepts `inference_mode="contrastive"` and wires new engines (Conformal, Contrastive,
+  Uncertainty, Explainability).
+- `PredictionResult` extended with conformal prediction sets, uncertainty reports, and explanation results.
+- Default `inference_mode` changed to `"prototypical"`.
+
+### Fixed
+- `np.unique` unpacking bug in uncertainty module (single return value incorrectly destructured).
+- Mypy strict-mode compliance across all 31 source files.
+- Pre-existing test failures from schema version and inference_mode API mismatches.
 
 ---
 
