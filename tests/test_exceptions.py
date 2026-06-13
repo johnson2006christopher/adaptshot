@@ -87,11 +87,13 @@ def test_predict_falls_back_when_calibration_not_ready(
         lambda image, cfg, **kwargs: np.ones(8, dtype=np.float32),
     )
     monkeypatch.setattr(
-        "src.adaptshot.core.learner.find_nearest_neighbor",
-        lambda query, support_embeddings, support_labels, use_faiss=False, metric="cosine", **kwargs: (
-            support_labels[0],
+        "src.adaptshot.core.learner.find_nearest_prototype",
+        lambda query, prototypes, prototype_labels, metric="euclidean": (
+            prototype_labels[0],
             0.0,
             0,
+            0.0,
+            float("inf"),
         ),
     )
 
