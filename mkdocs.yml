@@ -88,16 +88,26 @@ nav:
     - 10 Module Map: tutorials/10_module_map.md
     - 11 UI Pilot Dashboard: tutorials/11_ui_pilot_dashboard.md
     - 12 Studio Guide: tutorials/12_studio_guide.md
+    - 14 Conformal Prediction: tutorials/14_conformal_prediction.md
+    - 15 Advanced Uncertainty: tutorials/15_advanced_uncertainty.md
+    - 16 Explainability: tutorials/16_explainability.md
+    - 17 Contrastive Learning: tutorials/17_contrastive_learning.md
+    - 18 End-to-End Workflow: tutorials/18_end_to_end_workflow.md
   - API Reference:
+    - Full API Reference: api/reference.md
     - Core Engine: api/core.md
     - Training & Continual Learning: api/training.md
     - Configuration & Utils: api/config.md
   - Guides:
+    - Architecture Deep-Dive: guides/architecture-deep-dive.md
+    - Algorithm Theory: guides/algorithm-theory.md
+    - Studio Complete Guide: guides/studio-complete-guide.md
+    - Pilot Dashboard Guide: guides/ui-pilot-guide.md
     - Real-World Use Cases: guides/real-world-use-cases.md
     - Human-in-the-Loop Deep Dive: guides/human-in-the-loop.md
     - Error Handling & Troubleshooting: guides/troubleshooting.md
   - Reference:
-    - Config Reference (All 22 Fields): reference/config-reference.md
+    - Config Reference (All 26 Fields): reference/config-reference.md
   - v0.1.1 Docs Roadmap: v0.1.1-docs-roadmap.md
   - Contributing: contributing.md
   - Code of Conduct: code_of_conduct.md
