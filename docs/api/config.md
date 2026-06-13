@@ -1,4 +1,4 @@
-# Configuration & Utilities API (v0.1.1)
+# Configuration & Utilities API (v0.1.2)
 
 This document covers AdaptShot's immutable configuration schema, deterministic execution utilities, and I/O helpers. These components provide the foundational guarantees for reproducibility, safe file handling, and cross-framework data conversion.
 
