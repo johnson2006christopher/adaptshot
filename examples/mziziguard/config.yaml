@@ -1,0 +1,57 @@
+# MziziGuard — Crop Disease Detection Configuration
+# ==================================================
+# Edit this file to add your own crops, diseases, and treatment advice.
+# The application loads this at startup and rebuilds the label set.
+
+# Application metadata
+application:
+  name: "MziziGuard"
+  version: "0.1.0"
+  description: "Crop disease detection for smallholder farmers — powered by AdaptShot"
+
+# AdaptShot engine settings
+engine:
+  backbone: "resnet18"           # resnet18 | mobilenet_v3_small
+  device: "cpu"                  # cpu | cuda | mps
+  seed: 42
+  inference_mode: "prototypical" # prototypical | nearest_neighbor
+  similarity_metric: "euclidean" # euclidean | cosine
+  eco_mode: true                 # carbon-aware inference
+  enable_ood_detection: true     # detect non-crop images
+
+# Crop disease definitions
+# Each crop has one or more diseases plus a "healthy" class.
+# Fields:
+#   swahili:      Name in Swahili for the farmer-facing UI
+#   action:       Treatment advice shown to the farmer
+#   description:  Longer description for extension officers
+#   severity:     low | moderate | high | critical
+crops:
+  maize:
+    swahili: "mahindi"
+    diseases:
+      healthy_maize:
+        swahili: "mahindi yenye afya"
+        action: "Hakuna matibabu yanayohitajika. Endelea na utunzaji wa kawaida."
+        description: "Healthy maize with no visible disease symptoms."
+        severity: "low"
+      northern_leaf_blight:
+        swahili: "ugonjwa wa mabaka ya kahawia"
+        action: "Ondoa majani yaliyoathirika. Tumia dawa ya kuvu (fungicide) ikiwa imeenea sana. Panda mbegu sugu msimu ujao."
+        description: "Cigar-shaped gray-green to tan lesions on leaves, caused by Exserohilum turcicum."
+        severity: "moderate"
+      gray_leaf_spot:
+        swahili: "ugonjwa wa mabaka ya kijivu"
+        action: "Tumia dawa ya kuvu mapema. Badilisha mazao. Epuka kupanda mahindi shambani mwaka baada ya mwaka."
+        description: "Rectangular gray lesions restricted by leaf veins, caused by Cercospora zeae-maydis."
+        severity: "high"
+
+# UI localization
+localization:
+  language: "sw"                 # sw = Swahili, en = English
+  fallback: "en"
+
+# Paths (relative to this config file or absolute)
+paths:
+  model_dir: "models"            # where to save/load trained models
+  sample_data: "samples"         # sample image cache

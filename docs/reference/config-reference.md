@@ -179,3 +179,9 @@ AdaptShotConfig(
 - [ ] You know that `device` must always be `"cpu"` in v0.1.1.
 - [ ] You understand the difference between `similarity_metric` (`cosine` vs `euclidean`) and `inference_mode` (`nearest_neighbor` vs `prototypical`).
 - [ ] You can trace every field back to `src/adaptshot/config/settings.py`.
+
+---
+
+*Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
+*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
+*Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*

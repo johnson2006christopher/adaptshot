@@ -99,3 +99,9 @@ print(learner.predict(paths[0]))  # run prediction and print PredictionResult (s
 - [ ] I know where to find the learner implementation: [src/adaptshot/core/learner.py](src/adaptshot/core/learner.py)
 
 If something fails, start with the import verification step in the Installation section. For behavior questions about `predict()`, `load_support_images()`, `save()`, and `load()`, consult the implementation at [src/adaptshot/core/learner.py](src/adaptshot/core/learner.py).
+
+---
+
+*Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
+*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
+*Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*

@@ -318,3 +318,9 @@ Correction routed: True
 - [ ] `support_labels` uses integers in v0.1.0.
 - [ ] `learner.predict()` runs before `learner.correct()`.
 - [ ] The measured latency and memory come from your own machine.
+
+---
+
+*Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
+*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
+*Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*

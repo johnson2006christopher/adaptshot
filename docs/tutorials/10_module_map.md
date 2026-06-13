@@ -136,3 +136,9 @@ That habit helps you avoid guessing and keeps documentation honest.
 - [ ] I can name the training modules and their roles.
 - [ ] I can name the utility modules and their roles.
 - [ ] I know which files handle prediction, correction, persistence, and benchmarking.
+
+---
+
+*Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
+*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
+*Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*

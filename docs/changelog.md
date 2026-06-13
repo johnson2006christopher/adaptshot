@@ -63,3 +63,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Acknowledgments
 - Built by Johnson Christopher Hassan with community testing and feedback.
 - Architecture inspired by few-shot learning literature, continual learning best practices, and open-source ML engineering standards.
+
+---
+
+*Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
+*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
+*Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*

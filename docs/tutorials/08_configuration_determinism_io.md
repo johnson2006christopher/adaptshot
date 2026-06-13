@@ -179,3 +179,9 @@ print(config.device)
 - [ ] I can use `validate_path()` to prepare a directory.
 - [ ] I can convert a tensor to NumPy with `tensor_to_numpy()`.
 - [ ] I know where to find the source code for all of these helpers.
+
+---
+
+*Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
+*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
+*Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*

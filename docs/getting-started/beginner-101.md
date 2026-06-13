@@ -230,3 +230,9 @@ Now that you understand the basics:
 | `ConfigValidationError: device must be 'cpu'` | AdaptShot v0.1.1 is CPU-only; set `device="cpu"` |
 | `InvalidImageError` | Make sure your images are RGB PNG or JPEG files |
 | Script runs slowly first time | The backbone downloads on first use (~45MB); cached after that |
+
+---
+
+*Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
+*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
+*Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*

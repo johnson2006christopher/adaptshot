@@ -250,3 +250,9 @@ The backbone remains frozen throughout. Only the lightweight classification head
 - [ ] You can save and load a learner with `save()` / `load()`.
 - [ ] You understand the difference between `correct()` and `correct_comparative()`.
 - [ ] You can trace each step to the source code at `src/adaptshot/core/learner.py`.
+
+---
+
+*Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
+*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
+*Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*

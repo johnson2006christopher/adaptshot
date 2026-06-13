@@ -216,3 +216,9 @@ python -c "import sys, os; sys.path.insert(0, os.path.join(os.getcwd(),'src')); 
 - [ ] I can run `benchmarks/energy_profile.py --smoke-test` and read `joules_estimate` and `co2_g_estimate` from the results JSON.
 - [ ] I can reproduce a `Checkpoint integrity check failed.` error by corrupting a checkpoint and seeing the exact message in logs.
 - [ ] My deployment enforces `device='cpu'`, `max_buffer_size>=10`, and has a human correction route calling `learner.correct()`.
+
+---
+
+*Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
+*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
+*Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*

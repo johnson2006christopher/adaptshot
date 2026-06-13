@@ -187,4 +187,12 @@ class PredictionResult:
 ## Next Steps
 - [Training & Continual Learning API](training.md) -> `FeedbackRouter`, `CAEWCFinetuner`, `UPUGFPruner`
 - [Configuration Reference](config.md) -> `AdaptShotConfig` dataclass and validation rules
+- [AdaptShot Deep Dive](../guides/adaptshot-deep-dive.md) -> Complete internal architecture explanation
+- [MziziGuard Complete Guide](../guides/mziziguard-complete-guide.md) -> Full working application built on this API
 - [Contributing](../contributing.md) -> Extension points and PR guidelines
+
+---
+
+*Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
+*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
+*Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*

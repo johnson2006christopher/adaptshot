@@ -85,3 +85,9 @@ In v0.1.1, the `CalibrationEngine` uses a sliding window (default: 200 predictio
 - [API Reference](../api/core.md) -> Configure thresholds, buffers, and calibration parameters
 - [Tutorial-Style Guides](../tutorials.md) -> Try prediction and correction workflows
 - [Contribute](../contributing.md) -> Add new backbones, datasets, or calibration methods
+
+---
+
+*Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
+*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
+*Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*

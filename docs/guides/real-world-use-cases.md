@@ -279,6 +279,43 @@ else:
 
 ---
 
+## 6. MziziGuard: Deployed Crop Disease Detection
+
+MziziGuard is a complete, production-ready application built entirely on AdaptShot. It's deployed as a Gradio web application with 5 interactive tabs and runs on a standard laptop with no internet.
+
+### Architecture
+
+```
+Farmer takes photo → MziziGuard Web UI → MziziGuard Engine → AdaptShot FewShotLearner
+                                                                    → ResNet-18 Backbone
+                                                                    → Similarity Search
+                                                                    → Calibration + ACT + OOD
+                                                                    → DiagnosisResult (Swahili + Action)
+```
+
+### Key Numbers
+
+| Metric | Value |
+|--------|-------|
+| Training images needed | 5 per disease class |
+| Supported crops | Configurable via YAML |
+| Languages | English + Swahili |
+| Memory usage | <250MB |
+| Inference latency | ~150ms on CPU |
+| Internet required | No (after install) |
+
+### How to Deploy
+
+```bash
+pip install "adaptshot[ui]"
+python -m examples.mziziguard.app
+# → http://localhost:7860
+```
+
+Full guide: [MziziGuard Complete Guide](mziziguard-complete-guide.md)
+
+---
+
 ## General Patterns Across All Use Cases
 
 | Concern | Config Choice | Why |
@@ -298,3 +335,9 @@ else:
 - [ ] You understand how to adapt the batch processing pattern to your own dataset.
 - [ ] You know which config changes to make for each domain (medical vs. field vs. factory).
 - [ ] You understand that AdaptShot's role is to augment human expertise, not replace it.
+
+---
+
+*Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
+*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
+*Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*

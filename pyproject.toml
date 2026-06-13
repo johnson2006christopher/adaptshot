@@ -29,7 +29,7 @@ dependencies = [
 [project.optional-dependencies]
 faiss = ["faiss-cpu>=1.7.4"]
 ui = ["gradio>=3.50.0"]
-gui = ["gradio>=3.50.0", "pandas>=2.0.0", "onnx>=1.16.0", "onnxscript>=0.3.0"]
+gui = ["gradio>=3.50.0", "pandas>=2.0.0", "onnx>=1.16.0", "onnxscript>=0.3.0", "PyYAML>=6.0"]
 dev = [
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",

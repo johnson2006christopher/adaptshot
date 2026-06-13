@@ -131,3 +131,9 @@ The log export button writes `adaptshot_studio.log` locally.
 - [ ] I know the GUI extra name is `gui`.
 - [ ] I know which learner methods Studio calls.
 - [ ] I understand which features are TODOs because the backend does not yet expose them.
+
+---
+
+*Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
+*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
+*Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*
