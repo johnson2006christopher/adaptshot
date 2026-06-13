@@ -62,10 +62,19 @@ $ pip install adaptshot
 
 </div>
 
+**Core dependencies**: numpy, Pillow (~15 MB total). PyTorch is **optional** — install it only if you need training/fine-tuning:
+
+```bash
+pip install "adaptshot[torch]"    # adds PyTorch + torchvision for training
+```
+
+> **Fast install**: The base library installs in under 60 seconds on standard connections — no GPU drivers, no CUDA, no 2 GB downloads.
+
 ### Optional Dependencies
 
 AdaptShot provides optional extras for specialized workflows. The native Python API remains the source of truth; the GUI is an optional wrapper around it:
 
+*   **PyTorch (Training)**: `pip install "adaptshot[torch]"` (Required for CA-EWC fine-tuning and custom backbones)
 *   **FAISS Acceleration**: `pip install "adaptshot[faiss]"` (Recommended for support sets >100 images)
 *   **Gradio UI**: `pip install "adaptshot[ui]"` (For interactive pilots and human-in-the-loop dashboards)
 *   **Studio GUI**: `pip install "adaptshot[gui]"` (For the offline, folder-aware AdaptShot Studio workspace)
@@ -111,15 +120,14 @@ if result.uncertainty_flag:
 
 ---
 
-## 🆕 What's New in v0.1.1
+## 🆕 What's New in v0.1.2
 
-- **Energy Profiling & Eco Mode**: Track joules per inference and enable early-exit thresholds to reduce carbon footprint by up to 40%
-- **EmbeddingCache Isolation**: Instance-scoped cache prevents cross-learner contamination in multi-model workflows
-- **Dynamic Dimension Inference**: Backbone output dimensions are auto-detected from the model, not hardcoded
-- **OOD Detection**: Built-in out-of-distribution detection flags images too far from known support distributions
-- **String Label Corrections**: `correct()` now accepts human-readable string labels directly (e.g. `"maize_blight"`)
-- **Prototypical Inference**: New prototype-based classification mode alongside nearest-neighbor search
-- **574 Downloads on PyPI**: v0.1.0 reached researchers and practitioners in over 30 countries
+- **Lazy PyTorch imports**: The core library now imports without torch – installation takes <1 minute instead of 30+
+- **ONNX Runtime backend**: Lightweight inference using pre-exported backbone models (no GPU required)
+- **Optional `[torch]` extra**: Install PyTorch only if you need training/fine-tuning: `pip install "adaptshot[torch]"`
+- **Pretrained backbone weights**: All backbones now use ImageNet-pretrained weights for meaningful few-shot embeddings
+- **Backend abstraction layer**: Auto-detects ONNX Runtime → PyTorch, zero API changes
+- **1,060+ PyPI downloads** in under one month from 30+ countries
 
 ## 🛠️ Configuration
 
