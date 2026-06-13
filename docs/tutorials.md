@@ -1,6 +1,6 @@
 # Tutorial-Style Guides
 
-These tutorials are designed to be copied, pasted, and run. They use only APIs that exist in AdaptShot v0.1.1.
+These tutorials are designed to be copied, pasted, and run. They use only APIs that exist in AdaptShot v0.2.0.
 
 AdaptShot is still native-first here: use the Python API as the source of truth, then layer optional Studio workflows on top only when you need the browser UI.
 
@@ -168,6 +168,34 @@ See [tutorials/10_module_map.md](tutorials/10_module_map.md) for a guided map of
 ## Tutorial 11: UI Pilot Dashboard
 
 See [tutorials/11_ui_pilot_dashboard.md](tutorials/11_ui_pilot_dashboard.md) for the optional Gradio dashboard that wraps the learner in a browser UI.
+
+## Tutorial 12: Studio Guide
+
+See [tutorials/12_studio_guide.md](tutorials/12_studio_guide.md) for the Gradio Studio Dashboard with full configuration, monitoring, and export features.
+
+---
+
+## v0.2.0 Tutorials
+
+### Tutorial 14: Conformal Prediction
+
+See [tutorials/14_conformal_prediction.md](tutorials/14_conformal_prediction.md) for distribution-free prediction sets with guaranteed coverage.
+
+### Tutorial 15: Advanced Uncertainty Quantification
+
+See [tutorials/15_advanced_uncertainty.md](tutorials/15_advanced_uncertainty.md) for multi-signal uncertainty estimation and OOD detection.
+
+### Tutorial 16: Explainability & XAI
+
+See [tutorials/16_explainability.md](tutorials/16_explainability.md) for interpreting predictions with feature attribution, confidence decomposition, and counterfactuals.
+
+### Tutorial 17: Contrastive Prototype Learning
+
+See [tutorials/17_contrastive_learning.md](tutorials/17_contrastive_learning.md) for InfoNCE-based prototype refinement.
+
+### Tutorial 18: End-to-End Production Workflow
+
+See [tutorials/18_end_to_end_workflow.md](tutorials/18_end_to_end_workflow.md) for a complete production pipeline with monitoring and quality control.
 
 ## Tutorial: CIFAR-10 Smoke Benchmark
 
