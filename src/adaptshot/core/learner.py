@@ -949,6 +949,19 @@ class FewShotLearner:
         local_idx = int(np.argmax(cosine_scores))
         return int(candidates[local_idx])
 
+    def _compute_all_prototype_distances(self, query_embedding: np.ndarray) -> np.ndarray:
+        """Compute distances from query to all class prototypes.
+
+        Used by conformal prediction to build candidate set scores.
+        Returns [K] array of distances for K prototype classes.
+        """
+        if self._prototype_embeddings.size == 0:
+            return np.array([], dtype=np.float32)
+        query_2d = np.asarray(query_embedding, dtype=np.float32).reshape(1, -1)
+        diffs = query_2d - self._prototype_embeddings
+        distances = np.sqrt(np.sum(diffs ** 2, axis=1))
+        return distances.astype(np.float32)
+
     def _update_ood_threshold(self) -> None:
         if not self.config.enable_ood_detection:
             self._ood_distance_threshold = float("inf")
