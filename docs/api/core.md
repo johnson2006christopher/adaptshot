@@ -1,6 +1,6 @@
-# Core API Reference (v0.1.1)
+# Core API Reference (v0.1.2)
 
-This document describes the public interfaces for AdaptShot's inference and calibration engine. All signatures, parameters, and behaviors reflect the current `v0.1.1` implementation. Internal/private methods (`_`-prefixed) are omitted as they are subject to change without notice.
+This document describes the public interfaces for AdaptShot's inference and calibration engine. All signatures, parameters, and behaviors reflect the current `v0.1.2` implementation. Internal/private methods (`_`-prefixed) are omitted as they are subject to change without notice.
 
 ---
 
