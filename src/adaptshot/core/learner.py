@@ -685,7 +685,7 @@ class FewShotLearner:
             os.replace(emb_tmp, target.with_suffix(".embeddings.npy"))
 
             if self._model_head is not None:
-                torch.save(self._model_head.state_dict(), head_tmp)
+                _get_torch().save(self._model_head.state_dict(), head_tmp)
                 os.replace(head_tmp, target.with_suffix(".head.pt"))
         finally:
             for temp_path in (json_tmp, emb_tmp, head_tmp):
@@ -1292,7 +1292,7 @@ class FewShotLearner:
             if head_path.exists() and learner._model_head is not None:
                 try:
                     learner._model_head.load_state_dict(
-                        torch.load(head_path, map_location=torch.device("cpu"))
+                        _get_torch().load(head_path, map_location=_get_torch().device("cpu"))
                     )
                 except Exception as exc:
                     raise AdaptShotError(
