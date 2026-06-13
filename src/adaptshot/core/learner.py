@@ -17,7 +17,7 @@ import warnings
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 import numpy as np
 import torch
@@ -266,12 +266,16 @@ class FewShotLearner:
             sorted_sims = np.sort(sims)[::-1]
             prototype_margin = float(sorted_sims[0] - sorted_sims[1]) if len(sorted_sims) > 1 else 0.0
         elif self.config.inference_mode == "prototypical" and self._prototype_embeddings.size > 0:
-            pred_label_raw, raw_conf, _, distance_to_prototype, prototype_margin = find_nearest_prototype(
+            result = find_nearest_prototype(
                 query=query_emb,
                 prototypes=self._prototype_embeddings,
                 prototype_labels=self._prototype_labels,
                 metric=self.config.similarity_metric,
             )
+            pred_label_raw = cast(Union[str, int], result[0])
+            raw_conf = result[1]
+            distance_to_prototype = result[3]
+            prototype_margin = result[4]
             pred_label = self._coerce_label(pred_label_raw)
             neighbor_idx = self._nearest_support_index_for_label(query_emb, pred_label)
         else:
