@@ -357,7 +357,7 @@ class UncertaintyQuantifier:
         weights = weights / weights.sum()
 
         # Compute weighted class distribution
-        unique, counts = np.unique(k_labels, return_counts=False)
+        unique = np.unique(k_labels)
         class_weights = np.zeros(len(unique))
         for i, label in enumerate(unique):
             class_weights[i] = weights[k_labels == label].sum()
