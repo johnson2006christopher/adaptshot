@@ -8,10 +8,20 @@ Fisher Information diagonal computation is weighted by human feedback confidence
 import logging
 from typing import Any, Dict, Optional
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from torch.utils.data import DataLoader, TensorDataset
+try:
+    import torch
+    import torch.nn as nn
+    import torch.nn.functional as F
+    from torch.utils.data import DataLoader, TensorDataset
+
+    _TORCH_AVAILABLE = True
+except ImportError:  # pragma: no cover – torch is optional
+    torch = None  # type: ignore[misc]
+    nn = None  # type: ignore[misc]
+    F = None  # type: ignore[misc]
+    DataLoader = None  # type: ignore[misc]
+    TensorDataset = None  # type: ignore[misc]
+    _TORCH_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +56,11 @@ class CAEWCFinetuner:
             epochs: Number of fine-tuning epochs per correction batch
             batch_size: Batch size for fine-tuning
         """
+        if not _TORCH_AVAILABLE:
+            raise ImportError(
+                "PyTorch is required for fine-tuning. "
+                "Install with: pip install 'adaptshot[torch]'"
+            )
         self.model = model
         self.device = device
         self.ewc_lambda = ewc_lambda
