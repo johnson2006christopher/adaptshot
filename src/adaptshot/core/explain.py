@@ -26,7 +26,7 @@ saliency; torch-optional for future gradient-based saliency.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 import numpy as np
 
@@ -513,7 +513,7 @@ class ExplainabilityEngine:
         max_val = float(importance.max())
         if max_val > 1e-8:
             importance = importance / max_val
-        return importance.astype(np.float32)
+        return cast(np.ndarray, importance.astype(np.float32))
 
     @staticmethod
     def compute_saliency(
