@@ -13,8 +13,8 @@ pure numpy operations with configurable learning rate and momentum.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple, Union, cast
+from dataclasses import dataclass
+from typing import List, Optional, Tuple, Union, cast
 
 import numpy as np
 
@@ -141,7 +141,6 @@ class ContrastivePrototypeLearner:
         """
         tau = max(self.config.temperature, 1e-4)
         n = projected.shape[0]
-        d = projected.shape[1]
 
         # Compute pairwise cosine similarity matrix
         sim = projected @ projected.T  # [N, N]
@@ -263,9 +262,6 @@ class ContrastivePrototypeLearner:
         proto_velocity = np.zeros_like(prototypes)
 
         for epoch in range(self.config.n_epochs):
-            # Assign each embedding to its class prototype
-            assigned_protos = prototypes[label_indices]  # [N, d]
-
             # Compute contrastive loss as if prototypes are the "anchors"
             # This encourages embeddings to be closer to their class prototype
             # than to other class prototypes
