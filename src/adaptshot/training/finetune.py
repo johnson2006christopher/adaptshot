@@ -16,11 +16,11 @@ try:
 
     _TORCH_AVAILABLE = True
 except ImportError:  # pragma: no cover – torch is optional
-    torch = None  # type: ignore[misc]
-    nn = None  # type: ignore[misc]
-    F = None  # type: ignore[misc]
-    DataLoader = None  # type: ignore[misc]
-    TensorDataset = None  # type: ignore[misc]
+    torch: Any = None
+    nn: Any = None
+    F: Any = None
+    DataLoader: Any = None
+    TensorDataset: Any = None
     _TORCH_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
