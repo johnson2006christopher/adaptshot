@@ -3,8 +3,6 @@
 from dataclasses import dataclass
 from typing import Literal, Optional
 
-import torch
-
 
 @dataclass(frozen=True)
 class AdaptShotConfig:
@@ -70,9 +68,20 @@ class AdaptShotConfig:
             raise ValueError("ood_threshold_quantile must be in [0.5, 1.0].")
         if self.ood_absolute_min_distance < 0.0:
             raise ValueError("ood_absolute_min_distance must be >= 0.0.")
-        if self.device == "cuda" and not torch.cuda.is_available():
-            import warnings
-            warnings.warn(
-                "CUDA requested but not available. Runtime logic will fall back to CPU.",
-                RuntimeWarning
-            )
+        if self.device == "cuda":
+            try:
+                import torch
+                if not torch.cuda.is_available():
+                    import warnings
+                    warnings.warn(
+                        "CUDA requested but not available. "
+                        "Runtime logic will fall back to CPU.",
+                        RuntimeWarning,
+                    )
+            except ImportError:
+                import warnings
+                warnings.warn(
+                    "CUDA requested but PyTorch is not installed. "
+                    "Install with: pip install 'adaptshot[torch]'",
+                    RuntimeWarning,
+                )
