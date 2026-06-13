@@ -161,3 +161,9 @@ arr = tensor_to_numpy(t)
 - [Contributing Guidelines](../contributing.md) -> Development workflow and PR standards
 - [Changelog](../changelog.md) -> Version history and known limitations
 - [GitHub Repository](https://github.com/johnson2006christopher/adaptshot) -> Issue tracker, discussions, and roadmap
+
+---
+
+*Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
+*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
+*Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*

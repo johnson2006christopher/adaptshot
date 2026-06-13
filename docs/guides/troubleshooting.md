@@ -164,3 +164,68 @@ Include:
 - [ ] You can run the diagnostic script and interpret the output.
 - [ ] You understand that `CalibrationNotReadyError` is expected in early use and handled internally by `predict()`.
 - [ ] You know how to check calibration health via `calibration_report()`.
+
+## MziziGuard-Specific Troubleshooting
+
+### App Won't Start
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| `ModuleNotFoundError: No module named 'gradio'` | UI dependencies missing | `pip install "adaptshot[ui]"` |
+| `ModuleNotFoundError: No module named 'yaml'` | PyYAML missing | `pip install PyYAML` |
+| `Address already in use` | Port 7860 occupied | Use `--port 8080` |
+| `config.yaml not found` | Config file missing | Ensure `examples/mziziguard/config.yaml` exists |
+
+### Model Training Issues
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| All predictions are same class | Too few support images | Increase `n_support` to 5–10 |
+| Confidence always 100% | Calibration not warmed up | Make 10+ predictions with corrections |
+| "Model not trained" in Diagnose tab | Skipped Setup tab | Go to Setup → Generate Samples or Load from Folder |
+| Folder loading finds 0 images | Wrong folder structure | Use `class_name/*.png` structure |
+
+### OOD Detection Issues
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| OOD never triggers | `enable_ood_detection: false` | Set to `true` in config.yaml |
+| Everything flagged OOD | Threshold too aggressive | Increase `ood_threshold_quantile` (e.g., 0.99) |
+| Non-crop images not caught | Threshold too permissive | Decrease `ood_absolute_min_distance` |
+
+### Performance Issues
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| Slow inference (>500ms) | Heavy backbone + weak CPU | Switch to `mobilenet_v3_small` |
+| High RAM usage (>300MB) | Buffer too large | Reduce `max_buffer_size` to 50 |
+| Battery drain on laptop | Eco mode disabled | Set `eco_mode: true` in config |
+| First prediction slow | Backbone downloading | Normal — cached after first use |
+
+## Quick Diagnostic for MziziGuard
+
+```bash
+# MziziGuard-specific health check
+python -c "
+from examples.mziziguard import MziziGuard
+
+guard = MziziGuard()
+print(f'Config loaded: {len(guard.known_labels)} diseases')
+
+guard.initialize_with_samples(n_support=3)
+print(f'Trained: {guard.is_trained}')
+
+result = guard.diagnose(guard._data_dir + '/healthy_maize_support_00.png')
+print(f'Diagnosis works: {result.swahili}')
+
+health = guard.system_health()
+print(f'Health report: ECE={health[\"calibration\"][\"ece\"]}')
+print('✅ MziziGuard is healthy')
+"
+```
+
+---
+
+*Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
+*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
+*Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*

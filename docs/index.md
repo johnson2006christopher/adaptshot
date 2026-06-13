@@ -58,3 +58,9 @@ The pipeline is a closed loop: every human correction feeds back into the learne
 - [ ] You can run the quickstart script.
 - [ ] You can run `python -m benchmarks.run_benchmark --smoke-test --seed 42` from a source checkout.
 - [ ] You can trace each documented API to `src/adaptshot/`.
+
+---
+
+*Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
+*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
+*Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*

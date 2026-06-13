@@ -94,6 +94,11 @@ nav:
     - Training & Continual Learning: api/training.md
     - Configuration & Utils: api/config.md
   - Guides:
+    - MziziGuard Complete Guide: guides/mziziguard-complete-guide.md
+    - AdaptShot Deep Dive: guides/adaptshot-deep-dive.md
+    - Architecture & System Design: guides/architecture.md
+    - Best Practices & Optimization: guides/best-practices.md
+    - Deployment Guide: guides/deployment-guide.md
     - Real-World Use Cases: guides/real-world-use-cases.md
     - Human-in-the-Loop Deep Dive: guides/human-in-the-loop.md
     - Error Handling & Troubleshooting: guides/troubleshooting.md

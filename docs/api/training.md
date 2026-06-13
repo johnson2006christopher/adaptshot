@@ -164,3 +164,9 @@ Enforces capacity by returning the top-K highest-scoring examples. All input arr
 - [Configuration & Utils API](config.md) -> `AdaptShotConfig`, determinism, I/O helpers
 - [Contributing](../contributing.md) -> Extension points for new fine-tuning or pruning strategies
 - [Changelog](../changelog.md) -> Track upcoming v0.2.0 improvements
+
+---
+
+*Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
+*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
+*Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*

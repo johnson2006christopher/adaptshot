@@ -77,3 +77,9 @@ Note: keep comparisons factual and constraint-driven.
 - [ ] I know where to run the deterministic energy smoke test (`benchmarks/energy_profile.py`) and read `joules_estimate` and `co2_g_estimate`.
 - [ ] I can handle the common errors in section 3 and trace them to the listed source files.
 - [ ] I can contribute via `CONTRIBUTING.md` and open issues with reproducible examples.
+
+---
+
+*Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
+*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
+*Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*

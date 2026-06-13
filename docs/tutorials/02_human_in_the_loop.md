@@ -107,3 +107,9 @@ Analogy: Think of calibration as a scale that, after seeing several known weight
 - [ ] Re-run `predict()` and observe whether the local prediction or confidence changed.
 
 If anything looks unexpected, inspect the implementation at `src/adaptshot/core/learner.py` (predict, correct, _append_correction_to_similarity_buffer), `src/adaptshot/core/calibration.py`, and `src/adaptshot/core/act.py` to trace behavior.
+
+---
+
+*Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
+*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
+*Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*

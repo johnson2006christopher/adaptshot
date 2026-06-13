@@ -146,3 +146,9 @@ Every contribution—code, docs, testing, or feedback—helps make trustworthy A
 If you're unsure where to start, look for issues labeled [`good first issue`](https://github.com/johnson2006christopher/adaptshot/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) or open a Discussion to propose an idea.
 
 — The AdaptShot Maintainers
+
+---
+
+*Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
+*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
+*Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*

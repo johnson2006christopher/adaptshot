@@ -430,3 +430,9 @@ AI systems are deployed in high-stakes domains (healthcare, criminal justice, fi
 [⭐ Star on GitHub](https://github.com/johnson2006christopher/adaptshot) · [📖 Read the Docs](https://johnson2006christopher.github.io/adaptshot/) · [💬 Join the Community](https://github.com/johnson2006christopher/adaptshot/discussions)
 
 </div>
+
+---
+
+*Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
+*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
+*Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*

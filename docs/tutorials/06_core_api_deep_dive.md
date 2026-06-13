@@ -142,3 +142,9 @@ If the JSON file is missing, `load()` raises: `State file not found: '{path}'. E
 - [ ] I can call `predict()` and read the `PredictionResult` fields.
 - [ ] I can call `correct()` with a `confidence_weight` and understand the returned routing summary.
 - [ ] I can `save()` and `load()` a checkpoint without inventing unsupported behavior.
+
+---
+
+*Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
+*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
+*Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*

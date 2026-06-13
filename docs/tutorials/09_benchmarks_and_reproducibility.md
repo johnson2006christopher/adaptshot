@@ -154,3 +154,9 @@ If a benchmark result looks surprising, open [benchmarks/run_benchmark.py](bench
 - [ ] I can run `python -m benchmarks.energy_profile --smoke-test --seed 42`.
 - [ ] I know which fields in the energy profile are estimates.
 - [ ] I can point to the real source files used by the benchmark scripts.
+
+---
+
+*Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
+*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
+*Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*

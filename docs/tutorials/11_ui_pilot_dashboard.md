@@ -130,3 +130,9 @@ Analogy: the UI is a window through which a person talks to the same machine, no
 - [ ] I can describe the three sections of the dashboard.
 - [ ] I know what each callback returns.
 - [ ] I can explain how the UI calls `load_support_images()`, `predict()`, and `correct()`.
+
+---
+
+*Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
+*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
+*Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*

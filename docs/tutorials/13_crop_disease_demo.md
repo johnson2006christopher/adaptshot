@@ -371,3 +371,9 @@ examples/mziziguard/
 - Try loading real images with `load_images_from_dir()` instead of synthetic
 - Present the terminal demo to non-technical audiences using `--no-pause`
 - Check the [Full API Reference](../api/core.md) for all `FewShotLearner` methods
+
+---
+
+*Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
+*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
+*Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*

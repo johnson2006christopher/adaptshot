@@ -139,3 +139,67 @@ This creates:
 - [ ] `predict()` prints a `PredictionResult`.
 - [ ] `correct()` uses integer labels and returns a dictionary with `fine_tuned`.
 - [ ] Latency and memory are measured locally with `time.perf_counter()` and `tracemalloc`.
+
+## Next Steps After Quick Start
+
+Now that you've run a complete pipeline:
+
+1. **Try MziziGuard** — launch the full web app: `python -m examples.mziziguard.app`
+2. **Run benchmarks** — `python -m benchmarks.run_benchmark --smoke-test --seed 42`
+3. **Explore the API** — [Core API Reference](../api/core.md) for all `FewShotLearner` methods
+4. **Learn the internals** — [AdaptShot Deep Dive](../guides/adaptshot-deep-dive.md)
+5. **Deploy in the field** — [Deployment Guide](../guides/deployment-guide.md)
+
+## Quick Start Variations
+
+### With String Labels
+
+```python
+labels = ["healthy", "healthy", "healthy", "blight", "blight", "blight"]
+learner.load_support_images(image_paths, labels)
+```
+
+### With Custom Config
+
+```python
+config = AdaptShotConfig(
+    backbone="mobilenet_v3_small",  # For low-power devices
+    similarity_metric="cosine",      # Angle-based comparison
+    eco_mode=True,                    # Battery saving
+    enable_ood_detection=True,        # Catch unusual images
+)
+```
+
+### With FAISS Acceleration
+
+```python
+config = AdaptShotConfig(
+    use_faiss=True,       # Build FAISS index
+    faiss_nprobe=16,      # Search probe depth
+)
+# Significant speedup for support sets > 100 images
+```
+
+### Measuring Determinism
+
+```python
+config = AdaptShotConfig(seed=42)
+learner1 = FewShotLearner(config=config)
+learner2 = FewShotLearner(config=config)
+
+learner1.load_support_images(paths, labels)
+learner2.load_support_images(paths, labels)
+
+result1 = learner1.predict(query)
+result2 = learner2.predict(query)
+
+assert result1.prediction == result2.prediction
+assert abs(result1.calibrated_confidence - result2.calibrated_confidence) < 1e-6
+print("✓ Deterministic: both runs produce identical results")
+```
+
+---
+
+*Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
+*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
+*Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*

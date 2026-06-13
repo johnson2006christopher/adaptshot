@@ -158,3 +158,9 @@ See the serialization logic in [src/adaptshot/core/learner.py](src/adaptshot/cor
 - [ ] I can describe how corrections flow into the buffer, calibration, and optional fine-tuning.
 
 If you want the exact implementation details, start with [src/adaptshot/core/learner.py](src/adaptshot/core/learner.py), then follow the links to [src/adaptshot/training/feedback_router.py](src/adaptshot/training/feedback_router.py) and [src/adaptshot/training/finetune.py](src/adaptshot/training/finetune.py).
+
+---
+
+*Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
+*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
+*Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*

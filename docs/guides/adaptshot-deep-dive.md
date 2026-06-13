@@ -10,16 +10,16 @@ This guide is for developers and researchers who want to understand *how* AdaptS
 
 1. [Architecture Overview](#architecture-overview)
 2. [The Embedding Pipeline](#the-embedding-pipeline)
-3. [Similarity Search & Prototypical Inference](#similarity-search--prototypical-inference)
-4. [Calibration Engine — Temperature Scaling](#calibration-engine--temperature-scaling)
-5. [ACT Engine — Adaptive Confidence Thresholding](#act-engine--adaptive-confidence-thresholding)
-6. [OOD Detection — Knowing When You Don't Know](#ood-detection--knowing-when-you-dont-know)
+3. [Similarity Search & Prototypical Inference](#similarity-search-prototypical-inference)
+4. [Calibration Engine — Temperature Scaling](#calibration-engine-temperature-scaling)
+5. [ACT Engine — Adaptive Confidence Thresholding](#act-engine-adaptive-confidence-thresholding)
+6. [OOD Detection — Knowing When You Don't Know](#ood-detection-knowing-when-you-dont-know)
 7. [Human-in-the-Loop: The Feedback Router](#human-in-the-loop-the-feedback-router)
-8. [CA-EWC Fine-Tuning — Continual Learning Without Forgetting](#ca-ewc-fine-tuning--continual-learning-without-forgetting)
-9. [UP-UGF Buffer Management — Uncertainty-Guided Pruning](#up-ugf-buffer-management--uncertainty-guided-pruning)
-10. [Eco Mode — Carbon-Aware Inference](#eco-mode--carbon-aware-inference)
+8. [CA-EWC Fine-Tuning — Continual Learning Without Forgetting](#ca-ewc-fine-tuning-continual-learning-without-forgetting)
+9. [UP-UGF Buffer Management — Uncertainty-Guided Pruning](#up-ugf-buffer-management-uncertainty-guided-pruning)
+10. [Eco Mode — Carbon-Aware Inference](#eco-mode-carbon-aware-inference)
 11. [Data Flow: End-to-End Trace](#data-flow-end-to-end-trace)
-12. [Design Decisions & Trade-offs](#design-decisions--trade-offs)
+12. [Design Decisions & Trade-offs](#design-decisions-trade-offs)
 
 ---
 

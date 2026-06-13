@@ -188,3 +188,9 @@ This is why a full source tour matters: the file layout is part of the contract.
 - [ ] I can explain where ACT decisions happen.
 - [ ] I can explain where corrections are routed.
 - [ ] I can explain where pruning and persistence happen.
+
+---
+
+*Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
+*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
+*Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*
