@@ -22,7 +22,7 @@ All other fields use sensible defaults. You only need to set what you want to ch
 
 ---
 
-## Field Reference (All 22 Fields)
+## Field Reference (All 26 Fields)
 
 ### Category 1: Core Execution (4 fields)
 
@@ -46,7 +46,7 @@ All other fields use sensible defaults. You only need to set what you want to ch
 | # | Field | Type | Default | Description |
 |---|-------|------|---------|-------------|
 | 8 | `similarity_metric` | `Literal["cosine", "euclidean"]` | `"euclidean"` | Distance metric for comparing embeddings. `"euclidean"` is faster and works well with normalized embeddings. `"cosine"` is direction-aware and robust to embedding magnitude differences. |
-| 9 | `inference_mode` | `Literal["nearest_neighbor", "prototypical"]` | `"prototypical"` | Classification strategy. `"nearest_neighbor"` finds the single closest support example. `"prototypical"` computes a class prototype (mean embedding) and compares against it -- generally more robust with small support sets. |
+| 9 | `inference_mode` | `Literal["nearest_neighbor", "prototypical", "contrastive"]` | `"prototypical"` | Classification strategy. `"nearest_neighbor"` finds the single closest support example. `"prototypical"` computes a class prototype (mean embedding) and compares against it. `"contrastive"` (v0.2.0) uses contrastively refined prototypes with InfoNCE loss — best with >20 examples per class. |
 | 10 | `use_faiss` | `bool` | `False` | Enable FAISS-CPU acceleration for similarity search. Improves latency for support sets >100 images. Requires `pip install "adaptshot[faiss]"`. Falls back to NumPy if FAISS is not installed. |
 | 11 | `faiss_nprobe` | `int` | `8` | FAISS IVF index probing depth. Higher values improve accuracy but increase search time. Only used when `use_faiss=True` and an IVF index is active. |
 
@@ -81,9 +81,29 @@ All other fields use sensible defaults. You only need to set what you want to ch
 |---|-------|------|---------|-------------|
 | 22 | `max_buffer_size` | `int` | `100` | Maximum replay buffer capacity. Must be >= 10. Controls the number of support embeddings retained in memory. When exceeded, UP-UGF pruning evicts low-utility examples based on uncertainty x recency x redundancy scoring. RAM usage scales linearly with this value (each embedding is ~2KB for ResNet-18 512-dim). |
 
+### Category 8: v0.2.0 Advanced Features (4 fields)
+
+| # | Field | Type | Default | Description |
+|---|-------|------|---------|-------------|
+| 23 | `conformal_alpha` | `float` | `0.05` | v0.2.0: Target miscoverage rate for conformal prediction sets. Must be in (0.0, 1.0). At alpha=0.05, prediction sets contain the true class with ≥95% probability. |
+| 24 | `conformal_mode` | `Literal["split", "cross"]` | `"split"` | v0.2.0: Conformal prediction mode. `"split"` uses a single calibration split. `"cross"` aggregates across multiple splits for more stable quantiles. |
+| 25 | `uncertainty_mode` | `Literal["mcdropout", "entropy", "mahalanobis", "ensemble"]` | `"entropy"` | v0.2.0: Uncertainty quantification signal to use. `"entropy"` = k-NN entropy. `"mcdropout"` = MC Dropout variance. `"mahalanobis"` = distance-based. `"ensemble"` = weighted fusion of all three. |
+| 26 | `explainability_enabled` | `bool` | `True` | v0.2.0: Enable XAI explanations. When `True`, `FewShotLearner.explain()` generates feature attributions, confidence decomposition, and counterfactual analysis. |
+
 ---
 
-## Validation Rules
+## Validation Rules (v0.2.0 Additions)
+
+The following rules are checked in `AdaptShotConfig.__post_init__()` in addition to all existing validation:
+
+| Rule | Error if violated |
+|------|-------------------|
+| `0.0 < conformal_alpha < 1.0` | `ValueError` |
+| `conformal_mode in ("split", "cross")` | `ValueError` |
+
+---
+
+## Validation Rules (All)
 
 `AdaptShotConfig.__post_init__()` enforces these constraints on creation:
 
@@ -176,6 +196,6 @@ AdaptShotConfig(
 
 - [ ] You can create a config with `AdaptShotConfig()` and all defaults are correct.
 - [ ] You understand which fields to change for your hardware and use case.
-- [ ] You know that `device` must always be `"cpu"` in v0.1.1.
-- [ ] You understand the difference between `similarity_metric` (`cosine` vs `euclidean`) and `inference_mode` (`nearest_neighbor` vs `prototypical`).
+- [ ] You know that `device` must always be `"cpu"` in the current version.
+- [ ] You understand the three `inference_mode` options (nearest_neighbor, prototypical, contrastive).
 - [ ] You can trace every field back to `src/adaptshot/config/settings.py`.
