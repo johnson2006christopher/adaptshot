@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.1.2] - Unreleased
+## [0.1.2] - 2026-06-08
 
 ### Added
 - **Lazy torch imports**: `extractor.py` uses deferred imports for PyTorch and torchvision,
