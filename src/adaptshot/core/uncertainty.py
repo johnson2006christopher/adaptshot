@@ -300,20 +300,25 @@ class UncertaintyQuantifier:
     def estimate_epistemic(
         self,
         query_embedding: np.ndarray,
-        seed: int = 42,
+        seed: Optional[int] = None,
     ) -> Tuple[float, float]:
-        """Estimate epistemic uncertainty via embedding perturbation sensitivity.
+        """Estimate epistemic uncertainty via stochastic embedding perturbation.
 
-        Adds small Gaussian noise to the query embedding and measures how much
-        the normalized direction shifts. High sensitivity indicates the embedding
-        lacks robustness — the model has high epistemic uncertainty for this input.
+        Adds small Gaussian noise to the query embedding with a non-deterministic
+        seed and measures how much the normalized direction shifts. High sensitivity
+        indicates the embedding lacks robustness — the model has high epistemic
+        uncertainty for this input.
+
+        When seed=None (default), each call produces a different perturbation
+        pattern, capturing genuine stochastic sensitivity. Pass an explicit seed
+        for reproducible diagnostics.
 
         This is a numpy-based proxy for MC Dropout. Full MC Dropout through the
         backbone requires torch and is planned for a future release.
 
         Args:
             query_embedding: [D] query embedding vector.
-            seed: Random seed for perturbation reproducibility.
+            seed: Optional random seed. None = non-deterministic (default).
 
         Returns:
             (raw_variance, normalized_variance in [0, 1])
