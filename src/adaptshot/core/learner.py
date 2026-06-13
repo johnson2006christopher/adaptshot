@@ -357,6 +357,49 @@ class FewShotLearner:
             nearest_neighbors=nearest_neighbors,
         )
 
+    def explain(self, image: Union[str, Image.Image, np.ndarray]) -> ExplanationResult:
+        """Generate a multi-faceted explanation for a prediction.
+
+        Combines feature attribution (which support examples influenced the
+        prediction), confidence decomposition (how each component contributed),
+        and counterfactual analysis (what would change the prediction).
+
+        Args:
+            image: File path, PIL image, or HWC NumPy array.
+
+        Returns:
+            ExplanationResult with attributions, confidence breakdown,
+            counterfactual, and a human-readable summary.
+
+        Raises:
+            AdaptShotError: If support set is not initialized.
+        """
+        self._ensure_initialized()
+        if not self._sim_embeddings:
+            raise AdaptShotError(
+                "Support set is empty. Load support examples with load_support_images() "
+                "before calling explain()."
+            )
+
+        normalized_image = self._normalize_predict_image(image)
+        query_emb = self._extract_embedding_checked(image=normalized_image, source="explain")
+        support_embeddings = np.array(self._sim_embeddings, dtype=np.float32)
+        support_labels = np.array(self._sim_labels, dtype=object)
+
+        # Run prediction first to get labels and confidences
+        result = self.predict(image)
+
+        return self.explainer.explain(
+            query_embedding=query_emb,
+            support_embeddings=support_embeddings,
+            support_labels=support_labels,
+            predicted_label=result.prediction,
+            raw_confidence=result.raw_confidence,
+            calibrated_confidence=result.calibrated_confidence,
+            act_action=result.act_action,
+            is_ood=result.ood_flag,
+        )
+
     def correct(
         self,
         image_path: str,
