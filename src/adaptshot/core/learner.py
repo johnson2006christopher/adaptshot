@@ -254,7 +254,18 @@ class FewShotLearner:
         support_embeddings = np.array(self._sim_embeddings, dtype=np.float32)
         support_labels = np.array(self._sim_labels, dtype=object)
 
-        if self.config.inference_mode == "prototypical" and self._prototype_embeddings.size > 0:
+        if self.config.inference_mode == "contrastive" and self.contrastive.is_fitted:
+            pred_label_raw, raw_conf, proto_idx = self.contrastive.nearest_prototype(
+                query_emb, self._prototype_embeddings, self._prototype_labels
+            )
+            pred_label = self._coerce_label(pred_label_raw)
+            neighbor_idx = self._nearest_support_index_for_label(query_emb, pred_label)
+            distance_to_prototype = self._distance_to_label_prototype(query_emb, pred_label)
+            # Contrastive prototype margin: confidence gap to second-closest class
+            sims = self.contrastive.project_query(query_emb) @ self._prototype_embeddings.T
+            sorted_sims = np.sort(sims)[::-1]
+            prototype_margin = float(sorted_sims[0] - sorted_sims[1]) if len(sorted_sims) > 1 else 0.0
+        elif self.config.inference_mode == "prototypical" and self._prototype_embeddings.size > 0:
             pred_label_raw, raw_conf, _, distance_to_prototype, prototype_margin = find_nearest_prototype(
                 query=query_emb,
                 prototypes=self._prototype_embeddings,
@@ -294,10 +305,9 @@ class FewShotLearner:
             recent_correct_rate=1.0 - recent_unc,
         )
 
-        ood_flag = self._is_out_of_distribution(
-            distance_to_prototype=distance_to_prototype,
-            prototype_margin=prototype_margin,
-        )
+        ood_flag = False
+        if self.config.enable_ood_detection:
+            ood_flag, _ = self.uncertainty_q.is_ood(query_emb)
         if ood_flag:
             accept = False
             act_action = "REQUEST_FEEDBACK_OOD"
@@ -314,18 +324,15 @@ class FewShotLearner:
         # v0.2.0: Conformal prediction set
         prototype_distances = self._compute_all_prototype_distances(query_emb)
         proto_labels = self._prototype_labels
-        if self.config.inference_mode == "contrastive" and self.contrastive.is_fitted:
-            cf_pred, cf_conf, _ = self.contrastive.nearest_prototype(
-                query_emb, self._prototype_embeddings, self._prototype_labels
-            )
         conformal_result = self.conformal.predict_set(
             prototype_distances, proto_labels, pred_label, calibrated_conf
         )
         conformal_list = sorted(conformal_result.prediction_set, key=str)
 
-        # v0.2.0: Uncertainty report
+        # v0.2.0: Uncertainty report (mode-gated)
         uncertainty_report = self.uncertainty_q.quantify(
-            query_emb, support_embeddings, support_labels
+            query_emb, support_embeddings, support_labels,
+            mode=self.config.uncertainty_mode,
         )
 
         # v0.2.0: Nearest neighbors for explainability
