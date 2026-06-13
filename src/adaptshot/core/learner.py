@@ -678,7 +678,7 @@ class FewShotLearner:
     def _validate_config(self, config: AdaptShotConfig) -> None:
         if config.device != "cpu":
             raise ConfigValidationError(
-                "AdaptShot v0.1.1 is CPU-first. Set device='cpu'. "
+                "AdaptShot is CPU-first. Set device='cpu'. "
                 "See docs/getting-started/quickstart.md."
             )
         if config.ece_n_bins <= 1:
@@ -701,9 +701,9 @@ class FewShotLearner:
                 "similarity_metric must be 'cosine' or 'euclidean'. "
                 f"Received {config.similarity_metric}."
             )
-        if config.inference_mode not in {"nearest_neighbor", "prototypical"}:
+        if config.inference_mode not in {"nearest_neighbor", "prototypical", "contrastive"}:
             raise ConfigValidationError(
-                "inference_mode must be 'nearest_neighbor' or 'prototypical'. "
+                "inference_mode must be 'nearest_neighbor', 'prototypical', or 'contrastive'. "
                 f"Received {config.inference_mode}."
             )
         if config.calibration_eval_bins < config.ece_n_bins:
