@@ -1,8 +1,8 @@
 {
   "accuracy": 0.68,
-  "latency_avg_ms": 29.235860639746534,
-  "latency_p95_ms": 37.25573820120189,
-  "embedding_time_s": 1.5862037820006663,
+  "latency_avg_ms": 29.477324719773605,
+  "latency_p95_ms": 29.96699359937338,
+  "embedding_time_s": 1.7235958679993928,
   "support_size": 50,
   "query_size": 25,
   "config": {
