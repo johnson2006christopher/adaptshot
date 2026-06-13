@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://johnson2006christopher.github.io/adaptshot/api/core/">
+        <link rel="canonical" href="https://johnson2006christopher.github.io/adaptshot/guides/architecture-deep-dive/">
       
       
-        <link rel="prev" href="../reference/">
+        <link rel="prev" href="../../api/config/">
       
       
-        <link rel="next" href="../training/">
+        <link rel="next" href="../algorithm-theory/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>Core Engine - AdaptShot</title>
+        <title>Architecture Deep-Dive - AdaptShot</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#core-api-reference-v012" class="md-skip">
+        <a href="#adaptshot-architecture-deep-dive" class="md-skip">
           Skip to content
         </a>
       
@@ -115,7 +115,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Core Engine
+              Architecture Deep-Dive
             
           </span>
         </div>
@@ -1039,20 +1039,20 @@
       
   
   
-    
   
   
-  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
         
           
           <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
@@ -1073,7 +1073,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1091,7 +1091,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/" class="md-nav__link">
+      <a href="../../api/reference/" class="md-nav__link">
         
   
   
@@ -1116,6 +1116,146 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/training/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training & Continual Learning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration & Utils
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
     
   
   
@@ -1135,7 +1275,7 @@
   <span class="md-ellipsis">
     
   
-    Core Engine
+    Architecture Deep-Dive
   
 
     
@@ -1153,7 +1293,7 @@
   <span class="md-ellipsis">
     
   
-    Core Engine
+    Architecture Deep-Dive
   
 
     
@@ -1179,22 +1319,44 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#fewshotlearner" class="md-nav__link">
+  <a href="#system-overview" class="md-nav__link">
     <span class="md-ellipsis">
       
-        FewShotLearner
+        System Overview
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="FewShotLearner">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#module-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Module Architecture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-data-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Data Flow
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core Data Flow">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#initialization" class="md-nav__link">
+  <a href="#1-support-set-loading-load_support_images" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Initialization
+        1. Support Set Loading (load_support_images)
       
     </span>
   </a>
@@ -1202,10 +1364,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#load_support_imagesimage_paths-labels" class="md-nav__link">
+  <a href="#2-prediction-flow-predict" class="md-nav__link">
     <span class="md-ellipsis">
       
-        load_support_images(image_paths, labels)
+        2. Prediction Flow (predict)
       
     </span>
   </a>
@@ -1213,32 +1375,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#predictimage-predictionresult" class="md-nav__link">
+  <a href="#3-human-feedback-loop-correct" class="md-nav__link">
     <span class="md-ellipsis">
       
-        predict(image) -&gt; PredictionResult
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#correctimage_path-true_label-confidence_weight10-dictstr-any" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        correct(image_path, true_label, confidence_weight=1.0) -&gt; Dict[str, Any]
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#savepath-loadpath" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        save(path) / load(path)
+        3. Human Feedback Loop (correct)
       
     </span>
   </a>
@@ -1251,22 +1391,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#calibrationengine" class="md-nav__link">
+  <a href="#key-design-decisions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CalibrationEngine
+        Key Design Decisions
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="CalibrationEngine">
+    <nav class="md-nav" aria-label="Key Design Decisions">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#initialization_1" class="md-nav__link">
+  <a href="#numpy-first-architecture" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Initialization
+        Numpy-First Architecture
       
     </span>
   </a>
@@ -1274,10 +1414,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#updateraw_confidence-predicted_label-true_label" class="md-nav__link">
+  <a href="#immutable-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        update(raw_confidence, predicted_label, true_label)
+        Immutable Configuration
       
     </span>
   </a>
@@ -1285,10 +1425,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#calibrateraw_confidence-float" class="md-nav__link">
+  <a href="#schema-versioned-persistence" class="md-nav__link">
     <span class="md-ellipsis">
       
-        calibrate(raw_confidence) -&gt; float
+        Schema-Versioned Persistence
       
     </span>
   </a>
@@ -1296,21 +1436,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#compute_ececonfidences-labels_correct-float" class="md-nav__link">
+  <a href="#backend-abstraction" class="md-nav__link">
     <span class="md-ellipsis">
       
-        compute_ece(confidences, labels_correct) -&gt; float
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#properties" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Properties
+        Backend Abstraction
       
     </span>
   </a>
@@ -1323,22 +1452,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#actengine" class="md-nav__link">
+  <a href="#memory-layout" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ACTEngine
+        Memory Layout
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="ACTEngine">
+    <nav class="md-nav" aria-label="Memory Layout">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#initialization_2" class="md-nav__link">
+  <a href="#support-buffer" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Initialization
+        Support Buffer
       
     </span>
   </a>
@@ -1346,10 +1475,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#should_acceptconfidence-class_idx-recent_incorrect_rate00-recent_correct_rate10-tuplebool-str" class="md-nav__link">
+  <a href="#prototype-storage" class="md-nav__link">
     <span class="md-ellipsis">
       
-        should_accept(confidence, class_idx, recent_incorrect_rate=0.0, recent_correct_rate=1.0) -&gt; Tuple[bool, str]
+        Prototype Storage
       
     </span>
   </a>
@@ -1357,21 +1486,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#get_thresholdclass_idx-float" class="md-nav__link">
+  <a href="#calibration-window" class="md-nav__link">
     <span class="md-ellipsis">
       
-        get_threshold(class_idx) -&gt; float
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#get_all_thresholds-dictint-float" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        get_all_thresholds() -&gt; Dict[int, float]
+        Calibration Window
       
     </span>
   </a>
@@ -1384,21 +1502,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#predictionresult" class="md-nav__link">
+  <a href="#thread-safety" class="md-nav__link">
     <span class="md-ellipsis">
       
-        PredictionResult
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#constraints-notes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Constraints &amp; Notes
+        Thread Safety
       
     </span>
   </a>
@@ -1432,147 +1539,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../training/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Training & Continual Learning
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../config/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Configuration & Utils
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
-        
-          
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Guides
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_6">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Guides
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../guides/architecture-deep-dive/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Architecture Deep-Dive
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../guides/algorithm-theory/" class="md-nav__link">
+      <a href="../algorithm-theory/" class="md-nav__link">
         
   
   
@@ -1600,7 +1567,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/studio-complete-guide/" class="md-nav__link">
+      <a href="../studio-complete-guide/" class="md-nav__link">
         
   
   
@@ -1628,7 +1595,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/ui-pilot-guide/" class="md-nav__link">
+      <a href="../ui-pilot-guide/" class="md-nav__link">
         
   
   
@@ -1656,7 +1623,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/real-world-use-cases/" class="md-nav__link">
+      <a href="../real-world-use-cases/" class="md-nav__link">
         
   
   
@@ -1684,7 +1651,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/human-in-the-loop/" class="md-nav__link">
+      <a href="../human-in-the-loop/" class="md-nav__link">
         
   
   
@@ -1712,7 +1679,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/troubleshooting/" class="md-nav__link">
+      <a href="../troubleshooting/" class="md-nav__link">
         
   
   
@@ -1959,22 +1926,44 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#fewshotlearner" class="md-nav__link">
+  <a href="#system-overview" class="md-nav__link">
     <span class="md-ellipsis">
       
-        FewShotLearner
+        System Overview
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="FewShotLearner">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#module-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Module Architecture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-data-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Data Flow
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core Data Flow">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#initialization" class="md-nav__link">
+  <a href="#1-support-set-loading-load_support_images" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Initialization
+        1. Support Set Loading (load_support_images)
       
     </span>
   </a>
@@ -1982,10 +1971,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#load_support_imagesimage_paths-labels" class="md-nav__link">
+  <a href="#2-prediction-flow-predict" class="md-nav__link">
     <span class="md-ellipsis">
       
-        load_support_images(image_paths, labels)
+        2. Prediction Flow (predict)
       
     </span>
   </a>
@@ -1993,32 +1982,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#predictimage-predictionresult" class="md-nav__link">
+  <a href="#3-human-feedback-loop-correct" class="md-nav__link">
     <span class="md-ellipsis">
       
-        predict(image) -&gt; PredictionResult
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#correctimage_path-true_label-confidence_weight10-dictstr-any" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        correct(image_path, true_label, confidence_weight=1.0) -&gt; Dict[str, Any]
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#savepath-loadpath" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        save(path) / load(path)
+        3. Human Feedback Loop (correct)
       
     </span>
   </a>
@@ -2031,22 +1998,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#calibrationengine" class="md-nav__link">
+  <a href="#key-design-decisions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CalibrationEngine
+        Key Design Decisions
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="CalibrationEngine">
+    <nav class="md-nav" aria-label="Key Design Decisions">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#initialization_1" class="md-nav__link">
+  <a href="#numpy-first-architecture" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Initialization
+        Numpy-First Architecture
       
     </span>
   </a>
@@ -2054,10 +2021,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#updateraw_confidence-predicted_label-true_label" class="md-nav__link">
+  <a href="#immutable-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        update(raw_confidence, predicted_label, true_label)
+        Immutable Configuration
       
     </span>
   </a>
@@ -2065,10 +2032,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#calibrateraw_confidence-float" class="md-nav__link">
+  <a href="#schema-versioned-persistence" class="md-nav__link">
     <span class="md-ellipsis">
       
-        calibrate(raw_confidence) -&gt; float
+        Schema-Versioned Persistence
       
     </span>
   </a>
@@ -2076,21 +2043,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#compute_ececonfidences-labels_correct-float" class="md-nav__link">
+  <a href="#backend-abstraction" class="md-nav__link">
     <span class="md-ellipsis">
       
-        compute_ece(confidences, labels_correct) -&gt; float
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#properties" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Properties
+        Backend Abstraction
       
     </span>
   </a>
@@ -2103,22 +2059,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#actengine" class="md-nav__link">
+  <a href="#memory-layout" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ACTEngine
+        Memory Layout
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="ACTEngine">
+    <nav class="md-nav" aria-label="Memory Layout">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#initialization_2" class="md-nav__link">
+  <a href="#support-buffer" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Initialization
+        Support Buffer
       
     </span>
   </a>
@@ -2126,10 +2082,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#should_acceptconfidence-class_idx-recent_incorrect_rate00-recent_correct_rate10-tuplebool-str" class="md-nav__link">
+  <a href="#prototype-storage" class="md-nav__link">
     <span class="md-ellipsis">
       
-        should_accept(confidence, class_idx, recent_incorrect_rate=0.0, recent_correct_rate=1.0) -&gt; Tuple[bool, str]
+        Prototype Storage
       
     </span>
   </a>
@@ -2137,21 +2093,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#get_thresholdclass_idx-float" class="md-nav__link">
+  <a href="#calibration-window" class="md-nav__link">
     <span class="md-ellipsis">
       
-        get_threshold(class_idx) -&gt; float
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#get_all_thresholds-dictint-float" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        get_all_thresholds() -&gt; Dict[int, float]
+        Calibration Window
       
     </span>
   </a>
@@ -2164,21 +2109,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#predictionresult" class="md-nav__link">
+  <a href="#thread-safety" class="md-nav__link">
     <span class="md-ellipsis">
       
-        PredictionResult
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#constraints-notes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Constraints &amp; Notes
+        Thread Safety
       
     </span>
   </a>
@@ -2216,202 +2150,204 @@
   
 
 
-<h1 id="core-api-reference-v012">Core API Reference (v0.1.2)<a class="headerlink" href="#core-api-reference-v012" title="Permanent link">&para;</a></h1>
-<p>This document describes the public interfaces for AdaptShot's inference and calibration engine. All signatures, parameters, and behaviors reflect the current <code>v0.1.2</code> implementation. Internal/private methods (<code>_</code>-prefixed) are omitted as they are subject to change without notice.</p>
+<h1 id="adaptshot-architecture-deep-dive">AdaptShot Architecture Deep-Dive<a class="headerlink" href="#adaptshot-architecture-deep-dive" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p><strong>v0.2.0</strong> | Comprehensive system architecture and data flow documentation</p>
+</blockquote>
 <hr />
-<h2 id="fewshotlearner"><code>FewShotLearner</code><a class="headerlink" href="#fewshotlearner" title="Permanent link">&para;</a></h2>
-<p>The primary entry point for loading support data, running predictions, routing corrections, and managing session state.</p>
-<h3 id="initialization">Initialization<a class="headerlink" href="#initialization" title="Permanent link">&para;</a></h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">adaptshot</span><span class="w"> </span><span class="kn">import</span> <span class="n">FewShotLearner</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">adaptshot.config.settings</span><span class="w"> </span><span class="kn">import</span> <span class="n">AdaptShotConfig</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">config</span> <span class="o">=</span> <span class="n">AdaptShotConfig</span><span class="p">(</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">backbone</span><span class="o">=</span><span class="s2">&quot;resnet18&quot;</span><span class="p">,</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">max_buffer_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">use_faiss</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="p">)</span>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="n">learner</span> <span class="o">=</span> <span class="n">FewShotLearner</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+<h2 id="system-overview">System Overview<a class="headerlink" href="#system-overview" title="Permanent link">&para;</a></h2>
+<p>AdaptShot is a human-aligned few-shot vision learning library designed for resource-constrained environments. It enables continual learning from minimal examples (5-10 per class) while incorporating human feedback to improve predictions over time.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>graph TB
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    A[Image Input] --&gt; B[Embedding Extractor]
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    B --&gt; C[Similarity Index]
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    C --&gt; D[Prototype Builder]
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    D --&gt; E[Inference Engine]
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    E --&gt; F[Calibration &amp; ACT]
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    F --&gt; G[Prediction Output]
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    H[Human Feedback] --&gt; I[Feedback Router]
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    I --&gt; J[CA-EWC Fine-Tuner]
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    I --&gt; K[UP-UGF Pruner]
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    J --&gt; C
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    K --&gt; C
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    E --&gt; L[Conformal Prediction]
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    E --&gt; M[Uncertainty Quantifier]
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>    E --&gt; N[Explainability Engine]
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>    L --&gt; G
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>    M --&gt; G
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>    N --&gt; G
 </span></code></pre></div>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>config</code></td>
-<td><code>AdaptShotConfig</code></td>
-<td><code>None</code></td>
-<td>Immutable configuration dataclass; kwargs accepted if config is <code>None</code></td>
-</tr>
-</tbody>
-</table>
-<p>See <a href="../config/">Configuration Reference</a> for the complete <code>AdaptShotConfig</code> field listing.</p>
-<h3 id="load_support_imagesimage_paths-labels"><code>load_support_images(image_paths, labels)</code><a class="headerlink" href="#load_support_imagesimage_paths-labels" title="Permanent link">&para;</a></h3>
-<p>Ingests the initial few-shot support set and builds the similarity index.</p>
-<p><div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">learner</span><span class="o">.</span><span class="n">load_support_images</span><span class="p">(</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">image_paths</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="n">labels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="p">)</span>
-</span></code></pre></div>
-<strong>Behavior:</strong>
-- Opens each image, applies ImageNet-standard preprocessing, and extracts frozen backbone embeddings
-- Stores embeddings in CPU memory
-- Initializes a lightweight classification head for future CA-EWC fine-tuning
-- Raises <code>ValueError</code> if <code>len(image_paths) != len(labels)</code></p>
-<h3 id="predictimage-predictionresult"><code>predict(image) -&gt; PredictionResult</code><a class="headerlink" href="#predictimage-predictionresult" title="Permanent link">&para;</a></h3>
-<p>Runs inference on a single query image with calibrated confidence and ACT gating.</p>
-<p><div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">image</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">PIL</span><span class="o">.</span><span class="n">Image</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="p">)</span>
-</span></code></pre></div>
-<strong>Returns:</strong> <code>PredictionResult</code> dataclass (see below)</p>
-<h3 id="correctimage_path-true_label-confidence_weight10-dictstr-any"><code>correct(image_path, true_label, confidence_weight=1.0) -&gt; Dict[str, Any]</code><a class="headerlink" href="#correctimage_path-true_label-confidence_weight10-dictstr-any" title="Permanent link">&para;</a></h3>
-<p>Routes a human correction into the continual learning pipeline.</p>
-<p><div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">feedback</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">image_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">true_label</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">confidence_weight</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="p">)</span>
-</span></code></pre></div>
-<strong>Returns:</strong> Dictionary with keys:
-- <code>"buffer_size"</code>: Current replay buffer length
-- <code>"pending_corrections"</code>: Corrections awaiting fine-tune trigger
-- <code>"calibration_updated"</code>: <code>bool</code> indicating if ECE/temperature was updated
-- <code>"fine_tuned"</code>: <code>bool</code> indicating if CA-EWC head optimization ran
-- <code>"total_corrections"</code>: Lifetime correction count</p>
-<h3 id="savepath-loadpath"><code>save(path)</code> / <code>load(path)</code><a class="headerlink" href="#savepath-loadpath" title="Permanent link">&para;</a></h3>
-<p>Serializes and restores learner state, including embeddings, calibration history, ACT thresholds, and fine-tuned head weights.</p>
-<p><div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">learner</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;checkpoint.json&quot;</span><span class="p">)</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">restored</span> <span class="o">=</span> <span class="n">FewShotLearner</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;checkpoint.json&quot;</span><span class="p">)</span>
-</span></code></pre></div>
-<strong>File Artifacts Created on Save:</strong>
-- <code>{path}.json</code> (metadata, config, calibration, thresholds, buffer metadata)
-- <code>{path}.embeddings.npy</code> (NumPy array of support/correction embeddings)
-- <code>{path}.head.pt</code> (PyTorch state dict for fine-tuned classification head)</p>
 <hr />
-<h2 id="calibrationengine"><code>CalibrationEngine</code><a class="headerlink" href="#calibrationengine" title="Permanent link">&para;</a></h2>
-<p>Tracks prediction calibration online and applies post-hoc temperature scaling. Designed for streaming evaluation without a held-out validation set.</p>
-<h3 id="initialization_1">Initialization<a class="headerlink" href="#initialization_1" title="Permanent link">&para;</a></h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">adaptshot.core.calibration</span><span class="w"> </span><span class="kn">import</span> <span class="n">CalibrationEngine</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">calibrator</span> <span class="o">=</span> <span class="n">CalibrationEngine</span><span class="p">(</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">n_bins</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">15</span><span class="p">,</span>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="n">window_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="n">temperature_init</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;temperature&quot;</span>
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="p">)</span>
+<h2 id="module-architecture">Module Architecture<a class="headerlink" href="#module-architecture" title="Permanent link">&para;</a></h2>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>src/adaptshot/
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>├── __init__.py              # Public API exports, version string
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>├── config/
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>│   └── settings.py          # Immutable AdaptShotConfig dataclass
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>├── core/
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>│   ├── learner.py           # FewShotLearner — main orchestrator
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>│   ├── extractor.py         # Embedding extraction (ONNX + PyTorch backends)
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>│   ├── similarity.py        # Distance metrics, k-NN, prototype search
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>│   ├── calibration.py       # Temperature scaling, ECE, Platt scaling
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>│   ├── act.py               # Adaptive Confidence Thresholding engine
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>│   ├── conformal.py         # v0.2.0: Distribution-free conformal prediction
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>│   ├── contrastive.py       # v0.2.0: Contrastive prototype learning
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>│   ├── uncertainty.py       # v0.2.0: Multi-signal uncertainty quantification
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>│   └── explain.py           # v0.2.0: XAI explainability module
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>├── training/
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>│   ├── feedback_router.py   # Corrections routing with fine-tune triggers
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>│   ├── finetune.py          # CA-EWC continual fine-tuning
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>│   └── up_ugf.py            # UP-UGF buffer management and pruning
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>├── utils/
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>│   ├── exceptions.py        # Custom exception hierarchy
+</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>│   └── migrations.py        # Checkpoint schema migration
+</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>└── studio/                  # Gradio-based UI (Pilot Dashboard, Studio)
 </span></code></pre></div>
-<h3 id="updateraw_confidence-predicted_label-true_label"><code>update(raw_confidence, predicted_label, true_label)</code><a class="headerlink" href="#updateraw_confidence-predicted_label-true_label" title="Permanent link">&para;</a></h3>
-<p>Updates the sliding window with a new prediction and ground truth. Automatically triggers temperature refitting when the window is sufficiently populated (≥50% of <code>window_size</code>).</p>
-<h3 id="calibrateraw_confidence-float"><code>calibrate(raw_confidence) -&gt; float</code><a class="headerlink" href="#calibrateraw_confidence-float" title="Permanent link">&para;</a></h3>
-<p>Applies temperature scaling to a raw cosine similarity score and returns a calibrated confidence value in <code>[0.0, 1.0]</code>.</p>
-<h3 id="compute_ececonfidences-labels_correct-float"><code>compute_ece(confidences, labels_correct) -&gt; float</code><a class="headerlink" href="#compute_ececonfidences-labels_correct-float" title="Permanent link">&para;</a></h3>
-<p>Computes Expected Calibration Error on a provided set of predictions. Lower values indicate better alignment between confidence and accuracy.</p>
-<h3 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>current_ece: float</code> → Most recently computed ECE</li>
-<li><code>current_temperature: float</code> → Current scaling parameter <code>T</code></li>
-</ul>
 <hr />
-<h2 id="actengine"><code>ACTEngine</code><a class="headerlink" href="#actengine" title="Permanent link">&para;</a></h2>
-<p>Adaptive Confidence Thresholding. Dynamically adjusts per-class decision thresholds based on correction history to reduce false acceptances and request human feedback when uncertain.</p>
-<h3 id="initialization_2">Initialization<a class="headerlink" href="#initialization_2" title="Permanent link">&para;</a></h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">adaptshot.core.act</span><span class="w"> </span><span class="kn">import</span> <span class="n">ACTEngine</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">act</span> <span class="o">=</span> <span class="n">ACTEngine</span><span class="p">(</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="n">base_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.65</span><span class="p">,</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="n">learning_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="n">feedback_cost_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="n">min_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.50</span><span class="p">,</span>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>    <span class="n">max_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.95</span><span class="p">,</span>
-</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>    <span class="n">n_classes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span>
-</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="p">)</span>
+<h2 id="core-data-flow">Core Data Flow<a class="headerlink" href="#core-data-flow" title="Permanent link">&para;</a></h2>
+<h3 id="1-support-set-loading-load_support_images">1. Support Set Loading (<code>load_support_images</code>)<a class="headerlink" href="#1-support-set-loading-load_support_images" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>sequenceDiagram
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    participant User
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    participant Learner
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    participant Extractor
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    participant Similarity
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    participant Uncertainty
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    User-&gt;&gt;Learner: load_support_images(paths, labels)
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    Learner-&gt;&gt;Learner: Validate inputs (RGB check, length match)
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    loop For each image
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>        Learner-&gt;&gt;Extractor: extract_embedding(image)
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>        Extractor--&gt;&gt;Learner: embedding vector [D]
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>    end
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>    Learner-&gt;&gt;Similarity: compute_class_prototypes(embeddings, labels)
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>    Similarity--&gt;&gt;Learner: prototypes, labels, counts
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>    Learner-&gt;&gt;Uncertainty: fit_class_distributions(embeddings, labels)
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>    Learner-&gt;&gt;Learner: init_model_head(embedding_dim)
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>    Learner-&gt;&gt;Learner: _is_initialized = True
 </span></code></pre></div>
-<h3 id="should_acceptconfidence-class_idx-recent_incorrect_rate00-recent_correct_rate10-tuplebool-str"><code>should_accept(confidence, class_idx, recent_incorrect_rate=0.0, recent_correct_rate=1.0) -&gt; Tuple[bool, str]</code><a class="headerlink" href="#should_acceptconfidence-class_idx-recent_incorrect_rate00-recent_correct_rate10-tuplebool-str" title="Permanent link">&para;</a></h3>
-<p>Evaluates whether to accept a prediction or request human review.</p>
-<p><strong>Returns:</strong> <code>(accept: bool, action: str)</code> where <code>action</code> is <code>"ACCEPT"</code> or <code>"REQUEST_FEEDBACK"</code>.</p>
-<h3 id="get_thresholdclass_idx-float"><code>get_threshold(class_idx) -&gt; float</code><a class="headerlink" href="#get_thresholdclass_idx-float" title="Permanent link">&para;</a></h3>
-<p>Returns the current adaptive threshold for a specific class.</p>
-<h3 id="get_all_thresholds-dictint-float"><code>get_all_thresholds() -&gt; Dict[int, float]</code><a class="headerlink" href="#get_all_thresholds-dictint-float" title="Permanent link">&para;</a></h3>
-<p>Snapshot of all tracked class thresholds.</p>
-<hr />
-<h2 id="predictionresult"><code>PredictionResult</code><a class="headerlink" href="#predictionresult" title="Permanent link">&para;</a></h2>
-<p>Dataclass returned by <code>FewShotLearner.predict()</code>.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="nd">@dataclass</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="k">class</span><span class="w"> </span><span class="nc">PredictionResult</span><span class="p">:</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span class="n">prediction</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    <span class="n">raw_confidence</span><span class="p">:</span> <span class="nb">float</span>
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>    <span class="n">calibrated_confidence</span><span class="p">:</span> <span class="nb">float</span>
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>    <span class="n">neighbor_idx</span><span class="p">:</span> <span class="nb">int</span>
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>    <span class="n">uncertainty_flag</span><span class="p">:</span> <span class="nb">bool</span>
-</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>    <span class="n">act_action</span><span class="p">:</span> <span class="nb">str</span>
+<h3 id="2-prediction-flow-predict">2. Prediction Flow (<code>predict</code>)<a class="headerlink" href="#2-prediction-flow-predict" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>sequenceDiagram
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    participant User
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    participant Learner
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    participant Similarity
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    participant Calibrator
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    participant ACT
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    participant Conformal
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    participant Uncertainty
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    User-&gt;&gt;Learner: predict(image)
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    Learner-&gt;&gt;Learner: _normalize_predict_image(image)
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    Learner-&gt;&gt;Extractor: extract_embedding(normalized)
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>    Extractor--&gt;&gt;Learner: query_embedding [D]
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>    alt inference_mode = prototypical
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>        Learner-&gt;&gt;Similarity: find_nearest_prototype(query, prototypes)
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>        Similarity--&gt;&gt;Learner: label, confidence, distance, margin
+</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>    else inference_mode = nearest_neighbor
+</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>        Learner-&gt;&gt;Similarity: find_nearest_neighbor(query, support)
+</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>        Similarity--&gt;&gt;Learner: label, confidence, index
+</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>    end
+</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>
+</span><span id="__span-3-23"><a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>    Learner-&gt;&gt;Calibrator: calibrate(raw_confidence)
+</span><span id="__span-3-24"><a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>    Calibrator--&gt;&gt;Learner: calibrated_confidence
+</span><span id="__span-3-25"><a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a>
+</span><span id="__span-3-26"><a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a>    Learner-&gt;&gt;ACT: should_accept(confidence, class_idx)
+</span><span id="__span-3-27"><a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a>    ACT--&gt;&gt;Learner: accept, action
+</span><span id="__span-3-28"><a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a>
+</span><span id="__span-3-29"><a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a>    Learner-&gt;&gt;Conformal: predict_set(distances, labels)
+</span><span id="__span-3-30"><a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a>    Conformal--&gt;&gt;Learner: prediction_set, q_hat
+</span><span id="__span-3-31"><a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a>
+</span><span id="__span-3-32"><a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a>    Learner-&gt;&gt;Uncertainty: quantify(query, support)
+</span><span id="__span-3-33"><a id="__codelineno-3-33" name="__codelineno-3-33" href="#__codelineno-3-33"></a>    Uncertainty--&gt;&gt;Learner: uncertainty_report (epistemic, aleatoric, distributional)
+</span><span id="__span-3-34"><a id="__codelineno-3-34" name="__codelineno-3-34" href="#__codelineno-3-34"></a>
+</span><span id="__span-3-35"><a id="__codelineno-3-35" name="__codelineno-3-35" href="#__codelineno-3-35"></a>    Learner--&gt;&gt;User: PredictionResult
 </span></code></pre></div>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>prediction</code></td>
-<td><code>str</code> / <code>int</code></td>
-<td>Predicted class label</td>
-</tr>
-<tr>
-<td><code>raw_confidence</code></td>
-<td><code>float</code></td>
-<td>Unnormalized cosine similarity score</td>
-</tr>
-<tr>
-<td><code>calibrated_confidence</code></td>
-<td><code>float</code></td>
-<td>Temperature-scaled confidence in <code>[0.0, 1.0]</code></td>
-</tr>
-<tr>
-<td><code>neighbor_idx</code></td>
-<td><code>int</code></td>
-<td>Index of the nearest support example in the buffer</td>
-</tr>
-<tr>
-<td><code>uncertainty_flag</code></td>
-<td><code>bool</code></td>
-<td><code>True</code> if ACT rejected the prediction for human review</td>
-</tr>
-<tr>
-<td><code>act_action</code></td>
-<td><code>str</code></td>
-<td><code>"ACCEPT"</code> or <code>"REQUEST_FEEDBACK"</code></td>
-</tr>
-</tbody>
-</table>
+<h3 id="3-human-feedback-loop-correct">3. Human Feedback Loop (<code>correct</code>)<a class="headerlink" href="#3-human-feedback-loop-correct" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>sequenceDiagram
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    participant User
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    participant Learner
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    participant Router
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    participant Calibrator
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    participant FineTuner
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    participant Pruner
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    User-&gt;&gt;Learner: correct(image, true_label, weight)
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>    Learner-&gt;&gt;Learner: Extract query embedding
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>    Learner-&gt;&gt;Learner: find_nearest_neighbor(query, support)
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>    Learner-&gt;&gt;Router: route_feedback(correction)
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>    Router-&gt;&gt;Calibrator: update_calibration_window(...)
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>    alt buffer threshold reached
+</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>        Router-&gt;&gt;FineTuner: trigger_finetune(corrections)
+</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>        FineTuner-&gt;&gt;FineTuner: CA-EWC weight update
+</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>    end
+</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>
+</span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>    Learner-&gt;&gt;Learner: _append_correction_to_similarity_buffer(...)
+</span><span id="__span-4-21"><a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>
+</span><span id="__span-4-22"><a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>    alt buffer exceeds capacity
+</span><span id="__span-4-23"><a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a>        Learner-&gt;&gt;Pruner: compute_scores(embeddings, uncertainties, times)
+</span><span id="__span-4-24"><a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a>        Pruner--&gt;&gt;Learner: keep_indices
+</span><span id="__span-4-25"><a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a>        Learner-&gt;&gt;Learner: prune buffer to max_buffer_size
+</span><span id="__span-4-26"><a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a>    end
+</span><span id="__span-4-27"><a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a>
+</span><span id="__span-4-28"><a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a>    Learner-&gt;&gt;Learner: _rebuild_prototypes()
+</span><span id="__span-4-29"><a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a>    Learner--&gt;&gt;User: feedback summary dict
+</span></code></pre></div>
 <hr />
-<h2 id="constraints-notes">Constraints &amp; Notes<a class="headerlink" href="#constraints-notes" title="Permanent link">&para;</a></h2>
-<ul>
-<li><strong>Determinism</strong>: All randomness is controlled by <code>seed</code>. Call <code>set_deterministic_seed()</code> before inference for reproducible results.</li>
-<li><strong>Image Input</strong>: <code>predict()</code> and <code>load_support_images()</code> accept file paths, <code>PIL.Image</code> objects, or NumPy arrays (HWC, <code>uint8</code>). Grayscale images are converted to 3-channel RGB.</li>
-<li><strong>Calibration Warm-up</strong>: Temperature scaling stabilizes after ~10-15 predictions enter the sliding window. Initial <code>calibrated_confidence</code> values may be close to raw similarity scores.</li>
-<li><strong>Memory Limit</strong>: <code>max_buffer_size</code> strictly bounds RAM usage. When exceeded, UP-UGF pruning evicts low-utility examples (falls back to FIFO during initial population).</li>
-<li><strong>No GPU Training</strong>: CA-EWC fine-tuning runs on the classification head only. Backbone weights remain frozen throughout the lifecycle.</li>
-<li><strong>String Labels</strong>: <code>correct()</code> accepts both string and integer labels. String labels are mapped to integer indices internally via the label index.</li>
-<li><strong>OOD Detection</strong>: When <code>enable_ood_detection</code> is <code>True</code>, predictions with unusual distance-to-prototype are flagged and automatically routed for human review.</li>
-</ul>
+<h2 id="key-design-decisions">Key Design Decisions<a class="headerlink" href="#key-design-decisions" title="Permanent link">&para;</a></h2>
+<h3 id="numpy-first-architecture">Numpy-First Architecture<a class="headerlink" href="#numpy-first-architecture" title="Permanent link">&para;</a></h3>
+<p>All core algorithms (conformal prediction, contrastive learning, uncertainty quantification, explainability) are implemented in pure NumPy. PyTorch is optional and only required for:
+- Backbone embedding extraction (ResNet18, MobileNetV3)
+- CA-EWC fine-tuning
+- Model head training</p>
+<p>This ensures AdaptShot works on CPU-only systems with minimal dependencies.</p>
+<h3 id="immutable-configuration">Immutable Configuration<a class="headerlink" href="#immutable-configuration" title="Permanent link">&para;</a></h3>
+<p><code>AdaptShotConfig</code> is a frozen dataclass — once created, hyperparameters cannot be mutated. This guarantees:
+- Deterministic reproducibility across runs
+- Safe sharing of configs between threads
+- Clear audit trail of all pipeline parameters</p>
+<h3 id="schema-versioned-persistence">Schema-Versioned Persistence<a class="headerlink" href="#schema-versioned-persistence" title="Permanent link">&para;</a></h3>
+<p>Checkpoints are saved with a <code>schema_version</code> field, enabling:
+- Forward compatibility: new versions can load old checkpoints
+- Integrity verification: SHA-256 hashes of config + embeddings
+- Migration support: automatic upgrades from v0.1.0 → v0.1.1 → v0.2.0</p>
+<h3 id="backend-abstraction">Backend Abstraction<a class="headerlink" href="#backend-abstraction" title="Permanent link">&para;</a></h3>
+<p>The <code>extractor.py</code> module abstracts over:
+- ONNX Runtime (default, no PyTorch dependency)
+- PyTorch (for GPU acceleration)
+- Embedding caching (avoid re-extraction for repeated images)</p>
+<hr />
+<h2 id="memory-layout">Memory Layout<a class="headerlink" href="#memory-layout" title="Permanent link">&para;</a></h2>
+<h3 id="support-buffer">Support Buffer<a class="headerlink" href="#support-buffer" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>_sim_embeddings: List[np.ndarray]     # [N, D] floating-point embeddings
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>_sim_labels: List[Union[str, int]]    # Class labels
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>_sim_access_times: List[float]        # Last access timestamps
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>_sim_uncertainties: List[float]       # Per-example uncertainty scores
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>_sim_preview_signatures: List[np.ndarray]  # 48-dim preview vectors
+</span></code></pre></div>
+<h3 id="prototype-storage">Prototype Storage<a class="headerlink" href="#prototype-storage" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>_prototype_embeddings: np.ndarray     # [K, D] class centroids
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>_prototype_labels: np.ndarray         # [K] class labels
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>_prototype_counts: np.ndarray         # [K] examples per class
+</span></code></pre></div>
+<h3 id="calibration-window">Calibration Window<a class="headerlink" href="#calibration-window" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>_window_confidences: List[float]      # Rolling window of raw confidences
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>_window_correct: List[bool]           # Whether each prediction was correct
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>_ece_history: List[float]             # Historical ECE values
+</span></code></pre></div>
+<hr />
+<h2 id="thread-safety">Thread Safety<a class="headerlink" href="#thread-safety" title="Permanent link">&para;</a></h2>
+<p>All learner state mutations happen in a single thread. The design is intentionally single-threaded for:
+- Simplicity: no locks, no race conditions
+- Predictability: deterministic execution order
+- Compatibility: works with Python's GIL model</p>
+<p>For multi-threaded use, create separate <code>FewShotLearner</code> instances or serialize access externally.</p>
+<hr />
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../training/">Training &amp; Continual Learning API</a> -&gt; <code>FeedbackRouter</code>, <code>CAEWCFinetuner</code>, <code>UPUGFPruner</code></li>
-<li><a href="../config/">Configuration Reference</a> -&gt; <code>AdaptShotConfig</code> dataclass and validation rules</li>
-<li><a href="../../contributing/">Contributing</a> -&gt; Extension points and PR guidelines</li>
+<li><a href="../algorithm-theory/">Algorithm Theory Deep-Dive</a> — mathematical foundations</li>
+<li><a href="../../api/reference/">API Reference</a> — complete public API</li>
+<li><a href="../../reference/config-reference/">Configuration Reference</a> — all config fields</li>
 </ul>
 
 

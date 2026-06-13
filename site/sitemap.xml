@@ -2,130 +2,170 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://johnson2006christopher.github.io/adaptshot/</loc>
-         <lastmod>2026-06-07</lastmod>
+         <lastmod>2026-06-13</lastmod>
     </url>
     <url>
          <loc>https://johnson2006christopher.github.io/adaptshot/AUDIT_REPORT/</loc>
-         <lastmod>2026-06-07</lastmod>
+         <lastmod>2026-06-13</lastmod>
     </url>
     <url>
          <loc>https://johnson2006christopher.github.io/adaptshot/about/</loc>
-         <lastmod>2026-06-07</lastmod>
+         <lastmod>2026-06-13</lastmod>
     </url>
     <url>
          <loc>https://johnson2006christopher.github.io/adaptshot/changelog/</loc>
-         <lastmod>2026-06-07</lastmod>
+         <lastmod>2026-06-13</lastmod>
     </url>
     <url>
          <loc>https://johnson2006christopher.github.io/adaptshot/code_of_conduct/</loc>
-         <lastmod>2026-06-07</lastmod>
+         <lastmod>2026-06-13</lastmod>
     </url>
     <url>
          <loc>https://johnson2006christopher.github.io/adaptshot/contributing/</loc>
-         <lastmod>2026-06-07</lastmod>
+         <lastmod>2026-06-13</lastmod>
     </url>
     <url>
          <loc>https://johnson2006christopher.github.io/adaptshot/release-checklist-v0.1.1/</loc>
-         <lastmod>2026-06-07</lastmod>
+         <lastmod>2026-06-13</lastmod>
     </url>
     <url>
          <loc>https://johnson2006christopher.github.io/adaptshot/tutorials/</loc>
-         <lastmod>2026-06-07</lastmod>
+         <lastmod>2026-06-13</lastmod>
     </url>
     <url>
          <loc>https://johnson2006christopher.github.io/adaptshot/v0.1.1-docs-roadmap/</loc>
-         <lastmod>2026-06-07</lastmod>
+         <lastmod>2026-06-13</lastmod>
     </url>
     <url>
          <loc>https://johnson2006christopher.github.io/adaptshot/api/config/</loc>
-         <lastmod>2026-06-07</lastmod>
+         <lastmod>2026-06-13</lastmod>
     </url>
     <url>
          <loc>https://johnson2006christopher.github.io/adaptshot/api/core/</loc>
-         <lastmod>2026-06-07</lastmod>
+         <lastmod>2026-06-13</lastmod>
+    </url>
+    <url>
+         <loc>https://johnson2006christopher.github.io/adaptshot/api/reference/</loc>
+         <lastmod>2026-06-13</lastmod>
     </url>
     <url>
          <loc>https://johnson2006christopher.github.io/adaptshot/api/training/</loc>
-         <lastmod>2026-06-07</lastmod>
+         <lastmod>2026-06-13</lastmod>
     </url>
     <url>
          <loc>https://johnson2006christopher.github.io/adaptshot/getting-started/beginner-101/</loc>
-         <lastmod>2026-06-07</lastmod>
+         <lastmod>2026-06-13</lastmod>
     </url>
     <url>
          <loc>https://johnson2006christopher.github.io/adaptshot/getting-started/benchmarks/</loc>
-         <lastmod>2026-06-07</lastmod>
+         <lastmod>2026-06-13</lastmod>
     </url>
     <url>
          <loc>https://johnson2006christopher.github.io/adaptshot/getting-started/installation/</loc>
-         <lastmod>2026-06-07</lastmod>
+         <lastmod>2026-06-13</lastmod>
     </url>
     <url>
          <loc>https://johnson2006christopher.github.io/adaptshot/getting-started/quickstart/</loc>
-         <lastmod>2026-06-07</lastmod>
+         <lastmod>2026-06-13</lastmod>
+    </url>
+    <url>
+         <loc>https://johnson2006christopher.github.io/adaptshot/guides/algorithm-theory/</loc>
+         <lastmod>2026-06-13</lastmod>
+    </url>
+    <url>
+         <loc>https://johnson2006christopher.github.io/adaptshot/guides/architecture-deep-dive/</loc>
+         <lastmod>2026-06-13</lastmod>
     </url>
     <url>
          <loc>https://johnson2006christopher.github.io/adaptshot/guides/human-in-the-loop/</loc>
-         <lastmod>2026-06-07</lastmod>
+         <lastmod>2026-06-13</lastmod>
     </url>
     <url>
          <loc>https://johnson2006christopher.github.io/adaptshot/guides/real-world-use-cases/</loc>
-         <lastmod>2026-06-07</lastmod>
+         <lastmod>2026-06-13</lastmod>
+    </url>
+    <url>
+         <loc>https://johnson2006christopher.github.io/adaptshot/guides/studio-complete-guide/</loc>
+         <lastmod>2026-06-13</lastmod>
     </url>
     <url>
          <loc>https://johnson2006christopher.github.io/adaptshot/guides/troubleshooting/</loc>
-         <lastmod>2026-06-07</lastmod>
+         <lastmod>2026-06-13</lastmod>
+    </url>
+    <url>
+         <loc>https://johnson2006christopher.github.io/adaptshot/guides/ui-pilot-guide/</loc>
+         <lastmod>2026-06-13</lastmod>
     </url>
     <url>
          <loc>https://johnson2006christopher.github.io/adaptshot/reference/config-reference/</loc>
-         <lastmod>2026-06-07</lastmod>
+         <lastmod>2026-06-13</lastmod>
     </url>
     <url>
          <loc>https://johnson2006christopher.github.io/adaptshot/tutorials/01_getting_started/</loc>
-         <lastmod>2026-06-07</lastmod>
+         <lastmod>2026-06-13</lastmod>
     </url>
     <url>
          <loc>https://johnson2006christopher.github.io/adaptshot/tutorials/02_human_in_the_loop/</loc>
-         <lastmod>2026-06-07</lastmod>
+         <lastmod>2026-06-13</lastmod>
     </url>
     <url>
          <loc>https://johnson2006christopher.github.io/adaptshot/tutorials/03_continual_learning/</loc>
-         <lastmod>2026-06-07</lastmod>
+         <lastmod>2026-06-13</lastmod>
     </url>
     <url>
          <loc>https://johnson2006christopher.github.io/adaptshot/tutorials/04_production_ready/</loc>
-         <lastmod>2026-06-07</lastmod>
+         <lastmod>2026-06-13</lastmod>
     </url>
     <url>
          <loc>https://johnson2006christopher.github.io/adaptshot/tutorials/05_reference_faq/</loc>
-         <lastmod>2026-06-07</lastmod>
+         <lastmod>2026-06-13</lastmod>
     </url>
     <url>
          <loc>https://johnson2006christopher.github.io/adaptshot/tutorials/06_core_api_deep_dive/</loc>
-         <lastmod>2026-06-07</lastmod>
+         <lastmod>2026-06-13</lastmod>
     </url>
     <url>
          <loc>https://johnson2006christopher.github.io/adaptshot/tutorials/07_source_tour/</loc>
-         <lastmod>2026-06-07</lastmod>
+         <lastmod>2026-06-13</lastmod>
     </url>
     <url>
          <loc>https://johnson2006christopher.github.io/adaptshot/tutorials/08_configuration_determinism_io/</loc>
-         <lastmod>2026-06-07</lastmod>
+         <lastmod>2026-06-13</lastmod>
     </url>
     <url>
          <loc>https://johnson2006christopher.github.io/adaptshot/tutorials/09_benchmarks_and_reproducibility/</loc>
-         <lastmod>2026-06-07</lastmod>
+         <lastmod>2026-06-13</lastmod>
     </url>
     <url>
          <loc>https://johnson2006christopher.github.io/adaptshot/tutorials/10_module_map/</loc>
-         <lastmod>2026-06-07</lastmod>
+         <lastmod>2026-06-13</lastmod>
     </url>
     <url>
          <loc>https://johnson2006christopher.github.io/adaptshot/tutorials/11_ui_pilot_dashboard/</loc>
-         <lastmod>2026-06-07</lastmod>
+         <lastmod>2026-06-13</lastmod>
     </url>
     <url>
          <loc>https://johnson2006christopher.github.io/adaptshot/tutorials/12_studio_guide/</loc>
-         <lastmod>2026-06-07</lastmod>
+         <lastmod>2026-06-13</lastmod>
+    </url>
+    <url>
+         <loc>https://johnson2006christopher.github.io/adaptshot/tutorials/14_conformal_prediction/</loc>
+         <lastmod>2026-06-13</lastmod>
+    </url>
+    <url>
+         <loc>https://johnson2006christopher.github.io/adaptshot/tutorials/15_advanced_uncertainty/</loc>
+         <lastmod>2026-06-13</lastmod>
+    </url>
+    <url>
+         <loc>https://johnson2006christopher.github.io/adaptshot/tutorials/16_explainability/</loc>
+         <lastmod>2026-06-13</lastmod>
+    </url>
+    <url>
+         <loc>https://johnson2006christopher.github.io/adaptshot/tutorials/17_contrastive_learning/</loc>
+         <lastmod>2026-06-13</lastmod>
+    </url>
+    <url>
+         <loc>https://johnson2006christopher.github.io/adaptshot/tutorials/18_end_to_end_workflow/</loc>
+         <lastmod>2026-06-13</lastmod>
     </url>
 </urlset>

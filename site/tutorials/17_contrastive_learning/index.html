@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://johnson2006christopher.github.io/adaptshot/tutorials/09_benchmarks_and_reproducibility/">
+        <link rel="canonical" href="https://johnson2006christopher.github.io/adaptshot/tutorials/17_contrastive_learning/">
       
       
-        <link rel="prev" href="../08_configuration_determinism_io/">
+        <link rel="prev" href="../16_explainability/">
       
       
-        <link rel="next" href="../10_module_map/">
+        <link rel="next" href="../18_end_to_end_workflow/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>09 — Benchmarks and Reproducibility - AdaptShot</title>
+        <title>17 Contrastive Learning - AdaptShot</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#1-the-main-smoke-benchmark" class="md-skip">
+        <a href="#tutorial-17-contrastive-prototype-learning" class="md-skip">
           Skip to content
         </a>
       
@@ -115,7 +115,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              09 — Benchmarks and Reproducibility
+              17 Contrastive Learning
             
           </span>
         </div>
@@ -780,35 +780,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    09 Benchmarks and Reproducibility
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../09_benchmarks_and_reproducibility/" class="md-nav__link">
         
   
   
@@ -824,235 +799,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1-the-main-smoke-benchmark" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. The Main Smoke Benchmark
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="1. The Main Smoke Benchmark">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#run-it" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Run It
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#what-the-harness-returns" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        What The Harness Returns
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-how-the-smoke-benchmark-works" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. How The Smoke Benchmark Works
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2. How The Smoke Benchmark Works">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#important-constraint" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Important Constraint
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-energy-and-carbon-profiling" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Energy And Carbon Profiling
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3. Energy And Carbon Profiling">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#run-it_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Run It
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#interpreting-the-energy-output" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Interpreting The Energy Output
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-day-2-and-day-3-integration-scripts" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Day 2 And Day 3 Integration Scripts
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-what-to-check-in-every-benchmark-run" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. What To Check In Every Benchmark Run
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-practical-workflow" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Practical Workflow
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="6. Practical Workflow">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#step-1-run-the-smoke-benchmark" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 1: Run the smoke benchmark
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-2-save-the-output" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 2: Save the output
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-3-compare-one-change-at-a-time" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 3: Compare one change at a time
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-4-use-the-source-as-truth" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 4: Use the source as truth
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-common-benchmark-mistakes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. Common Benchmark Mistakes
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#8-verification-checklist" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. Verification Checklist
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1230,10 +976,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../17_contrastive_learning/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    17 Contrastive Learning
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1249,6 +1022,125 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-contrastive-prototypes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why Contrastive Prototypes?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-1-basic-contrastive-refinement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Basic Contrastive Refinement
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-2-evaluating-separation-quality" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: Evaluating Separation Quality
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-3-classification-with-refined-prototypes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Classification with Refined Prototypes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-4-using-contrastive-mode-with-fewshotlearner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4: Using Contrastive Mode with FewShotLearner
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#contrastiveconfig-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ContrastiveConfig Reference
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-contrastive-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to Use Contrastive Mode
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1918,6 +1810,8 @@
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -1926,116 +1820,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-the-main-smoke-benchmark" class="md-nav__link">
+  <a href="#prerequisites" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. The Main Smoke Benchmark
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="1. The Main Smoke Benchmark">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#run-it" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Run It
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#what-the-harness-returns" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        What The Harness Returns
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-how-the-smoke-benchmark-works" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. How The Smoke Benchmark Works
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2. How The Smoke Benchmark Works">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#important-constraint" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Important Constraint
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-energy-and-carbon-profiling" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Energy And Carbon Profiling
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3. Energy And Carbon Profiling">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#run-it_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Run It
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#interpreting-the-energy-output" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Interpreting The Energy Output
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-day-2-and-day-3-integration-scripts" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Day 2 And Day 3 Integration Scripts
+        Prerequisites
       
     </span>
   </a>
@@ -2043,10 +1831,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-what-to-check-in-every-benchmark-run" class="md-nav__link">
+  <a href="#why-contrastive-prototypes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. What To Check In Every Benchmark Run
+        Why Contrastive Prototypes?
       
     </span>
   </a>
@@ -2054,71 +1842,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-practical-workflow" class="md-nav__link">
+  <a href="#step-1-basic-contrastive-refinement" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Practical Workflow
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="6. Practical Workflow">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#step-1-run-the-smoke-benchmark" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 1: Run the smoke benchmark
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-2-save-the-output" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 2: Save the output
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-3-compare-one-change-at-a-time" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 3: Compare one change at a time
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-4-use-the-source-as-truth" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 4: Use the source as truth
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-common-benchmark-mistakes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. Common Benchmark Mistakes
+        Step 1: Basic Contrastive Refinement
       
     </span>
   </a>
@@ -2126,10 +1853,65 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#8-verification-checklist" class="md-nav__link">
+  <a href="#step-2-evaluating-separation-quality" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8. Verification Checklist
+        Step 2: Evaluating Separation Quality
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-3-classification-with-refined-prototypes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Classification with Refined Prototypes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-4-using-contrastive-mode-with-fewshotlearner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4: Using Contrastive Mode with FewShotLearner
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#contrastiveconfig-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ContrastiveConfig Reference
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-contrastive-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to Use Contrastive Mode
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
       
     </span>
   </a>
@@ -2156,228 +1938,163 @@
   
 
 
-  <h1>09 Benchmarks and Reproducibility</h1>
-
-<p>This chapter shows how to measure AdaptShot with the repository's real benchmark scripts. We use only the benchmark tools that exist in <code>benchmarks/</code> and the utilities they call.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>A benchmark is a repeatable test that helps you understand speed, accuracy, and stability. Think of it like timing the same lap on the same track under controlled conditions.</p>
-</div>
-<h2 id="1-the-main-smoke-benchmark">1. The Main Smoke Benchmark<a class="headerlink" href="#1-the-main-smoke-benchmark" title="Permanent link">&para;</a></h2>
-<p>The core benchmark harness is <a href="benchmarks/run_benchmark.py">benchmarks/run_benchmark.py</a>. It runs a CPU-only few-shot evaluation using CIFAR-10, extracts support embeddings, predicts query images, and prints results.</p>
-<p>The benchmark uses these real pieces:</p>
+<h1 id="tutorial-17-contrastive-prototype-learning">Tutorial 17: Contrastive Prototype Learning<a class="headerlink" href="#tutorial-17-contrastive-prototype-learning" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p><strong>v0.2.0</strong> | Learning refined prototypes with InfoNCE contrastive loss</p>
+</blockquote>
+<hr />
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>AdaptShotConfig</code> from <a href="src/adaptshot/config/settings.py">src/adaptshot/config/settings.py</a></li>
-<li><code>extract_embedding()</code> from <a href="src/adaptshot/core/extractor.py">src/adaptshot/core/extractor.py</a></li>
-<li><code>find_nearest_neighbor()</code> from <a href="src/adaptshot/core/similarity.py">src/adaptshot/core/similarity.py</a></li>
-<li><code>set_deterministic_seed()</code> and <code>verify_determinism()</code> from <a href="src/adaptshot/utils/determinism.py">src/adaptshot/utils/determinism.py</a></li>
+<li>AdaptShot v0.2.0+ installed</li>
+<li>Understanding of <a href="../../guides/algorithm-theory/#1-few-shot-learning-formulation">Prototypical Networks</a></li>
 </ul>
-<h3 id="run-it">Run It<a class="headerlink" href="#run-it" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>python<span class="w"> </span>-m<span class="w"> </span>benchmarks.run_benchmark<span class="w"> </span>--smoke-test<span class="w"> </span>--seed<span class="w"> </span><span class="m">42</span><span class="w"> </span>--output<span class="w"> </span>results/smoke_test.json
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="c1"># Expected output: a printed summary with accuracy, average latency, p95 latency, embedding time, and a determinism check result</span>
+<hr />
+<h2 id="why-contrastive-prototypes">Why Contrastive Prototypes?<a class="headerlink" href="#why-contrastive-prototypes" title="Permanent link">&para;</a></h2>
+<p>Simple mean prototypes assume all support examples are equally informative. Contrastive learning refines prototypes to:
+- <strong>Pull</strong> same-class embeddings closer together
+- <strong>Push</strong> different-class embeddings further apart
+- <strong>Improve</strong> class separation in the embedding space</p>
+<hr />
+<h2 id="step-1-basic-contrastive-refinement">Step 1: Basic Contrastive Refinement<a class="headerlink" href="#step-1-basic-contrastive-refinement" title="Permanent link">&para;</a></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">adaptshot</span><span class="w"> </span><span class="kn">import</span> <span class="n">ContrastivePrototypeLearner</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">learner</span> <span class="o">=</span> <span class="n">ContrastivePrototypeLearner</span><span class="p">()</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="c1"># Prepare support data (3 classes, 20 examples each)</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="n">embeddings</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">60</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s2">&quot;cat&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">20</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;dog&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">20</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;bird&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">20</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="c1"># Refine prototypes</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="n">prototypes</span><span class="p">,</span> <span class="n">proto_labels</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">refine_prototypes</span><span class="p">(</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="n">embeddings</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="p">)</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Prototypes shape: </span><span class="si">{</span><span class="n">prototypes</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>   <span class="c1"># (3, 128)</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Prototype labels: </span><span class="si">{</span><span class="n">proto_labels</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>       <span class="c1"># [&quot;bird&quot;, &quot;cat&quot;, &quot;dog&quot;]</span>
 </span></code></pre></div>
-<h3 id="what-the-harness-returns">What The Harness Returns<a class="headerlink" href="#what-the-harness-returns" title="Permanent link">&para;</a></h3>
-<p>The JSON output includes these real fields:</p>
+<p><strong>Note</strong>: The output is in 128-dimensional projection space, not the original 64-dim embedding space.</p>
+<hr />
+<h2 id="step-2-evaluating-separation-quality">Step 2: Evaluating Separation Quality<a class="headerlink" href="#step-2-evaluating-separation-quality" title="Permanent link">&para;</a></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Before contrastive learning</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">score_before</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">class_separation_score</span><span class="p">(</span><span class="n">embeddings</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Separation score (before): </span><span class="si">{</span><span class="n">score_before</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c1"># After refinement — project embeddings to contrastive space</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="n">projected</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">project_query</span><span class="p">(</span><span class="n">embeddings</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Projected shape: </span><span class="si">{</span><span class="n">projected</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># (128,)</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="c1"># Recompute with projected embeddings</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="n">all_projected</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">project_query</span><span class="p">(</span><span class="n">embeddings</span><span class="p">)</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="n">score_after</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">class_separation_score</span><span class="p">(</span><span class="n">all_projected</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Separation score (after): </span><span class="si">{</span><span class="n">score_after</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span></code></pre></div>
+<p>A higher separation score indicates better-separated classes.</p>
+<hr />
+<h2 id="step-3-classification-with-refined-prototypes">Step 3: Classification with Refined Prototypes<a class="headerlink" href="#step-3-classification-with-refined-prototypes" title="Permanent link">&para;</a></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Query near class &quot;cat&quot; region</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">query</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">2.0</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">63</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">pred_label</span><span class="p">,</span> <span class="n">confidence</span><span class="p">,</span> <span class="n">proto_idx</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">nearest_prototype</span><span class="p">(</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">,</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">prototypes</span><span class="o">=</span><span class="n">prototypes</span><span class="p">,</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">prototype_labels</span><span class="o">=</span><span class="n">proto_labels</span><span class="p">,</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="p">)</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Prediction: </span><span class="si">{</span><span class="n">pred_label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Confidence: </span><span class="si">{</span><span class="n">confidence</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<h2 id="step-4-using-contrastive-mode-with-fewshotlearner">Step 4: Using Contrastive Mode with FewShotLearner<a class="headerlink" href="#step-4-using-contrastive-mode-with-fewshotlearner" title="Permanent link">&para;</a></h2>
+<p>Set <code>inference_mode="contrastive"</code> to use refined prototypes:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">adaptshot</span><span class="w"> </span><span class="kn">import</span> <span class="n">FewShotLearner</span><span class="p">,</span> <span class="n">AdaptShotConfig</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">config</span> <span class="o">=</span> <span class="n">AdaptShotConfig</span><span class="p">(</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">inference_mode</span><span class="o">=</span><span class="s2">&quot;contrastive&quot;</span><span class="p">,</span>  <span class="c1"># Enable contrastive prototypes</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="p">)</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="n">learner</span> <span class="o">=</span> <span class="n">FewShotLearner</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="n">learner</span><span class="o">.</span><span class="n">load_support_images</span><span class="p">(</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="p">[</span><span class="s2">&quot;cat_01.jpg&quot;</span><span class="p">,</span> <span class="s2">&quot;cat_02.jpg&quot;</span><span class="p">,</span> <span class="s2">&quot;dog_01.jpg&quot;</span><span class="p">,</span> <span class="s2">&quot;dog_02.jpg&quot;</span><span class="p">],</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="p">[</span><span class="s2">&quot;cat&quot;</span><span class="p">,</span> <span class="s2">&quot;cat&quot;</span><span class="p">,</span> <span class="s2">&quot;dog&quot;</span><span class="p">,</span> <span class="s2">&quot;dog&quot;</span><span class="p">],</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="p">)</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="c1"># Prototypes are automatically refined during load_support_images()</span>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="n">result</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">&quot;query.jpg&quot;</span><span class="p">)</span>
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Prediction: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">prediction</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Confidence: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">calibrated_confidence</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<h2 id="contrastiveconfig-reference">ContrastiveConfig Reference<a class="headerlink" href="#contrastiveconfig-reference" title="Permanent link">&para;</a></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">adaptshot</span><span class="w"> </span><span class="kn">import</span> <span class="n">ContrastiveConfig</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">config</span> <span class="o">=</span> <span class="n">ContrastiveConfig</span><span class="p">(</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">projection_dim</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span>     <span class="c1"># Output dimension of projection head</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="n">temperature</span><span class="o">=</span><span class="mf">0.07</span><span class="p">,</span>       <span class="c1"># InfoNCE temperature (lower = sharper)</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>     <span class="c1"># Prototype update learning rate</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="n">momentum</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>           <span class="c1"># EMA momentum for prototype updates</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span class="n">n_epochs</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>            <span class="c1"># Training iterations</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="p">)</span>
+</span></code></pre></div>
 <table>
 <thead>
 <tr>
-<th>Field</th>
-<th>Meaning</th>
+<th>Parameter</th>
+<th>Effect</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>accuracy</code></td>
-<td>Fraction of query examples predicted correctly</td>
+<td><code>temperature</code></td>
+<td>Lower values (0.05) = sharper contrast, more discriminative</td>
 </tr>
 <tr>
-<td><code>latency_avg_ms</code></td>
-<td>Average per-query prediction latency in milliseconds</td>
+<td><code>momentum</code></td>
+<td>Higher values (0.99) = more stable, slower adaptation</td>
 </tr>
 <tr>
-<td><code>latency_p95_ms</code></td>
-<td>95th percentile per-query latency in milliseconds</td>
-</tr>
-<tr>
-<td><code>embedding_time_s</code></td>
-<td>Time spent extracting support embeddings</td>
-</tr>
-<tr>
-<td><code>support_size</code></td>
-<td>Number of support examples used</td>
-</tr>
-<tr>
-<td><code>query_size</code></td>
-<td>Number of query examples used</td>
-</tr>
-<tr>
-<td><code>config</code></td>
-<td>The config values used for the run</td>
+<td><code>n_epochs</code></td>
+<td>More epochs = better convergence, but diminishing returns</td>
 </tr>
 </tbody>
 </table>
-<p>Analogy: the JSON file is like a lab notebook page that records exactly how the test was run.</p>
-<h2 id="2-how-the-smoke-benchmark-works">2. How The Smoke Benchmark Works<a class="headerlink" href="#2-how-the-smoke-benchmark-works" title="Permanent link">&para;</a></h2>
-<p><code>load_few_shot_split()</code> in <a href="benchmarks/run_benchmark.py">benchmarks/run_benchmark.py</a> loads a CIFAR-10 subset and picks support and query examples deterministically.</p>
-<p><code>run_smoke_test()</code> then:</p>
-<ol>
-<li>extracts support embeddings</li>
-<li>predicts each query image</li>
-<li>measures latency</li>
-<li>writes the metrics to JSON</li>
-<li>verifies determinism by re-running extraction</li>
-</ol>
-<h3 id="important-constraint">Important Constraint<a class="headerlink" href="#important-constraint" title="Permanent link">&para;</a></h3>
-<p>The smoke benchmark is CPU-first and explicitly disables FAISS in its default config. That means the benchmark measures the plain library path, not a GPU or cloud version.</p>
-<h2 id="3-energy-and-carbon-profiling">3. Energy And Carbon Profiling<a class="headerlink" href="#3-energy-and-carbon-profiling" title="Permanent link">&para;</a></h2>
-<p>If you want energy-focused metrics, use <a href="benchmarks/energy_profile.py">benchmarks/energy_profile.py</a>. That script measures wall time, process time, memory, and estimates Joules and CO₂.</p>
-<h3 id="run-it_1">Run It<a class="headerlink" href="#run-it_1" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>python<span class="w"> </span>-m<span class="w"> </span>benchmarks.energy_profile<span class="w"> </span>--smoke-test<span class="w"> </span>--seed<span class="w"> </span><span class="m">42</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="c1"># Expected output: JSON with baseline and eco sections, plus joules_estimate, co2_g_estimate, latency_avg_s, latency_p95_s, and deterministic</span>
-</span></code></pre></div>
-<p>The script uses:</p>
-<ul>
-<li><code>set_deterministic_seed()</code> and <code>verify_determinism()</code> from <a href="src/adaptshot/utils/determinism.py">src/adaptshot/utils/determinism.py</a></li>
-<li><code>extract_embedding()</code> from <a href="src/adaptshot/core/extractor.py">src/adaptshot/core/extractor.py</a></li>
-<li><code>find_nearest_neighbor()</code> from <a href="src/adaptshot/core/similarity.py">src/adaptshot/core/similarity.py</a></li>
-</ul>
-<p>The estimate fields are not a hardware power meter; they are benchmark estimates computed by the script itself.</p>
-<h3 id="interpreting-the-energy-output">Interpreting The Energy Output<a class="headerlink" href="#interpreting-the-energy-output" title="Permanent link">&para;</a></h3>
+<hr />
+<h2 id="when-to-use-contrastive-mode">When to Use Contrastive Mode<a class="headerlink" href="#when-to-use-contrastive-mode" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Field</th>
-<th>What It Tells You</th>
-<th>Analogy</th>
+<th>Scenario</th>
+<th>Recommended Mode</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>latency_avg_s</code></td>
-<td>Average time per query</td>
-<td>How long one shop customer waits</td>
+<td>&lt; 5 support examples per class</td>
+<td><code>nearest_neighbor</code></td>
 </tr>
 <tr>
-<td><code>latency_p95_s</code></td>
-<td>Slow-tail query time</td>
-<td>The slowest line at the checkout</td>
+<td>5-20 support examples per class</td>
+<td><code>prototypical</code> (default)</td>
 </tr>
 <tr>
-<td><code>joules_estimate</code></td>
-<td>Estimated energy use</td>
-<td>Fuel burned for the trip</td>
+<td>&gt; 20 support examples per class</td>
+<td><code>contrastive</code></td>
 </tr>
 <tr>
-<td><code>co2_g_estimate</code></td>
-<td>Estimated carbon output</td>
-<td>Emissions from that trip</td>
+<td>Highly imbalanced classes</td>
+<td><code>contrastive</code> with hard negative mining</td>
 </tr>
 <tr>
-<td><code>eco_mode</code></td>
-<td>Whether early-exit was enabled</td>
-<td>Taking a shorter route when the answer is obvious</td>
+<td>Resource-constrained CPU</td>
+<td><code>nearest_neighbor</code> or <code>prototypical</code></td>
 </tr>
 </tbody>
 </table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>These are script-generated estimates. Do not present them as universal truth or copy them without running the benchmark on your own machine.</p>
-</div>
-<h2 id="4-day-2-and-day-3-integration-scripts">4. Day 2 And Day 3 Integration Scripts<a class="headerlink" href="#4-day-2-and-day-3-integration-scripts" title="Permanent link">&para;</a></h2>
-<p>The repository also includes integration simulations that demonstrate continual-learning behavior over multiple steps.</p>
+<hr />
+<h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="benchmarks/day2_integration.py">benchmarks/day2_integration.py</a> shows calibration and feedback routing over a short stream.</li>
-<li><a href="benchmarks/day3_integration.py">benchmarks/day3_integration.py</a> shows ACT, calibration, feedback routing, and CA-EWC together.</li>
-</ul>
-<p>These scripts use real classes from <code>src/adaptshot/</code>:</p>
-<ul>
-<li><code>CalibrationEngine</code> in <a href="src/adaptshot/core/calibration.py">src/adaptshot/core/calibration.py</a></li>
-<li><code>FeedbackRouter</code> and <code>Correction</code> in <a href="src/adaptshot/training/feedback_router.py">src/adaptshot/training/feedback_router.py</a></li>
-<li><code>ACTEngine</code> in <a href="src/adaptshot/core/act.py">src/adaptshot/core/act.py</a></li>
-<li><code>CAEWCFinetuner</code> in <a href="src/adaptshot/training/finetune.py">src/adaptshot/training/finetune.py</a></li>
-</ul>
-<p>Analogy: these are practice matches, not just single drills. They show how the components behave when they are used together.</p>
-<h2 id="5-what-to-check-in-every-benchmark-run">5. What To Check In Every Benchmark Run<a class="headerlink" href="#5-what-to-check-in-every-benchmark-run" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Check</th>
-<th>Why It Matters</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Same seed</td>
-<td>Ensures repeatable splits and outputs</td>
-</tr>
-<tr>
-<td>CPU-only config</td>
-<td>Matches the library's default deployment target</td>
-</tr>
-<tr>
-<td>Output JSON saved</td>
-<td>Lets you compare runs later</td>
-</tr>
-<tr>
-<td>Determinism pass</td>
-<td>Confirms the library is stable under repeated runs</td>
-</tr>
-<tr>
-<td>No invented metrics</td>
-<td>Keeps the report honest</td>
-</tr>
-</tbody>
-</table>
-<h2 id="6-practical-workflow">6. Practical Workflow<a class="headerlink" href="#6-practical-workflow" title="Permanent link">&para;</a></h2>
-<h3 id="step-1-run-the-smoke-benchmark">Step 1: Run the smoke benchmark<a class="headerlink" href="#step-1-run-the-smoke-benchmark" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>python<span class="w"> </span>-m<span class="w"> </span>benchmarks.run_benchmark<span class="w"> </span>--smoke-test<span class="w"> </span>--seed<span class="w"> </span><span class="m">42</span>
-</span></code></pre></div>
-<h3 id="step-2-save-the-output">Step 2: Save the output<a class="headerlink" href="#step-2-save-the-output" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>python<span class="w"> </span>-m<span class="w"> </span>benchmarks.run_benchmark<span class="w"> </span>--smoke-test<span class="w"> </span>--seed<span class="w"> </span><span class="m">42</span><span class="w"> </span>--output<span class="w"> </span>results/baseline.json
-</span></code></pre></div>
-<h3 id="step-3-compare-one-change-at-a-time">Step 3: Compare one change at a time<a class="headerlink" href="#step-3-compare-one-change-at-a-time" title="Permanent link">&para;</a></h3>
-<p>If you change <code>backbone</code>, <code>eco_mode</code>, <code>use_faiss</code>, or <code>max_buffer_size</code>, re-run the same benchmark so the result is comparable.</p>
-<h3 id="step-4-use-the-source-as-truth">Step 4: Use the source as truth<a class="headerlink" href="#step-4-use-the-source-as-truth" title="Permanent link">&para;</a></h3>
-<p>If a benchmark result looks surprising, open <a href="benchmarks/run_benchmark.py">benchmarks/run_benchmark.py</a> or <a href="benchmarks/energy_profile.py">benchmarks/energy_profile.py</a> and inspect the code path directly.</p>
-<h2 id="7-common-benchmark-mistakes">7. Common Benchmark Mistakes<a class="headerlink" href="#7-common-benchmark-mistakes" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Mistake</th>
-<th>What Happens</th>
-<th>Fix</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Changing the seed between runs</td>
-<td>Results stop matching</td>
-<td>Use the same <code>--seed</code> value</td>
-</tr>
-<tr>
-<td>Comparing different hardware</td>
-<td>Numbers are not directly comparable</td>
-<td>Benchmark on the same machine when possible</td>
-</tr>
-<tr>
-<td>Using a different dataset split</td>
-<td>Accuracy changes for reasons unrelated to code</td>
-<td>Keep the benchmark split fixed</td>
-</tr>
-<tr>
-<td>Copying example numbers from docs</td>
-<td>The numbers may not match your machine</td>
-<td>Run the benchmark yourself</td>
-</tr>
-</tbody>
-</table>
-<h2 id="8-verification-checklist">8. Verification Checklist<a class="headerlink" href="#8-verification-checklist" title="Permanent link">&para;</a></h2>
-<ul>
-<li>[ ] I can run <code>python -m benchmarks.run_benchmark --smoke-test --seed 42</code>.</li>
-<li>[ ] I can explain what <code>accuracy</code>, <code>latency_avg_ms</code>, and <code>latency_p95_ms</code> mean.</li>
-<li>[ ] I can run <code>python -m benchmarks.energy_profile --smoke-test --seed 42</code>.</li>
-<li>[ ] I know which fields in the energy profile are estimates.</li>
-<li>[ ] I can point to the real source files used by the benchmark scripts.</li>
+<li><a href="../../guides/algorithm-theory/#8-contrastive-prototype-learning-v020">Algorithm Theory: Contrastive Learning</a></li>
+<li><a href="../18_end_to_end_workflow/">Tutorial 18: End-to-End Production Workflow</a></li>
+<li><a href="../../api/reference/#contrastiveprototypelearner">API Reference: ContrastivePrototypeLearner</a></li>
 </ul>
 
 
@@ -2385,9 +2102,6 @@
 
 
 
-
-  
-  
 
 
 
