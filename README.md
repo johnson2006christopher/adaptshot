@@ -27,7 +27,7 @@
 
 AdaptShot is a high-performance, CPU-optimized, human-in-the-loop few-shot vision library. It is designed to learn from every human correction, guarantee calibrated uncertainty, and run deterministically on edge hardware with minimal resources.
 
-v0.1.1 is the current stable release, hardened with 52 regression tests, strict type-checking, and a comprehensive benchmark harness. Built in Tanzania by a self-taught engineer with nothing but a laptop and determination.
+v0.1.2 is the current stable release, hardened with 52 regression tests, strict type-checking, and a comprehensive benchmark harness. Built in Tanzania by a self-taught engineer with nothing but a laptop and determination.
 
 </div>
 
@@ -256,7 +256,7 @@ Built in Mbeya, Tanzania 🇹🇿
 | ✅ Updated **Docs badge** to live MkDocs URL | Users can access accurate, searchable documentation immediately |
 | ✅ Fixed **installation instructions** to match `pyproject.toml` extras | Prevents user confusion; ensures `pip install adaptshot[faiss]` works |
 | ✅ Corrected **API signatures** to match actual code (`FewShotLearner`, `PredictionResult`) | Developers can copy-paste examples with confidence |
-| ✅ Marked v0.1.1 content as **stable / released** | Confirms publication status is accurate |
+| ✅ Marked v0.1.2 content as **stable / released** | Confirms publication status is accurate |
 | ✅ Removed placeholder links (`arXiv:2604.XXXXX`, `adaptshot.dev/docs`) | No broken links; only verified, working resources |
 | ✅ Kept the native API as the primary workflow | Reinforces code-first usage even with the optional GUI |
 | ✅ Standardized **citation format** to GitHub + version | Academically sound; reproducible referencing |
