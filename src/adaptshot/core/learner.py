@@ -549,6 +549,24 @@ class FewShotLearner:
         if self.config.recalibrate_after_feedback:
             result["calibration_summary"] = self.calibrator.calibration_summary()
 
+        # v0.2.0: Update conformal calibration buffer with ground-truth score
+        if self._prototype_embeddings.size > 0:
+            query_distances = self._compute_all_prototype_distances(query_emb)
+            proto_labels = self._prototype_labels
+            if self.conformal.score_method == "softmax":
+                score = self.conformal.softmax_nonconformity(
+                    query_distances, proto_labels, true_label
+                )
+            else:
+                true_proto_idx = self._prototype_index_for_label(true_label)
+                if true_proto_idx is not None:
+                    dist_to_true = float(query_distances[true_proto_idx])
+                    ref_threshold = float(np.median(query_distances)) + float(np.std(query_distances))
+                    score = self.conformal.distance_nonconformity(dist_to_true, ref_threshold)
+                else:
+                    score = 1.0
+            self.conformal.update_calibration(score, true_label)
+
         return result
 
     def correct_comparative(
