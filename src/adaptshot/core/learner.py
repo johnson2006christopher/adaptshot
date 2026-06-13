@@ -158,6 +158,11 @@ class FewShotLearner:
         self._prototype_embeddings: np.ndarray = np.empty((0, 0), dtype=np.float32)
         self._prototype_labels: np.ndarray = np.asarray([], dtype=object)
         self._prototype_counts: np.ndarray = np.asarray([], dtype=np.int64)
+        # v0.2.0: Separate contrastive prototypes in projection-head space (128-dim)
+        # These are used only when inference_mode="contrastive"; embedding-space
+        # prototypes (_prototype_embeddings) remain 512-dim for conformal/OOD.
+        self._contrastive_prototype_embeddings: np.ndarray = np.empty((0, 0), dtype=np.float32)
+        self._contrastive_prototype_labels: np.ndarray = np.asarray([], dtype=object)
         self._ood_distance_threshold: float = self.config.ood_absolute_min_distance
 
         self.pruner = UPUGFPruner(
