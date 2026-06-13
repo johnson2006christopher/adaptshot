@@ -50,7 +50,7 @@ class AdaptShotConfig:
     conformal_mode: Literal["split", "cross"] = "split"
 
     # Advanced uncertainty (v0.2.0)
-    uncertainty_mode: Literal["mcdropout", "entropy", "mahalanobis", "ensemble"] = "entropy"
+    uncertainty_mode: Literal["mcdropout", "entropy", "mahalanobis", "ensemble"] = "ensemble"
 
     # Explainability (v0.2.0)
     explainability_enabled: bool = True
