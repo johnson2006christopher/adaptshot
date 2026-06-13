@@ -27,16 +27,19 @@
 
 AdaptShot is a high-performance, CPU-optimized, human-in-the-loop few-shot vision library. It is designed to learn from every human correction, guarantee calibrated uncertainty, and run deterministically on edge hardware with minimal resources.
 
-v0.1.2 is the current stable release, hardened with 52 regression tests, strict type-checking, and a comprehensive benchmark harness. Built in Tanzania by a self-taught engineer with nothing but a laptop and determination.
+v0.2.0-dev is the current release, hardened with 92 regression tests, strict type-checking, and a comprehensive benchmark harness. Built in Tanzania by a self-taught engineer with nothing but a laptop and determination.
 
 </div>
 
 ## 🚀 Key Features
 
 *   **CPU-First by Design**: Optimized for low-latency inference on standard CPUs, requiring less than 250MB of RAM.
-*   **Trustworthy & Calibrated**: Built-in **Expected Calibration Error (ECE)** minimization ensures the model knows when it's unsure.
+*   **Trustworthy & Calibrated**: Built-in **Expected Calibration Error (ECE)** minimization and **conformal prediction** with finite-sample coverage guarantees.
 *   **Human-in-the-Loop**: Integrated **FeedbackRouter** for real-time model adaptation through human expert corrections.
 *   **Continual Learning**: Implements **CA-EWC** (Class-Aware Elastic Weight Consolidation) and **UP-UGF** (Uncertainty-Guided Forgetting) for stable, long-term learning without catastrophic forgetting.
+*   **Multi-Signal Uncertainty**: Epistemic (MC Dropout), aleatoric (k-NN entropy), and distributional (Mahalanobis distance) uncertainty quantification with OOD detection.
+*   **Explainable AI**: Feature attribution, confidence decomposition, and counterfactual explanations for every prediction.
+*   **Contrastive Prototypes**: Learned class representations via InfoNCE contrastive loss with EMA momentum updates.
 *   **Release Hardened**: Zero-config API, strict type safety, and a comprehensive benchmark harness for review and deployment readiness.
 *   **Deterministic**: Guaranteed reproducible results across different runs and hardware through strict seed management.
 
@@ -120,14 +123,15 @@ if result.uncertainty_flag:
 
 ---
 
-## 🆕 What's New in v0.1.2
+## 🆕 What's New in v0.2.0
 
-- **Lazy PyTorch imports**: The core library now imports without torch – installation takes <1 minute instead of 30+
-- **ONNX Runtime backend**: Lightweight inference using pre-exported backbone models (no GPU required)
-- **Optional `[torch]` extra**: Install PyTorch only if you need training/fine-tuning: `pip install "adaptshot[torch]"`
-- **Pretrained backbone weights**: All backbones now use ImageNet-pretrained weights for meaningful few-shot embeddings
-- **Backend abstraction layer**: Auto-detects ONNX Runtime → PyTorch, zero API changes
-- **1,060+ PyPI downloads** in under one month from 30+ countries
+- **Conformal Prediction**: Distribution-free prediction sets with guaranteed coverage at configurable significance levels
+- **Contrastive Prototype Learning**: InfoNCE-trained class prototypes with 2-layer MLP projection head
+- **Advanced Uncertainty**: Three complementary signals — epistemic, aleatoric, and distributional — fused into a single report
+- **XAI Explainability**: Feature attribution showing which support examples influenced each prediction
+- **New `inference_mode="contrastive"`**: Contrastive prototype-based classification alongside nearest-neighbor and prototypical
+- **37 new tests** (92 total) across conformal, contrastive, uncertainty, and explainability modules
+- **12 new documentation pages**: Architecture deep-dive, algorithm theory, API reference, 5 tutorials, 2 GUI guides
 
 ## 🛠️ Configuration
 
@@ -155,7 +159,7 @@ AdaptShot uses a strictly typed, immutable `AdaptShotConfig` to ensure reproduci
 | Parameter | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `similarity_metric` | `str` | `"euclidean"` | Distance metric (`cosine` or `euclidean`) |
-| `inference_mode` | `str` | `"prototypical"` | Classification mode (`nearest_neighbor` or `prototypical`) |
+| `inference_mode` | `str` | `"prototypical"` | Classification mode (`nearest_neighbor`, `prototypical`, or `contrastive`) |
 | `use_faiss` | `bool` | `False` | Enable FAISS-CPU acceleration for large support sets |
 | `faiss_nprobe` | `int` | `8` | FAISS IVF index probing depth |
 
@@ -190,6 +194,15 @@ AdaptShot uses a strictly typed, immutable `AdaptShotConfig` to ensure reproduci
 | :--- | :--- | :--- | :--- |
 | `max_buffer_size` | `int` | `100` | Maximum replay buffer capacity (enforced by UP-UGF) |
 | `log_dir` | `Optional[str]` | `None` | Optional log output directory |
+
+### Advanced Algorithms (v0.2.0)
+
+| Parameter | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `conformal_alpha` | `float` | `0.05` | Significance level for conformal prediction sets (0.01-0.50) |
+| `conformal_mode` | `str` | `"split"` | Conformal prediction mode (`split` or `cross`) |
+| `uncertainty_mode` | `str` | `"ensemble"` | Uncertainty mode (`mcdropout`, `entropy`, `mahalanobis`, or `ensemble`) |
+| `explainability_enabled` | `bool` | `True` | Enable XAI explainability for predictions |
 
 ---
 
