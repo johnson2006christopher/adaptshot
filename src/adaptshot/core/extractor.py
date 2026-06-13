@@ -1,4 +1,8 @@
-"""Frozen backbone feature extraction with TorchScript compatibility.
+"""Frozen backbone feature extraction with backend-agnostic design.
+
+Uses lazy imports for PyTorch and torchvision so that the module is importable
+without a hard dependency on torch at install time. The core API (extract_embedding)
+requires a backend at runtime; the module itself loads without error.
 
 When `eco_mode=True`, the extractor can return a cached support embedding after
 a quick cosine similarity check exceeds the configured threshold. This reduces
@@ -10,25 +14,72 @@ is available and the preview similarity already exceeds the configured bound.
 
 from dataclasses import dataclass, field
 from functools import lru_cache
-from importlib import import_module
 from typing import Any, Dict, Optional, Union, cast
 
 import numpy as np
-import torch
-import torch.nn as nn
 from PIL import Image
 
 from ..config.settings import AdaptShotConfig
 
-# Type alias for flexible image input
-ImageInput = Union[str, np.ndarray, Image.Image, torch.Tensor]
+# ---------------------------------------------------------------------------
+# Lazy import helpers – torch/torchvision are resolved only when first needed.
+# This keeps the module importable without a hard torch dependency.
+# ---------------------------------------------------------------------------
 
-# Registry for backbone factories (extensible without modifying core logic)
-models = import_module("torchvision.models")
-transforms = import_module("torchvision.transforms")
+_TORCH: Any = None
+_TORCH_NN: Any = None
+_TV_MODELS: Any = None
+_TV_TRANSFORMS: Any = None
+
+
+def _get_torch() -> Any:
+    global _TORCH
+    if _TORCH is None:
+        import torch as _t
+        _TORCH = _t
+    return _TORCH
+
+
+def _get_torch_nn() -> Any:
+    global _TORCH_NN
+    if _TORCH_NN is None:
+        from torch import nn as _nn
+        _TORCH_NN = _nn
+    return _TORCH_NN
+
+
+def _get_tv_models() -> Any:
+    global _TV_MODELS
+    if _TV_MODELS is None:
+        from torchvision import models as _m
+        _TV_MODELS = _m
+    return _TV_MODELS
+
+
+def _get_tv_transforms() -> Any:
+    global _TV_TRANSFORMS
+    if _TV_TRANSFORMS is None:
+        from torchvision import transforms as _t
+        _TV_TRANSFORMS = _t
+    return _TV_TRANSFORMS
+
+
+# Type alias for flexible image input (lazy reference to torch.Tensor via Any)
+ImageInput = Any  # str | np.ndarray | PIL.Image | torch.Tensor
+
+# ---------------------------------------------------------------------------
+# Backbone registry – lazy factories with ImageNet pretrained weights.
+# The pretrained weights are essential: the preprocessing pipeline uses
+# ImageNet statistics (mean/std), so random weights would produce
+# meaningless embeddings. Using weights="IMAGENET1K_V1" guarantees
+# the backbone produces features the normalisation was designed for.
+# ---------------------------------------------------------------------------
+
 BackboneRegistry: Dict[str, Any] = {
-    "resnet18": lambda: models.resnet18(weights=None),
-    "mobilenet_v3_small": lambda: models.mobilenet_v3_small(weights=None),
+    "resnet18": lambda: _get_tv_models().resnet18(weights="IMAGENET1K_V1"),
+    "mobilenet_v3_small": lambda: _get_tv_models().mobilenet_v3_small(
+        weights="IMAGENET1K_V1"
+    ),
 }
 
 # Output dimensionality for each backbone (used for dynamic dimension inference)
@@ -76,7 +127,7 @@ class EmbeddingCache:
 @lru_cache(maxsize=4)
 def _build_backbone(backbone_name: str, device: str) -> Any:
     """Build and cache a frozen backbone on the requested device."""
-
+    nn = _get_torch_nn()
     backbone = BackboneRegistry[backbone_name]()
     if hasattr(backbone, "fc"):
         backbone.fc = nn.Identity()
@@ -132,19 +183,21 @@ def _normalize_to_pil(image: ImageInput) -> Any:
         return Image.open(image).convert("RGB")
     if isinstance(image, np.ndarray):
         return Image.fromarray(image).convert("RGB")
-    if isinstance(image, torch.Tensor):
+    # Check for torch.Tensor without a hard import – use duck-typing.
+    if hasattr(image, "dim") and hasattr(image, "permute") and hasattr(image, "cpu"):
         if image.dim() == 3 and image.shape[0] not in (1, 3):
             image = image.permute(2, 0, 1)
-        return transforms.ToPILImage()(image.cpu()).convert("RGB")
+        return _get_tv_transforms().ToPILImage()(image.cpu()).convert("RGB")
     return image.convert("RGB")
 
 
 def _get_preprocess_transform(img_size: int = 224) -> Any:
     """Return standard preprocessing transforms for ImageNet-pretrained backbones."""
-    return transforms.Compose([
-        transforms.Resize((img_size, img_size), interpolation=transforms.InterpolationMode.BILINEAR),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    T = _get_tv_transforms()
+    return T.Compose([
+        T.Resize((img_size, img_size), interpolation=T.InterpolationMode.BILINEAR),
+        T.ToTensor(),
+        T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
 
 
@@ -153,19 +206,22 @@ def extract_embedding(
     config: AdaptShotConfig,
     return_numpy: bool = True,
     cache: Optional[EmbeddingCache] = None,
-) -> Union[torch.Tensor, np.ndarray]:
+) -> Union[Any, np.ndarray]:
     """Extract feature embedding from input image using a frozen backbone.
 
     Args:
         image: Input image (path, PIL, NumPy, or Tensor).
         config: AdaptShotConfig with backbone and device settings.
-        return_numpy: If True, return np.ndarray; otherwise return torch.Tensor.
+        return_numpy: If True, return np.ndarray; otherwise return torch.Tensor
+            (requires torch to be installed).
         cache: Optional EmbeddingCache for eco-mode early exit. If None,
             falls back to the module-level default cache for backward compat.
     """
-    # Load backbone from registry
     if config.backbone not in BackboneRegistry:
-        raise ValueError(f"Unknown backbone: {config.backbone}. Available: {list(BackboneRegistry.keys())}")
+        raise ValueError(
+            f"Unknown backbone: {config.backbone}. "
+            f"Available: {list(BackboneRegistry.keys())}"
+        )
 
     pil_image = _normalize_to_pil(image)
 
@@ -177,11 +233,13 @@ def extract_embedding(
         query_preview = compute_preview_signature(pil_image)
         preview_norm = np.linalg.norm(query_preview) + 1e-8
         support_norm = np.linalg.norm(support_preview) + 1e-8
-        quick_similarity = float(np.dot(query_preview, support_preview) / (preview_norm * support_norm))
+        quick_similarity = float(
+            np.dot(query_preview, support_preview) / (preview_norm * support_norm)
+        )
         if quick_similarity >= config.early_exit_threshold:
             if return_numpy:
                 return cast(np.ndarray, support_embedding.copy())
-            return torch.from_numpy(support_embedding.copy())
+            return _get_torch().from_numpy(support_embedding.copy())
 
     backbone = _build_backbone(config.backbone, config.device)
 
@@ -189,10 +247,11 @@ def extract_embedding(
     preprocess = _get_preprocess_transform()
 
     # Apply transforms and add batch dimension
+    torch_mod = _get_torch()
     image_tensor = preprocess(pil_image).unsqueeze(0).to(config.device)
 
-    with torch.no_grad():
-        embedding = cast(torch.Tensor, backbone(image_tensor).squeeze(0))
+    with torch_mod.no_grad():
+        embedding = cast(Any, backbone(image_tensor).squeeze(0))
 
     if return_numpy:
         return embedding.detach().cpu().numpy()
