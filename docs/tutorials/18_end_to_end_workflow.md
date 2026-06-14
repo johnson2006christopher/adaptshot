@@ -1,6 +1,6 @@
 # Tutorial 18: End-to-End Production Workflow
 
-> **v0.2.0** | Complete pipeline: support loading → inference → feedback → monitoring
+> **v0.2.0** | Complete pipeline: support loading → inference → feedback → profiling → monitoring
 
 ---
 
@@ -145,7 +145,68 @@ print(f"Fine-tuned: {feedback['fine_tuned']}")
 
 ---
 
-## Step 5: Monitoring Dashboard
+## Step 5: Memory Profiling — v0.2.0
+
+AdaptShot v0.2.0 includes a `MemoryTracker` for production memory monitoring. Track memory usage at every pipeline stage:
+
+```python
+import tracemalloc
+from adaptshot.profiling import MemoryTracker
+
+# Initialize the memory tracker
+tracker = MemoryTracker()
+tracker.start()
+
+# Track memory during support loading
+with tracker.section("support_loading"):
+    learner.load_support_images(image_paths, labels)
+
+# Track memory during inference
+with tracker.section("inference"):
+    result = learner.predict("query.jpg")
+
+# Track memory during correction
+with tracker.section("correction"):
+    learner.correct("query.jpg", true_label="cat", confidence_weight=0.9)
+
+# Generate profiling report
+report = tracker.get_report()
+print(f"Peak memory (overall):      {report['peak_memory_mb']:.1f} MB")
+print(f"Current memory:             {report['current_memory_mb']:.1f} MB")
+print(f"Support loading peak:       {report['sections']['support_loading']['peak_mb']:.1f} MB")
+print(f"Inference peak:             {report['sections']['inference']['peak_mb']:.1f} MB")
+print(f"Correction peak:            {report['sections']['correction']['peak_mb']:.1f} MB")
+```
+
+### Lightweight Profiling with tracemalloc
+
+```python
+# Quick memory snapshot without MemoryTracker
+tracemalloc.start()
+result = learner.predict("query.jpg")
+current, peak = tracemalloc.get_traced_memory()
+tracemalloc.stop()
+
+print(f"Prediction memory — current: {current / 1024 / 1024:.1f} MB, peak: {peak / 1024 / 1024:.1f} MB")
+```
+
+### Memory Budget Monitoring
+
+```python
+# Set a memory budget and get alerts
+budget_mb = 250  # AdaptShot's target: <250 MB
+
+if report['peak_memory_mb'] > budget_mb:
+    print(f"⚠️ Memory budget exceeded: {report['peak_memory_mb']:.0f} MB > {budget_mb} MB")
+    print("   Consider:")
+    print("   - Reducing max_buffer_size")
+    print("   - Switching to mobilenet_v3_small backbone")
+    print("   - Disabling explainability for non-review predictions")
+```
+
+---
+
+## Step 6: Monitoring Dashboard
 
 ```python
 def generate_monitoring_report():
@@ -167,6 +228,12 @@ def generate_monitoring_report():
         "act_thresholds": learner.act.get_all_thresholds(),
     }
     
+    # v0.2.0: include historical penalty summary
+    if hasattr(learner, 'explainability_engine'):
+        report["historical_penalties"] = (
+            learner.explainability_engine.get_penalty_summary()
+        )
+    
     return report
 
 report = generate_monitoring_report()
@@ -175,7 +242,7 @@ print(json.dumps(report, indent=2, default=str))
 
 ---
 
-## Step 6: Automated Quality Control
+## Step 7: Automated Quality Control
 
 ```python
 def should_auto_accept(result, threshold=0.85):
@@ -220,7 +287,7 @@ print(f"Status: {output['status']}")
 
 ---
 
-## Step 7: Periodic Maintenance
+## Step 8: Periodic Maintenance
 
 ```python
 def maintenance_cycle():
@@ -230,6 +297,9 @@ def maintenance_cycle():
     
     # Update OOD threshold
     learner._update_ood_threshold()
+    
+    # v0.2.0: clear backbone cache to reclaim memory
+    learner.clear_backbone_cache()
     
     # Save with timestamp
     timestamp = time.strftime("%Y%m%d_%H%M%S")
@@ -243,6 +313,12 @@ def maintenance_cycle():
         print("⚠️ ECE above 0.1 — calibration degrading")
     if report["buffer"]["support_size"] > config.max_buffer_size * 0.9:
         print("⚠️ Buffer at 90% capacity — consider pruning")
+    
+    # v0.2.0: check penalty trends
+    if "historical_penalties" in report:
+        trend = report["historical_penalties"].get("global_trend")
+        if trend == "degrading":
+            print("⚠️ Global penalty trend is DEGRADING — model may be drifting")
     
     return report
 
@@ -259,6 +335,21 @@ maintenance_report = maintenance_cycle()
 3. **Track OOD rate** — sudden increases indicate distribution shift
 4. **Log all corrections** — for audit trails and model improvement
 5. **Use `explain()` on rejected predictions** — helps diagnose systematic errors
+6. **Profile memory weekly** — use MemoryTracker to catch leaks before they cause OOM
+7. **Clear backbone cache periodically** — `clear_backbone_cache()` reclaims memory in long-running services
+8. **Monitor penalty trends** — a "degrading" global trend signals potential model staleness
+
+---
+
+## v0.2.0 Hardening Summary
+
+| Feature | v0.1.x | v0.2.0 |
+|---------|--------|--------|
+| Memory profiling | Manual tracemalloc only | MemoryTracker with section-level breakdowns |
+| Backbone cache | Accumulated indefinitely | `clear_backbone_cache()` for production services |
+| Penalty monitoring | None | Per-class trend analysis in monitoring dashboard |
+| OOD threshold | Static | Adaptive, reported in monitoring |
+| Checkpointing | Manual save/load | Same, with recommended periodic schedule |
 
 ---
 
