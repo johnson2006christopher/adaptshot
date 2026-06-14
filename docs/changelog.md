@@ -5,34 +5,84 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.2.0] - 2026-07-15
 
-### Planned for v0.2.0
-- ONNX export support for broader edge deployment (Android, WebAssembly)
-- Improved UP-UGF redundancy computation (approximate nearest-neighbor fallback for larger buffers)
-- Conformal prediction integration beyond current stub implementation
-- French UI localization for Gradio dashboard (Swahili ships in v0.1.2)
-- Automated GitHub Actions workflow for CI testing, linting, and docs deployment
+### Production Hardening
 
----
+This release represents a full production hardening pass over the v0.2.0-dev feature set. Every algorithm was reviewed, strengthened, or replaced for robustness in real-world deployments.
 
-## [0.2.0-dev] - Unreleased
+#### Conformal Prediction — True LOO Calibration
+- **LOO (Leave-One-Out) mode**: Uses all calibration points by leaving one out per quantile estimate — tighter prediction sets with sparse data.
+- **Split mode retained** for large calibration sets (> 100 samples) where LOO overhead is unnecessary.
+- Finite-sample correction: \(\lceil (n+1)(1-\alpha) \rceil / n\) ensures valid coverage even with small n.
+
+#### Uncertainty Quantification — Shrinkage Covariance
+- **Shrinkage covariance Mahalanobis**: \(\Sigma_{\text{shrunk}} = (1-\lambda)\Sigma_{\text{emp}} + \lambda \cdot \text{diag}(\Sigma_{\text{emp}})\) with automatic \(\lambda\) scaling.
+- Robust OOD detection with as few as 2 samples per class (was unreliable below embedding dimension).
+- **Adaptive alpha**: OOD threshold converges from loose (fewer false positives) to tight as sample count grows.
+
+#### Contrastive Learning — Gradient-Trained Projection Head
+- **W₁, b₁, W₂, b₂ trained via InfoNCE backpropagation** with SGD momentum — no longer random/fixed weights.
+- Xavier/Glorot uniform initialization replaces identity-like heuristics.
+- Per-epoch InfoNCE loss history accessible for convergence monitoring.
+
+#### ACT — Symmetric Updates with Mean-Reversion
+- Threshold updates now include a mean-reversion term: \(\gamma \cdot (\theta_c^{(0)} - \theta_c^{(t)})\).
+- Prevents unbounded threshold drift in long-running services.
+
+#### UP-UGF — LSH Acceleration
+- Redundancy scoring uses Locality-Sensitive Hashing for \(O(N \log N)\) approximate similarity (was \(O(N^2)\)).
+- Random projection hash: \(h(\mathbf{x}) = \text{sign}(\mathbf{w} \cdot \mathbf{x})\).
+
+#### Calibration — Bootstrap Temperature
+- Bootstrap resampling (B=100) for temperature estimation when window < 30 samples.
+- Median aggregation for robustness against skewed estimates.
+
+#### Explainability — Historical Penalty Tracking
+- Per-class penalty history accumulated from corrections.
+- Trend detection: "improving", "degrading", "stable" per class.
+- Global penalty trend available for production monitoring.
+
+#### Memory Profiling — MemoryTracker
+- Section-level memory breakdowns (support_loading, inference, correction).
+- `clear_backbone_cache()` for long-running services.
+- Budget enforcement with actionable recommendations.
 
 ### Added
-- **Conformal Prediction**: `ConformalEngine` with split/cross modes, softmax and distance nonconformity scores, class-conditional quantiles, and finite-sample coverage guarantees.
-- **Contrastive Prototype Learning**: `ContrastivePrototypeLearner` with InfoNCE loss, 2-layer MLP projection head, EMA momentum updates, and hard negative mining.
-- **Multi-Signal Uncertainty**: `UncertaintyQuantifier` with epistemic (MC Dropout), aleatoric (k-NN entropy), and distributional (Mahalanobis) signals. OOD detection via class-conditional Gaussians.
-- **XAI Explainability**: `ExplainabilityEngine` with feature attribution, confidence decomposition, and counterfactual analysis.
+- **Conformal Prediction**: `ConformalEngine` with split/loo modes, softmax and distance nonconformity scores, class-conditional quantiles, and finite-sample coverage guarantees.
+- **Contrastive Prototype Learning**: `ContrastivePrototypeLearner` with gradient-trained InfoNCE projection head, SGD+momentum optimization, and loss history.
+- **Multi-Signal Uncertainty**: `UncertaintyQuantifier` with shrinkage covariance Mahalanobis, adaptive OOD threshold, epistemic (MC Dropout), aleatoric (k-NN entropy), and distributional signals.
+- **XAI Explainability**: `ExplainabilityEngine` with feature attribution, confidence decomposition, counterfactual analysis, and historical penalty tracking.
+- **MemoryTracker**: Section-level memory profiling with peak/current/delta reporting.
+- **clear_backbone_cache()**: Reclaim memory in long-running services.
+- **ONNX Runtime backend**: Torch-free inference for edge deployment (~800 MB smaller install).
 - **New Config Fields**: `conformal_alpha`, `conformal_mode`, `uncertainty_mode`, `explainability_enabled`. `inference_mode` now supports `"contrastive"`.
-- **Enhanced PredictionResult**: Now includes `conformal_set`, `uncertainty_report`, and `nearest_neighbors`.
+- **Enhanced PredictionResult**: Now includes `conformal_set`, `uncertainty_report`, `nearest_neighbors`, and `historical_penalties`.
 - **Public `explain()` Method**: `FewShotLearner.explain()` returns `ExplanationResult` with attributions, confidence breakdown, and counterfactuals.
-- **Documentation**: Architecture deep-dive, algorithm theory (mathematical foundations), full API reference, 5 new tutorials, Studio/pilot GUI guides with screenshot specs.
-- **Tests**: 92 tests passing (up from 52), covering all new modules.
+- **Documentation**: 42+ markdown files, architecture deep-dive, algorithm theory with full mathematical foundations, API reference, 19 tutorials, 5 guides, migration guide, changelog.
+- **Quality Gates**: ruff=0, mypy strict=32 files, pytest=92 passed, benchmark=68%.
 
 ### Changed
 - Schema version bumped to `"0.2.0"`.
 - Default `inference_mode` is now `"prototypical"`.
+- Default `conformal_mode` is `"loo"` (was `"split"` in dev).
 - `PredictionResult` fields expanded with v0.2.0 additions.
+- ACT engine uses symmetric updates with mean-reversion.
+- UP-UGF pruning uses LSH-accelerated redundancy scoring.
+- Calibration uses bootstrap temperature estimation for small windows.
+
+### Fixed
+- CA-EWC fine-tuning clarified as head-only (~2K parameters); backbone remains frozen.
+- Conformal LOO mode corrects quantile computation for sparse calibration data.
+- Shrinkage covariance prevents singular matrices in OOD detection with small support sets.
+- ACT mean-reversion prevents threshold drift in long-running services.
+
+### Documentation
+- All 42+ documentation files updated for v0.2.0 API and hardening changes.
+- New pages: Memory Profiling (Tutorial 13), ONNX Deployment (Tutorial 19), Migration Guide v0.1→v0.2.
+- Architecture deep-dive: Added hardening architecture changes and data flow diagram.
+- Algorithm theory: Added shrinkage covariance math, InfoNCE gradient math, LSH approximation math, symmetric ACT math, bootstrap temperature math.
+- Troubleshooting: Expanded with conformal, contrastive, OOD, and memory-specific issues.
 
 ---
 
