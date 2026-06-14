@@ -27,7 +27,7 @@ Your existing v0.1.x code will run unchanged. The breaking changes listed below 
 
 | Area | v0.1.x | v0.2.0 | Action Required |
 |------|--------|--------|----------------|
-| Conformal prediction | Split mode only | Split + LOO (leave-one-out) modes | Set `conformal_mode="loo"` for tighter prediction sets |
+| Conformal prediction | Split mode only | Split + cross-conformal modes, with automatic LOO self-calibration at load time | Set `conformal_mode="cross"` for tighter prediction sets via k-fold averaging |
 | Uncertainty | Raw empirical covariance | Shrinkage covariance Mahalanobis | None — automatic improvement |
 | Contrastive learning | Fixed projection head | Gradient-trained W₁,b₁,W₂,b₂ | None — automatic improvement |
 | ACT thresholds | Asymmetric updates | Symmetric + mean-reversion | None — automatic stability |
@@ -52,7 +52,7 @@ config = AdaptShotConfig(
     seed=42,
     # --- New in v0.2.0 ---
     conformal_alpha=0.10,         # default: 0.10 (90% coverage)
-    conformal_mode="loo",         # default: "loo" (new in v0.2.0)
+    conformal_mode="cross",       # optional: "cross" for k-fold cross-conformal
     uncertainty_mode="entropy",   # default: "entropy"
     explainability_enabled=True,  # default: False
 )
@@ -117,7 +117,7 @@ Your code runs unchanged. You get hardened implementations for free.
 config = AdaptShotConfig(
     # ... your existing config ...
     conformal_alpha=0.10,
-    conformal_mode="loo",
+    conformal_mode="cross",
 )
 # Now result.conformal_set is populated
 ```
