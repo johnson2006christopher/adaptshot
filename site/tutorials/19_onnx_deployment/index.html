@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://johnson2006christopher.github.io/adaptshot/tutorials/17_contrastive_learning/">
+        <link rel="canonical" href="https://johnson2006christopher.github.io/adaptshot/tutorials/19_onnx_deployment/">
       
       
-        <link rel="prev" href="../16_explainability/">
+        <link rel="prev" href="../18_end_to_end_workflow/">
       
       
-        <link rel="next" href="../18_end_to_end_workflow/">
+        <link rel="next" href="../../api/reference/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>17 Contrastive Learning - AdaptShot</title>
+        <title>19 ONNX Deployment - AdaptShot</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#tutorial-17-contrastive-prototype-learning" class="md-skip">
+        <a href="#tutorial-19-onnx-deployment" class="md-skip">
           Skip to content
         </a>
       
@@ -115,7 +115,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              17 Contrastive Learning
+              19 ONNX Deployment
             
           </span>
         </div>
@@ -1004,37 +1004,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    17 Contrastive Learning
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../17_contrastive_learning/" class="md-nav__link">
         
   
   
@@ -1050,158 +1023,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#prerequisites" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Prerequisites
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#why-contrastive-prototypes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Why Contrastive Prototypes?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#architecture-gradient-trained-projection-head-v020" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Architecture: Gradient-Trained Projection Head — v0.2.0
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-1-basic-contrastive-refinement" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 1: Basic Contrastive Refinement
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-2-inspecting-the-trained-projection-head" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 2: Inspecting the Trained Projection Head
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-3-evaluating-separation-quality" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 3: Evaluating Separation Quality
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-4-classification-with-refined-prototypes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 4: Classification with Refined Prototypes
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-5-using-contrastive-mode-with-fewshotlearner" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 5: Using Contrastive Mode with FewShotLearner
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#contrastiveconfig-reference" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ContrastiveConfig Reference
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#when-to-use-contrastive-mode" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        When to Use Contrastive Mode
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#v020-hardening-summary" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        v0.2.0 Hardening Summary
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Next Steps
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1239,10 +1060,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../19_onnx_deployment/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    19 ONNX Deployment
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1258,6 +1106,147 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-onnx" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why ONNX?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-1-verify-onnx-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Verify ONNX Backend
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-2-force-onnx-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: Force ONNX Backend
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-3-onnx-inference-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: ONNX Inference Pipeline
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-4-benchmark-onnx-vs-pytorch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4: Benchmark ONNX vs PyTorch
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-5-torch-free-docker-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 5: Torch-Free Docker Deployment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#supported-backbones-for-onnx" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supported Backbones for ONNX
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Limitations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best Practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -2088,10 +2077,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#why-contrastive-prototypes" class="md-nav__link">
+  <a href="#why-onnx" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Why Contrastive Prototypes?
+        Why ONNX?
       
     </span>
   </a>
@@ -2099,10 +2088,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#architecture-gradient-trained-projection-head-v020" class="md-nav__link">
+  <a href="#step-1-verify-onnx-backend" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Architecture: Gradient-Trained Projection Head — v0.2.0
+        Step 1: Verify ONNX Backend
       
     </span>
   </a>
@@ -2110,10 +2099,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-1-basic-contrastive-refinement" class="md-nav__link">
+  <a href="#step-2-force-onnx-backend" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 1: Basic Contrastive Refinement
+        Step 2: Force ONNX Backend
       
     </span>
   </a>
@@ -2121,10 +2110,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-2-inspecting-the-trained-projection-head" class="md-nav__link">
+  <a href="#step-3-onnx-inference-pipeline" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 2: Inspecting the Trained Projection Head
+        Step 3: ONNX Inference Pipeline
       
     </span>
   </a>
@@ -2132,10 +2121,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-3-evaluating-separation-quality" class="md-nav__link">
+  <a href="#step-4-benchmark-onnx-vs-pytorch" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 3: Evaluating Separation Quality
+        Step 4: Benchmark ONNX vs PyTorch
       
     </span>
   </a>
@@ -2143,10 +2132,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-4-classification-with-refined-prototypes" class="md-nav__link">
+  <a href="#step-5-torch-free-docker-deployment" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 4: Classification with Refined Prototypes
+        Step 5: Torch-Free Docker Deployment
       
     </span>
   </a>
@@ -2154,10 +2143,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-5-using-contrastive-mode-with-fewshotlearner" class="md-nav__link">
+  <a href="#supported-backbones-for-onnx" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 5: Using Contrastive Mode with FewShotLearner
+        Supported Backbones for ONNX
       
     </span>
   </a>
@@ -2165,10 +2154,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#contrastiveconfig-reference" class="md-nav__link">
+  <a href="#limitations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ContrastiveConfig Reference
+        Limitations
       
     </span>
   </a>
@@ -2176,21 +2165,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#when-to-use-contrastive-mode" class="md-nav__link">
+  <a href="#best-practices" class="md-nav__link">
     <span class="md-ellipsis">
       
-        When to Use Contrastive Mode
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#v020-hardening-summary" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        v0.2.0 Hardening Summary
+        Best Practices
       
     </span>
   </a>
@@ -2228,238 +2206,188 @@
   
 
 
-<h1 id="tutorial-17-contrastive-prototype-learning">Tutorial 17: Contrastive Prototype Learning<a class="headerlink" href="#tutorial-17-contrastive-prototype-learning" title="Permanent link">&para;</a></h1>
+<h1 id="tutorial-19-onnx-deployment">Tutorial 19: ONNX Deployment<a class="headerlink" href="#tutorial-19-onnx-deployment" title="Permanent link">&para;</a></h1>
 <blockquote>
-<p><strong>v0.2.0</strong> | Learning refined prototypes with gradient-trained InfoNCE projection head</p>
+<p><strong>v0.2.0</strong> | Torch-free inference with ONNX Runtime for edge and embedded devices</p>
 </blockquote>
 <hr />
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
 <ul>
-<li>AdaptShot v0.2.0+ installed</li>
-<li>Understanding of <a href="../../guides/algorithm-theory/#1-few-shot-learning-formulation">Prototypical Networks</a></li>
+<li>AdaptShot v0.2.0+ installed with ONNX support: <code>pip install "adaptshot[onnx]"</code></li>
+<li>OR: <code>pip install adaptshot onnxruntime</code></li>
+<li>Understanding of <a href="../../getting-started/quickstart/">Quickstart</a></li>
 </ul>
 <hr />
-<h2 id="why-contrastive-prototypes">Why Contrastive Prototypes?<a class="headerlink" href="#why-contrastive-prototypes" title="Permanent link">&para;</a></h2>
-<p>Simple mean prototypes assume all support examples are equally informative. Contrastive learning refines prototypes to:
-- <strong>Pull</strong> same-class embeddings closer together
-- <strong>Push</strong> different-class embeddings further apart
-- <strong>Improve</strong> class separation in the embedding space</p>
-<p>In v0.2.0, the contrastive module was production-hardened with a <strong>gradient-trained projection head</strong> — the parameters (W_1, b_1, W_2, b_2) are now learned via backpropagation through the InfoNCE loss, rather than simple random projection.</p>
+<h2 id="why-onnx">Why ONNX?<a class="headerlink" href="#why-onnx" title="Permanent link">&para;</a></h2>
+<p>ONNX (Open Neural Network Exchange) enables torch-free inference. Benefits:</p>
+<ol>
+<li><strong>No PyTorch dependency</strong> — ~800 MB smaller install footprint</li>
+<li><strong>Broader hardware support</strong> — Android (NNAPI), iOS (CoreML via onnx), WebAssembly (ONNX.js), ARM</li>
+<li><strong>Faster cold start</strong> — no JIT compilation overhead</li>
+<li><strong>Deterministic inference</strong> — no CUDA nondeterminism</li>
+</ol>
+<p>AdaptShot v0.2.0 uses ONNX Runtime as the default embedding backend when <code>device="cpu"</code>.</p>
 <hr />
-<h2 id="architecture-gradient-trained-projection-head-v020">Architecture: Gradient-Trained Projection Head — v0.2.0<a class="headerlink" href="#architecture-gradient-trained-projection-head-v020" title="Permanent link">&para;</a></h2>
-<p>The projection head transforms raw embeddings into a contrastive space:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>raw_embedding (64-dim)
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    ↓
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>Linear(W₁ ∈ ℝ^{128×64}) + ReLU → (128-dim)
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    ↓
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>Linear(W₂ ∈ ℝ^{128×128})        → (128-dim)
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    ↓
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>L2-normalize                     → (128-dim, ‖·‖=1)
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    ↓
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>InfoNCE loss ← backprop through W₁,b₁,W₂,b₂
+<h2 id="step-1-verify-onnx-backend">Step 1: Verify ONNX Backend<a class="headerlink" href="#step-1-verify-onnx-backend" title="Permanent link">&para;</a></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">adaptshot</span><span class="w"> </span><span class="kn">import</span> <span class="n">FewShotLearner</span><span class="p">,</span> <span class="n">AdaptShotConfig</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">config</span> <span class="o">=</span> <span class="n">AdaptShotConfig</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">learner</span> <span class="o">=</span> <span class="n">FewShotLearner</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="c1"># Check which backend is active</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Backend: </span><span class="si">{</span><span class="n">learner</span><span class="o">.</span><span class="n">_backend</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># &quot;onnx&quot; or &quot;torch&quot;</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Backbone: </span><span class="si">{</span><span class="n">config</span><span class="o">.</span><span class="n">backbone</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># &quot;mobilenet_v3_small&quot; (default for ONNX)</span>
 </span></code></pre></div>
-<p>This is a proper 2-layer MLP trained end-to-end with gradient descent. The InfoNCE loss maximizes cosine similarity between same-class pairs while minimizing it for different-class pairs, with temperature (\tau) controlling sharpness:</p>
-<p>[
-\mathcal{L}<em>{\text{InfoNCE}} = -\log \frac{\exp(\text{sim}(z_i, z_j^+) / \tau)}{\exp(\text{sim}(z_i, z_j^+) / \tau) + \sum</em>{k} \exp(\text{sim}(z_i, z_k^-) / \tau)}
-]</p>
+<p>ONNX Runtime is the default. If PyTorch is installed, it will be preferred unless you explicitly force ONNX.</p>
 <hr />
-<h2 id="step-1-basic-contrastive-refinement">Step 1: Basic Contrastive Refinement<a class="headerlink" href="#step-1-basic-contrastive-refinement" title="Permanent link">&para;</a></h2>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">adaptshot</span><span class="w"> </span><span class="kn">import</span> <span class="n">ContrastivePrototypeLearner</span>
+<h2 id="step-2-force-onnx-backend">Step 2: Force ONNX Backend<a class="headerlink" href="#step-2-force-onnx-backend" title="Permanent link">&para;</a></h2>
+<p>If you have PyTorch installed but want to use ONNX:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;ADAPTSHOT_BACKEND&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;onnx&quot;</span>
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">learner</span> <span class="o">=</span> <span class="n">ContrastivePrototypeLearner</span><span class="p">()</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="c1"># Prepare support data (3 classes, 20 examples each)</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="n">embeddings</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">60</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s2">&quot;cat&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">20</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;dog&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">20</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;bird&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">20</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="c1"># Refine prototypes — v0.2.0: W₁,b₁,W₂,b₂ are trained via gradient descent</span>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="n">prototypes</span><span class="p">,</span> <span class="n">proto_labels</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">refine_prototypes</span><span class="p">(</span>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="n">embeddings</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span>
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="p">)</span>
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Prototypes shape: </span><span class="si">{</span><span class="n">prototypes</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>   <span class="c1"># (3, 128)</span>
-</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Prototype labels: </span><span class="si">{</span><span class="n">proto_labels</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>       <span class="c1"># [&quot;bird&quot;, &quot;cat&quot;, &quot;dog&quot;]</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">config</span> <span class="o">=</span> <span class="n">AdaptShotConfig</span><span class="p">(</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">backbone</span><span class="o">=</span><span class="s2">&quot;mobilenet_v3_small&quot;</span><span class="p">,</span>  <span class="c1"># ONNX-exported backbone</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="p">)</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">learner</span> <span class="o">=</span> <span class="n">FewShotLearner</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
 </span></code></pre></div>
-<p><strong>Note</strong>: The output is in 128-dimensional projection space, not the original 64-dim embedding space.</p>
-<hr />
-<h2 id="step-2-inspecting-the-trained-projection-head">Step 2: Inspecting the Trained Projection Head<a class="headerlink" href="#step-2-inspecting-the-trained-projection-head" title="Permanent link">&para;</a></h2>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># The trained parameters are accessible after refine_prototypes()</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;W₁ shape: </span><span class="si">{</span><span class="n">learner</span><span class="o">.</span><span class="n">projection_head</span><span class="o">.</span><span class="n">W1</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>   <span class="c1"># (128, 64)</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;b₁ shape: </span><span class="si">{</span><span class="n">learner</span><span class="o">.</span><span class="n">projection_head</span><span class="o">.</span><span class="n">b1</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>   <span class="c1"># (128,)</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;W₂ shape: </span><span class="si">{</span><span class="n">learner</span><span class="o">.</span><span class="n">projection_head</span><span class="o">.</span><span class="n">W2</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>   <span class="c1"># (128, 128)</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;b₂ shape: </span><span class="si">{</span><span class="n">learner</span><span class="o">.</span><span class="n">projection_head</span><span class="o">.</span><span class="n">b2</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>   <span class="c1"># (128,)</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="c1"># Check training loss history</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;InfoNCE loss per epoch: </span><span class="si">{</span><span class="n">learner</span><span class="o">.</span><span class="n">loss_history</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Final loss: </span><span class="si">{</span><span class="n">learner</span><span class="o">.</span><span class="n">loss_history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<p>Or export and use a custom model:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Export your own backbone to ONNX (requires PyTorch once)</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="kn">import</span><span class="w"> </span><span class="nn">torchvision</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="n">model</span> <span class="o">=</span> <span class="n">torchvision</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">mobilenet_v3_small</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="n">dummy_input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="n">torch</span><span class="o">.</span><span class="n">onnx</span><span class="o">.</span><span class="n">export</span><span class="p">(</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span class="n">model</span><span class="p">,</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    <span class="n">dummy_input</span><span class="p">,</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>    <span class="s2">&quot;my_model.onnx&quot;</span><span class="p">,</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>    <span class="n">input_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">],</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>    <span class="n">output_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;embedding&quot;</span><span class="p">],</span>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>    <span class="n">dynamic_axes</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;batch&quot;</span><span class="p">},</span> <span class="s2">&quot;embedding&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;batch&quot;</span><span class="p">}},</span>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>    <span class="n">opset_version</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span>
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="p">)</span>
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Exported my_model.onnx&quot;</span><span class="p">)</span>
 </span></code></pre></div>
-<p>The loss should decrease over epochs, indicating the projection head is learning to separate classes.</p>
 <hr />
-<h2 id="step-3-evaluating-separation-quality">Step 3: Evaluating Separation Quality<a class="headerlink" href="#step-3-evaluating-separation-quality" title="Permanent link">&para;</a></h2>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Before contrastive learning</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">score_before</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">class_separation_score</span><span class="p">(</span><span class="n">embeddings</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Separation score (before): </span><span class="si">{</span><span class="n">score_before</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="c1"># After refinement — project embeddings to contrastive space</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">projected</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">project_query</span><span class="p">(</span><span class="n">embeddings</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Projected shape: </span><span class="si">{</span><span class="n">projected</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># (128,)</span>
+<h2 id="step-3-onnx-inference-pipeline">Step 3: ONNX Inference Pipeline<a class="headerlink" href="#step-3-onnx-inference-pipeline" title="Permanent link">&para;</a></h2>
+<p>The ONNX pipeline is identical to the PyTorch pipeline — the backend abstraction handles everything:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">config</span> <span class="o">=</span> <span class="n">AdaptShotConfig</span><span class="p">(</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">backbone</span><span class="o">=</span><span class="s2">&quot;mobilenet_v3_small&quot;</span><span class="p">,</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">inference_mode</span><span class="o">=</span><span class="s2">&quot;prototypical&quot;</span><span class="p">,</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">calibration_method</span><span class="o">=</span><span class="s2">&quot;temperature&quot;</span><span class="p">,</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="p">)</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="n">learner</span> <span class="o">=</span> <span class="n">FewShotLearner</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
 </span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="c1"># Recompute with projected embeddings</span>
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="n">all_projected</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">project_query</span><span class="p">(</span><span class="n">embeddings</span><span class="p">)</span>
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="n">score_after</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">class_separation_score</span><span class="p">(</span><span class="n">all_projected</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
-</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Separation score (after): </span><span class="si">{</span><span class="n">score_after</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Improvement: </span><span class="si">{</span><span class="n">score_after</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">score_before</span><span class="si">:</span><span class="s2">+.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="c1"># Load support images — embeddings extracted via ONNX Runtime</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="n">learner</span><span class="o">.</span><span class="n">load_support_images</span><span class="p">(</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="p">[</span><span class="s2">&quot;cat_01.jpg&quot;</span><span class="p">,</span> <span class="s2">&quot;cat_02.jpg&quot;</span><span class="p">,</span> <span class="s2">&quot;dog_01.jpg&quot;</span><span class="p">,</span> <span class="s2">&quot;dog_02.jpg&quot;</span><span class="p">],</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    <span class="p">[</span><span class="s2">&quot;cat&quot;</span><span class="p">,</span> <span class="s2">&quot;cat&quot;</span><span class="p">,</span> <span class="s2">&quot;dog&quot;</span><span class="p">,</span> <span class="s2">&quot;dog&quot;</span><span class="p">],</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="p">)</span>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="c1"># Predict — ONNX Runtime inference under the hood</span>
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="n">result</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">&quot;query.jpg&quot;</span><span class="p">)</span>
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Prediction: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">prediction</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Confidence: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">calibrated_confidence</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Backend: </span><span class="si">{</span><span class="n">learner</span><span class="o">.</span><span class="n">_backend</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </span></code></pre></div>
-<p>A higher separation score indicates better-separated classes. With gradient training, the improvement over raw embeddings is typically significant.</p>
 <hr />
-<h2 id="step-4-classification-with-refined-prototypes">Step 4: Classification with Refined Prototypes<a class="headerlink" href="#step-4-classification-with-refined-prototypes" title="Permanent link">&para;</a></h2>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Query near class &quot;cat&quot; region</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">query</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">2.0</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">63</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<h2 id="step-4-benchmark-onnx-vs-pytorch">Step 4: Benchmark ONNX vs PyTorch<a class="headerlink" href="#step-4-benchmark-onnx-vs-pytorch" title="Permanent link">&para;</a></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">pred_label</span><span class="p">,</span> <span class="n">confidence</span><span class="p">,</span> <span class="n">proto_idx</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">nearest_prototype</span><span class="p">(</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">,</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="n">prototypes</span><span class="o">=</span><span class="n">prototypes</span><span class="p">,</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="n">prototype_labels</span><span class="o">=</span><span class="n">proto_labels</span><span class="p">,</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">config_onnx</span> <span class="o">=</span> <span class="n">AdaptShotConfig</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="n">backbone</span><span class="o">=</span><span class="s2">&quot;mobilenet_v3_small&quot;</span><span class="p">)</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">learner_onnx</span> <span class="o">=</span> <span class="n">FewShotLearner</span><span class="p">(</span><span class="n">config_onnx</span><span class="p">)</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="n">learner_onnx</span><span class="o">.</span><span class="n">load_support_images</span><span class="p">(</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="p">[</span><span class="s2">&quot;cat_01.jpg&quot;</span><span class="p">,</span> <span class="s2">&quot;cat_02.jpg&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;cat&quot;</span><span class="p">,</span> <span class="s2">&quot;cat&quot;</span><span class="p">]</span>
 </span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="p">)</span>
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Prediction: </span><span class="si">{</span><span class="n">pred_label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Confidence: </span><span class="si">{</span><span class="n">confidence</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="c1"># Warm up</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>    <span class="n">learner_onnx</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">&quot;query.jpg&quot;</span><span class="p">)</span>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="c1"># Benchmark</span>
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="n">times</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="p">):</span>
+</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>    <span class="n">learner_onnx</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">&quot;query.jpg&quot;</span><span class="p">)</span>
+</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>    <span class="n">times</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
+</span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>
+</span><span id="__span-4-21"><a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ONNX — Mean: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">times</span><span class="p">)</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> ms, P95: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">times</span><span class="p">,</span><span class="w"> </span><span class="mi">95</span><span class="p">)</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> ms&quot;</span><span class="p">)</span>
 </span></code></pre></div>
 <hr />
-<h2 id="step-5-using-contrastive-mode-with-fewshotlearner">Step 5: Using Contrastive Mode with FewShotLearner<a class="headerlink" href="#step-5-using-contrastive-mode-with-fewshotlearner" title="Permanent link">&para;</a></h2>
-<p>Set <code>inference_mode="contrastive"</code> to use refined prototypes:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">adaptshot</span><span class="w"> </span><span class="kn">import</span> <span class="n">FewShotLearner</span><span class="p">,</span> <span class="n">AdaptShotConfig</span>
+<h2 id="step-5-torch-free-docker-deployment">Step 5: Torch-Free Docker Deployment<a class="headerlink" href="#step-5-torch-free-docker-deployment" title="Permanent link">&para;</a></h2>
+<p>A minimal Docker setup without PyTorch:</p>
+<div class="language-dockerfile highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">FROM</span><span class="w"> </span><span class="s">python:3.10-slim</span>
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">config</span> <span class="o">=</span> <span class="n">AdaptShotConfig</span><span class="p">(</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="n">inference_mode</span><span class="o">=</span><span class="s2">&quot;contrastive&quot;</span><span class="p">,</span>  <span class="c1"># Enable contrastive prototypes</span>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="p">)</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="k">RUN</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>adaptshot<span class="w"> </span>onnxruntime
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="k">COPY</span><span class="w"> </span>app.py<span class="w"> </span>/app/
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="k">COPY</span><span class="w"> </span>support_images/<span class="w"> </span>/app/support_images/
 </span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="n">learner</span> <span class="o">=</span> <span class="n">FewShotLearner</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
-</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="n">learner</span><span class="o">.</span><span class="n">load_support_images</span><span class="p">(</span>
-</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>    <span class="p">[</span><span class="s2">&quot;cat_01.jpg&quot;</span><span class="p">,</span> <span class="s2">&quot;cat_02.jpg&quot;</span><span class="p">,</span> <span class="s2">&quot;dog_01.jpg&quot;</span><span class="p">,</span> <span class="s2">&quot;dog_02.jpg&quot;</span><span class="p">],</span>
-</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>    <span class="p">[</span><span class="s2">&quot;cat&quot;</span><span class="p">,</span> <span class="s2">&quot;cat&quot;</span><span class="p">,</span> <span class="s2">&quot;dog&quot;</span><span class="p">,</span> <span class="s2">&quot;dog&quot;</span><span class="p">],</span>
-</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="p">)</span>
-</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>
-</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="c1"># Prototypes are automatically refined during load_support_images()</span>
-</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="c1"># v0.2.0: projection head is gradient-trained, not random</span>
-</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="n">result</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">&quot;query.jpg&quot;</span><span class="p">)</span>
-</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Prediction: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">prediction</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Confidence: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">calibrated_confidence</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="k">WORKDIR</span><span class="w"> </span><span class="s">/app</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="k">ENV</span><span class="w"> </span><span class="nv">ADAPTSHOT_BACKEND</span><span class="o">=</span>onnx
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="k">CMD</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;python&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;app.py&quot;</span><span class="p">]</span>
 </span></code></pre></div>
+<p><strong>Image size</strong>: ~300 MB (vs ~1.2 GB with PyTorch).</p>
 <hr />
-<h2 id="contrastiveconfig-reference">ContrastiveConfig Reference<a class="headerlink" href="#contrastiveconfig-reference" title="Permanent link">&para;</a></h2>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">adaptshot</span><span class="w"> </span><span class="kn">import</span> <span class="n">ContrastiveConfig</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">config</span> <span class="o">=</span> <span class="n">ContrastiveConfig</span><span class="p">(</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="n">projection_dim</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span>     <span class="c1"># Output dimension of projection head</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="n">temperature</span><span class="o">=</span><span class="mf">0.07</span><span class="p">,</span>       <span class="c1"># InfoNCE temperature (lower = sharper)</span>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>     <span class="c1"># v0.2.0: gradient descent learning rate for W₁,W₂</span>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="n">momentum</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>           <span class="c1"># v0.2.0: SGD momentum for projection head training</span>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>    <span class="n">n_epochs</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>            <span class="c1"># Training iterations (more = better convergence)</span>
-</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="p">)</span>
-</span></code></pre></div>
+<h2 id="supported-backbones-for-onnx">Supported Backbones for ONNX<a class="headerlink" href="#supported-backbones-for-onnx" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Parameter</th>
-<th>Effect</th>
+<th>Backbone</th>
+<th>ONNX Status</th>
+<th>Notes</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>temperature</code></td>
-<td>Lower values (0.05) = sharper contrast, more discriminative</td>
+<td><code>mobilenet_v3_small</code></td>
+<td>✅ Built-in</td>
+<td>Default ONNX backbone, ~25 MB</td>
 </tr>
 <tr>
-<td><code>learning_rate</code></td>
-<td>v0.2.0: controls gradient step size for W₁,b₁,W₂,b₂ updates</td>
+<td><code>resnet18</code></td>
+<td>✅ Exportable</td>
+<td>Requires one-time export with PyTorch</td>
 </tr>
 <tr>
-<td><code>momentum</code></td>
-<td>v0.2.0: SGD momentum accelerates convergence in flat regions</td>
+<td><code>mobilenet_v3_large</code></td>
+<td>✅ Exportable</td>
+<td>Larger, more accurate variant</td>
 </tr>
 <tr>
-<td><code>n_epochs</code></td>
-<td>More epochs = better convergence, but diminishing returns after ~100</td>
+<td><code>efficientnet_b0</code></td>
+<td>⚠️ Preview</td>
+<td>Requires custom export</td>
 </tr>
 </tbody>
 </table>
 <hr />
-<h2 id="when-to-use-contrastive-mode">When to Use Contrastive Mode<a class="headerlink" href="#when-to-use-contrastive-mode" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Scenario</th>
-<th>Recommended Mode</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>&lt; 5 support examples per class</td>
-<td><code>nearest_neighbor</code></td>
-</tr>
-<tr>
-<td>5-20 support examples per class</td>
-<td><code>prototypical</code> (default)</td>
-</tr>
-<tr>
-<td>&gt; 20 support examples per class</td>
-<td><code>contrastive</code></td>
-</tr>
-<tr>
-<td>Highly imbalanced classes</td>
-<td><code>contrastive</code> with hard negative mining</td>
-</tr>
-<tr>
-<td>Resource-constrained CPU</td>
-<td><code>nearest_neighbor</code> or <code>prototypical</code></td>
-</tr>
-</tbody>
-</table>
+<h2 id="limitations">Limitations<a class="headerlink" href="#limitations" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>Backbone training</strong>: ONNX is inference-only. Fine-tuning requires PyTorch — CA-EWC head updates still work since they operate on embeddings, not the backbone.</li>
+<li><strong>GPU acceleration</strong>: ONNX Runtime supports GPU via <code>onnxruntime-gpu</code>, but AdaptShot's ONNX path targets CPU-first deployments.</li>
+<li><strong>Custom preprocessing</strong>: If your backbone expects non-standard preprocessing, export a model that includes preprocessing as the first ONNX node.</li>
+</ol>
 <hr />
-<h2 id="v020-hardening-summary">v0.2.0 Hardening Summary<a class="headerlink" href="#v020-hardening-summary" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Feature</th>
-<th>v0.1.x</th>
-<th>v0.2.0</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Projection head</td>
-<td>Random or fixed weights</td>
-<td>Gradient-trained via InfoNCE backprop</td>
-</tr>
-<tr>
-<td>Weight initialization</td>
-<td>Identity-like heuristics</td>
-<td>Xavier/Glorot uniform</td>
-</tr>
-<tr>
-<td>Training</td>
-<td>Simple prototype averaging</td>
-<td>Full SGD with momentum on W₁,b₁,W₂,b₂</td>
-</tr>
-<tr>
-<td>Loss tracking</td>
-<td>None</td>
-<td>Per-epoch InfoNCE loss history</td>
-</tr>
-<tr>
-<td>Convergence guarantee</td>
-<td>None</td>
-<td>Monotonic loss decrease over epochs</td>
-</tr>
-</tbody>
-</table>
+<h2 id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>Use ONNX for deployment, PyTorch for development</strong> — develop with PyTorch's flexibility, deploy with ONNX's efficiency</li>
+<li><strong>Verify determinism</strong> — ONNX inference is fully deterministic on CPU (no CUDA nondeterminism)</li>
+<li><strong>Pre-warm the session</strong> — first inference is slower (session initialization); run a dummy prediction at startup</li>
+<li><strong>Cache embeddings</strong> — <code>extract_embedding()</code> caches per-image embeddings; clear cache periodically for long-running services</li>
+</ol>
 <hr />
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../../guides/algorithm-theory/#8-contrastive-prototype-learning-v020">Algorithm Theory: Contrastive Learning</a></li>
-<li><a href="../18_end_to_end_workflow/">Tutorial 18: End-to-End Production Workflow</a></li>
-<li><a href="../../api/reference/#contrastiveprototypelearner">API Reference: ContrastivePrototypeLearner</a></li>
+<li><a href="../../getting-started/installation/">Installation Guide</a> — ONNX install options</li>
+<li><a href="../../guides/architecture-deep-dive/">Architecture Deep-Dive</a> — back-end abstraction layer</li>
+<li><a href="../18_end_to_end_workflow/">Tutorial 18: End-to-End Production Workflow</a> — full deployment pipeline</li>
 </ul>
 
 

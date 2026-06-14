@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://johnson2006christopher.github.io/adaptshot/getting-started/benchmarks/">
+        <link rel="canonical" href="https://johnson2006christopher.github.io/adaptshot/guides/migration-v0.1-to-v0.2/">
       
       
-        <link rel="prev" href="../quickstart/">
+        <link rel="prev" href="../troubleshooting/">
       
       
-        <link rel="next" href="../../tutorials/">
+        <link rel="next" href="../../reference/config-reference/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>Benchmarks - AdaptShot</title>
+        <title>Migration Guide (v0.1 → v0.2) - AdaptShot</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#benchmarks-reproducibility" class="md-skip">
+        <a href="#migration-guide-v01x-to-v020" class="md-skip">
           Skip to content
         </a>
       
@@ -115,7 +115,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Benchmarks
+              Migration Guide (v0.1 → v0.2)
             
           </span>
         </div>
@@ -311,20 +311,20 @@
       
   
   
-    
   
   
-  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
@@ -345,7 +345,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -363,7 +363,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../beginner-101/" class="md-nav__link">
+      <a href="../../getting-started/beginner-101/" class="md-nav__link">
         
   
   
@@ -391,7 +391,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../installation/" class="md-nav__link">
+      <a href="../../getting-started/installation/" class="md-nav__link">
         
   
   
@@ -419,7 +419,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../quickstart/" class="md-nav__link">
+      <a href="../../getting-started/quickstart/" class="md-nav__link">
         
   
   
@@ -444,37 +444,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Benchmarks
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../getting-started/benchmarks/" class="md-nav__link">
         
   
   
@@ -490,209 +463,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#quick-validation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Quick Validation
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Quick Validation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-smoke-test-cifar-10-5-way-10-shot" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Smoke Test (CIFAR-10, 5-way 10-shot)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-full-benchmark-suite-v020" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Full Benchmark Suite (v0.2.0)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-quality-gates" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Quality Gates
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#expected-results-reference-hardware-intel-core-i5-1135g7-16gb-ram-ubuntu-2204" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Expected Results (Reference Hardware: Intel Core i5-1135G7, 16GB RAM, Ubuntu 22.04)
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Expected Results (Reference Hardware: Intel Core i5-1135G7, 16GB RAM, Ubuntu 22.04)">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#cifar-10-smoke-test-5-way-10-shot" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CIFAR-10 Smoke Test (5-way, 10-shot)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#baseline-comparisons" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Baseline Comparisons
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#miniimagenet-support" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        miniImageNet Support
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#hardware-tier-expectations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Hardware-Tier Expectations
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#reproducibility-guarantees" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Reproducibility Guarantees
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#understanding-ece-calibration-behavior" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Understanding ECE &amp; Calibration Behavior
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Understanding ECE &amp; Calibration Behavior">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#ece-lifecycle" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ECE Lifecycle
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#memory-profiling" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Memory Profiling
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#troubleshooting-benchmarks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Troubleshooting Benchmarks
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Next Steps
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1493,20 +1263,20 @@
       
   
   
+    
   
   
+  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
           <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
@@ -1527,7 +1297,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1545,7 +1315,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/architecture-deep-dive/" class="md-nav__link">
+      <a href="../architecture-deep-dive/" class="md-nav__link">
         
   
   
@@ -1573,7 +1343,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/algorithm-theory/" class="md-nav__link">
+      <a href="../algorithm-theory/" class="md-nav__link">
         
   
   
@@ -1601,7 +1371,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/studio-complete-guide/" class="md-nav__link">
+      <a href="../studio-complete-guide/" class="md-nav__link">
         
   
   
@@ -1629,7 +1399,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/ui-pilot-guide/" class="md-nav__link">
+      <a href="../ui-pilot-guide/" class="md-nav__link">
         
   
   
@@ -1657,7 +1427,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/real-world-use-cases/" class="md-nav__link">
+      <a href="../real-world-use-cases/" class="md-nav__link">
         
   
   
@@ -1685,7 +1455,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/human-in-the-loop/" class="md-nav__link">
+      <a href="../human-in-the-loop/" class="md-nav__link">
         
   
   
@@ -1713,7 +1483,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/troubleshooting/" class="md-nav__link">
+      <a href="../troubleshooting/" class="md-nav__link">
         
   
   
@@ -1738,10 +1508,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../guides/migration-v0.1-to-v0.2/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migration Guide (v0.1 → v0.2)
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1757,6 +1554,203 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#quick-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#breaking-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Breaking Changes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Breaking Changes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#none-v020-is-fully-backward-compatible" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        None — v0.2.0 is fully backward-compatible
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-changed-under-the-hood" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Changed Under the Hood
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#new-config-fields-v020" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        New Config Fields (v0.2.0)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#predictionresult-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PredictionResult Changes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checkpoint-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checkpoint Migration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-adoption-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended Adoption Path
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Recommended Adoption Path">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-drop-in-upgrade-5-minutes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1: Drop-in upgrade (5 minutes)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-enable-conformal-prediction-10-minutes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2: Enable conformal prediction (10 minutes)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-3-enable-explainability-15-minutes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3: Enable explainability (15 minutes)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-4-add-production-monitoring-30-minutes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4: Add production monitoring (30 minutes)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#api-deprecations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Deprecations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing-your-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing Your Migration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#getting-help" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Getting Help
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -2128,44 +2122,33 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#quick-validation" class="md-nav__link">
+  <a href="#quick-summary" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Quick Validation
+        Quick Summary
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Quick Validation">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#breaking-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Breaking Changes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Breaking Changes">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-smoke-test-cifar-10-5-way-10-shot" class="md-nav__link">
+  <a href="#none-v020-is-fully-backward-compatible" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Smoke Test (CIFAR-10, 5-way 10-shot)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-full-benchmark-suite-v020" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Full Benchmark Suite (v0.2.0)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-quality-gates" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Quality Gates
+        None — v0.2.0 is fully backward-compatible
       
     </span>
   </a>
@@ -2178,22 +2161,66 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#expected-results-reference-hardware-intel-core-i5-1135g7-16gb-ram-ubuntu-2204" class="md-nav__link">
+  <a href="#what-changed-under-the-hood" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Expected Results (Reference Hardware: Intel Core i5-1135G7, 16GB RAM, Ubuntu 22.04)
+        What Changed Under the Hood
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Expected Results (Reference Hardware: Intel Core i5-1135G7, 16GB RAM, Ubuntu 22.04)">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#new-config-fields-v020" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        New Config Fields (v0.2.0)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#predictionresult-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PredictionResult Changes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checkpoint-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checkpoint Migration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-adoption-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended Adoption Path
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Recommended Adoption Path">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#cifar-10-smoke-test-5-way-10-shot" class="md-nav__link">
+  <a href="#phase-1-drop-in-upgrade-5-minutes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CIFAR-10 Smoke Test (5-way, 10-shot)
+        Phase 1: Drop-in upgrade (5 minutes)
       
     </span>
   </a>
@@ -2201,10 +2228,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#baseline-comparisons" class="md-nav__link">
+  <a href="#phase-2-enable-conformal-prediction-10-minutes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Baseline Comparisons
+        Phase 2: Enable conformal prediction (10 minutes)
       
     </span>
   </a>
@@ -2212,10 +2239,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#miniimagenet-support" class="md-nav__link">
+  <a href="#phase-3-enable-explainability-15-minutes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        miniImageNet Support
+        Phase 3: Enable explainability (15 minutes)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-4-add-production-monitoring-30-minutes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4: Add production monitoring (30 minutes)
       
     </span>
   </a>
@@ -2228,10 +2266,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#hardware-tier-expectations" class="md-nav__link">
+  <a href="#api-deprecations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Hardware-Tier Expectations
+        API Deprecations
       
     </span>
   </a>
@@ -2239,10 +2277,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#reproducibility-guarantees" class="md-nav__link">
+  <a href="#testing-your-migration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Reproducibility Guarantees
+        Testing Your Migration
       
     </span>
   </a>
@@ -2250,60 +2288,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#understanding-ece-calibration-behavior" class="md-nav__link">
+  <a href="#getting-help" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Understanding ECE &amp; Calibration Behavior
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Understanding ECE &amp; Calibration Behavior">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#ece-lifecycle" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ECE Lifecycle
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#memory-profiling" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Memory Profiling
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#troubleshooting-benchmarks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Troubleshooting Benchmarks
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Next Steps
+        Getting Help
       
     </span>
   </a>
@@ -2330,260 +2318,195 @@
   
 
 
-<h1 id="benchmarks-reproducibility">Benchmarks &amp; Reproducibility<a class="headerlink" href="#benchmarks-reproducibility" title="Permanent link">&para;</a></h1>
-<p>AdaptShot is engineered for transparency and reproducibility. All performance metrics are measured on CPU-only hardware with deterministic seeding. This document provides exact reproduction commands, expected results, hardware-tier expectations, and baseline comparisons for v0.2.0.</p>
-<h2 id="quick-validation">Quick Validation<a class="headerlink" href="#quick-validation" title="Permanent link">&para;</a></h2>
-<h3 id="1-smoke-test-cifar-10-5-way-10-shot">1. Smoke Test (CIFAR-10, 5-way 10-shot)<a class="headerlink" href="#1-smoke-test-cifar-10-5-way-10-shot" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Run all unit tests (92 tests)</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>pytest<span class="w"> </span>tests/<span class="w"> </span>-v
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># Run minimal smoke benchmark</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>python<span class="w"> </span>-m<span class="w"> </span>benchmarks.run_benchmark<span class="w"> </span>--smoke-test<span class="w"> </span>--seed<span class="w"> </span><span class="m">42</span>
-</span></code></pre></div>
-<h3 id="2-full-benchmark-suite-v020">2. Full Benchmark Suite (v0.2.0)<a class="headerlink" href="#2-full-benchmark-suite-v020" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Full benchmark with miniImageNet and baseline comparisons</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>python<span class="w"> </span>-m<span class="w"> </span>benchmarks.run_benchmark<span class="w"> </span>--full-benchmark<span class="w"> </span>--seed<span class="w"> </span><span class="m">42</span><span class="w"> </span>--output<span class="w"> </span>results/full_benchmark.json
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># With memory profiling</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>python<span class="w"> </span>-m<span class="w"> </span>benchmarks.run_benchmark<span class="w"> </span>--full-benchmark<span class="w"> </span>--seed<span class="w"> </span><span class="m">42</span><span class="w"> </span>--profile-memory
-</span></code></pre></div>
-<h3 id="3-quality-gates">3. Quality Gates<a class="headerlink" href="#3-quality-gates" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Lint check</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>ruff<span class="w"> </span>check<span class="w"> </span>src/<span class="w"> </span>tests/
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># Strict type checking</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>mypy<span class="w"> </span>src/adaptshot<span class="w"> </span>--strict
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="c1"># Full test suite with coverage</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>pytest<span class="w"> </span>tests/<span class="w"> </span>-v<span class="w"> </span>--cov<span class="o">=</span>src/adaptshot
-</span></code></pre></div>
+<h1 id="migration-guide-v01x-to-v020">Migration Guide: v0.1.x to v0.2.0<a class="headerlink" href="#migration-guide-v01x-to-v020" title="Permanent link">&para;</a></h1>
+<p>This guide helps you upgrade AdaptShot from v0.1.x to v0.2.0 with minimal disruption.</p>
 <hr />
-<h2 id="expected-results-reference-hardware-intel-core-i5-1135g7-16gb-ram-ubuntu-2204">Expected Results (Reference Hardware: Intel Core i5-1135G7, 16GB RAM, Ubuntu 22.04)<a class="headerlink" href="#expected-results-reference-hardware-intel-core-i5-1135g7-16gb-ram-ubuntu-2204" title="Permanent link">&para;</a></h2>
-<h3 id="cifar-10-smoke-test-5-way-10-shot">CIFAR-10 Smoke Test (5-way, 10-shot)<a class="headerlink" href="#cifar-10-smoke-test-5-way-10-shot" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Metric</th>
-<th>Value</th>
-<th>Notes</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Few-shot Accuracy</strong></td>
-<td>68%</td>
-<td>Frozen ResNet-18 + prototypical inference</td>
-</tr>
-<tr>
-<td><strong>Avg Inference Latency</strong></td>
-<td>20 ms</td>
-<td>Per-image prediction (similarity + calibration + conformal)</td>
-</tr>
-<tr>
-<td><strong>P95 Inference Latency</strong></td>
-<td>20 ms</td>
-<td>Upper bound including OS scheduling variance</td>
-</tr>
-<tr>
-<td><strong>Embedding Extraction</strong></td>
-<td>~1.5s</td>
-<td>For 50 support images (30ms per image)</td>
-</tr>
-<tr>
-<td><strong>RAM Footprint</strong></td>
-<td>&lt; 250 MB</td>
-<td>Including model weights, support embeddings, and replay buffer</td>
-</tr>
-<tr>
-<td><strong>Determinism</strong></td>
-<td>✅ PASS</td>
-<td>Bit-exact outputs across 3 runs with <code>--seed 42</code></td>
-</tr>
-</tbody>
-</table>
-<h3 id="baseline-comparisons">Baseline Comparisons<a class="headerlink" href="#baseline-comparisons" title="Permanent link">&para;</a></h3>
-<p>AdaptShot includes reference baselines from published literature for context. These are NOT AdaptShot's results — they are provided so you can compare against established few-shot learning methods:</p>
-<table>
-<thead>
-<tr>
-<th>Method</th>
-<th>miniImageNet 5-way 1-shot</th>
-<th>miniImageNet 5-way 5-shot</th>
-<th>Source</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Prototypical Networks</strong></td>
-<td>49.4%</td>
-<td>68.2%</td>
-<td>Snell et al., 2017</td>
-</tr>
-<tr>
-<td><strong>Matching Networks</strong></td>
-<td>43.6%</td>
-<td>55.3%</td>
-<td>Vinyals et al., 2016</td>
-</tr>
-<tr>
-<td><strong>MAML</strong></td>
-<td>48.7%</td>
-<td>63.1%</td>
-<td>Finn et al., 2017</td>
-</tr>
-<tr>
-<td><strong>AdaptShot</strong></td>
-<td>Run <code>--full-benchmark</code></td>
-<td>Run <code>--full-benchmark</code></td>
-<td>This project</td>
-</tr>
-</tbody>
-</table>
-<div class="admonition note">
-<p class="admonition-title">Baselines Are Reference Points</p>
-<p>Baseline numbers come from published papers and were measured on GPU hardware with different backbones. Direct comparison requires matching hardware, backbone architecture, and data preprocessing. AdaptShot's CPU-first design trades some accuracy for accessibility — a deliberate and documented trade-off.</p>
-</div>
-<h3 id="miniimagenet-support">miniImageNet Support<a class="headerlink" href="#miniimagenet-support" title="Permanent link">&para;</a></h3>
-<p>v0.2.0 supports miniImageNet benchmarks. Download the dataset and place <code>mini_imagenet.csv</code> in the project's <code>data/</code> directory:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># After downloading miniImageNet:</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>python<span class="w"> </span>-m<span class="w"> </span>benchmarks.run_benchmark<span class="w"> </span>--full-benchmark<span class="w"> </span>--seed<span class="w"> </span><span class="m">42</span>
-</span></code></pre></div>
-<p>The CSV should contain columns: <code>file_path</code>, <code>label</code>, <code>split</code> (train/val/test).</p>
-<hr />
-<h2 id="hardware-tier-expectations">Hardware-Tier Expectations<a class="headerlink" href="#hardware-tier-expectations" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Device</th>
-<th>Expected Latency</th>
-<th>Recommended Config</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Modern Laptop CPU</strong> (i5/Ryzen 5, 4+ cores)</td>
-<td>&lt; 25 ms</td>
-<td><code>resnet18</code>, CPU mode, default buffer</td>
-</tr>
-<tr>
-<td><strong>Single-Board Computer</strong> (Raspberry Pi 4)</td>
-<td>150–250 ms</td>
-<td><code>mobilenet_v3_small</code>, CPU mode, <code>max_buffer_size=30</code></td>
-</tr>
-<tr>
-<td><strong>Legacy Office PC</strong> (4GB RAM, HDD)</td>
-<td>&lt; 200 ms</td>
-<td><code>mobilenet_v3_small</code>, disable FAISS, <code>max_buffer_size=20</code></td>
-</tr>
-<tr>
-<td><strong>GPU System</strong> (CUDA-capable)</td>
-<td>~30–50 ms</td>
-<td>Set <code>device="cuda"</code> in <code>AdaptShotConfig</code></td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Context Matters</p>
-<p>These numbers are reference points, not leaderboard targets. Real-world accuracy depends heavily on:
-- Domain similarity between support set and query images
-- Lighting, resolution, and background consistency
-- Quality and confidence of human corrections during continual learning
-- Support set size and class balance</p>
-</div>
-<hr />
-<h2 id="reproducibility-guarantees">Reproducibility Guarantees<a class="headerlink" href="#reproducibility-guarantees" title="Permanent link">&para;</a></h2>
-<p>AdaptShot enforces deterministic execution by default:</p>
+<h2 id="quick-summary">Quick Summary<a class="headerlink" href="#quick-summary" title="Permanent link">&para;</a></h2>
+<p>v0.2.0 is a <strong>production hardening</strong> release. The core API (<code>FewShotLearner.predict()</code>, <code>correct()</code>, <code>save()</code>, <code>load()</code>) is backward-compatible. All v0.1.x code continues to work. What changed:</p>
 <ul>
-<li>Fixed seeds: <code>torch.manual_seed</code>, <code>np.random.seed</code>, <code>PYTHONHASHSEED=42</code></li>
-<li>Deterministic cuDNN algorithms when CUDA is enabled (<code>cudnn.deterministic=True</code>)</li>
-<li>No asynchronous I/O or non-deterministic PyTorch operations in the core pipeline</li>
-<li>Verification utility: <code>verify_determinism()</code> in <code>src/adaptshot/utils/determinism.py</code></li>
+<li><strong>New features</strong> that are opt-in and additive</li>
+<li><strong>Hardened implementations</strong> of existing algorithms (no API changes)</li>
+<li><strong>Expanded PredictionResult</strong> with new fields</li>
+<li><strong>Schema migration</strong> for saved checkpoints (automatic)</li>
 </ul>
-<p>To reproduce our exact smoke test results:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>python<span class="w"> </span>-m<span class="w"> </span>benchmarks.run_benchmark<span class="w"> </span>--smoke-test<span class="w"> </span>--seed<span class="w"> </span><span class="m">42</span><span class="w"> </span>--output<span class="w"> </span>results/baseline.json
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>cat<span class="w"> </span>results/baseline.json
-</span></code></pre></div>
 <hr />
-<h2 id="understanding-ece-calibration-behavior">Understanding ECE &amp; Calibration Behavior<a class="headerlink" href="#understanding-ece-calibration-behavior" title="Permanent link">&para;</a></h2>
-<p>In v0.2.0, calibration uses a multi-layered approach:</p>
-<ol>
-<li><strong>True Leave-One-Out Conformal</strong>: Each support example is held out and prototypes are recomputed without it, providing valid finite-sample coverage guarantees.</li>
-<li><strong>Bootstrap Temperature</strong>: On cold start (first prediction), temperature is estimated via LOO cross-validation on the support set — no separate validation set required.</li>
-<li><strong>Sliding-Window ECE Tracking</strong>: After the initial bootstrap, ECE is continuously tracked and temperature refits automatically.</li>
-</ol>
-<h3 id="ece-lifecycle">ECE Lifecycle<a class="headerlink" href="#ece-lifecycle" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>Steps 1–9</strong>: Bootstrap temperature provides initial calibration. ECE may be slightly elevated as the sliding window populates.</li>
-<li><strong>Steps 10+</strong>: Temperature refits automatically as the window accumulates observations. ECE typically drops as the model adapts to local confidence-accuracy dynamics.</li>
-<li><strong>Domain Shift</strong>: If query distribution changes sharply, ECE will temporarily rise until the window adjusts. This is expected behavior — the system is correctly detecting uncertainty rather than masking it.</li>
-</ul>
-<div class="admonition note">
-<p class="admonition-title">No Validation Set Required</p>
-<p>Unlike traditional post-hoc calibration, AdaptShot does not require a held-out validation dataset. Calibration adapts continuously from live inference and human feedback, making it suitable for few-shot, low-data deployments.</p>
-</div>
+<h2 id="breaking-changes">Breaking Changes<a class="headerlink" href="#breaking-changes" title="Permanent link">&para;</a></h2>
+<h3 id="none-v020-is-fully-backward-compatible">None — v0.2.0 is fully backward-compatible<a class="headerlink" href="#none-v020-is-fully-backward-compatible" title="Permanent link">&para;</a></h3>
+<p>Your existing v0.1.x code will run unchanged. The breaking changes listed below are optional code paths you can adopt at your own pace.</p>
 <hr />
-<h2 id="memory-profiling">Memory Profiling<a class="headerlink" href="#memory-profiling" title="Permanent link">&para;</a></h2>
-<p>v0.2.0 includes built-in memory profiling via <code>src/adaptshot/utils/profiling.py</code>:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">src.adaptshot.utils.profiling</span><span class="w"> </span><span class="kn">import</span> <span class="n">MemoryTracker</span><span class="p">,</span> <span class="n">estimate_model_memory_mb</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="c1"># Pre-flight estimate (no model loaded)</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="n">est</span> <span class="o">=</span> <span class="n">estimate_model_memory_mb</span><span class="p">(</span><span class="s2">&quot;resnet18&quot;</span><span class="p">,</span> <span class="n">n_classes</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Estimated RAM: </span><span class="si">{</span><span class="n">est</span><span class="p">[</span><span class="s1">&#39;estimated_total_mb&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> MB&quot;</span><span class="p">)</span>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="c1"># Runtime profiling</span>
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="k">with</span> <span class="n">MemoryTracker</span><span class="p">(</span><span class="s2">&quot;predict&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">tracker</span><span class="p">:</span>
-</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">&quot;query.jpg&quot;</span><span class="p">)</span>
-</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Peak RAM during predict: </span><span class="si">{</span><span class="n">tracker</span><span class="o">.</span><span class="n">peak_mb</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> MB&quot;</span><span class="p">)</span>
-</span></code></pre></div>
-<hr />
-<h2 id="troubleshooting-benchmarks">Troubleshooting Benchmarks<a class="headerlink" href="#troubleshooting-benchmarks" title="Permanent link">&para;</a></h2>
+<h2 id="what-changed-under-the-hood">What Changed Under the Hood<a class="headerlink" href="#what-changed-under-the-hood" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Issue</th>
-<th>Likely Cause</th>
-<th>Fix</th>
+<th>Area</th>
+<th>v0.1.x</th>
+<th>v0.2.0</th>
+<th>Action Required</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>Accuracy &lt; 50%</code></td>
-<td>Support set too small or domain-mismatched</td>
-<td>Increase <code>k_shot</code> to ≥10, ensure support images match query lighting/background</td>
+<td>Conformal prediction</td>
+<td>Split mode only</td>
+<td>Split + LOO (leave-one-out) modes</td>
+<td>Set <code>conformal_mode="loo"</code> for tighter prediction sets</td>
 </tr>
 <tr>
-<td><code>Latency &gt; 200ms</code></td>
-<td>Heavy preprocessing or FAISS overhead on low-end CPU</td>
-<td>Switch to <code>mobilenet_v3_small</code>, disable FAISS (<code>use_faiss=False</code>)</td>
+<td>Uncertainty</td>
+<td>Raw empirical covariance</td>
+<td>Shrinkage covariance Mahalanobis</td>
+<td>None — automatic improvement</td>
 </tr>
 <tr>
-<td><code>Determinism check: ❌ FAIL</code></td>
-<td>Unpinned PyTorch version or custom CUDA ops</td>
-<td>Use <code>torch==2.12.0+cpu</code>, run with <code>--device cpu</code>, verify <code>set_deterministic_seed(42)</code> is called</td>
+<td>Contrastive learning</td>
+<td>Fixed projection head</td>
+<td>Gradient-trained W₁,b₁,W₂,b₂</td>
+<td>None — automatic improvement</td>
 </tr>
 <tr>
-<td><code>ECE remains &gt; 0.15 after 30 steps</code></td>
-<td>Severe distribution shift or noisy corrections</td>
-<td>Increase <code>conformal_alpha</code>, lower <code>ACTEngine.base_threshold</code> for more feedback</td>
+<td>ACT thresholds</td>
+<td>Asymmetric updates</td>
+<td>Symmetric + mean-reversion</td>
+<td>None — automatic stability</td>
 </tr>
 <tr>
-<td><code>miniImageNet not found</code></td>
-<td>Dataset not downloaded</td>
-<td>Download miniImageNet CSV to <code>data/mini_imagenet.csv</code></td>
+<td>UP-UGF pruning</td>
+<td>O(N²) exact similarity</td>
+<td>LSH-accelerated ~O(N log N)</td>
+<td>None — faster on large buffers</td>
 </tr>
 <tr>
-<td><code>Memory profiling unavailable</code></td>
-<td>psutil not installed</td>
-<td>Install with <code>pip install "adaptshot[dev]"</code></td>
+<td>Calibration</td>
+<td>Single temperature estimate</td>
+<td>Bootstrap temperature (small windows)</td>
+<td>None — more stable early calibration</td>
+</tr>
+<tr>
+<td>Explainability</td>
+<td>Per-prediction attribution</td>
+<td>+ Historical penalty tracking</td>
+<td>None — additive feature</td>
+</tr>
+<tr>
+<td>Profiling</td>
+<td>Manual tracemalloc</td>
+<td>MemoryTracker API</td>
+<td>Optional — use for production monitoring</td>
+</tr>
+<tr>
+<td>Backbone cache</td>
+<td>Unbounded accumulation</td>
+<td>clear_backbone_cache()</td>
+<td>Call periodically in long-running services</td>
 </tr>
 </tbody>
 </table>
-<h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
+<hr />
+<h2 id="new-config-fields-v020">New Config Fields (v0.2.0)<a class="headerlink" href="#new-config-fields-v020" title="Permanent link">&para;</a></h2>
+<p>These fields were added to <code>AdaptShotConfig</code>. They all have sensible defaults — you don't need to set them:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">adaptshot</span><span class="w"> </span><span class="kn">import</span> <span class="n">AdaptShotConfig</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="c1"># v0.2.0 config with new fields</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">config</span> <span class="o">=</span> <span class="n">AdaptShotConfig</span><span class="p">(</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="c1"># --- New in v0.2.0 ---</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">conformal_alpha</span><span class="o">=</span><span class="mf">0.10</span><span class="p">,</span>         <span class="c1"># default: 0.10 (90% coverage)</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">conformal_mode</span><span class="o">=</span><span class="s2">&quot;loo&quot;</span><span class="p">,</span>         <span class="c1"># default: &quot;loo&quot; (new in v0.2.0)</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="n">uncertainty_mode</span><span class="o">=</span><span class="s2">&quot;entropy&quot;</span><span class="p">,</span>   <span class="c1"># default: &quot;entropy&quot;</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="n">explainability_enabled</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># default: False</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="p">)</span>
+</span></code></pre></div>
+<p>To migrate, you can either:
+1. <strong>Do nothing</strong> — your existing configs work
+2. <strong>Add new fields</strong> — enable v0.2.0 features explicitly</p>
+<hr />
+<h2 id="predictionresult-changes">PredictionResult Changes<a class="headerlink" href="#predictionresult-changes" title="Permanent link">&para;</a></h2>
+<p><code>result</code> objects now include additional fields:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">&quot;query.jpg&quot;</span><span class="p">)</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="c1"># v0.1.x fields (still present)</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">prediction</span><span class="p">)</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">calibrated_confidence</span><span class="p">)</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">act_action</span><span class="p">)</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="c1"># New in v0.2.0</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">conformal_set</span><span class="p">)</span>        <span class="c1"># list[str]: prediction set</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">uncertainty_report</span><span class="p">)</span>   <span class="c1"># dict: epistemic, aleatoric, distributional</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">nearest_neighbors</span><span class="p">)</span>    <span class="c1"># list[dict]: top-k neighbor info</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">historical_penalties</span><span class="p">)</span> <span class="c1"># dict: per-class penalty history</span>
+</span></code></pre></div>
+<p>All existing code using only v0.1.x fields continues to work.</p>
+<hr />
+<h2 id="checkpoint-migration">Checkpoint Migration<a class="headerlink" href="#checkpoint-migration" title="Permanent link">&para;</a></h2>
+<p>Checkpoints saved with v0.1.x are <strong>automatically migrated</strong> when loaded in v0.2.0:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># v0.1.x checkpoint — loads fine in v0.2.0</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">learner</span> <span class="o">=</span> <span class="n">FewShotLearner</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;old_checkpoint.json&quot;</span><span class="p">)</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="c1"># Schema migration happens automatically</span>
+</span></code></pre></div>
+<p>The migration:
+1. Bumps <code>schema_version</code> from <code>"0.1.0"</code> to <code>"0.2.0"</code>
+2. Initializes new v0.2.0 fields to their defaults
+3. Preserves all existing data (embeddings, labels, calibration, ACT state)</p>
+<hr />
+<h2 id="recommended-adoption-path">Recommended Adoption Path<a class="headerlink" href="#recommended-adoption-path" title="Permanent link">&para;</a></h2>
+<h3 id="phase-1-drop-in-upgrade-5-minutes">Phase 1: Drop-in upgrade (5 minutes)<a class="headerlink" href="#phase-1-drop-in-upgrade-5-minutes" title="Permanent link">&para;</a></h3>
+<p><div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>adaptshot
+</span></code></pre></div>
+Your code runs unchanged. You get hardened implementations for free.</p>
+<h3 id="phase-2-enable-conformal-prediction-10-minutes">Phase 2: Enable conformal prediction (10 minutes)<a class="headerlink" href="#phase-2-enable-conformal-prediction-10-minutes" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">config</span> <span class="o">=</span> <span class="n">AdaptShotConfig</span><span class="p">(</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="c1"># ... your existing config ...</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="n">conformal_alpha</span><span class="o">=</span><span class="mf">0.10</span><span class="p">,</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">conformal_mode</span><span class="o">=</span><span class="s2">&quot;loo&quot;</span><span class="p">,</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="p">)</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="c1"># Now result.conformal_set is populated</span>
+</span></code></pre></div>
+<h3 id="phase-3-enable-explainability-15-minutes">Phase 3: Enable explainability (15 minutes)<a class="headerlink" href="#phase-3-enable-explainability-15-minutes" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">config</span> <span class="o">=</span> <span class="n">AdaptShotConfig</span><span class="p">(</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="c1"># ... your existing config ...</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="n">explainability_enabled</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="p">)</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="n">explanation</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">explain</span><span class="p">(</span><span class="s2">&quot;query.jpg&quot;</span><span class="p">)</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="nb">print</span><span class="p">(</span><span class="n">explanation</span><span class="o">.</span><span class="n">summary</span><span class="p">)</span>
+</span></code></pre></div>
+<h3 id="phase-4-add-production-monitoring-30-minutes">Phase 4: Add production monitoring (30 minutes)<a class="headerlink" href="#phase-4-add-production-monitoring-30-minutes" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">adaptshot.profiling</span><span class="w"> </span><span class="kn">import</span> <span class="n">MemoryTracker</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">tracker</span> <span class="o">=</span> <span class="n">MemoryTracker</span><span class="p">()</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="n">tracker</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="c1"># ... your workload ...</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="n">report</span> <span class="o">=</span> <span class="n">tracker</span><span class="o">.</span><span class="n">get_report</span><span class="p">()</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Peak memory: </span><span class="si">{</span><span class="n">report</span><span class="p">[</span><span class="s1">&#39;peak_memory_mb&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> MB&quot;</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<h2 id="api-deprecations">API Deprecations<a class="headerlink" href="#api-deprecations" title="Permanent link">&para;</a></h2>
+<p>No APIs were deprecated in v0.2.0. All v0.1.x methods are preserved.</p>
+<hr />
+<h2 id="testing-your-migration">Testing Your Migration<a class="headerlink" href="#testing-your-migration" title="Permanent link">&para;</a></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Verify migration</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">adaptshot</span><span class="w"> </span><span class="kn">import</span> <span class="n">FewShotLearner</span><span class="p">,</span> <span class="n">AdaptShotConfig</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">adaptshot</span><span class="w"> </span><span class="kn">import</span> <span class="n">__version__</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="k">assert</span> <span class="n">__version__</span> <span class="o">&gt;=</span> <span class="s2">&quot;0.2.0&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Expected &gt;= 0.2.0, got </span><span class="si">{</span><span class="n">__version__</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="c1"># v0.1.x code should still work</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="n">config</span> <span class="o">=</span> <span class="n">AdaptShotConfig</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="n">learner</span> <span class="o">=</span> <span class="n">FewShotLearner</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="n">learner</span><span class="o">.</span><span class="n">load_support_images</span><span class="p">(</span>
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>    <span class="p">[</span><span class="s2">&quot;img1.jpg&quot;</span><span class="p">,</span> <span class="s2">&quot;img2.jpg&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;class_a&quot;</span><span class="p">,</span> <span class="s2">&quot;class_b&quot;</span><span class="p">]</span>
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="p">)</span>
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="n">result</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">&quot;query.jpg&quot;</span><span class="p">)</span>
+</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">prediction</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">raw_confidence</span> <span class="o">&gt;=</span> <span class="mf">0.0</span>
+</span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✅ Migration verified — v0.1.x code works on v0.2.0&quot;</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<h2 id="getting-help">Getting Help<a class="headerlink" href="#getting-help" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../../api/core/">API Reference</a> → Configure thresholds, buffers, and calibration parameters</li>
-<li><a href="../../tutorials/13_profiling_memory/">Memory Profiling Tutorial</a> → Detailed RAM and latency analysis</li>
-<li><a href="../../tutorials/">Tutorial-Style Guides</a> → Try prediction and correction workflows</li>
-<li><a href="../../contributing/">Contribute</a> → Add new backbones, datasets, or calibration methods</li>
+<li><a href="../../changelog/">Changelog</a> — full list of v0.2.0 changes</li>
+<li><a href="../../api/reference/">API Reference</a> — updated for v0.2.0</li>
+<li><a href="../troubleshooting/">Troubleshooting Guide</a> — common upgrade issues</li>
 </ul>
 
 
