@@ -1,6 +1,6 @@
 # Tutorial 16: Explainability & XAI
 
-> **v0.2.0** | Interpreting AdaptShot predictions with multi-faceted explanations
+> **v0.2.0** | Interpreting AdaptShot predictions with multi-faceted explanations and historical penalty tracking
 
 ---
 
@@ -18,6 +18,8 @@ In high-stakes applications (medical, legal, financial), knowing **why** a model
 1. **Feature Attribution**: Which support examples influenced the prediction?
 2. **Confidence Decomposition**: How did each pipeline stage affect confidence?
 3. **Counterfactual Analysis**: What would change the prediction?
+
+In v0.2.0, the explainability engine also tracks **historical penalties** — confidence adjustments accumulated from past corrections — giving you insight into how the model has been shaped by feedback over time.
 
 ---
 
@@ -94,7 +96,42 @@ The calibration adjustment of -0.030 means the raw confidence was slightly overc
 
 ---
 
-## Step 4: Counterfactual Analysis
+## Step 4: Historical Penalty Tracking — v0.2.0
+
+When AdaptShot receives corrections via `learner.correct()`, the explainability engine accumulates penalty history for each class. This lets you audit how the model's behavior has changed:
+
+```python
+# After several corrections have been applied...
+penalties = explanation.historical_penalties
+
+for class_name, history in penalties.items():
+    print(f"\nClass: {class_name}")
+    print(f"  Total corrections: {history['count']}")
+    print(f"  Mean penalty:      {history['mean_penalty']:+.4f}")
+    print(f"  Max penalty:       {history['max_penalty']:+.4f}")
+    print(f"  Std penalty:       {history['std_penalty']:+.4f}")
+    print(f"  Recent trend:      {history['trend']}")  # "improving", "degrading", "stable"
+```
+
+**Interpretation**:
+- **Negative mean penalty** → model was consistently overconfident for this class
+- **Positive mean penalty** → model was underconfident
+- **"degrading" trend** → penalties are growing (distribution shift?)
+- **"improving" trend** → penalties are shrinking (model adapting)
+
+```python
+# Get a summary of all historical penalties
+summary = learner.explainability_engine.get_penalty_summary()
+print(f"Total corrections tracked: {summary['total_corrections']}")
+print(f"Classes with penalties:    {summary['affected_classes']}")
+print(f"Global penalty trend:      {summary['global_trend']}")
+```
+
+This tracking is essential for production monitoring — it reveals whether the model is genuinely improving or just cycling through corrections.
+
+---
+
+## Step 5: Counterfactual Analysis
 
 Find the nearest alternative class:
 
@@ -115,7 +152,7 @@ print(f"Swap required:         {cf.swap_required:.3f}")
 
 ---
 
-## Step 5: Programmatic Decision Making
+## Step 6: Programmatic Decision Making
 
 Use explanations to automate quality control:
 
@@ -135,6 +172,12 @@ def assess_prediction(explanation):
     
     if decomp.ood_penalty < 0:
         warnings.append("OOD: Input appears out-of-distribution")
+    
+    # v0.2.0: check historical penalties for class degradation
+    if explanation.historical_penalties:
+        for cls, hist in explanation.historical_penalties.items():
+            if hist.get("trend") == "degrading":
+                warnings.append(f"DEGRADING: Class '{cls}' penalty trend is worsening")
     
     if not warnings:
         return "HIGH_CONFIDENCE", []
@@ -183,6 +226,19 @@ print(result.summary)
 2. **Monitor calibration adjustments** — consistently negative adjustments signal the need for recalibration
 3. **Use attributions** to identify ambiguous examples in your support set
 4. **Combine with uncertainty** — high uncertainty + small swap margin = request feedback
+5. **Track historical penalties** per class — a "degrading" trend indicates distribution shift or concept drift
+6. **Audit penalty history monthly** — if a class accumulates large penalties without improvement, consider refreshing the support set
+
+---
+
+## v0.2.0 Hardening Summary
+
+| Feature | v0.1.x | v0.2.0 |
+|---------|--------|--------|
+| Attributions | Top-k nearest neighbors | Same, with confidence-weighted ranking |
+| Confidence decomposition | 4-stage pipeline | 4-stage + historical penalty context |
+| Counterfactuals | Nearest alternative class | Same, with margin analysis |
+| Historical tracking | None | Per-class penalty history with trend detection |
 
 ---
 
