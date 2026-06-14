@@ -251,7 +251,7 @@ For multi-threaded use, create separate `FewShotLearner` instances or serialize 
 
 ### Data Flow Changes
 
-The prediction pipeline now includes bootstrap calibration sampling between the raw calibrator and ACT gating, and LOO quantile computation in the conformal engine when `conformal_mode="loo"`:
+The prediction pipeline now includes bootstrap calibration sampling between the raw calibrator and ACT gating, and cross-conformal quantile computation in the conformal engine when `conformal_mode="cross"`:
 
 ```mermaid
 graph LR
