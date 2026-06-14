@@ -1,12 +1,12 @@
 # AdaptShot Roadmap
 
-This roadmap outlines the planned evolution of AdaptShot from the current v0.1.1 release through v1.0.0 and beyond. Priorities are driven by the project constitution: CPU-first, <250MB RAM, human-in-the-loop, and carbon-aware.
+This roadmap outlines the planned evolution of AdaptShot from the current v0.2.0 release through v1.0.0 and beyond. Priorities are driven by the project constitution: CPU-first, <250MB RAM, human-in-the-loop, and carbon-aware.
 
 For completed work, see [CHANGELOG.md](CHANGELOG.md). For how to contribute, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 
-## v0.1.1 (Released June 2026) -- Current
+## v0.1.1 (Released June 2026)
 
 See [CHANGELOG.md](CHANGELOG.md#0111---2026-06-06) for the full release notes. Highlights:
 
@@ -19,19 +19,13 @@ See [CHANGELOG.md](CHANGELOG.md#0111---2026-06-06) for the full release notes. H
 
 ---
 
-## v0.1.2 (Target: July 2026) -- Localization & Accessibility
+## v0.1.2 — Merged into v0.2.0
 
-### UI Localization
-
-- **Swahili Gradio Dashboard**: Full Swahili translation of all Gradio UI labels, buttons, help text, and error messages
-- **Localization Framework**: i18n string extraction pipeline and `.po`/`.mo` translation workflow for Gradio
-- **Accessibility Pass**: ARIA labels, keyboard navigation, and screen-reader compatibility for the Gradio dashboard
-
-> **Excluded**: French localization is deferred to v0.2.0+. v0.1.2 is Swahili-first to serve East African users.
+> **Note**: v0.1.2 was originally planned for July 2026 with localization features, but its scope was merged into the v0.2.0 production hardening release. Swahili localization and accessibility improvements are now tracked under v0.3.0.
 
 ---
 
-## v0.2.0 (Released July 2026) — Production Hardening
+## v0.2.0 (Released June 2026) — Production Hardening
 
 ### Production Hardening
 
