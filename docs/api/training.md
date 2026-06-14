@@ -1,6 +1,6 @@
-# Training & Continual Learning API (v0.1.2)
+# Training & Continual Learning API (v0.2.0)
 
-This document covers AdaptShot's human-in-the-loop routing, bounded replay buffer management, and correction-aware fine-tuning components. These modules operate behind the scenes in `FewShotLearner` but are exposed for advanced customization, research ablation, or integration into external pipelines.
+This document covers AdaptShot's human-in-the-loop routing, bounded replay buffer management, and head-only fine-tuning components. These modules operate behind the scenes in `FewShotLearner` but are exposed for advanced customization, research ablation, or integration into external pipelines.
 
 ---
 
@@ -24,7 +24,7 @@ class Correction:
 ```
 
 !!! note "Usage"
-    You typically do not instantiate this manually. It is created automatically when calling `learner.correct()` or routing feedback from the Gradio UI.
+    You typically do not instantiate this manually. It is created automatically when calling `learner.correct()` or routing feedback from the UI.
 
 ---
 
@@ -67,14 +67,14 @@ Processes a correction, updates internal state, and returns routing metadata.
 | `get_buffer() -> List[Correction]` | Returns a shallow copy of retained corrections |
 | `clear_buffer() -> None` | Resets buffer, pending queue, and counters |
 
-!!! warning "FIFO Fallback in v0.1.0"
-    When `buffer_capacity` is exceeded, the router uses simple FIFO eviction. UP-UGF intelligent pruning is applied at the `FewShotLearner` level, not inside the router itself.
-
 ---
 
 ## `CAEWCFinetuner`
 
-Implements Correction-Aware Elastic Weight Consolidation for head-only continual learning. Prevents catastrophic forgetting while adapting to new human corrections.
+Implements **head-only** Correction-Aware Fine-Tuning via Fisher Information regularization.
+
+!!! important "v0.2.0 Scope Clarification"
+    This fine-tuner operates ONLY on the classification head — a single `nn.Linear(embedding_dim, n_classes)` layer containing ~2K parameters for 5-way ResNet-18. It does **not** fine-tune the frozen backbone. The term "Elastic Weight Consolidation" refers to the Fisher-weighted regularization applied to these ~2K head parameters, not a full-network EWC implementation. For full backbone fine-tuning, use a dedicated GPU-accelerated training pipeline.
 
 ### Initialization
 ```python
@@ -93,10 +93,9 @@ finetuner = CAEWCFinetuner(
 ```
 
 ### `update_fisher(data_loader) -> Dict[str, torch.Tensor]`
-Computes the diagonal Fisher Information Matrix on a representative support set. Must be called **before** `finetune()` to establish importance weights.
+Computes the diagonal Fisher Information Matrix on representative support set data. Must be called **before** `finetune()`.
 
-**Input:** PyTorch `DataLoader` yielding `(embeddings, labels)` batches.
-**Output:** Dictionary mapping parameter names to Fisher tensors. Also snapshots `old_params` for EWC penalty computation.
+**Output:** Dictionary mapping parameter names to Fisher tensors; snapshots `old_params` for EWC penalty.
 
 ### `finetune(new_embeddings, new_labels, confidence_weights=None) -> None`
 Runs head-only optimization with correction-aware regularization.
@@ -110,15 +109,15 @@ finetuner.finetune(
 ```
 
 **Behavior:**
-- If `confidence_weights` is `None`, defaults to `1.0` (full adaptation)
-- EWC penalty scales with `(1 - confidence_weight)`: high-confidence corrections face less regularization, allowing faster adaptation; uncertain corrections preserve prior knowledge
-- Falls back to standard cross-entropy fine-tuning with a warning if `update_fisher()` hasn't been called yet
+- High-confidence corrections → less regularization (faster adaptation)
+- Low-confidence corrections → full penalty (preserve prior knowledge)
+- Falls back to standard cross-entropy with a warning if `update_fisher()` hasn't been called
 
 ---
 
 ## `UPUGFPruner`
 
-Uncertainty-Guided Forgetting. Replaces naive eviction with a multiplicative utility score that prioritizes informative, recent, and diverse examples.
+Uncertainty-Guided Forgetting with LSH-accelerated redundancy scoring (v0.2.0).
 
 ### Initialization
 ```python
@@ -140,13 +139,17 @@ Score(e) = (1 - u(e))^w_unc × exp(-λ × Δt)^w_rec × (1 - max_sim_to_same_cla
 ```
 - `u(e)`: Prediction uncertainty (lower = more confident)
 - `Δt`: Time since last access
-- `max_sim_to_same_class`: Highest cosine similarity to other examples of the same label
+- `max_sim_to_same_class`: Highest similarity to same-label examples
+
+### v0.2.0: LSH Acceleration
+Redundancy computation uses two modes:
+- **N ≤ 100**: Exact cosine similarity (O(N²), <5ms)
+- **N > 100**: Random projection LSH approximate mode (O(N log N))
+
+This eliminates the previous O(N²) bottleneck for large buffers while maintaining pruning quality for smaller ones.
 
 ### `prune(embeddings, labels, uncertainties, last_access_times) -> Tuple[np.ndarray, ...]`
-Enforces capacity by returning the top-K highest-scoring examples. All input arrays must be NumPy types of matching length `N`.
-
-!!! note "Computational Cost"
-    Redundancy computation requires an `N×N` cosine similarity matrix. For `capacity ≤ 100`, this completes in <5ms on a standard CPU. Do not use for buffers >1,000 examples without caching.
+Enforces capacity by returning the top-K highest-scoring examples.
 
 ---
 
@@ -154,13 +157,13 @@ Enforces capacity by returning the top-K highest-scoring examples. All input arr
 
 | Constraint | Explanation |
 |------------|-------------|
-| **Head-Only Fine-Tuning** | Backbone weights remain frozen. Only the classification head is updated during `finetune()`. This is intentional for stability and CPU efficiency. |
-| **No Distributed Training** | All operations are single-threaded/single-process. DDP or FSDP support is planned for v0.3.0+. |
-| **Fisher Approximation** | Uses diagonal Fisher (per-parameter variance). Full matrix or Kronecker approximations are not implemented. |
-| **Pruning Fallback** | During initial buffer population (< capacity), no pruning occurs. FIFO eviction applies only when capacity is strictly exceeded. |
-| **Confidence Weight Calibration** | `confidence_weight` is user-provided. The library does not currently validate human certainty against historical accuracy. |
+| **Head-Only Fine-Tuning** | Only the classification head (~2K params) is updated. Backbone weights remain frozen. |
+| **Fisher Approximation** | Uses diagonal Fisher (per-parameter variance). Full matrix approximations are not implemented. |
+| **Pruning Modes** | Exact for N≤100, LSH approximate for N>100. Both are CPU-efficient. |
+| **Confidence Weight** | User-provided. The library does not validate human certainty against historical accuracy. |
+| **No Distributed Training** | All operations are single-threaded/single-process. |
 
 ## Next Steps
-- [Configuration & Utils API](config.md) -> `AdaptShotConfig`, determinism, I/O helpers
-- [Contributing](../contributing.md) -> Extension points for new fine-tuning or pruning strategies
-- [Changelog](../changelog.md) -> Track upcoming v0.2.0 improvements
+- [Configuration & Utils API](config.md) → `AdaptShotConfig`, determinism, I/O helpers
+- [Architecture Deep-Dive](../guides/architecture-deep-dive.md) → Module map and data flow
+- [Migration Guide](../guides/migration-v0.1-to-v0.2.md) → Upgrade from v0.1.x
