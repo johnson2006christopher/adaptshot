@@ -1,16 +1,17 @@
 # Installation
 
-AdaptShot v0.1.2 is a Python package for CPU-first few-shot image classification.
+AdaptShot v0.2.0 is a Python package for CPU-first few-shot image classification with conformal prediction, contrastive learning, and human-in-the-loop continual learning.
 
 ## Requirements
 
 - Python 3.9+
 - A CPU-only environment is supported by default (PyTorch is optional)
 - ~15 MB disk space for core dependencies (numpy + Pillow)
-- Internet access for the first run to download ImageNet pretrained backbone weights
+- ~45 MB additional for ImageNet pretrained backbone weights (auto-downloaded on first use)
+- Internet access for the first run only (backbone weight download)
 
 !!! note "Version"
-    These commands target AdaptShot `v0.1.2`.
+    These commands target AdaptShot `v0.2.0`.
 
 ## Install From PyPI
 
@@ -20,10 +21,10 @@ pip install adaptshot
 
 > **Fast install**: Core dependencies (numpy, Pillow) install in under 60 seconds. No GPU drivers, no CUDA, no 2 GB downloads. PyTorch is optional.
 
-## Install From The GitHub Release Wheel
+## Install From GitHub Release
 
 ```bash
-pip install https://github.com/johnson2006christopher/adaptshot/releases/download/v0.1.2/adaptshot-0.1.2-py3-none-any.whl
+pip install https://github.com/johnson2006christopher/adaptshot/releases/download/v0.2.0/adaptshot-0.2.0-py3-none-any.whl
 ```
 
 ## Optional Extras
@@ -32,16 +33,16 @@ pip install https://github.com/johnson2006christopher/adaptshot/releases/downloa
 # PyTorch for training, fine-tuning, and custom backbones
 pip install "adaptshot[torch]"
 
-# FAISS-CPU similarity search
+# FAISS-CPU similarity search (recommended for >100 support images)
 pip install "adaptshot[faiss]"
 
-# Gradio UI dependencies
+# Gradio UI dependencies for the Pilot Dashboard
 pip install "adaptshot[ui]"
 
-# Offline Studio GUI (includes ONNX Runtime)
+# Offline Studio GUI (includes ONNX Runtime for torch-free inference)
 pip install "adaptshot[gui]"
 
-# Development tools
+# Development tools (testing, linting, benchmarking)
 pip install "adaptshot[dev]"
 
 # Everything
@@ -56,33 +57,61 @@ cd adaptshot
 pip install -e ".[dev]"
 ```
 
+## ONNX Runtime Support (Torch-Free Inference)
+
+AdaptShot v0.2.0 supports ONNX Runtime as a lightweight backend when PyTorch is not installed. To use this:
+
+```bash
+# Export backbones to ONNX format (requires torch)
+python scripts/export_backbones.py
+
+# Install with ONNX Runtime support
+pip install "adaptshot[gui]"  # Includes onnxruntime
+```
+
+The ONNX backend automatically activates when torch is unavailable and ONNX models are present in `src/adaptshot/data/`.
+
 ## Verify The Install
 
 ```bash
 python - <<'PY'
 import adaptshot
-from adaptshot import FewShotLearner
+from adaptshot import FewShotLearner, ConformalEngine
 
 print(adaptshot.__version__)
 print(FewShotLearner.__name__)
+print(ConformalEngine.__name__)
 PY
 ```
 
 Expected output:
 
 ```text
-0.1.2
+0.2.0-dev
 FewShotLearner
+ConformalEngine
 ```
 
 !!! note "Pretrained Weights"
-    AdaptShot v0.1.2 uses ImageNet-pretrained backbone weights (`IMAGENET1K_V1`)
-    by default. The weights are downloaded automatically on first use (~45 MB for ResNet-18).
-    This ensures embeddings are meaningful and match the ImageNet-normalized preprocessing pipeline.
+    AdaptShot v0.2.0 uses ImageNet-pretrained backbone weights by default.
+    The weights are downloaded automatically on first use (~45 MB for ResNet-18,
+    ~10 MB for MobileNetV3-Small). This ensures embeddings are meaningful and
+    match the ImageNet-normalized preprocessing pipeline.
+
+## Minimal Dependency Setup
+
+For ultra-lightweight deployments (no PyTorch, no ONNX Runtime):
+
+```bash
+pip install adaptshot
+# Core dependencies: numpy + Pillow only (~15 MB total)
+```
+
+The library falls back gracefully: ONNX backend is tried first if available, then a clear error message guides you to install either `[torch]` or `[gui]` extras.
 
 ## Verification Checklist
 
 - [ ] `python --version` shows Python 3.9 or newer.
 - [ ] `pip install adaptshot` completes in under 60 seconds.
-- [ ] The verification command prints `0.1.2`.
-- [ ] You can import `FewShotLearner`.
+- [ ] The verification command prints `0.2.0-dev`.
+- [ ] You can import `FewShotLearner` and `ConformalEngine`.
