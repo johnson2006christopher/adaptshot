@@ -233,8 +233,6 @@ class ContrastivePrototypeLearner:
             Loss history per epoch.
         """
         input_dim = embeddings.shape[1]
-        d = self.config.projection_dim
-        tau = max(self.config.temperature, 1e-4)
         lr = self.config.learning_rate * 0.5  # Lower LR for head training
         momentum = 0.9
         n_epochs = max(self.config.n_epochs, 30)
