@@ -118,7 +118,7 @@ from adaptshot import FewShotLearner, AdaptShotConfig
 config = AdaptShotConfig(
     device="cpu",
     conformal_alpha=0.10,       # 90% coverage target
-    conformal_mode="loo",       # v0.2.0: use LOO for tighter sets
+    conformal_mode="cross",    # v0.2.0: cross-conformal for tighter sets
 )
 
 learner = FewShotLearner(config=config)
