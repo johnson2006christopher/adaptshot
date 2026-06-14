@@ -48,6 +48,8 @@ class ACTEngine:
         self.gamma = feedback_cost_factor
         self.min_threshold = min_threshold
         self.max_threshold = max_threshold
+        self._base_threshold = base_threshold
+        self._mean_reversion_strength = 0.001  # Slow pull toward base
 
         # Per-class state: {class_idx: {"threshold": float, "correct": float, "incorrect": float, "total": float}}
         self._class_state: Dict[int, Dict[str, float]] = {}
