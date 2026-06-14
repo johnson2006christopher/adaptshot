@@ -1226,6 +1226,94 @@ class FewShotLearner:
 
             self.conformal.update_calibration(score, label_i)
 
+    def _bootstrap_temperature_calibration(
+        self,
+        support_embeddings: np.ndarray,
+        support_labels: np.ndarray,
+    ) -> None:
+        """Initialize temperature calibration from support set via LOO.
+
+        Uses leave-one-out cross-validation on the support set to estimate
+        an initial temperature parameter. For each support example, computes
+        the raw confidence (via nearest-prototype), and uses these paired
+        (raw_confidence, correctness) samples to grid-search an initial
+        temperature. This bootstrap enables calibrated confidences from the
+        very first predict() call.
+
+        Args:
+            support_embeddings: [N, D] support set embeddings.
+            support_labels: [N] support class labels.
+        """
+        n = len(support_embeddings)
+        if n < 5:
+            return
+
+        # Collect raw confidences via LOO nearest-prototype
+        raw_confs: List[float] = []
+        correctness: List[bool] = []
+
+        for i in range(n):
+            emb_i = np.asarray(support_embeddings[i], dtype=np.float32)
+            label_i = support_labels[i]
+
+            # Leave-one-out: exclude example i from support
+            loo_mask = np.ones(n, dtype=bool)
+            loo_mask[i] = False
+            loo_embs = np.array(
+                [np.asarray(support_embeddings[j], dtype=np.float32) for j in range(n) if loo_mask[j]],
+                dtype=np.float32,
+            )
+            loo_labels = np.array(
+                [support_labels[j] for j in range(n) if loo_mask[j]], dtype=object,
+            )
+
+            if len(loo_embs) == 0:
+                continue
+
+            # Nearest-prototype prediction
+            try:
+                result = find_nearest_prototype(
+                    query=emb_i,
+                    prototypes=*compute_class_prototypes(loo_embs, loo_labels)[:2],
+                    prototype_labels=None,  # will be set by compute_class_prototypes
+                )
+                # Actually use find_nearest_prototype properly
+                from src.adaptshot.core.similarity import compute_class_prototypes, euclidean_distance_numpy
+                loo_protos, loo_proto_labels, _ = compute_class_prototypes(loo_embs, loo_labels)
+                # Find nearest prototype
+                distance_to_all = euclidean_distance_numpy(emb_i, loo_protos, normalize=True)
+                best_idx = int(np.argmin(distance_to_all.reshape(-1)))
+                pred_label = loo_proto_labels[best_idx]
+                # Raw confidence from distance
+                min_dist = float(distance_to_all.reshape(-1)[best_idx])
+                raw_conf = float(1.0 / (1.0 + min_dist))
+                raw_confs.append(raw_conf)
+                correctness.append(bool(pred_label == label_i))
+            except Exception:
+                continue
+
+        if len(raw_confs) < 5:
+            return
+
+        # Grid search temperature that minimizes ECE on these LOO predictions
+        best_temp = 1.0
+        best_ece = float("inf")
+        for temp_candidate in np.linspace(0.5, 3.0, 26):
+            ece_sum = 0.0
+            for raw, correct in zip(raw_confs, correctness):
+                calibrated = float(np.clip(raw ** (1.0 / max(temp_candidate, 0.1)), 0.0, 1.0))
+                ece_sum += abs(calibrated - float(correct))
+            avg_ece = ece_sum / len(raw_confs)
+            if avg_ece < best_ece:
+                best_ece = avg_ece
+                best_temp = temp_candidate
+
+        # Seed the calibration window with these bootstrapped observations
+        for raw, correct in zip(raw_confs, correctness):
+            self.calibrator._window_confidences.append(float(raw))
+            self.calibrator._window_correctness.append(bool(correct))
+        self.calibrator.temperature = float(best_temp)
+
     def _ensure_label_index(self, label: Union[str, int]) -> int:
         if label in self._label_to_idx:
             return self._label_to_idx[label]
