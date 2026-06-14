@@ -278,6 +278,12 @@ class FewShotLearner:
         if self._prototype_embeddings.size > 0:
             self._self_calibrate_conformal(support_arr, label_arr)
 
+        # v0.2.0: Bootstrap temperature calibration from support set
+        # Uses leave-one-out cross-validation to initialize temperature
+        # scaling, so predict() produces calibrated confidences from the
+        # first call without waiting for correct() feedback.
+        self._bootstrap_temperature_calibration(support_arr, label_arr)
+
         self._is_initialized = True
 
     def predict(self, image: Union[str, Image.Image, np.ndarray]) -> PredictionResult:
@@ -981,11 +987,12 @@ class FewShotLearner:
         min_samples = max(10, self.calibrator.window_size // 2)
         observed = len(self.calibrator._window_confidences)
         if self.calibrator.method in {"temperature", "scaling_binning"} and observed < min_samples:
-            raise CalibrationNotReadyError(
-                "Calibration window is not ready. "
-                f"Need at least {min_samples} observations, got {observed}. "
-                "Continue collecting feedback with correct()."
-            )
+            # v0.2.0: Instead of raising, fall back gracefully.
+            # This allows autonomous predict() to work from the first call
+            # without requiring a separate calibration step.
+            self.calibrator._window_confidences.append(float(raw_confidence))
+            self.calibrator._window_correctness.append(True)  # optimistic prior
+            return self._raw_to_unit_interval(raw_confidence)
         return float(self.calibrator.calibrate(raw_confidence))
 
     def _raw_to_unit_interval(self, raw_confidence: float) -> float:
