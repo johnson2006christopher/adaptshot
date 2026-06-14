@@ -36,10 +36,10 @@ v0.2.0-dev is the current release, hardened with 92 regression tests, strict typ
 *   **CPU-First by Design**: Optimized for low-latency inference on standard CPUs, requiring less than 250MB of RAM.
 *   **Trustworthy & Calibrated**: Built-in **Expected Calibration Error (ECE)** minimization and **conformal prediction** with finite-sample coverage guarantees.
 *   **Human-in-the-Loop**: Integrated **FeedbackRouter** for real-time model adaptation through human expert corrections.
-*   **Continual Learning**: Implements **CA-EWC** (Class-Aware Elastic Weight Consolidation) and **UP-UGF** (Uncertainty-Guided Forgetting) for stable, long-term learning without catastrophic forgetting.
-*   **Multi-Signal Uncertainty**: Epistemic (embedding perturbation sensitivity), aleatoric (k-NN entropy), and distributional (Mahalanobis distance) uncertainty quantification with OOD detection. *(Full MC Dropout planned for future torch-dependent release.)*
-*   **Explainable AI**: Feature attribution (which support examples influenced the prediction), confidence decomposition, counterfactual explanations, and embedding-space saliency analysis.
-*   **Contrastive Prototypes**: Learned class representations via InfoNCE contrastive loss with EMA momentum updates.
+*   **Continual Learning**: Implements **head-only CA-EWC** (Fisher-regularized classification head fine-tuning, ~2K parameters) and **UP-UGF** (Uncertainty-Guided Forgetting with LSH-accelerated redundancy scoring) for stable, long-term learning without catastrophic forgetting.
+*   **Multi-Signal Uncertainty**: Epistemic (stochastic embedding perturbation sensitivity), aleatoric (k-NN entropy), and distributional (shrinkage-regularized Mahalanobis distance) uncertainty quantification with OOD detection. *(Full MC Dropout planned for future torch-dependent release.)*
+*   **Explainable AI**: Embedding-space feature attribution (which support examples influenced the prediction), confidence decomposition with historical penalty tracking, counterfactual explanations, and per-dimension saliency analysis.
+*   **Contrastive Prototypes**: Gradient-trained class representations via InfoNCE contrastive loss with 2-layer MLP projection head and EMA momentum prototype refinement.
 *   **Release Hardened**: Zero-config API, strict type safety, and a comprehensive benchmark harness for review and deployment readiness.
 *   **Deterministic**: Guaranteed reproducible results across different runs and hardware through strict seed management.
 
@@ -125,11 +125,17 @@ if result.uncertainty_flag:
 
 ## 🆕 What's New in v0.2.0
 
-- **Conformal Prediction**: Distribution-free prediction sets with guaranteed coverage at configurable significance levels
-- **Contrastive Prototype Learning**: InfoNCE-trained class prototypes with 2-layer MLP projection head
-- **Advanced Uncertainty**: Three complementary signals — epistemic (perturbation sensitivity), aleatoric (k-NN entropy), and distributional (Mahalanobis OOD) — fused with mode-gated computation
-- **XAI Explainability**: Feature attribution, confidence decomposition, counterfactual analysis, and embedding-space saliency
+- **Conformal Prediction**: Distribution-free prediction sets with true leave-one-out calibration guaranteeing finite-sample coverage at configurable significance levels
+- **Contrastive Prototype Learning**: Gradient-trained InfoNCE class prototypes with 2-layer MLP projection head (full backpropagation through W1/b1/W2/b2)
+- **Advanced Uncertainty**: Three complementary signals — epistemic (stochastic perturbation sensitivity), aleatoric (k-NN entropy), and distributional (shrinkage-regularized Mahalanobis OOD) — fused with mode-gated computation
+- **XAI Explainability**: Embedding-space feature attribution, confidence decomposition with historical penalty tracking, counterfactual analysis, and per-dimension saliency
 - **Cross-conformal prediction mode**: K-fold cross-conformal quantile averaging for more stable prediction sets
+- **Bootstrap Temperature Calibration**: Autonomous LOO grid-search temperature optimization for cold-start scenarios
+- **UP-UGF LSH Acceleration**: Approximate O(N log N) redundancy scoring via random projection locality-sensitive hashing for large buffers (>100 examples)
+- **Memory Profiling**: `MemoryTracker` with tracemalloc + psutil instrumentation for verifying <250MB RAM operation
+- **miniImageNet Benchmarks**: Standard few-shot benchmarks with baseline references (Prototypical Networks, Matching Networks, MAML)
+- **ONNX Export**: Bundled backbone export script with SHA-256 verification for torch-free inference
+- **ACT Symmetric Updates**: Mean-reverting threshold adaptation prevents monotonic drift in autonomous operation
 - **37 new tests** (92 total) across conformal, contrastive, uncertainty, and explainability modules
 - **12 new documentation pages**: Architecture deep-dive, algorithm theory, API reference, 5 tutorials, 2 GUI guides
 
