@@ -118,6 +118,18 @@ A prediction is accepted when:
 
 Actions: `ACCEPT`, `REQUEST_FEEDBACK`, `REQUEST_FEEDBACK_OOD`
 
+### Symmetric Updates and Mean-Reversion (v0.2.0)
+
+In v0.2.0, ACT uses symmetric threshold updates to prevent drift:
+
+\[\theta_c^{(t+1)} = \theta_c^{(t)} + \eta \cdot (r_c^{(t)} - a_c^{(t)}) + \gamma \cdot (\theta_c^{(0)} - \theta_c^{(t)})\]
+
+Where:
+- \(\gamma\): Mean-reversion strength (default: 0.01)
+- \(\theta_c^{(0)}\): Initial threshold anchor
+
+The mean-reversion term \(\gamma \cdot (\theta_c^{(0)} - \theta_c^{(t)})\) pulls thresholds back toward their initial values over time, preventing unbounded drift in long-running services where correction patterns may change.
+
 ---
 
 ## 5. CA-EWC (Context-Aware Elastic Weight Consolidation)
