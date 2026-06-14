@@ -11,9 +11,7 @@ import time
 import tracemalloc
 from contextlib import contextmanager
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
-
-import numpy as np
+from typing import Any, Dict, List
 
 # Try psutil for more accurate RSS measurement
 try:
@@ -146,10 +144,6 @@ def estimate_model_memory_mb(backbone: str = "resnet18", n_classes: int = 5) -> 
     Returns rough upper-bound estimates based on known architecture sizes.
     These are ballpark figures; actual usage varies with PyTorch version.
     """
-    backbone_params = {
-        "resnet18": 11.7e6,
-        "mobilenet_v3_small": 2.5e6,
-    }
     # ImageNet-pretrained weights cached on disk after first download
     cache_mb = 45.0  # ResNet-18 ~45MB, MobileNetV3 ~10MB
     # Embeddings: 4 bytes × embedding_dim × buffer_size
