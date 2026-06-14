@@ -159,7 +159,7 @@ learner.clear_backbone_cache()
 
 ### `AdaptShotConfig`
 
-Immutable configuration dataclass with 26 fields. See [Config Reference](../reference/config-reference.md) for all fields.
+Immutable configuration dataclass with 27 fields. See [Config Reference](../reference/config-reference.md) for all fields.
 
 ```python
 from adaptshot import AdaptShotConfig
