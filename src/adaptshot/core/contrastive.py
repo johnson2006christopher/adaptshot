@@ -45,16 +45,20 @@ class ContrastivePrototypeLearner:
     """Contrastively refine class prototypes from support embeddings.
 
     Algorithm:
-        1. Project embeddings through a 2-layer MLP (random init if no torch)
-        2. Compute InfoNCE loss with temperature-scaled cosine similarities
-        3. Identify hard negatives (same-class embeddings that are far apart,
-           different-class embeddings that are close together)
-        4. Update prototype positions via gradient-informed momentum steps
+        1. Initialize a 2-layer MLP projection head (He init)
+        2. Train the projection head via gradient descent on InfoNCE loss,
+           using mini-batch SGD with momentum to separate classes in the
+           projected space
+        3. After the head converges, project all embeddings and compute
+           initial class-mean prototypes
+        4. Refine prototype positions via gradient-informed momentum steps
+           (cross-entropy of distances to prototypes)
         5. Store refined prototypes for nearest-prototype inference
 
-    The projection head W_proj is a [D, projection_dim] matrix that maps
-    backbone embeddings to a compact space where class separation is
-    maximized by the contrastive objective.
+    The projection head W_proj is a learnable [D, projection_dim] matrix
+    that maps backbone embeddings to a compact space where class separation
+    is maximized by the contrastive objective. Unlike v0.2.0-dev where the
+    head was random, v0.2.0 actually trains it via InfoNCE gradient descent.
     """
 
     def __init__(self, config: Optional[ContrastiveConfig] = None) -> None:
@@ -70,6 +74,7 @@ class ContrastivePrototypeLearner:
         self._second_layer_bias: Optional[np.ndarray] = None
         self._input_dim: Optional[int] = None
         self._is_fitted = False
+        self._head_training_loss: List[float] = []  # Track head training convergence
 
     # ------------------------------------------------------------------
     # Projection head
@@ -199,7 +204,110 @@ class ContrastivePrototypeLearner:
         return loss, grad
 
     # ------------------------------------------------------------------
-    # Prototype refinement
+    # Projection head training (InfoNCE gradient descent)
+    # ------------------------------------------------------------------
+
+    def _train_projection_head(
+        self,
+        embeddings: np.ndarray,
+        labels: np.ndarray,
+        label_indices: np.ndarray,
+        seed: int = 42,
+    ) -> List[float]:
+        """Train the 2-layer MLP projection head via InfoNCE gradient descent.
+
+        This is the key fix for v0.2.0: previously the projection head was
+        random and never trained. Now we backpropagate the InfoNCE gradient
+        through the projection matrices using mini-batch SGD with momentum.
+
+        After training, the projection space should maximize inter-class
+        separation and intra-class compactness.
+
+        Args:
+            embeddings: [N, D] support embeddings.
+            labels: [N] class labels.
+            label_indices: [N] integer label indices.
+            seed: Random seed for reproducibility.
+
+        Returns:
+            Loss history per epoch.
+        """
+        input_dim = embeddings.shape[1]
+        d = self.config.projection_dim
+        tau = max(self.config.temperature, 1e-4)
+        lr = self.config.learning_rate * 0.5  # Lower LR for head training
+        momentum = 0.9
+        n_epochs = max(self.config.n_epochs, 30)
+
+        # Ensure head is initialized
+        if self._projection_matrix is None or self._input_dim != input_dim:
+            self._init_projection_head(input_dim, seed)
+
+        # Momentum accumulators for projection matrices
+        w1_vel = np.zeros_like(self._projection_matrix)  # type: ignore[arg-type]
+        b1_vel = np.zeros_like(self._projection_bias)  # type: ignore[arg-type]
+        w2_vel = np.zeros_like(self._second_layer_matrix)  # type: ignore[arg-type]
+        b2_vel = np.zeros_like(self._second_layer_bias)  # type: ignore[arg-type]
+
+        loss_history: List[float] = []
+        n = len(embeddings)
+
+        for epoch in range(n_epochs):
+            # Forward: project all embeddings through current head
+            x = embeddings @ self._projection_matrix + self._projection_bias  # [N, d]
+            x_relu = np.maximum(0.0, x)  # ReLU
+            projected = x_relu @ self._second_layer_matrix + self._second_layer_bias  # [N, d]
+            # L2 normalize
+            proj_norms = np.linalg.norm(projected, axis=1, keepdims=True) + 1e-8
+            projected = projected / proj_norms
+
+            # Compute InfoNCE loss and gradient w.r.t. projected embeddings
+            loss, grad_projected = self._compute_infonce_loss(
+                projected, np.array(label_indices, dtype=np.int64)
+            )
+            loss_history.append(loss)
+
+            # ---- Backprop through projection head ----
+            # dL/d(second_layer_output) = grad_projected  [N, d]
+            # Layer 2: output = relu(x) @ W2 + b2
+            #   dL/dW2 = relu(x).T @ grad_projected  [d, d]
+            #   dL/db2 = sum(grad_projected, axis=0)  [d]
+            #   dL/d(relu(x)) = grad_projected @ W2.T  [N, d]
+            grad_l2 = grad_projected @ self._second_layer_matrix.T  # type: ignore[union-attr]
+
+            # ReLU backward: grad on pre-activation
+            grad_relu = grad_l2 * (x > 0).astype(np.float32)  # [N, d]
+
+            # Layer 1: x = embeddings @ W1 + b1
+            #   dL/dW1 = embeddings.T @ grad_relu  [D, d]
+            #   dL/db1 = sum(grad_relu, axis=0)  [d]
+            grad_w2 = x_relu.T @ grad_projected / n
+            grad_b2 = grad_projected.sum(axis=0) / n
+            grad_w1 = embeddings.T @ grad_relu / n
+            grad_b1 = grad_relu.sum(axis=0) / n
+
+            # Momentum SGD updates
+            w2_vel = momentum * w2_vel - lr * grad_w2
+            b2_vel = momentum * b2_vel - lr * grad_b2
+            w1_vel = momentum * w1_vel - lr * grad_w1
+            b1_vel = momentum * b1_vel - lr * grad_b1
+
+            self._second_layer_matrix = self._second_layer_matrix + w2_vel  # type: ignore[operator]
+            self._second_layer_bias = self._second_layer_bias + b2_vel  # type: ignore[operator]
+            self._projection_matrix = self._projection_matrix + w1_vel  # type: ignore[operator]
+            self._projection_bias = self._projection_bias + b1_vel  # type: ignore[operator]
+
+            # Early stopping
+            if epoch > 15 and len(loss_history) >= 5:
+                recent = loss_history[-5:]
+                if max(recent) - min(recent) < 1e-4:
+                    break
+
+        self._head_training_loss = loss_history
+        return loss_history
+
+    # ------------------------------------------------------------------
+    # Prototype refinement (after head is trained)
     # ------------------------------------------------------------------
 
     def refine_prototypes(
@@ -210,7 +318,12 @@ class ContrastivePrototypeLearner:
         existing_prototype_labels: Optional[np.ndarray] = None,
         seed: int = 42,
     ) -> Tuple[np.ndarray, np.ndarray]:
-        """Contrastively refine class prototypes from support embeddings.
+        """Train projection head then contrastively refine class prototypes.
+
+        v0.2.0: The projection head is now TRAINED via InfoNCE gradient
+        descent before prototype refinement. Previously (v0.2.0-dev) the
+        head was random and never updated, making the projection space
+        essentially meaningless.
 
         Args:
             embeddings: [N, D] backbone embeddings.
@@ -234,10 +347,14 @@ class ContrastivePrototypeLearner:
         if self._projection_matrix is None or self._input_dim != input_dim:
             self._init_projection_head(input_dim, seed)
 
-        # Initial prototypes: class means in projected space
+        # ---- v0.2.0: TRAIN the projection head via InfoNCE ----
+        self._train_projection_head(embeddings, labels, label_indices, seed)
+
+        # ---- Project through trained head ----
         projected = self._project(embeddings)
         proto_dim = projected.shape[1]
 
+        # Initial prototypes: class means in the trained projection space
         prototypes = np.zeros((n_classes, proto_dim), dtype=np.float32)
         for k in range(n_classes):
             mask = label_indices == k
@@ -256,15 +373,13 @@ class ContrastivePrototypeLearner:
                         0.7 * existing_prototypes[i] + 0.3 * prototypes[idx[0]]
                     )
 
-        # Contrastive refinement iterations
+        # ---- Prototype refinement iterations ----
         lr = self.config.learning_rate
         momentum = self.config.momentum
         proto_velocity = np.zeros_like(prototypes)
 
         for epoch in range(self.config.n_epochs):
             # Compute contrastive loss as if prototypes are the "anchors"
-            # This encourages embeddings to be closer to their class prototype
-            # than to other class prototypes
             sim_to_protos = projected @ prototypes.T  # [N, K]
             tau = max(self.config.temperature, 1e-4)
             sim_scaled = sim_to_protos / tau
