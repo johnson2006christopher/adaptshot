@@ -242,10 +242,10 @@ class ContrastivePrototypeLearner:
             self._init_projection_head(input_dim, seed)
 
         # Momentum accumulators for projection matrices
-        w1_vel = np.zeros_like(self._projection_matrix)  # type: ignore[arg-type]
-        b1_vel = np.zeros_like(self._projection_bias)  # type: ignore[arg-type]
-        w2_vel = np.zeros_like(self._second_layer_matrix)  # type: ignore[arg-type]
-        b2_vel = np.zeros_like(self._second_layer_bias)  # type: ignore[arg-type]
+        w1_vel = np.zeros_like(self._projection_matrix)
+        b1_vel = np.zeros_like(self._projection_bias)
+        w2_vel = np.zeros_like(self._second_layer_matrix)
+        b2_vel = np.zeros_like(self._second_layer_bias)
 
         loss_history: List[float] = []
         n = len(embeddings)
@@ -290,10 +290,10 @@ class ContrastivePrototypeLearner:
             w1_vel = momentum * w1_vel - lr * grad_w1
             b1_vel = momentum * b1_vel - lr * grad_b1
 
-            self._second_layer_matrix = self._second_layer_matrix + w2_vel  # type: ignore[operator]
-            self._second_layer_bias = self._second_layer_bias + b2_vel  # type: ignore[operator]
-            self._projection_matrix = self._projection_matrix + w1_vel  # type: ignore[operator]
-            self._projection_bias = self._projection_bias + b1_vel  # type: ignore[operator]
+            self._second_layer_matrix = self._second_layer_matrix + w2_vel
+            self._second_layer_bias = self._second_layer_bias + b2_vel
+            self._projection_matrix = self._projection_matrix + w1_vel
+            self._projection_bias = self._projection_bias + b1_vel
 
             # Early stopping
             if epoch > 15 and len(loss_history) >= 5:
