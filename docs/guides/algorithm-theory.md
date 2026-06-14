@@ -171,6 +171,14 @@ Where:
 
 When the buffer exceeds `max_buffer_size`, the \(|B| - C\) lowest-utility examples are removed.
 
+### LSH-Accelerated Redundancy Scoring (v0.2.0)
+
+Computing exact pairwise similarities for redundancy \(s_i\) is \(O(N^2)\) — expensive for large buffers. v0.2.0 uses Locality-Sensitive Hashing (LSH) to approximate nearest-neighbor similarity in \(O(N \log N)\):
+
+\[h(\mathbf{x}) = \text{sign}(\mathbf{w} \cdot \mathbf{x})\]
+
+Where \(\mathbf{w} \sim \mathcal{N}(0, I)\) is a random projection vector. Multiple hash functions form a signature, and examples that hash to the same bucket are approximate neighbors. The redundancy penalty \(s_i\) is then computed from the LSH-colliding example's distance rather than the global nearest neighbor.
+
 ---
 
 ## 7. Conformal Prediction (v0.2.0)
@@ -227,6 +235,20 @@ A 2-layer MLP maps backbone embeddings to a contrastive space:
 
 Dimensions: \(D_{\text{embed}} \to D_{\text{hidden}} \to D_{\text{proj}}\) (default: 128).
 
+### Gradient Training via InfoNCE Backpropagation (v0.2.0)
+
+In v0.2.0, the projection head parameters \((W_1, b_1, W_2, b_2)\) are trained end-to-end via gradient descent through the InfoNCE loss:
+
+\[\frac{\partial \mathcal{L}_{\text{InfoNCE}}}{\partial W_1} = \frac{\partial \mathcal{L}_{\text{InfoNCE}}}{\partial z} \cdot \frac{\partial z}{\partial h} \cdot \frac{\partial h}{\partial W_1}\]
+
+Where \(h = \text{ReLU}(W_1 x + b_1)\) is the hidden layer activation and \(z\) is the L2-normalized output. The gradient flows through both linear layers and the ReLU nonlinearity.
+
+Parameter updates use SGD with momentum:
+
+\[W_1^{(t+1)} = W_1^{(t)} - \alpha \cdot v_1^{(t)}, \quad v_1^{(t+1)} = \mu \cdot v_1^{(t)} + \frac{\partial \mathcal{L}}{\partial W_1}\]
+
+Where \(\alpha\) is the learning rate (default: 0.01) and \(\mu\) is the momentum coefficient (default: 0.9). This is a significant upgrade from v0.1.x where the projection head used fixed or randomly initialized weights.
+
 ### EMA Prototype Updates
 
 Prototypes are updated using exponential moving average for stability:
@@ -251,6 +273,21 @@ where \(p_c\) is the weighted class distribution over k nearest neighbors.
 
 **Distributional** (OOD Uncertainty) — Mahalanobis distance:
 \[D_M(x, c) = \sqrt{(x - \mu_c)^\top \Sigma_c^{-1} (x - \mu_c)}\]
+
+### Shrinkage Covariance Estimation (v0.2.0)
+
+When the number of samples per class \(n_c\) is small relative to the embedding dimension \(D\), the empirical covariance \(\Sigma_{\text{emp}}\) is poorly conditioned. v0.2.0 uses shrinkage to stabilize the estimate:
+
+\[\Sigma_{\text{shrunk}} = (1 - \lambda)\Sigma_{\text{emp}} + \lambda \cdot \text{diag}(\Sigma_{\text{emp}})\]
+
+Where the shrinkage intensity \(\lambda\) is automatically scaled:
+
+\[\lambda = \min\left(1.0, \max\left(0.1, \frac{D}{n_c + D}\right)\right)\]
+
+- When \(n_c \gg D\): \(\lambda \to 0.1\) (mostly empirical — reliable estimate)
+- When \(n_c \ll D\): \(\lambda \to 1.0\) (mostly diagonal — avoids singular matrices)
+
+A ridge term \(\epsilon I\) is also added for numerical stability: \(\Sigma_c^{-1} \approx (\Sigma_{\text{shrunk}} + \epsilon I)^{-1}\).
 
 ### Composite Uncertainty
 
