@@ -121,6 +121,7 @@ When you call `correct()`, the learner:
 3. **Creates a `Correction` dataclass** with predicted label, corrected label, confidence weight, and metadata (original string labels are preserved in `metadata`)
 4. **Routes through `FeedbackRouter.route_feedback()`**:
    - Updates the calibration sliding window with the correction
+   - v0.2.0: When the window reaches 10+ samples, bootstrap temperature estimation runs to stabilize calibrated confidence
    - Appends the correction to the pending queue
    - If pending corrections >= threshold: triggers CA-EWC fine-tuning
 5. **Appends to similarity buffer**: The corrected image becomes a new support example
