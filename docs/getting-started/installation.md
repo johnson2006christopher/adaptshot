@@ -115,3 +115,12 @@ The library falls back gracefully: ONNX backend is tried first if available, the
 - [ ] `pip install adaptshot` completes in under 60 seconds.
 - [ ] The verification command prints `0.2.0-dev`.
 - [ ] You can import `FewShotLearner` and `ConformalEngine`.
+
+---
+
+## Next Steps
+
+- **[Quick Start](quickstart.md)** — Make your first prediction in 5 minutes
+- **[Beginner 101](beginner-101.md)** — Learn the concepts behind AdaptShot
+- **[⭐ Star on GitHub](https://github.com/johnson2006christopher/adaptshot)** — Support the project and stay updated
+- **[📱 Join WhatsApp](https://chat.whatsapp.com/J6AbrvbjmBc5XXX2fnN6RK)** — Connect with the community
