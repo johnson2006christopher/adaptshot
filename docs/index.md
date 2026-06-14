@@ -80,7 +80,7 @@ The pipeline is a closed loop: every human correction feeds back into the learne
 - [Full API Reference (v0.2.0)](api/reference.md) — Every class, method, and data structure
 - [Core Engine](api/core.md) — FewShotLearner, calibration, ACT, conformal
 - [Training & Continual Learning](api/training.md) — CA-EWC, UP-UGF, FeedbackRouter
-- [Configuration & Utilities](api/config.md) — AdaptShotConfig (26 fields), determinism, I/O
+- [Configuration & Utilities](api/config.md) — AdaptShotConfig (27 fields), determinism, I/O
 
 ### 🧭 Advanced Guides
 - [Architecture Deep-Dive](guides/architecture-deep-dive.md) — Module map and data flow
@@ -91,10 +91,42 @@ The pipeline is a closed loop: every human correction feeds back into the learne
 - [Migration Guide (v0.1 → v0.2)](guides/migration-v0.1-to-v0.2.md) — Upgrade safely
 
 ### 🔧 Reference
-- [Config Reference (All 26 Fields)](reference/config-reference.md) — Every parameter explained
+- [Config Reference (All 27 Fields)](reference/config-reference.md) — Every parameter explained
 - [Changelog](changelog.md) — Full release history
 - [Contributing](contributing.md) — How to contribute
 - [Code of Conduct](code_of_conduct.md)
+
+---
+
+## 🌍 Community & Support
+
+<div class="grid cards" markdown>
+
+-   :fontawesome-brands-github:{ .lg .middle } **Star & Fork on GitHub**
+
+    ---
+
+    [:star: Star the project](https://github.com/johnson2006christopher/adaptshot) to show your support and stay updated with new releases. Every star helps AdaptShot reach more people who need CPU-first AI.
+
+-   :fontawesome-brands-whatsapp:{ .lg .middle } **Join the WhatsApp Community**
+
+    ---
+
+    [Join our WhatsApp group](https://chat.whatsapp.com/J6AbrvbjmBc5XXX2fnN6RK) for real-time discussion, help, and collaboration with fellow AdaptShot users and contributors worldwide.
+
+-   :fontawesome-brands-github:{ .lg .middle } **Discussions & Ideas**
+
+    ---
+
+    [Start a GitHub Discussion](https://github.com/johnson2006christopher/adaptshot/discussions) to ask questions, propose features, or share how you're using AdaptShot in your community.
+
+-   :material-hand-heart:{ .lg .middle } **Contribute**
+
+    ---
+
+    [Open a Pull Request](https://github.com/johnson2006christopher/adaptshot/pulls) or look for [good first issues](https://github.com/johnson2006christopher/adaptshot/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22). Whether you write code, improve docs, or share your experience — every contribution matters.
+
+</div>
 
 ---
 
