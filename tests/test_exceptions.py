@@ -104,7 +104,13 @@ def test_predict_falls_back_when_calibration_not_ready(
     assert 0.0 <= result.calibrated_confidence <= 1.0
 
 
-def test_calibration_not_ready_error_message(rgb_image_path: str, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_calibration_graceful_fallback_when_cold(rgb_image_path: str, monkeypatch: pytest.MonkeyPatch) -> None:
+    """v0.2.0: _calibrate_or_raise no longer raises on cold start.
+
+    Instead, it gracefully falls back by seeding the calibration window
+    with an optimistic prior and returning the raw confidence clamped
+    to the unit interval.
+    """
     learner = FewShotLearner(config=AdaptShotConfig(device="cpu"))
 
     monkeypatch.setattr(
@@ -114,8 +120,9 @@ def test_calibration_not_ready_error_message(rgb_image_path: str, monkeypatch: p
 
     learner.load_support_images([rgb_image_path], ["cat"])
 
-    with pytest.raises(CalibrationNotReadyError, match="Need at least"):
-        learner._calibrate_or_raise(0.5)
+    # Should NOT raise — calibrate_or_raise falls back gracefully
+    result = learner._calibrate_or_raise(0.5)
+    assert 0.0 <= result <= 1.0, f"Expected calibrated confidence in [0,1], got {result}"
 
 
 def test_correct_raises_on_bad_confidence_weight(rgb_image_path: str, monkeypatch: pytest.MonkeyPatch) -> None:
