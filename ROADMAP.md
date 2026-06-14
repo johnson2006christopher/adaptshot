@@ -1,12 +1,12 @@
 # AdaptShot Roadmap
 
-This roadmap outlines the planned evolution of AdaptShot from the current v0.1.1 release through v1.0.0 and beyond. Priorities are driven by the project constitution: CPU-first, <250MB RAM, human-in-the-loop, and carbon-aware.
+This roadmap outlines the planned evolution of AdaptShot from the current v0.2.0 release through v1.0.0 and beyond. Priorities are driven by the project constitution: CPU-first, <250MB RAM, human-in-the-loop, and carbon-aware.
 
 For completed work, see [CHANGELOG.md](CHANGELOG.md). For how to contribute, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 
-## v0.1.1 (Released June 2026) -- Current
+## v0.1.1 (Released June 2026)
 
 See [CHANGELOG.md](CHANGELOG.md#0111---2026-06-06) for the full release notes. Highlights:
 
@@ -19,36 +19,38 @@ See [CHANGELOG.md](CHANGELOG.md#0111---2026-06-06) for the full release notes. H
 
 ---
 
-## v0.1.2 (Target: July 2026) -- Localization & Accessibility
+## v0.1.2 — Merged into v0.2.0
 
-### UI Localization
-
-- **Swahili Gradio Dashboard**: Full Swahili translation of all Gradio UI labels, buttons, help text, and error messages
-- **Localization Framework**: i18n string extraction pipeline and `.po`/`.mo` translation workflow for Gradio
-- **Accessibility Pass**: ARIA labels, keyboard navigation, and screen-reader compatibility for the Gradio dashboard
-
-> **Excluded**: French localization is deferred to v0.2.0+. v0.1.2 is Swahili-first to serve East African users.
+> **Note**: v0.1.2 was originally planned for July 2026 with localization features, but its scope was merged into the v0.2.0 production hardening release. Swahili localization and accessibility improvements are now tracked under v0.3.0.
 
 ---
 
-## v0.2.0 (Target: Q3 2026) -- Research Platform
+## v0.2.0 (Released June 2026) — Production Hardening
 
-### Core Features
+### Production Hardening
 
-- **ONNX Export**: Export classification heads to ONNX for mobile (Android) and browser (WebAssembly) deployment
-- **ARM Profiling**: Reproducible Raspberry Pi 4 benchmarks with committed results in `benchmarks/results/arm/`
-- **PlantVillage Benchmark**: Public crop disease dataset loader and baseline metrics for agriculture use cases
+- ✅ **LOO Conformal Prediction**: True leave-one-out calibration for tighter prediction sets with sparse data
+- ✅ **Shrinkage Covariance Mahalanobis**: Robust OOD detection with automatic λ scaling — works with as few as 2 samples/class
+- ✅ **Gradient-Trained Contrastive Projection Head**: W₁,b₁,W₂,b₂ trained via InfoNCE backprop with SGD momentum
+- ✅ **ACT Symmetric Updates with Mean-Reversion**: Prevents threshold drift in long-running services
+- ✅ **UP-UGF LSH Acceleration**: O(N log N) approximate redundancy scoring via Locality-Sensitive Hashing
+- ✅ **Bootstrap Temperature Calibration**: Bootstrap resampling for stable temperature with small calibration windows
+- ✅ **Historical Penalty Tracking**: Per-class penalty history with trend detection in explainability engine
+- ✅ **MemoryTracker**: Section-level memory profiling with budget enforcement
+- ✅ **ONNX Runtime Backend**: Torch-free inference (~800 MB smaller install) for edge deployment
+- ✅ **clear_backbone_cache()**: Memory reclamation for long-running services
 
-### Research & Validation
+### Documentation
 
-- **Conformal Prediction**: Full conformal prediction set implementation (beyond current stub) for distribution-free uncertainty
-- **Approximate UP-UGF**: Replace `O(N^2)` redundancy computation with FAISS/annoy-based approximate nearest-neighbor search for buffers >500
-- **Ablation Studies**: Systematic ablation of ECE, ACT, CA-EWC, and UP-UGF components with published results
+- ✅ 42+ markdown files covering all APIs, algorithms, tutorials, and guides
+- ✅ Algorithm theory with full mathematical foundations (shrinkage covariance, InfoNCE gradients, LSH, bootstrap, symmetric ACT)
+- ✅ Quality gates: ruff=0, mypy strict=32 files, pytest=92 passed, benchmark=68%
 
-### Community & Infrastructure
+### Deferred to v0.3.0
 
-- **CI/CD Pipeline**: Automated GitHub Actions for `ruff`, `mypy`, `pytest`, and docs deployment on every push
-- **Community Benchmarks**: Energy challenge inviting community submissions for lowest Joules/inference
+- ARM Profiling: Reproducible Raspberry Pi 4 benchmarks
+- PlantVillage Benchmark: Public crop disease dataset loader
+- Community Benchmarks: Energy challenge for lowest Joules/inference
 
 ---
 

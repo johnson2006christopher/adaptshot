@@ -22,7 +22,7 @@ All other fields use sensible defaults. You only need to set what you want to ch
 
 ---
 
-## Field Reference (All 22 Fields)
+## Field Reference (All 27 Fields)
 
 ### Category 1: Core Execution (4 fields)
 
@@ -32,58 +32,79 @@ All other fields use sensible defaults. You only need to set what you want to ch
 | 2 | `device` | `Literal["cpu", "cuda", "mps"]` | `"cpu"` | Execution device. v0.1.1 is CPU-first: `_validate_config()` rejects non-CPU values with `ConfigValidationError`. CUDA and MPS are opt-in for future releases. |
 | 3 | `seed` | `int` | `42` | Master random seed. Controls PyTorch (`torch.manual_seed`), NumPy (`np.random.seed`), Python (`random.seed`), and `PYTHONHASHSEED`. Change this to get different random behavior; fix it to `42` for reproducible benchmarks. |
 | 4 | `verbose` | `bool` | `True` | Enable INFO-level logging during pipeline execution. Set to `False` for silent production operation. |
+| 5 | `log_dir` | `Optional[str]` | `None` | Directory path for log output. When `None`, logs are written to stderr. Set to a valid directory path to persist logs to file. |
 
 ### Category 2: Few-Shot Learning (3 fields)
 
 | # | Field | Type | Default | Description |
 |---|-------|------|---------|-------------|
-| 5 | `n_way` | `int` | `5` | Number of classes per episode. Controls the few-shot evaluation format. For production classification, the actual number of classes is determined by the unique labels in `load_support_images()`. |
-| 6 | `k_shot` | `int` | `10` | Support examples per class. Must be positive. Higher values improve accuracy but increase memory and embedding time. For very constrained deployments, reduce to 3-5. |
-| 7 | `query_size` | `int` | `15` | Query examples per class for evaluation mode. Used in benchmark scripts. Not directly used in production `predict()` calls. |
+| 6 | `n_way` | `int` | `5` | Number of classes per episode. Controls the few-shot evaluation format. For production classification, the actual number of classes is determined by the unique labels in `load_support_images()`. |
+| 7 | `k_shot` | `int` | `10` | Support examples per class. Must be positive. Higher values improve accuracy but increase memory and embedding time. For very constrained deployments, reduce to 3-5. |
+| 8 | `query_size` | `int` | `15` | Query examples per class for evaluation mode. Used in benchmark scripts. Not directly used in production `predict()` calls. |
 
 ### Category 3: Similarity & Inference (4 fields)
 
 | # | Field | Type | Default | Description |
 |---|-------|------|---------|-------------|
-| 8 | `similarity_metric` | `Literal["cosine", "euclidean"]` | `"euclidean"` | Distance metric for comparing embeddings. `"euclidean"` is faster and works well with normalized embeddings. `"cosine"` is direction-aware and robust to embedding magnitude differences. |
-| 9 | `inference_mode` | `Literal["nearest_neighbor", "prototypical"]` | `"prototypical"` | Classification strategy. `"nearest_neighbor"` finds the single closest support example. `"prototypical"` computes a class prototype (mean embedding) and compares against it -- generally more robust with small support sets. |
-| 10 | `use_faiss` | `bool` | `False` | Enable FAISS-CPU acceleration for similarity search. Improves latency for support sets >100 images. Requires `pip install "adaptshot[faiss]"`. Falls back to NumPy if FAISS is not installed. |
-| 11 | `faiss_nprobe` | `int` | `8` | FAISS IVF index probing depth. Higher values improve accuracy but increase search time. Only used when `use_faiss=True` and an IVF index is active. |
+| 9 | `similarity_metric` | `Literal["cosine", "euclidean"]` | `"euclidean"` | Distance metric for comparing embeddings. `"euclidean"` is faster and works well with normalized embeddings. `"cosine"` is direction-aware and robust to embedding magnitude differences. |
+| 10 | `inference_mode` | `Literal["nearest_neighbor", "prototypical", "contrastive"]` | `"prototypical"` | Classification strategy. `"nearest_neighbor"` finds the single closest support example. `"prototypical"` computes a class prototype (mean embedding) and compares against it. `"contrastive"` (v0.2.0) uses contrastively refined prototypes with InfoNCE loss — best with >20 examples per class. |
+| 11 | `use_faiss` | `bool` | `False` | Enable FAISS-CPU acceleration for similarity search. Improves latency for support sets >100 images. Requires `pip install "adaptshot[faiss]"`. Falls back to NumPy if FAISS is not installed. |
+| 12 | `faiss_nprobe` | `int` | `8` | FAISS IVF index probing depth. Higher values improve accuracy but increase search time. Only used when `use_faiss=True` and an IVF index is active. |
 
 ### Category 4: Energy-Aware Inference (2 fields)
 
 | # | Field | Type | Default | Description |
 |---|-------|------|---------|-------------|
-| 12 | `eco_mode` | `bool` | `False` | Enable energy-saving early-exit. When `True`, the pipeline can exit early if a high-confidence match is found before full similarity computation. Reduces carbon footprint by up to 40% in benchmark testing. |
-| 13 | `early_exit_threshold` | `float` | `0.95` | Confidence threshold for early-exit. Must be in [0.5, 1.0]. Higher values (e.g., 0.98) are more conservative and exit less often. Lower values (e.g., 0.85) save more energy but may miss subtle distinctions. Only active when `eco_mode=True`. |
+| 13 | `eco_mode` | `bool` | `False` | Enable energy-saving early-exit. When `True`, the pipeline can exit early if a high-confidence match is found before full similarity computation. Reduces carbon footprint by up to 40% in benchmark testing. |
+| 14 | `early_exit_threshold` | `float` | `0.95` | Confidence threshold for early-exit. Must be in [0.5, 1.0]. Higher values (e.g., 0.98) are more conservative and exit less often. Lower values (e.g., 0.85) save more energy but may miss subtle distinctions. Only active when `eco_mode=True`. |
 
 ### Category 5: Calibration & Uncertainty (5 fields)
 
 | # | Field | Type | Default | Description |
 |---|-------|------|---------|-------------|
-| 14 | `calibration_method` | `Literal["temperature", "scaling_binning", "conformal", "none"]` | `"temperature"` | Post-hoc confidence calibration strategy. `"temperature"` applies a single scaling parameter (fast, stable). `"scaling_binning"` uses bin-wise scaling (more granular). `"conformal"` provides distribution-free prediction sets (stub in v0.1.1). `"none"` skips calibration entirely. |
-| 15 | `ece_n_bins` | `int` | `15` | Number of bins for Expected Calibration Error (ECE) computation. Must be >1. More bins give finer-grained ECE tracking but require more observations for statistical validity. |
-| 16 | `calibration_eval_bins` | `int` | `100` | Number of bins for calibration evaluation. Must be >= `ece_n_bins`. Controls the resolution of calibration quality reporting. |
-| 17 | `temperature_init` | `float` | `1.0` | Initial temperature scaling parameter. Must be positive. A value of 1.0 means no scaling (raw confidence). The calibration engine adjusts this automatically as predictions accumulate. |
-| 18 | `recalibrate_after_feedback` | `bool` | `True` | Whether to trigger calibration updates after each human correction. When `True`, the calibration window incorporates new feedback immediately. Set to `False` to batch calibration updates for efficiency. |
+| 15 | `calibration_method` | `Literal["temperature", "scaling_binning", "conformal", "none"]` | `"temperature"` | Post-hoc confidence calibration strategy. `"temperature"` applies a single scaling parameter (fast, stable). `"scaling_binning"` uses bin-wise scaling (more granular). `"conformal"` provides distribution-free prediction sets (stub in v0.1.1). `"none"` skips calibration entirely. |
+| 16 | `ece_n_bins` | `int` | `15` | Number of bins for Expected Calibration Error (ECE) computation. Must be >1. More bins give finer-grained ECE tracking but require more observations for statistical validity. |
+| 17 | `calibration_eval_bins` | `int` | `100` | Number of bins for calibration evaluation. Must be >= `ece_n_bins`. Controls the resolution of calibration quality reporting. |
+| 18 | `temperature_init` | `float` | `1.0` | Initial temperature scaling parameter. Must be positive. A value of 1.0 means no scaling (raw confidence). The calibration engine adjusts this automatically as predictions accumulate. |
+| 19 | `recalibrate_after_feedback` | `bool` | `True` | Whether to trigger calibration updates after each human correction. When `True`, the calibration window incorporates new feedback immediately. Set to `False` to batch calibration updates for efficiency. |
 
 ### Category 6: OOD (Out-of-Distribution) Detection (3 fields)
 
 | # | Field | Type | Default | Description |
 |---|-------|------|---------|-------------|
-| 19 | `enable_ood_detection` | `bool` | `True` | Enable out-of-distribution detection. When `True`, images whose distance to any known prototype exceeds the threshold are flagged and routed for human review. When `False`, OOD threshold is set to infinity (no images are flagged). |
-| 20 | `ood_threshold_quantile` | `float` | `0.98` | Quantile threshold for OOD rejection. Must be in [0.5, 1.0]. Uses the p98 distance among support examples (by default) as the cutoff. Higher values are more permissive; lower values flag more images as OOD. |
-| 21 | `ood_absolute_min_distance` | `float` | `0.25` | Minimum absolute distance for OOD flagging. Must be >= 0.0. Acts as a floor: even if the quantile threshold is lower, images closer than this distance are never flagged. |
+| 20 | `enable_ood_detection` | `bool` | `True` | Enable out-of-distribution detection. When `True`, images whose distance to any known prototype exceeds the threshold are flagged and routed for human review. When `False`, OOD threshold is set to infinity (no images are flagged). |
+| 21 | `ood_threshold_quantile` | `float` | `0.98` | Quantile threshold for OOD rejection. Must be in [0.5, 1.0]. Uses the p98 distance among support examples (by default) as the cutoff. Higher values are more permissive; lower values flag more images as OOD. |
+| 22 | `ood_absolute_min_distance` | `float` | `0.25` | Minimum absolute distance for OOD flagging. Must be >= 0.0. Acts as a floor: even if the quantile threshold is lower, images closer than this distance are never flagged. |
 
 ### Category 7: Memory Management (1 field)
 
 | # | Field | Type | Default | Description |
 |---|-------|------|---------|-------------|
-| 22 | `max_buffer_size` | `int` | `100` | Maximum replay buffer capacity. Must be >= 10. Controls the number of support embeddings retained in memory. When exceeded, UP-UGF pruning evicts low-utility examples based on uncertainty x recency x redundancy scoring. RAM usage scales linearly with this value (each embedding is ~2KB for ResNet-18 512-dim). |
+| 23 | `max_buffer_size` | `int` | `100` | Maximum replay buffer capacity. Must be >= 10. Controls the number of support embeddings retained in memory. When exceeded, UP-UGF pruning evicts low-utility examples based on uncertainty x recency x redundancy scoring. RAM usage scales linearly with this value (each embedding is ~2KB for ResNet-18 512-dim). |
+
+### Category 8: v0.2.0 Advanced Features (4 fields)
+
+| # | Field | Type | Default | Description |
+|---|-------|------|---------|-------------|
+| 24 | `conformal_alpha` | `float` | `0.05` | v0.2.0: Target miscoverage rate for conformal prediction sets. Must be in (0.0, 1.0). At alpha=0.05, prediction sets contain the true class with ≥95% probability. |
+| 25 | `conformal_mode` | `Literal["split", "cross"]` | `"split"` | v0.2.0: Conformal prediction mode for inference-time quantile computation. `"split"` uses the full calibration buffer. `"cross"` uses k-fold cross-conformal averaging for more stable thresholds, at the cost of slightly conservative coverage. **Note**: True leave-one-out (LOO) self-calibration runs automatically at `load_support_images()` time regardless of this setting — it seeds the calibration buffer with exchangeable scores, enabling valid coverage from the first prediction. |
+| 26 | `uncertainty_mode` | `Literal["mcdropout", "entropy", "mahalanobis", "ensemble"]` | `"ensemble"` | v0.2.0: Uncertainty quantification signal to use. `"entropy"` = k-NN entropy. `"mcdropout"` = MC Dropout variance. `"mahalanobis"` = distance-based. `"ensemble"` = weighted fusion of all three. |
+| 27 | `explainability_enabled` | `bool` | `True` | v0.2.0: Enable XAI explanations. When `True`, `FewShotLearner.explain()` generates feature attributions, confidence decomposition, counterfactual analysis, and historical penalty tracking. |
 
 ---
 
-## Validation Rules
+## Validation Rules (v0.2.0 Additions)
+
+The following rules are checked in `AdaptShotConfig.__post_init__()` in addition to all existing validation:
+
+| Rule | Error if violated |
+|------|-------------------|
+| `0.0 < conformal_alpha < 1.0` | `ValueError` |
+| `conformal_mode in ("split", "cross")` | `ValueError` |
+
+---
+
+## Validation Rules (All)
 
 `AdaptShotConfig.__post_init__()` enforces these constraints on creation:
 
@@ -176,8 +197,8 @@ AdaptShotConfig(
 
 - [ ] You can create a config with `AdaptShotConfig()` and all defaults are correct.
 - [ ] You understand which fields to change for your hardware and use case.
-- [ ] You know that `device` must always be `"cpu"` in v0.1.1.
-- [ ] You understand the difference between `similarity_metric` (`cosine` vs `euclidean`) and `inference_mode` (`nearest_neighbor` vs `prototypical`).
+- [ ] You know that `device` must always be `"cpu"` in the current version.
+- [ ] You understand the three `inference_mode` options (nearest_neighbor, prototypical, contrastive).
 - [ ] You can trace every field back to `src/adaptshot/config/settings.py`.
 
 ---

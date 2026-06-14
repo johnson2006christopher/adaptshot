@@ -1,169 +1,180 @@
-# Configuration & Utilities API (v0.1.1)
+# Configuration & Utilities API (v0.2.0)
 
-This document covers AdaptShot's immutable configuration schema, deterministic execution utilities, and I/O helpers. These components provide the foundational guarantees for reproducibility, safe file handling, and cross-framework data conversion.
+This document covers AdaptShot's immutable configuration schema with all 27 fields, deterministic execution utilities, memory profiling, and I/O helpers.
 
 ---
 
 ## `AdaptShotConfig`
 
-A frozen dataclass that centralizes all pipeline hyperparameters. Immutability prevents accidental state mutation during inference or training, which is critical for deterministic reproducibility.
+A frozen dataclass that centralizes all pipeline hyperparameters. Immutability prevents accidental state mutation, which is critical for deterministic reproducibility.
 
 ### Initialization
+
 ```python
 from adaptshot.config.settings import AdaptShotConfig
 
 config = AdaptShotConfig(
-    backbone: str = "resnet18",
-    device: str = "cpu",
-    seed: int = 42,
-    n_way: int = 5,
-    k_shot: int = 10,
-    query_size: int = 15,
-    use_faiss: bool = False,
-    faiss_nprobe: int = 8,
-    calibration_method: str = "temperature",
-    ece_n_bins: int = 15,
-    temperature_init: float = 1.0,
-    max_buffer_size: int = 100,
-    verbose: bool = True,
-    log_dir: Optional[str] = None
+    backbone="resnet18",
+    device="cpu",
+    seed=42,
+    inference_mode="prototypical",
+    conformal_alpha=0.10,
+    uncertainty_mode="ensemble",
+    explainability_enabled=True,
 )
 ```
+
+### Core Execution Fields
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `backbone` | `Literal["resnet18", "mobilenet_v3_small"]` | `"resnet18"` | Pretrained feature extractor |
-| `device` | `Literal["cpu", "cuda", "mps"]` | `"cpu"` | Execution target. CUDA/MPS are optional. |
-| `seed` | `int` | `42` | Random seed for PyTorch, NumPy, Python, and hash seed |
-| `n_way` | `int` | `5` | Number of classes per few-shot episode |
+| `device` | `Literal["cpu", "cuda", "mps"]` | `"cpu"` | Execution target. CUDA/MPS are optional |
+| `seed` | `int` | `42` | Random seed for reproducibility |
+| `verbose` | `bool` | `True` | Enable INFO-level logging |
+| `log_dir` | `Optional[str]` | `None` | Optional log output directory |
+
+### Few-Shot Learning Fields
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `n_way` | `int` | `5` | Number of classes per episode |
 | `k_shot` | `int` | `10` | Support examples per class |
 | `query_size` | `int` | `15` | Query examples per class for evaluation |
-| `use_faiss` | `bool` | `False` | Enable FAISS-CPU index for large support sets |
-| `calibration_method` | `Literal["temperature", "conformal", "none"]` | `"temperature"` | Post-hoc confidence scaling strategy |
+
+### Similarity & Inference Fields
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `similarity_metric` | `Literal["cosine", "euclidean"]` | `"euclidean"` | Distance metric |
+| `inference_mode` | `Literal["nearest_neighbor", "prototypical", "contrastive"]` | `"prototypical"` | Classification strategy |
+| `use_faiss` | `bool` | `False` | Enable FAISS-CPU acceleration (>100 support images) |
+| `faiss_nprobe` | `int` | `8` | FAISS IVF index probing depth |
+
+### Energy-Aware Inference Fields
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `eco_mode` | `bool` | `False` | Enable energy-saving early-exit (v0.2.0: 32×32 preview, norm ratio guard) |
+| `early_exit_threshold` | `float` | `0.95` | Confidence threshold for early-exit [0.5, 1.0] |
+
+### Calibration & Uncertainty Fields
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `calibration_method` | `Literal["temperature", "scaling_binning", "conformal", "none"]` | `"temperature"` | Post-hoc confidence scaling |
+| `ece_n_bins` | `int` | `15` | Bins for Expected Calibration Error |
+| `calibration_eval_bins` | `int` | `100` | Bins for calibration evaluation (≥ ece_n_bins) |
+| `temperature_init` | `float` | `1.0` | Initial temperature scaling parameter |
+| `recalibrate_after_feedback` | `bool` | `True` | Recalibrate after each human correction |
+
+### OOD Detection Fields
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `enable_ood_detection` | `bool` | `True` | Flag images outside known distribution |
+| `ood_threshold_quantile` | `float` | `0.98` | Quantile for OOD rejection [0.5, 1.0] |
+| `ood_absolute_min_distance` | `float` | `0.25` | Minimum absolute distance for OOD flagging |
+
+### v0.2.0 Advanced Fields
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `conformal_alpha` | `float` | `0.05` | Significance level for conformal prediction (0.01–0.50) |
+| `conformal_mode` | `Literal["split", "cross"]` | `"split"` | Conformal prediction mode |
+| `uncertainty_mode` | `Literal["mcdropout", "entropy", "mahalanobis", "ensemble"]` | `"ensemble"` | Uncertainty quantification mode |
+| `explainability_enabled` | `bool` | `True` | Enable XAI with historical penalty tracking |
+
+### Memory Management
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
 | `max_buffer_size` | `int` | `100` | Maximum replay buffer capacity (enforced by UP-UGF) |
-| `verbose` | `bool` | `True` | Enable INFO-level logging during pipeline execution |
 
 ### Validation Constraints
+
 `AdaptShotConfig` enforces immediate validation on instantiation:
 - `k_shot > 0` and `n_way > 0`
 - `max_buffer_size >= 10`
-- If `device="cuda"` but `torch.cuda.is_available()` is `False`, a `RuntimeWarning` is issued and downstream logic falls back to CPU automatically.
+- `0.5 <= early_exit_threshold <= 1.0`
+- `ece_n_bins > 1`
+- `calibration_eval_bins >= ece_n_bins`
+- `0.5 <= ood_threshold_quantile <= 1.0`
+- `ood_absolute_min_distance >= 0.0`
+- `0.0 < conformal_alpha < 1.0`
+- `conformal_mode` in `("split", "cross")`
+- CUDA availability checked via lazy torch import with graceful fallback
 
 !!! warning "Immutability"
-    `AdaptShotConfig` is created with `@dataclass(frozen=True)`. Attempting to modify attributes after initialization (e.g., `config.device = "cuda"`) will raise `dataclasses.FrozenInstanceError`. Create a new instance instead.
+    `AdaptShotConfig` is frozen. Attempting to modify attributes after initialization raises `dataclasses.FrozenInstanceError`. Create a new instance with `dataclasses.replace(config, **overrides)` instead.
 
 ---
 
 ## Determinism Utilities
 
-Guarantee bit-exact reproducibility across runs, hardware, and operating systems.
-
 ### `set_deterministic_seed(seed, device=None)`
 ```python
 from adaptshot.utils.determinism import set_deterministic_seed
-import torch
 
-device = torch.device("cpu")
-set_deterministic_seed(seed=42, device=device)
+set_deterministic_seed(seed=42)
 ```
-**Behavior:**
-- Sets `random.seed()`, `np.random.seed()`, `torch.manual_seed()`
-- Enables deterministic cuDNN algorithms if `device.type == "cuda"`
-- Sets `os.environ["PYTHONHASHSEED"]` to prevent dictionary/set ordering randomness
+
+Sets `random.seed()`, `np.random.seed()`, `torch.manual_seed()`, and `PYTHONHASHSEED=42`. Enables deterministic cuDNN if CUDA is active.
 
 ### `verify_determinism(fn, *args, runs=3, seed=42, tolerance=1e-7, **kwargs)`
-```python
-from adaptshot.utils.determinism import verify_determinism
+Executes `fn` multiple times with incrementally offset seeds. Returns `True` if all runs match within tolerance.
 
-# Verify that embedding extraction is reproducible
-is_deterministic = verify_determinism(
-    fn=extract_embedding,
-    image_path="test.jpg",
-    config=config,
-    runs=3,
-    seed=42
-)
-print(f"Deterministic: {is_deterministic}")
+---
+
+## Memory Profiling (v0.2.0)
+
+### `MemoryTracker`
+Context manager for measuring memory usage during key lifecycle points.
+
+```python
+from src.adaptshot.utils.profiling import MemoryTracker
+
+with MemoryTracker("predict") as tracker:
+    result = learner.predict("query.jpg")
+print(f"Peak RAM: {tracker.peak_mb:.1f} MB")
+print(f"Latency: {tracker.latency_ms:.1f} ms")
 ```
-**Behavior:**
-- Executes `fn` multiple times with incrementally offset seeds
-- Compares outputs using `np.allclose` with strict absolute tolerance (`1e-7`)
-- Returns `True` if all runs match, `False` otherwise
-- Intended for CI/CD pipelines and benchmark validation scripts
+
+### `estimate_model_memory_mb(backbone, n_classes)`
+Pre-flight memory estimate without loading the model. Returns a dictionary of component-level estimates.
+
+```python
+from src.adaptshot.utils.profiling import estimate_model_memory_mb
+
+est = estimate_model_memory_mb("resnet18", n_classes=5)
+print(f"Estimated total: {est['estimated_total_mb']} MB")
+```
 
 ---
 
 ## I/O Utilities
 
-Safe path validation, JSON serialization, and cross-framework tensor conversion.
-
 ### `validate_path(path, must_exist=False, is_dir=False)`
-```python
-from adaptshot.utils.io import validate_path
-from pathlib import Path
+Normalize and resolve paths. Creates directories if `is_dir=True`. Validates existence if `must_exist=True`.
 
-# Normalize and resolve path
-p = validate_path("results/metrics.json")
-# Create directory if missing
-d = validate_path("checkpoints/", is_dir=True)
-# Fail if file doesn't exist
-f = validate_path("missing.txt", must_exist=True)  # Raises FileNotFoundError
-```
-
-### `save_json(data, path, indent=2)`
-```python
-from adaptshot.utils.io import save_json
-
-metrics = {"accuracy": 0.72, "ece": 0.04}
-save_json(metrics, "results/v1.json")
-```
-**Behavior:**
-- Creates parent directories automatically
-- Uses UTF-8 encoding with `ensure_ascii=False`
-- Pretty-formats with specified indentation
-
-### `load_json(path)`
-```python
-from adaptshot.utils.io import load_json
-
-data = load_json("results/v1.json")
-```
-**Behavior:**
-- Validates path existence before reading
-- Returns parsed dictionary
+### `save_json(data, path, indent=2)` / `load_json(path)`
+UTF-8 JSON serialization with pretty-formatting and automatic parent directory creation.
 
 ### `tensor_to_numpy(tensor)`
-```python
-from adaptshot.utils.io import tensor_to_numpy
-import torch
-
-t = torch.randn(1, 512, requires_grad=True, device="cuda")
-arr = tensor_to_numpy(t)
-```
-**Behavior:**
-- Safely detaches gradients if present
-- Moves tensor to CPU if on CUDA/MPS
-- Returns `np.ndarray` with shared memory layout
-- Prevents `RuntimeError` when passing PyTorch outputs to NumPy/FAISS pipelines
+Safely converts PyTorch tensors to NumPy arrays, detaching gradients and moving to CPU.
 
 ---
 
 ## Constraints & Notes
 
-| Component | Limitation | Workaround / Note |
-|-----------|------------|-------------------|
-| `AdaptShotConfig` | Frozen dataclass; cannot be mutated in-place | Create new instance with `dataclasses.replace()` if needed |
-| `verify_determinism` | Only supports `torch.Tensor` or `np.ndarray` return types | Wrap custom functions to cast outputs before verification |
-| `validate_path` | Does not handle cloud storage paths (S3, GCS) | Use local filesystem or mount cloud storage to local directory |
-| `tensor_to_numpy` | Does not preserve gradient computation graph | Use only for inference/post-processing, not during training |
+| Component | Limitation | Workaround |
+|-----------|------------|------------|
+| `AdaptShotConfig` | Frozen; cannot mutate in-place | Use `dataclasses.replace()` |
+| `verify_determinism` | Only supports tensor/array return types | Wrap custom functions |
+| `MemoryTracker` | Requires psutil for RSS measurement | Falls back to tracemalloc only |
+| `validate_path` | No cloud storage paths (S3, GCS) | Mount cloud storage to local dir |
 
 ## Next Steps
-- [Contributing Guidelines](../contributing.md) -> Development workflow and PR standards
-- [Changelog](../changelog.md) -> Version history and known limitations
-- [GitHub Repository](https://github.com/johnson2006christopher/adaptshot) -> Issue tracker, discussions, and roadmap
-
----
-
-*Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
-*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
-*Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*
+- [Full API Reference](reference.md) → Every class, method, and data structure
+- [Config Reference (Detailed)](../reference/config-reference.md) → Parameter-by-parameter guide
+- [Memory Profiling Tutorial](../tutorials/13_profiling_memory.md) → Hands-on profiling walkthrough

@@ -1,9 +1,9 @@
 # Quick Start
 
-This quick start uses generated images, so it does not need a downloaded dataset. It exercises the v0.1.1 native workflow in `src/adaptshot/core/learner.py`: load support images, predict, route a correction, and profile latency plus memory.
+This quick start uses generated images, so it does not need a downloaded dataset. It exercises the v0.2.0 workflow: load support images, predict with conformal sets, inspect uncertainty, and route corrections.
 
-!!! note "String Labels Are Supported"
-    In the v0.1.1 branch, `FewShotLearner.correct()` accepts string or integer labels. You can keep human-readable labels in the UI and map them directly into the learner.
+!!! note "v0.2.0 Conformal & Uncertainty"
+    In v0.2.0, `predict()` returns conformal prediction sets, multi-signal uncertainty reports, and explainability results. Calibration uses true leave-one-out conformal and bootstrap temperature estimation for cold starts.
 
 ## Step 1: Install
 
@@ -68,12 +68,15 @@ with tempfile.TemporaryDirectory(prefix="adaptshot_quickstart_") as tmp:
     query_path = root / "field_photo.png"
     make_image(query_path, (150, 80, 35), noise_seed=999)
 
+    # v0.2.0 config with all production features
     config = AdaptShotConfig(
         backbone="resnet18",
         device="cpu",
         seed=42,
         max_buffer_size=10,
         use_faiss=False,
+        conformal_alpha=0.10,          # 90% coverage guarantee
+        explainability_enabled=True,
     )
     learner = FewShotLearner(config=config)
     learner.load_support_images(image_paths=image_paths, labels=labels)
@@ -89,10 +92,16 @@ with tempfile.TemporaryDirectory(prefix="adaptshot_quickstart_") as tmp:
     print(f"Prediction: {prediction_name}")
     print(f"Calibrated confidence: {result.calibrated_confidence:.1%}")
     print(f"Needs review: {result.uncertainty_flag}")
+    print(f"Conformal set: {result.conformal_set}")
     print(f"Latency: {latency_ms:.1f} ms")
     print(f"Peak traced memory: {peak_bytes / 1024 / 1024:.1f} MiB")
 
-    # Simulate a human correction. This intentionally uses integer true_label.
+    # v0.2.0: Uncertainty report
+    if result.uncertainty_report:
+        print(f"Uncertainty: epistemic={result.uncertainty_report.get('epistemic', 0):.3f}, "
+              f"aleatoric={result.uncertainty_report.get('aleatoric', 0):.3f}")
+
+    # Simulate a human correction
     feedback = learner.correct(
         image_path=str(query_path),
         true_label=0,
@@ -102,20 +111,22 @@ with tempfile.TemporaryDirectory(prefix="adaptshot_quickstart_") as tmp:
     print(f"Fine-tuned: {feedback['fine_tuned']}")
 ```
 
-Example output will resemble:
+Example output:
 
 ```text
 Prediction: maize_blight
-Calibrated confidence: 99.7%
+Calibrated confidence: 97.2%
 Needs review: False
+Conformal set: [1, 0]
 Latency: 150.6 ms
 Peak traced memory: 0.5 MiB
+Uncertainty: epistemic=0.042, aleatoric=0.118
 Correction routed: True
 Fine-tuned: False
 ```
 
 !!! note "About The Numbers"
-    The tutorial measures latency and traced Python allocations on your machine. Do not treat the example output as a benchmark claim. For the supported benchmark harness, see [Benchmarks](benchmarks.md).
+    This tutorial measures latency and traced Python allocations on your machine. Do not treat the example output as a benchmark claim. For the supported benchmark harness, see [Benchmarks](benchmarks.md).
 
 ## Step 3: Save State
 
@@ -129,77 +140,41 @@ This creates:
 - `checkpoints/demo.embeddings.npy`
 - `checkpoints/demo.head.pt`
 
-!!! warning "Load Caveat"
-    The v0.1.1 branch includes `FewShotLearner.load(path)` with checkpoint integrity validation and schema migration support.
+!!! note "v0.2.0 Checkpoint Integrity"
+    `load()` performs SHA-256 integrity verification, schema version migration, and atomic writes. Checkpoints created in v0.1.x are automatically migrated to v0.2.0 format.
+
+## Step 4: Try Contrastive Inference
+
+v0.2.0 supports gradient-trained contrastive prototypes. Switch inference mode:
+
+```python
+config = AdaptShotConfig(
+    backbone="resnet18",
+    device="cpu",
+    inference_mode="contrastive",  # Use InfoNCE-trained prototypes
+    contrastive_config=ContrastiveConfig(
+        projection_dim=128,
+        temperature=0.1,
+        learning_rate=0.01,
+    ),
+)
+learner = FewShotLearner(config=config)
+# ... rest is identical to the prototypical flow
+```
 
 ## Verification Checklist
 
 - [ ] The script imports `FewShotLearner` and `AdaptShotConfig`.
 - [ ] `load_support_images(image_paths, labels)` receives lists with matching length.
-- [ ] `predict()` prints a `PredictionResult`.
-- [ ] `correct()` uses integer labels and returns a dictionary with `fine_tuned`.
+- [ ] `predict()` returns a `PredictionResult` with `conformal_set` and `uncertainty_report`.
+- [ ] `correct()` accepts integer labels and returns a dictionary with `fine_tuned`.
 - [ ] Latency and memory are measured locally with `time.perf_counter()` and `tracemalloc`.
-
-## Next Steps After Quick Start
-
-Now that you've run a complete pipeline:
-
-1. **Try MziziGuard** — launch the full web app: `python -m examples.mziziguard.app`
-2. **Run benchmarks** — `python -m benchmarks.run_benchmark --smoke-test --seed 42`
-3. **Explore the API** — [Core API Reference](../api/core.md) for all `FewShotLearner` methods
-4. **Learn the internals** — [AdaptShot Deep Dive](../guides/adaptshot-deep-dive.md)
-5. **Deploy in the field** — [Deployment Guide](../guides/deployment-guide.md)
-
-## Quick Start Variations
-
-### With String Labels
-
-```python
-labels = ["healthy", "healthy", "healthy", "blight", "blight", "blight"]
-learner.load_support_images(image_paths, labels)
-```
-
-### With Custom Config
-
-```python
-config = AdaptShotConfig(
-    backbone="mobilenet_v3_small",  # For low-power devices
-    similarity_metric="cosine",      # Angle-based comparison
-    eco_mode=True,                    # Battery saving
-    enable_ood_detection=True,        # Catch unusual images
-)
-```
-
-### With FAISS Acceleration
-
-```python
-config = AdaptShotConfig(
-    use_faiss=True,       # Build FAISS index
-    faiss_nprobe=16,      # Search probe depth
-)
-# Significant speedup for support sets > 100 images
-```
-
-### Measuring Determinism
-
-```python
-config = AdaptShotConfig(seed=42)
-learner1 = FewShotLearner(config=config)
-learner2 = FewShotLearner(config=config)
-
-learner1.load_support_images(paths, labels)
-learner2.load_support_images(paths, labels)
-
-result1 = learner1.predict(query)
-result2 = learner2.predict(query)
-
-assert result1.prediction == result2.prediction
-assert abs(result1.calibrated_confidence - result2.calibrated_confidence) < 1e-6
-print("✓ Deterministic: both runs produce identical results")
-```
 
 ---
 
-*Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
-*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
-*Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*
+## What's Next?
+
+- **[Beginner 101](beginner-101.md)** — Understand every field in the output
+- **[Tutorials](../tutorials.md)** — 18 hands-on guides from basic to advanced
+- **[⭐ Star us on GitHub](https://github.com/johnson2006christopher/adaptshot)** — Help us reach more developers
+- **[📱 Join WhatsApp](https://chat.whatsapp.com/J6AbrvbjmBc5XXX2fnN6RK)** — Get help and share your experience

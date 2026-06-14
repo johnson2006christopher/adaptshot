@@ -1,5 +1,3 @@
-
-```markdown
 # Contributing to AdaptShot
 
 Thank you for your interest in contributing to AdaptShot. This document outlines how to contribute code, documentation, or feedback in a way that aligns with our mission: **building trustworthy, CPU-first few-shot vision AI for resource-constrained environments**.
@@ -118,8 +116,9 @@ def test_new_component_basic():
 ## 🗣️ Communication
 - **Discussions**: Use GitHub Discussions for questions, ideas, and RFCs
 - **Issues**: Report bugs or request features via GitHub Issues
+- **WhatsApp**: Join our [community WhatsApp group](https://chat.whatsapp.com/J6AbrvbjmBc5XXX2fnN6RK) for real-time discussion
 - **Security**: Report vulnerabilities privately to johnson2006christopher@gmail.com
-- **Code of Conduct**: All interactions follow our [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
+- **Code of Conduct**: All interactions follow our [Code of Conduct](CODE_OF_CONDUCT.md)
 
 ## 📚 Documentation
 - **API docs**: Auto-generated from docstrings via MkDocs + mkdocstrings

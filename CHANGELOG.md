@@ -5,28 +5,125 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.2.0-dev] - Unreleased
 
-### Planned for v0.2.0
-- ONNX export support for broader edge deployment (Android, WebAssembly)
-- ARM profiling guide with Raspberry Pi benchmark results
-- Improved UP-UGF redundancy computation (approximate nearest-neighbor fallback for larger buffers)
-- Conformal prediction implementation beyond current stub
-- French documentation and UI localization (planned post-v0.1.2; Swahili ships in v0.1.2)
-- Automated GitHub Actions workflow for CI testing, linting, and docs deployment
-- Federated buffer sharing for multi-device deployments
-- Plugin architecture for experimental backends
+### Added
+- **Conformal Prediction Engine** (`conformal.py`): Distribution-free conformal prediction with split and cross modes,
+  softmax/distance nonconformity scores, and adaptive prediction sets at configurable significance levels.
+- **Contrastive Prototype Networks** (`contrastive.py`): Siamese-style contrastive loss with InfoNCE, learnable
+  temperature, 2-layer MLP projection head (128-dim bottleneck), and EMA momentum prototype updates.
+- **Advanced Uncertainty Quantification** (`uncertainty.py`): Multi-signal uncertainty with epistemic (MC Dropout),
+  aleatoric (k-NN entropy), and distributional (Mahalanobis distance) signals; OOD detection via class-conditional
+  Gaussian distributions.
+- **XAI Explainability** (`explain.py`): Gradient-based saliency, feature attribution (top-k neighbor influence),
+  confidence decomposition, and counterfactual explanation support.
+- **New Config Fields**: `conformal_alpha`, `conformal_mode`, `uncertainty_mode`, `explainability_enabled`
+  (26 total fields, up from 22).
+- **New inference mode**: `inference_mode="contrastive"` for contrastive prototype-based classification.
+- **37 new tests** across 4 test files: `test_conformal.py` (12), `test_contrastive.py` (7),
+  `test_uncertainty.py` (10), `test_explain.py` (8).
+- **12 new documentation pages**: Architecture deep-dive, algorithm theory, full API reference,
+  5 advanced tutorials (conformal prediction, uncertainty, explainability, contrastive learning,
+  end-to-end workflow), 2 comprehensive GUI guides (Studio, Pilot Dashboard).
+- **True Leave-One-Out Conformal Calibration**: Per-example prototype recomputation for valid
+  finite-sample coverage guarantees under exchangeability.
+- **Shrinkage Covariance Estimation**: Ledoit-Wolf-style shrinkage with adaptive alpha = d/(d+n_k)
+  for robust Mahalanobis OOD detection in high-dimensional few-shot settings.
+- **Bootstrap Temperature Calibration**: LOO grid-search temperature optimization for
+  autonomous operation without requiring pre-calibrated temperature.
+- **Random Projection LSH for UP-UGF**: Approximate O(N log N) redundancy scoring via
+  random projection locality-sensitive hashing when buffer exceeds 100 examples.
+- **Memory Profiling** (`utils/profiling.py`): `MemoryTracker` context manager with
+  tracemalloc + psutil instrumentation; `estimate_model_memory_mb()` for pre-flight checks.
+- **ONNX Export Script** (`scripts/export_backbones.py`): Exports ResNet-18 and
+  MobileNetV3-Small to ONNX with SHA-256 verification and metadata generation.
+- **miniImageNet Benchmark Support**: CSV-based miniImageNet loading, `BASELINE_REFERENCES`
+  for Prototypical/Matching/MAML baselines, and `--full-benchmark` CLI flag.
+- **Historical Penalty Tracking**: `ExplainabilityEngine` tracks ACT and OOD penalties
+  over time for intelligent confidence decomposition fallbacks (replaces magic numbers).
+- **Eco-Mode Enhancements**: 32×32 preview resolution (up from 16×16), `clear_backbone_cache()`
+  for `@lru_cache` invalidation on config change, norm ratio eco-mode safety guard.
+
+### Changed
+- Schema version bumped to `0.2.0` with backwards-compatible migration.
+- Package version updated to `0.2.0-dev` in `pyproject.toml` and `__init__.py`.
+- `FewShotLearner` now accepts `inference_mode="contrastive"` and wires new engines (Conformal, Contrastive,
+  Uncertainty, Explainability).
+- `PredictionResult` extended with conformal prediction sets, uncertainty reports, and explanation results.
+- Default `inference_mode` changed to `"prototypical"`.
+
+### Fixed
+- `np.unique` unpacking bug in uncertainty module (single return value incorrectly destructured).
+- Mypy strict-mode compliance across all 31 source files.
+- Pre-existing test failures from schema version and inference_mode API mismatches.
+- **Contrastive inference wired**: `predict()` now correctly routes to contrastive nearest-prototype when `inference_mode="contrastive"` (was silently falling through to nearest-neighbor).
+- **Epistemic uncertainty implemented**: Replaced unimplemented MC Dropout claim with working embedding perturbation sensitivity proxy (`estimate_epistemic()`).
+- **Uncertainty mode gating**: `uncertainty_mode` config field now gates signal computation in `UncertaintyQuantifier.quantify()`, avoiding wasted compute.
+- **Cross-conformal mode**: Implemented k-fold cross-conformal quantile averaging in `ConformalEngine` when `conformal_mode="cross"`.
+- **OOD detection unified**: `predict()` now uses Mahalanobis-based OOD detection via `UncertaintyQuantifier.is_ood()` as the primary path instead of the legacy distance-threshold method.
+- **Confidence decomposition clarified**: Simplified math in `decompose_confidence()` to `calibrated + penalties`, eliminating confusing intermediate calculations.
+- **Documentation accuracy**: Replaced "gradient-based saliency" claims with honest "embedding-space saliency" language; updated epistemic uncertainty description from MC Dropout to perturbation sensitivity.
+- **Contrastive projection head training**: `_train_projection_head()` now performs full InfoNCE gradient descent through W1/b1/W2/b2 with momentum SGD (was previously initialized but never trained, making the projection head an identity transform).
+- **Conformal LOO calibration**: `_self_calibrate_conformal()` recomputes prototypes excluding each support example for true leave-one-out nonconformity scores (was reusing full-support prototypes, invalidating coverage guarantees).
+- **Mahalanobis shrinkage**: `fit_class_distributions()` uses shrinkage covariance estimation with adaptive alpha, falling back to diagonal when n_per_class < embedding_dim (was using raw sample covariance, which is singular in few-shot high-dim settings).
+- **CA-EWC scope honesty**: `CAEWCFinetuner` docstring now explicitly states head-only scope (~2K params for 5-way ResNet-18), not full-network EWC.
+- **ACT symmetric update**: Threshold delta replaced with `η * (incorrect_rate − correct_rate)` plus mean-reversion toward base threshold, eliminating monotonic drift.
+- **Confidence decomposition fallbacks**: Replaced magic numbers `-0.15`/`-0.25` with historical 20-window averages of tracked ACT penalties.
+- **UP-UGF LSH mode**: `_compute_redundancy_scores()` splits into exact (N≤100) and approximate LSH (N>100) paths, reducing O(N²) to O(N log N) for large buffers.
+- **Graceful calibration fallback**: `_calibrate_or_raise()` no longer raises on first predict; uses bootstrap temperature calibration when conformal buffer is cold.
+- **Eco-mode resolution**: Preview upgraded from 16×16 to 32×32 with norm ratio guard (>0.3 required before early-exit gating).
+- **Config default fixed**: `uncertainty_mode` default changed from `"entropy"` to `"ensemble"` (now consistent with README).
+- **Conformal calibration wired**: Self-calibration on `load_support_images()` populates calibration buffer via leave-one-out scores; `correct()` feeds ground-truth nonconformity scores into the conformal engine. Prediction sets now produce meaningful multi-class outputs instead of degenerate singletons.
+- **Torch lazy imports in learner.py**: Moved `import torch`, `DataLoader`, `TensorDataset` out of module level into lazy getters (`_get_torch()`, `_get_torch_nn()`, `_get_data_loader()`). `FewShotLearner` is now importable without a hard torch dependency — PyTorch is truly optional.
+- **Contrastive mode shape mismatch fixed**: Contrastive prototypes (128-dim projection space) now stored in separate `_contrastive_prototype_*` fields; embedding-space prototypes (`_prototype_embeddings`) always remain 512-dim for conformal/OOD distance math. Eliminates the 512-vs-128 dimension mismatch in distance computations.
+- **ACTEngine dynamic class allocation**: Changed from `n_classes=200` to `n_classes=max(10, config.n_way)`; dynamic expansion handles additional classes at runtime.
+- **`compute_saliency_numpy()` implemented**: Returns per-dimension embedding-space feature importance via `|query - support|` normalized to [0,1]. No longer returns `None`.
+- **Epistemic uncertainty stochastic**: `estimate_epistemic()` seed default changed from `42` to `None` — each call produces a genuinely different perturbation pattern, capturing stochastic sensitivity.
+- **Confidence decomposition penalties derived from state**: ACT penalty now proportional to (confidence - threshold) gap when threshold available; OOD penalty proportional to Mahalanobis OOD score. Falls back to conservative defaults when state unavailable.
 
 ---
 
-## [0.1.2] - Unreleased
+## [0.1.2] - 2026-06-08
 
-### Planned
-- **Swahili UI Localization**: Gradio dashboard interface fully translated to Swahili, serving Tanzanian and East African users in their primary language
-- **Gradio UI Enhancements**: Improved widget layout, accessibility labels, and localization infrastructure to support future language additions
-- **Localization Framework**: i18n string extraction and translation pipeline for the Gradio dashboard
+### Added
+- **Lazy torch imports**: `extractor.py` uses deferred imports for PyTorch and torchvision,
+  keeping the module importable without a hard torch dependency at install time.
+- **ONNX Runtime backend** (`backends/onnx_backend.py`): Lightweight feature extraction
+  via bundled ONNX backbone models when torch is not installed.
+- **Backend abstraction layer** (`backends/__init__.py`): Unified interface for ONNX Runtime
+  and PyTorch backends with auto-detection.
+- **ONNX export script** (`scripts/export_backbones.py`): Generates pre-trained backbone
+  ONNX models for torch-free inference.
+- **Optional `[torch]` extra**: PyTorch and torchvision moved to optional dependencies;
+  core library requires only numpy + Pillow.
+- **Package data support**: `.onnx` model files bundled via `[tool.setuptools.package-data]`.
 
-> **Note**: French localization is **explicitly excluded** from v0.1.2. The focus is Swahili-first — serving East African communities before expanding to Francophone regions. French remains on the v0.2.0 roadmap.
+### Changed
+- **Pretrained backbone weights**: Changed from `weights=None` (random) to
+  `weights="IMAGENET1K_V1"` — essential for the ImageNet-normalized preprocessing pipeline
+  and for producing meaningful few-shot embeddings.
+- **Calibration engine**: Replaced `torch.nn.Parameter(torch.tensor(...))` with a plain
+  `float` for the temperature parameter; no autograd needed for grid-search calibration.
+- **Config validation**: Lazy `import torch` for CUDA availability check in `AdaptShotConfig`;
+  graceful warning when torch is not installed.
+- **Fine-tuning module**: Conditional torch import with `_TORCH_AVAILABLE` guard;
+  `CAEWCFinetuner` raises a clear `ImportError` message when torch is missing.
+- **PIL API**: Uses `Image.Resampling.BILINEAR` via `getattr` lookup for cross-version compatibility.
+- **Version bump**: `__version__` updated to `"0.1.2"` in both `pyproject.toml` and `__init__.py`.
+
+### Fixed
+- **Installation performance**: Core dependencies reduced from 4 (torch, torchvision, numpy, Pillow)
+  to 2 (numpy, Pillow). PyTorch is now optional via `pip install "adaptshot[torch]"`.
+- **Backbone consistency**: All backbones now use pre-trained ImageNet weights, matching the
+  preprocessing pipeline expectations.
+
+### Planned for v0.1.2 release
+- **Swahili UI Localization**: Gradio dashboard interface fully translated to Swahili,
+  serving Tanzanian and East African users in their primary language.
+- **Gradio UI Enhancements**: Improved widget layout, accessibility labels, and
+  localization infrastructure.
+- **Localization Framework**: i18n string extraction and translation pipeline for
+  the Gradio dashboard.
 
 ---
 

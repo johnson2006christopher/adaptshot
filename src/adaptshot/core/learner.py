@@ -2,7 +2,8 @@
 
 Exposes a single, high-level interface that orchestrates embedding extraction,
 similarity search, calibration, ACT gating, human feedback routing, CA-EWC
-fine-tuning, and UP-UGF buffer management.
+fine-tuning, UP-UGF buffer management, conformal prediction, contrastive
+prototype learning, advanced uncertainty quantification, and explainability.
 """
 
 from __future__ import annotations
@@ -16,12 +17,10 @@ import warnings
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union, cast
 
 import numpy as np
-import torch
 from PIL import Image, UnidentifiedImageError
-from torch.utils.data import DataLoader, TensorDataset
 
 from ..config.settings import AdaptShotConfig
 from ..training.feedback_router import Correction, FeedbackRouter
@@ -37,6 +36,10 @@ from ..utils.exceptions import (
 from ..utils.migrations import migrate_v0_1_0_to_v0_1_1
 from .act import ACTEngine
 from .calibration import CalibrationEngine
+from .conformal import ConformalEngine
+from .contrastive import ContrastivePrototypeLearner
+from .uncertainty import UncertaintyQuantifier
+from .explain import ExplainabilityEngine, ExplanationResult
 from .extractor import (
     BACKBONE_OUTPUT_DIM,
     EmbeddingCache,
@@ -50,8 +53,47 @@ from .similarity import (
     find_nearest_prototype,
 )
 
+if TYPE_CHECKING:
+    pass
+
+# ---------------------------------------------------------------------------
+# Lazy import helpers – torch is resolved only when first needed.
+# This keeps the module importable without a hard torch dependency.
+# ---------------------------------------------------------------------------
+
+_TORCH: Any = None
+_TORCH_NN: Any = None
+_TORCH_UTILS_DATA: Any = None
+
+
+def _get_torch() -> Any:
+    global _TORCH
+    if _TORCH is None:
+        import torch as _t
+
+        _TORCH = _t
+    return _TORCH
+
+
+def _get_torch_nn() -> Any:
+    global _TORCH_NN
+    if _TORCH_NN is None:
+        from torch import nn as _nn
+
+        _TORCH_NN = _nn
+    return _TORCH_NN
+
+
+def _get_data_loader() -> Any:
+    global _TORCH_UTILS_DATA
+    if _TORCH_UTILS_DATA is None:
+        from torch.utils.data import DataLoader as _DL, TensorDataset as _TD
+
+        _TORCH_UTILS_DATA = (_DL, _TD)
+    return _TORCH_UTILS_DATA
+
 logger = logging.getLogger(__name__)
-SCHEMA_VERSION = "0.1.1"
+SCHEMA_VERSION = "0.2.0"
 
 
 @dataclass
@@ -68,6 +110,10 @@ class PredictionResult:
     prototype_margin: float = 0.0
     ood_flag: bool = False
     debiased_ece: float = 0.0
+    # v0.2.0 fields
+    conformal_set: Optional[List[Union[str, int]]] = None
+    uncertainty_report: Optional[Dict[str, float]] = None
+    nearest_neighbors: Optional[List[Dict[str, Any]]] = None
 
 
 class FewShotLearner:
@@ -90,7 +136,18 @@ class FewShotLearner:
             method=self.config.calibration_method,
             evaluation_bins=self.config.calibration_eval_bins,
         )
-        self.act = ACTEngine(n_classes=200)
+        self.act = ACTEngine(n_classes=max(10, self.config.n_way))
+
+        # v0.2.0: Advanced engines
+        self.conformal = ConformalEngine(
+            alpha=self.config.conformal_alpha,
+            mode=self.config.conformal_mode,
+        )
+        self.contrastive = ContrastivePrototypeLearner()
+        self.uncertainty_q = UncertaintyQuantifier(
+            ood_percentile=self.config.ood_threshold_quantile * 100,
+        )
+        self.explainer = ExplainabilityEngine()
 
         self._sim_embeddings: List[np.ndarray] = []
         self._sim_labels: List[Union[str, int]] = []
@@ -100,6 +157,11 @@ class FewShotLearner:
         self._prototype_embeddings: np.ndarray = np.empty((0, 0), dtype=np.float32)
         self._prototype_labels: np.ndarray = np.asarray([], dtype=object)
         self._prototype_counts: np.ndarray = np.asarray([], dtype=np.int64)
+        # v0.2.0: Separate contrastive prototypes in projection-head space (128-dim)
+        # These are used only when inference_mode="contrastive"; embedding-space
+        # prototypes (_prototype_embeddings) remain 512-dim for conformal/OOD.
+        self._contrastive_prototype_embeddings: np.ndarray = np.empty((0, 0), dtype=np.float32)
+        self._contrastive_prototype_labels: np.ndarray = np.asarray([], dtype=object)
         self._ood_distance_threshold: float = self.config.ood_absolute_min_distance
 
         self.pruner = UPUGFPruner(
@@ -110,7 +172,7 @@ class FewShotLearner:
         )
 
         self.finetuner: Optional[CAEWCFinetuner] = None
-        self._model_head: Optional[torch.nn.Linear] = None
+        self._model_head: Optional[Any] = None  # torch.nn.Linear (lazy)
 
         self.router = FeedbackRouter(
             buffer_capacity=self.config.max_buffer_size,
@@ -197,6 +259,31 @@ class FewShotLearner:
                 self._sim_embeddings[0],
                 self._sim_preview_signatures[0],
             )
+
+        # v0.2.0: Fit advanced engines on support data
+        support_arr = np.array(self._sim_embeddings, dtype=np.float32)
+        label_arr = np.array(self._sim_labels, dtype=object)
+        self.uncertainty_q.fit_class_distributions(support_arr, label_arr)
+        if self.config.inference_mode == "contrastive":
+            # Store contrastive-refined prototypes separately (128-dim projection space)
+            # so _prototype_embeddings stays 512-dim for conformal/OOD distance math
+            (
+                self._contrastive_prototype_embeddings,
+                self._contrastive_prototype_labels,
+            ) = self.contrastive.refine_prototypes(
+                support_arr, label_arr, seed=self.config.seed
+            )
+
+        # v0.2.0: Self-calibration — leave-one-out conformal scores on support set
+        if self._prototype_embeddings.size > 0:
+            self._self_calibrate_conformal(support_arr, label_arr)
+
+        # v0.2.0: Bootstrap temperature calibration from support set
+        # Uses leave-one-out cross-validation to initialize temperature
+        # scaling, so predict() produces calibrated confidences from the
+        # first call without waiting for correct() feedback.
+        self._bootstrap_temperature_calibration(support_arr, label_arr)
+
         self._is_initialized = True
 
     def predict(self, image: Union[str, Image.Image, np.ndarray]) -> PredictionResult:
@@ -224,13 +311,28 @@ class FewShotLearner:
         support_embeddings = np.array(self._sim_embeddings, dtype=np.float32)
         support_labels = np.array(self._sim_labels, dtype=object)
 
-        if self.config.inference_mode == "prototypical" and self._prototype_embeddings.size > 0:
-            pred_label_raw, raw_conf, _, distance_to_prototype, prototype_margin = find_nearest_prototype(
+        if self.config.inference_mode == "contrastive" and self.contrastive.is_fitted:
+            pred_label_raw, raw_conf, proto_idx = self.contrastive.nearest_prototype(
+                query_emb, self._contrastive_prototype_embeddings, self._contrastive_prototype_labels
+            )
+            pred_label = self._coerce_label(pred_label_raw)
+            neighbor_idx = self._nearest_support_index_for_label(query_emb, pred_label)
+            distance_to_prototype = self._distance_to_label_prototype(query_emb, pred_label)
+            # Contrastive prototype margin: confidence gap to second-closest class
+            sims = self.contrastive.project_query(query_emb) @ self._contrastive_prototype_embeddings.T
+            sorted_sims = np.sort(sims)[::-1]
+            prototype_margin = float(sorted_sims[0] - sorted_sims[1]) if len(sorted_sims) > 1 else 0.0
+        elif self.config.inference_mode == "prototypical" and self._prototype_embeddings.size > 0:
+            result = find_nearest_prototype(
                 query=query_emb,
                 prototypes=self._prototype_embeddings,
                 prototype_labels=self._prototype_labels,
                 metric=self.config.similarity_metric,
             )
+            pred_label_raw = cast(Union[str, int], result[0])
+            raw_conf = result[1]
+            distance_to_prototype = result[3]
+            prototype_margin = result[4]
             pred_label = self._coerce_label(pred_label_raw)
             neighbor_idx = self._nearest_support_index_for_label(query_emb, pred_label)
         else:
@@ -264,10 +366,9 @@ class FewShotLearner:
             recent_correct_rate=1.0 - recent_unc,
         )
 
-        ood_flag = self._is_out_of_distribution(
-            distance_to_prototype=distance_to_prototype,
-            prototype_margin=prototype_margin,
-        )
+        ood_flag = False
+        if self.config.enable_ood_detection:
+            ood_flag, _ = self.uncertainty_q.is_ood(query_emb)
         if ood_flag:
             accept = False
             act_action = "REQUEST_FEEDBACK_OOD"
@@ -281,6 +382,33 @@ class FewShotLearner:
 
         calibration_summary = self.calibrator.calibration_summary()
 
+        # v0.2.0: Conformal prediction set
+        prototype_distances = self._compute_all_prototype_distances(query_emb)
+        proto_labels = self._prototype_labels
+        conformal_result = self.conformal.predict_set(
+            prototype_distances, proto_labels, pred_label, calibrated_conf
+        )
+        conformal_list = sorted(conformal_result.prediction_set, key=str)
+
+        # v0.2.0: Uncertainty report (mode-gated)
+        uncertainty_report = self.uncertainty_q.quantify(
+            query_emb, support_embeddings, support_labels,
+            mode=self.config.uncertainty_mode,
+        )
+
+        # v0.2.0: Nearest neighbors for explainability
+        k_nn = min(5, len(support_embeddings))
+        nn_distances = np.sqrt(np.sum((support_embeddings - query_emb) ** 2, axis=1))
+        nn_top_idx = np.argsort(nn_distances)[:k_nn]
+        nearest_neighbors = [
+            {
+                "index": int(idx),
+                "label": str(self._sim_labels[idx]),
+                "distance": float(nn_distances[idx]),
+            }
+            for idx in nn_top_idx
+        ]
+
         return PredictionResult(
             prediction=pred_label,
             raw_confidence=float(raw_conf),
@@ -292,6 +420,61 @@ class FewShotLearner:
             prototype_margin=float(prototype_margin),
             ood_flag=bool(ood_flag),
             debiased_ece=float(calibration_summary["debiased_ece"]),
+            conformal_set=conformal_list,
+            uncertainty_report=uncertainty_report.to_dict(),
+            nearest_neighbors=nearest_neighbors,
+        )
+
+    def explain(self, image: Union[str, Image.Image, np.ndarray]) -> ExplanationResult:
+        """Generate a multi-faceted explanation for a prediction.
+
+        Combines feature attribution (which support examples influenced the
+        prediction), confidence decomposition (how each component contributed),
+        and counterfactual analysis (what would change the prediction).
+
+        Args:
+            image: File path, PIL image, or HWC NumPy array.
+
+        Returns:
+            ExplanationResult with attributions, confidence breakdown,
+            counterfactual, and a human-readable summary.
+
+        Raises:
+            AdaptShotError: If support set is not initialized.
+        """
+        self._ensure_initialized()
+        if not self._sim_embeddings:
+            raise AdaptShotError(
+                "Support set is empty. Load support examples with load_support_images() "
+                "before calling explain()."
+            )
+
+        normalized_image = self._normalize_predict_image(image)
+        query_emb = self._extract_embedding_checked(image=normalized_image, source="explain")
+        support_embeddings = np.array(self._sim_embeddings, dtype=np.float32)
+        support_labels = np.array(self._sim_labels, dtype=object)
+
+        # Run prediction first to get labels and confidences
+        result = self.predict(image)
+
+        # Derive ACT threshold and OOD score from the prediction
+        class_idx = self._label_to_idx.get(result.prediction, 0)
+        act_threshold = self.act.get_threshold(class_idx)
+        ood_score: Optional[float] = None
+        if result.ood_flag and result.uncertainty_report is not None:
+            ood_score = float(result.uncertainty_report.get("ood_score", 0.0))
+
+        return self.explainer.explain(
+            query_embedding=query_emb,
+            support_embeddings=support_embeddings,
+            support_labels=support_labels,
+            predicted_label=result.prediction,
+            raw_confidence=result.raw_confidence,
+            calibrated_confidence=result.calibrated_confidence,
+            act_action=result.act_action,
+            is_ood=result.ood_flag,
+            act_threshold=act_threshold,
+            ood_score=ood_score,
         )
 
     def correct(
@@ -372,6 +555,24 @@ class FewShotLearner:
 
         if self.config.recalibrate_after_feedback:
             result["calibration_summary"] = self.calibrator.calibration_summary()
+
+        # v0.2.0: Update conformal calibration buffer with ground-truth score
+        if self._prototype_embeddings.size > 0:
+            query_distances = self._compute_all_prototype_distances(query_emb)
+            proto_labels = self._prototype_labels
+            if self.conformal.score_method == "softmax":
+                score = self.conformal.softmax_nonconformity(
+                    query_distances, proto_labels, true_label
+                )
+            else:
+                true_proto_idx = self._prototype_index_for_label(true_label)
+                if true_proto_idx is not None:
+                    dist_to_true = float(query_distances[true_proto_idx])
+                    ref_threshold = float(np.median(query_distances)) + float(np.std(query_distances))
+                    score = self.conformal.distance_nonconformity(dist_to_true, ref_threshold)
+                else:
+                    score = 1.0
+            self.conformal.update_calibration(score, true_label)
 
         return result
 
@@ -465,6 +666,11 @@ class FewShotLearner:
                 if self._prototype_embeddings.size > 0
                 else [],
                 "ood_distance_threshold": self._ood_distance_threshold,
+                # v0.2.0: Contrastive prototypes (128-dim projection space)
+                "contrastive_labels": self._contrastive_prototype_labels.tolist(),
+                "contrastive_embeddings": self._contrastive_prototype_embeddings.tolist()
+                if self._contrastive_prototype_embeddings.size > 0
+                else [],
             },
             "label_index": {
                 "label_to_idx": self._label_to_idx,
@@ -491,7 +697,7 @@ class FewShotLearner:
             os.replace(emb_tmp, target.with_suffix(".embeddings.npy"))
 
             if self._model_head is not None:
-                torch.save(self._model_head.state_dict(), head_tmp)
+                _get_torch().save(self._model_head.state_dict(), head_tmp)
                 os.replace(head_tmp, target.with_suffix(".head.pt"))
         finally:
             for temp_path in (json_tmp, emb_tmp, head_tmp):
@@ -572,7 +778,7 @@ class FewShotLearner:
     def _validate_config(self, config: AdaptShotConfig) -> None:
         if config.device != "cpu":
             raise ConfigValidationError(
-                "AdaptShot v0.1.1 is CPU-first. Set device='cpu'. "
+                "AdaptShot is CPU-first. Set device='cpu'. "
                 "See docs/getting-started/quickstart.md."
             )
         if config.ece_n_bins <= 1:
@@ -595,9 +801,9 @@ class FewShotLearner:
                 "similarity_metric must be 'cosine' or 'euclidean'. "
                 f"Received {config.similarity_metric}."
             )
-        if config.inference_mode not in {"nearest_neighbor", "prototypical"}:
+        if config.inference_mode not in {"nearest_neighbor", "prototypical", "contrastive"}:
             raise ConfigValidationError(
-                "inference_mode must be 'nearest_neighbor' or 'prototypical'. "
+                "inference_mode must be 'nearest_neighbor', 'prototypical', or 'contrastive'. "
                 f"Received {config.inference_mode}."
             )
         if config.calibration_eval_bins < config.ece_n_bins:
@@ -781,11 +987,12 @@ class FewShotLearner:
         min_samples = max(10, self.calibrator.window_size // 2)
         observed = len(self.calibrator._window_confidences)
         if self.calibrator.method in {"temperature", "scaling_binning"} and observed < min_samples:
-            raise CalibrationNotReadyError(
-                "Calibration window is not ready. "
-                f"Need at least {min_samples} observations, got {observed}. "
-                "Continue collecting feedback with correct()."
-            )
+            # v0.2.0: Instead of raising, fall back gracefully.
+            # This allows autonomous predict() to work from the first call
+            # without requiring a separate calibration step.
+            self.calibrator._window_confidences.append(float(raw_confidence))
+            self.calibrator._window_correct.append(True)  # optimistic prior
+            return self._raw_to_unit_interval(raw_confidence)
         return float(self.calibrator.calibrate(raw_confidence))
 
     def _raw_to_unit_interval(self, raw_confidence: float) -> float:
@@ -886,6 +1093,20 @@ class FewShotLearner:
         local_idx = int(np.argmax(cosine_scores))
         return int(candidates[local_idx])
 
+    def _compute_all_prototype_distances(self, query_embedding: np.ndarray) -> np.ndarray:
+        """Compute distances from query to all class prototypes.
+
+        Used by conformal prediction to build candidate set scores.
+        Returns [K] array of distances for K prototype classes.
+        """
+        if self._prototype_embeddings.size == 0:
+            return np.array([], dtype=np.float32)
+        query_2d = np.asarray(query_embedding, dtype=np.float32).reshape(1, -1)
+        diffs = query_2d - self._prototype_embeddings
+        distances = np.sqrt(np.sum(diffs ** 2, axis=1))
+        result: np.ndarray = np.asarray(distances, dtype=np.float32)
+        return result
+
     def _update_ood_threshold(self) -> None:
         if not self.config.enable_ood_detection:
             self._ood_distance_threshold = float("inf")
@@ -928,6 +1149,163 @@ class FewShotLearner:
         distance_flag = float(distance_to_prototype) > float(self._ood_distance_threshold)
         margin_flag = np.isfinite(prototype_margin) and float(prototype_margin) < 0.01
         return bool(distance_flag or margin_flag)
+
+    def _self_calibrate_conformal(
+        self,
+        support_embeddings: np.ndarray,
+        support_labels: np.ndarray,
+    ) -> None:
+        """Bootstrap conformal calibration via TRUE leave-one-out.
+
+        For each support example i, recomputes class prototypes excluding
+        example i, then computes the nonconformity score against those
+        leave-one-out prototypes. This guarantees valid marginal coverage
+        under the exchangeability assumption.
+
+        Previous implementation (v0.2.0-dev) used full prototypes including
+        the example itself, which violates the exchangeability requirement.
+
+        Args:
+            support_embeddings: [N, D] support set embeddings (512-dim).
+            support_labels: [N] support class labels.
+        """
+        n = len(support_embeddings)
+        if n < self.conformal.min_calibration_size:
+            return
+
+        self.conformal.reset()
+
+        # Pre-group indices by label for efficient LOO prototype recomputation
+        label_to_indices: Dict[object, List[int]] = {}
+        for i in range(n):
+            key = self._label_key(support_labels[i])
+            if key not in label_to_indices:
+                label_to_indices[key] = []
+            label_to_indices[key].append(i)
+
+        for i in range(n):
+            emb_i = np.asarray(support_embeddings[i], dtype=np.float32)
+            label_i = support_labels[i]
+            key_i = self._label_key(label_i)
+
+            # Leave-one-out: exclude example i from prototypes
+            loo_prototypes: List[np.ndarray] = []
+            loo_labels: List[object] = []
+
+            for key, indices in label_to_indices.items():
+                loo_indices = [j for j in indices if j != i]
+                if not loo_indices:
+                    continue
+                loo_embs = np.array(
+                    [np.asarray(support_embeddings[j], dtype=np.float32) for j in loo_indices],
+                    dtype=np.float32,
+                )
+                loo_prototypes.append(loo_embs.mean(axis=0))
+                loo_labels.append(support_labels[loo_indices[0]])
+
+            if len(loo_prototypes) == 0:
+                continue
+
+            loo_proto_arr = np.array(loo_prototypes, dtype=np.float32)
+            loo_labels_arr = np.array(loo_labels, dtype=object)
+            diffs = emb_i.reshape(1, -1) - loo_proto_arr
+            distances_i = np.sqrt(np.sum(diffs ** 2, axis=1))
+
+            if self.conformal.score_method == "softmax":
+                score = self.conformal.softmax_nonconformity(
+                    distances_i, loo_labels_arr, label_i
+                )
+            else:
+                own_indices = [j for j, lbl in enumerate(loo_labels) if self._label_key(lbl) == key_i]
+                if own_indices:
+                    dist_to_own = float(distances_i[own_indices[0]])
+                    ref_threshold = float(np.median(distances_i)) + float(np.std(distances_i))
+                    score = self.conformal.distance_nonconformity(dist_to_own, ref_threshold)
+                else:
+                    score = 1.0
+
+            self.conformal.update_calibration(score, label_i)
+
+    def _bootstrap_temperature_calibration(
+        self,
+        support_embeddings: np.ndarray,
+        support_labels: np.ndarray,
+    ) -> None:
+        """Initialize temperature calibration from support set via LOO.
+
+        Uses leave-one-out cross-validation on the support set to estimate
+        an initial temperature parameter. For each support example, computes
+        the raw confidence (via nearest-prototype), and uses these paired
+        (raw_confidence, correctness) samples to grid-search an initial
+        temperature. This bootstrap enables calibrated confidences from the
+        very first predict() call.
+
+        Args:
+            support_embeddings: [N, D] support set embeddings.
+            support_labels: [N] support class labels.
+        """
+        n = len(support_embeddings)
+        if n < 5:
+            return
+
+        # Collect raw confidences via LOO nearest-prototype
+        raw_confs: List[float] = []
+        correctness: List[bool] = []
+
+        for i in range(n):
+            emb_i = np.asarray(support_embeddings[i], dtype=np.float32)
+            label_i = support_labels[i]
+
+            # Leave-one-out: exclude example i from support
+            loo_mask = np.ones(n, dtype=bool)
+            loo_mask[i] = False
+            loo_embs = np.array(
+                [np.asarray(support_embeddings[j], dtype=np.float32) for j in range(n) if loo_mask[j]],
+                dtype=np.float32,
+            )
+            loo_labels = np.array(
+                [support_labels[j] for j in range(n) if loo_mask[j]], dtype=object,
+            )
+
+            if len(loo_embs) == 0:
+                continue
+
+            # Nearest-prototype prediction (LOO)
+            loo_protos, loo_proto_labels, _ = compute_class_prototypes(
+                loo_embs, loo_labels
+            )
+            if len(loo_protos) == 0:
+                continue
+            distance_to_all = euclidean_distance_numpy(emb_i, loo_protos, normalize=True)
+            best_idx = int(np.argmin(distance_to_all.reshape(-1)))
+            pred_label = loo_proto_labels[best_idx]
+            # Raw confidence from distance
+            min_dist = float(distance_to_all.reshape(-1)[best_idx])
+            raw_conf = float(1.0 / (1.0 + min_dist))
+            raw_confs.append(raw_conf)
+            correctness.append(bool(pred_label == label_i))
+
+        if len(raw_confs) < 5:
+            return
+
+        # Grid search temperature that minimizes ECE on these LOO predictions
+        best_temp = 1.0
+        best_ece = float("inf")
+        for temp_candidate in np.linspace(0.5, 3.0, 26):
+            ece_sum = 0.0
+            for raw, correct in zip(raw_confs, correctness):
+                calibrated = float(np.clip(raw ** (1.0 / max(temp_candidate, 0.1)), 0.0, 1.0))
+                ece_sum += abs(calibrated - float(correct))
+            avg_ece = ece_sum / len(raw_confs)
+            if avg_ece < best_ece:
+                best_ece = avg_ece
+                best_temp = temp_candidate
+
+        # Seed the calibration window with these bootstrapped observations
+        for raw, correct in zip(raw_confs, correctness):
+            self.calibrator._window_confidences.append(float(raw))
+            self.calibrator._window_correct.append(bool(correct))
+        self.calibrator.temperature = float(best_temp)
 
     def _ensure_label_index(self, label: Union[str, int]) -> int:
         if label in self._label_to_idx:
@@ -1048,9 +1426,7 @@ class FewShotLearner:
         source_path: Path,
     ) -> None:
         learner = self
-        learner.calibrator.temperature = torch.nn.Parameter(
-            torch.tensor(float(state["calibration"]["temperature"]))
-        )
+        learner.calibrator.temperature = float(state["calibration"]["temperature"])
         learner.calibrator._ece_history = list(state["calibration"].get("ece_history", []))
 
         for key, threshold in state["act_thresholds"].items():
@@ -1075,6 +1451,17 @@ class FewShotLearner:
                 learner._ood_distance_threshold = float(ood_threshold)
         else:
             learner._update_ood_threshold()
+
+        # v0.2.0: Restore contrastive prototypes if saved
+        if isinstance(prototypes_state, dict):
+            c_labels = prototypes_state.get("contrastive_labels", [])
+            c_embs = prototypes_state.get("contrastive_embeddings", [])
+            if c_labels and c_embs and len(c_labels) == len(c_embs):
+                learner._contrastive_prototype_labels = np.asarray(c_labels, dtype=object)
+                learner._contrastive_prototype_embeddings = np.asarray(
+                    c_embs, dtype=np.float32
+                )
+
         if learner._sim_embeddings:
             learner._init_or_rebuild_model_head(embedding_dim=learner._embedding_dim())
             learner._embedding_cache.set(
@@ -1086,7 +1473,7 @@ class FewShotLearner:
             if head_path.exists() and learner._model_head is not None:
                 try:
                     learner._model_head.load_state_dict(
-                        torch.load(head_path, map_location=torch.device("cpu"))
+                        _get_torch().load(head_path, map_location=_get_torch().device("cpu"))
                     )
                 except Exception as exc:
                     raise AdaptShotError(
@@ -1097,7 +1484,7 @@ class FewShotLearner:
 
     def _init_or_rebuild_model_head(self, embedding_dim: int) -> None:
         num_classes = max(1, len(self._label_to_idx))
-        self._model_head = torch.nn.Linear(embedding_dim, num_classes)
+        self._model_head = _get_torch_nn().Linear(embedding_dim, num_classes)
         self._model_head.eval()
         self.finetuner = CAEWCFinetuner(
             model=self._model_head,
@@ -1118,9 +1505,9 @@ class FewShotLearner:
             return
 
         old_head = self._model_head
-        expanded_head = torch.nn.Linear(old_head.in_features, new_num_classes)
+        expanded_head = _get_torch_nn().Linear(old_head.in_features, new_num_classes)
 
-        with torch.no_grad():
+        with _get_torch().no_grad():
             expanded_head.weight[: old_head.out_features] = old_head.weight
             expanded_head.bias[: old_head.out_features] = old_head.bias
 
@@ -1158,13 +1545,15 @@ class FewShotLearner:
             return
 
         if self._sim_embeddings and self._sim_labels:
-            support_tensor = torch.tensor(np.stack(self._sim_embeddings), dtype=torch.float32)
-            support_label_tensor = torch.tensor(
+            _t = _get_torch()
+            support_tensor = _t.tensor(np.stack(self._sim_embeddings), dtype=_t.float32)
+            support_label_tensor = _t.tensor(
                 [self._ensure_label_index(label) for label in self._sim_labels],
-                dtype=torch.long,
+                dtype=_t.long,
             )
-            fisher_loader: DataLoader[Any] = DataLoader(
-                TensorDataset(support_tensor, support_label_tensor),
+            DL, TD = _get_data_loader()
+            fisher_loader = DL(
+                TD(support_tensor, support_label_tensor),
                 batch_size=min(32, len(self._sim_embeddings)),
                 shuffle=False,
             )
@@ -1190,9 +1579,10 @@ class FewShotLearner:
         if not emb_list:
             return
 
-        new_embs = torch.tensor(np.stack(emb_list), dtype=torch.float32)
-        new_labels = torch.tensor(label_list, dtype=torch.long)
-        weights = torch.tensor(weight_list, dtype=torch.float32)
+        _t = _get_torch()
+        new_embs = _t.tensor(np.stack(emb_list), dtype=_t.float32)
+        new_labels = _t.tensor(label_list, dtype=_t.long)
+        weights = _t.tensor(weight_list, dtype=_t.float32)
 
         self.finetuner.finetune(new_embs, new_labels, weights)
 

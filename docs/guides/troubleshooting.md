@@ -38,7 +38,7 @@ Source: [src/adaptshot/utils/exceptions.py](src/adaptshot/utils/exceptions.py)
 | `"ood_absolute_min_distance must be >= 0.0"` | Negative distance threshold | Set to 0.0 or higher. |
 | `"confidence_weight must be in [0.0, 1.0]"` | Correction weight outside range | Use a value between 0.0 and 1.0. |
 | `"similarity_metric must be 'cosine' or 'euclidean'"` | Invalid metric name | Use `"cosine"` or `"euclidean"`. |
-| `"inference_mode must be 'nearest_neighbor' or 'prototypical'"` | Invalid mode name | Use `"nearest_neighbor"` or `"prototypical"`. |
+| `"inference_mode must be 'nearest_neighbor', 'prototypical', or 'contrastive'"` | Invalid mode name | Use `"nearest_neighbor"`, `"prototypical"`, or `"contrastive"`. |
 
 ### `InvalidImageError`
 
@@ -117,6 +117,31 @@ or
 |---------------|------------|-----|
 | Buffer exceeds capacity | `len(learner._sim_embeddings) > config.max_buffer_size` | Reduce `max_buffer_size`. Ensure UP-UGF pruning is running (check for `BufferCapacityError` warnings). |
 | Embedding leaks | RAM grows even without new predictions | Restart the process. Embeddings are held in memory by the learner instance. |
+| Backbone cache accumulation | v0.2.0: repeated predictions with different images | Call `learner.clear_backbone_cache()` periodically. |
+
+### Issue: Conformal prediction sets are always size 1
+
+| Possible Cause | Diagnostic | Fix |
+|---------------|------------|-----|
+| Calibration buffer too small | `summary['calibration_size'] < 10` | Add more calibration data via `correct()`. LOO mode helps with fewer samples. |
+| Alpha too strict | `conformal_alpha=0.01` (99% coverage) | Relax to `conformal_alpha=0.10` or `0.20`. |
+| Using split mode with tiny buffer | `conformal_mode="split"` with < 50 samples | Switch to `conformal_mode="cross"`. |
+
+### Issue: Contrastive mode produces worse results than prototypical
+
+| Possible Cause | Diagnostic | Fix |
+|---------------|------------|-----|
+| Too few support examples | < 15 per class | Contrastive mode needs more data; fall back to `prototypical`. |
+| Learning rate too high | Loss oscillates | Reduce `ContrastiveConfig.learning_rate` to 0.001. |
+| Not enough epochs | Loss still decreasing at epoch 50 | Increase `ContrastiveConfig.n_epochs` to 100. |
+
+### Issue: OOD detection flags too many in-distribution images
+
+| Possible Cause | Diagnostic | Fix |
+|---------------|------------|-----|
+| Shrinkage too aggressive | Very small support sets (< 5/class) | Add more support examples per class. |
+| Percentile too low | `ood_percentile=90.0` | Increase to `ood_percentile=97.0` or `99.0`. |
+| Mahalanobis regularization too weak | Covariance near-singular | Increase `mahalanobis_regularization` to 1e-3. |
 
 ### Issue: Determinism check fails
 

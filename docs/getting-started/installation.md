@@ -1,15 +1,17 @@
 # Installation
 
-AdaptShot v0.1.1 is a Python package for CPU-first few-shot image classification.
+AdaptShot v0.2.0 is a Python package for CPU-first few-shot image classification with conformal prediction, contrastive learning, and human-in-the-loop continual learning.
 
 ## Requirements
 
 - Python 3.9+
-- A CPU-only environment is supported by default
-- Internet access for the first run if torchvision downloads pretrained backbone weights
+- A CPU-only environment is supported by default (PyTorch is optional)
+- ~15 MB disk space for core dependencies (numpy + Pillow)
+- ~45 MB additional for ImageNet pretrained backbone weights (auto-downloaded on first use)
+- Internet access for the first run only (backbone weight download)
 
 !!! note "Version"
-    These commands target AdaptShot `v0.1.1`.
+    These commands target AdaptShot `v0.2.0`.
 
 ## Install From PyPI
 
@@ -17,26 +19,34 @@ AdaptShot v0.1.1 is a Python package for CPU-first few-shot image classification
 pip install adaptshot
 ```
 
-## Install From The GitHub Release Wheel
+> **Fast install**: Core dependencies (numpy, Pillow) install in under 60 seconds. No GPU drivers, no CUDA, no 2 GB downloads. PyTorch is optional.
+
+## Install From GitHub Release
 
 ```bash
-pip install https://github.com/johnson2006christopher/adaptshot/releases/download/v0.1.1/adaptshot-0.1.1-py3-none-any.whl
+pip install https://github.com/johnson2006christopher/adaptshot/releases/download/v0.2.0/adaptshot-0.2.0-py3-none-any.whl
 ```
 
 ## Optional Extras
 
 ```bash
-# FAISS-CPU similarity search
+# PyTorch for training, fine-tuning, and custom backbones
+pip install "adaptshot[torch]"
+
+# FAISS-CPU similarity search (recommended for >100 support images)
 pip install "adaptshot[faiss]"
 
-# Gradio UI dependencies
+# Gradio UI dependencies for the Pilot Dashboard
 pip install "adaptshot[ui]"
 
-# Offline Studio GUI
+# Offline Studio GUI (includes ONNX Runtime for torch-free inference)
 pip install "adaptshot[gui]"
 
-# Development tools
+# Development tools (testing, linting, benchmarking)
 pip install "adaptshot[dev]"
+
+# Everything
+pip install "adaptshot[all]"
 ```
 
 ## Install From Source
@@ -47,123 +57,70 @@ cd adaptshot
 pip install -e ".[dev]"
 ```
 
+## ONNX Runtime Support (Torch-Free Inference)
+
+AdaptShot v0.2.0 supports ONNX Runtime as a lightweight backend when PyTorch is not installed. To use this:
+
+```bash
+# Export backbones to ONNX format (requires torch)
+python scripts/export_backbones.py
+
+# Install with ONNX Runtime support
+pip install "adaptshot[gui]"  # Includes onnxruntime
+```
+
+The ONNX backend automatically activates when torch is unavailable and ONNX models are present in `src/adaptshot/data/`.
+
 ## Verify The Install
 
 ```bash
 python - <<'PY'
 import adaptshot
-from adaptshot import FewShotLearner
+from adaptshot import FewShotLearner, ConformalEngine
 
 print(adaptshot.__version__)
 print(FewShotLearner.__name__)
+print(ConformalEngine.__name__)
 PY
 ```
 
 Expected output:
 
 ```text
-0.1.1
+0.2.0-dev
 FewShotLearner
+ConformalEngine
 ```
 
-!!! note "Offline By Default"
-    AdaptShot v0.1.1 builds backbones without pretrained weight downloads, so the first embedding extraction stays offline.
+!!! note "Pretrained Weights"
+    AdaptShot v0.2.0 uses ImageNet-pretrained backbone weights by default.
+    The weights are downloaded automatically on first use (~45 MB for ResNet-18,
+    ~10 MB for MobileNetV3-Small). This ensures embeddings are meaningful and
+    match the ImageNet-normalized preprocessing pipeline.
 
-## Install MziziGuard (Crop Disease Detection App)
+## Minimal Dependency Setup
 
-MziziGuard requires the `[ui]` extras:
+For ultra-lightweight deployments (no PyTorch, no ONNX Runtime):
 
 ```bash
-pip install "adaptshot[ui]"
+pip install adaptshot
+# Core dependencies: numpy + Pillow only (~15 MB total)
 ```
 
-Launch the web application:
-
-```bash
-python -m examples.mziziguard.app
-# Opens http://localhost:7860
-```
-
-## Platform-Specific Notes
-
-### Linux (Ubuntu/Debian)
-
-```bash
-sudo apt update
-sudo apt install python3 python3-pip python3-venv
-python3 -m venv adaptshot_env
-source adaptshot_env/bin/activate
-pip install "adaptshot[ui]"
-```
-
-### Windows
-
-```bash
-# In PowerShell or Command Prompt
-python -m venv adaptshot_env
-adaptshot_env\Scripts\activate
-pip install "adaptshot[ui]"
-```
-
-### macOS
-
-```bash
-python3 -m venv adaptshot_env
-source adaptshot_env/bin/activate
-pip install "adaptshot[ui]"
-```
-
-### Raspberry Pi / ARM
-
-```bash
-# Install PyTorch for ARM first
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-pip install "adaptshot[ui]"
-```
-
-## Dependencies
-
-### Core Dependencies (always installed)
-
-| Package | Version | Purpose |
-|---------|---------|---------|
-| `torch` | ≥2.0.0 | Deep learning framework |
-| `torchvision` | ≥0.15.0 | Pretrained backbones |
-| `numpy` | ≥1.24.0 | Numerical operations |
-| `Pillow` | ≥9.0.0 | Image loading and processing |
-
-### Optional Dependencies
-
-| Extra | Packages | Purpose |
-|-------|----------|---------|
-| `[faiss]` | `faiss-cpu` | Accelerated similarity search |
-| `[ui]` | `gradio` | Web UI (MziziGuard, Pilot Dashboard) |
-| `[gui]` | `gradio`, `pandas`, `onnx`, `onnxscript` | Full offline Studio GUI |
-| `[dev]` | `pytest`, `mypy`, `ruff`, `pre-commit` | Development and testing |
-| `[all]` | All of the above | Everything |
-
-## Troubleshooting Installation
-
-| Problem | Solution |
-|---------|----------|
-| `pip: command not found` | Install pip: `python -m ensurepip --upgrade` |
-| `ModuleNotFoundError: torch` | PyTorch installation failed. Try `pip install torch --index-url https://download.pytorch.org/whl/cpu` |
-| `Could not find a version that satisfies the requirement` | Check Python version: `python --version` (needs ≥3.9) |
-| Permission denied on Linux | Use a virtual environment: `python -m venv .venv && source .venv/bin/activate` |
-| CUDA errors on import | AdaptShot defaults to CPU. Set `device="cpu"` in config. |
-| Backbone download fails | First run downloads ~45MB from torchvision. Ensure internet on first run. |
+The library falls back gracefully: ONNX backend is tried first if available, then a clear error message guides you to install either `[torch]` or `[gui]` extras.
 
 ## Verification Checklist
 
 - [ ] `python --version` shows Python 3.9 or newer.
-- [ ] `pip install adaptshot` completes without dependency errors.
-- [ ] The verification command prints `0.1.1`.
-- [ ] You can import `FewShotLearner`.
-- [ ] (Optional) MziziGuard launches at http://localhost:7860.
-- [ ] (Optional) `pytest tests/ -v` passes all tests (from source checkout).
+- [ ] `pip install adaptshot` completes in under 60 seconds.
+- [ ] The verification command prints `0.2.0-dev`.
+- [ ] You can import `FewShotLearner` and `ConformalEngine`.
 
 ---
 
-*Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
-*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
-*Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*
+## Next Steps
+
+- **[Quick Start](quickstart.md)** — Make your first prediction in 5 minutes
+- **[Beginner 101](beginner-101.md)** — Learn the concepts behind AdaptShot
+- **[⭐ Star on GitHub](https://github.com/johnson2006christopher/adaptshot)** — Support the project and stay updated
+- **[📱 Join WhatsApp](https://chat.whatsapp.com/J6AbrvbjmBc5XXX2fnN6RK)** — Connect with the community

@@ -27,16 +27,19 @@
 
 AdaptShot is a high-performance, CPU-optimized, human-in-the-loop few-shot vision library. It is designed to learn from every human correction, guarantee calibrated uncertainty, and run deterministically on edge hardware with minimal resources.
 
-v0.1.1 is the current stable release, hardened with 52 regression tests, strict type-checking, and a comprehensive benchmark harness. Built in Tanzania by a self-taught engineer with nothing but a laptop and determination.
+v0.2.0-dev is the current release, hardened with 92 regression tests, strict type-checking, and a comprehensive benchmark harness. Built in Tanzania by a self-taught engineer with nothing but a laptop and determination.
 
 </div>
 
 ## 🚀 Key Features
 
 *   **CPU-First by Design**: Optimized for low-latency inference on standard CPUs, requiring less than 250MB of RAM.
-*   **Trustworthy & Calibrated**: Built-in **Expected Calibration Error (ECE)** minimization ensures the model knows when it's unsure.
+*   **Trustworthy & Calibrated**: Built-in **Expected Calibration Error (ECE)** minimization and **conformal prediction** with finite-sample coverage guarantees.
 *   **Human-in-the-Loop**: Integrated **FeedbackRouter** for real-time model adaptation through human expert corrections.
-*   **Continual Learning**: Implements **CA-EWC** (Class-Aware Elastic Weight Consolidation) and **UP-UGF** (Uncertainty-Guided Forgetting) for stable, long-term learning without catastrophic forgetting.
+*   **Continual Learning**: Implements **head-only CA-EWC** (Fisher-regularized classification head fine-tuning, ~2K parameters) and **UP-UGF** (Uncertainty-Guided Forgetting with LSH-accelerated redundancy scoring) for stable, long-term learning without catastrophic forgetting.
+*   **Multi-Signal Uncertainty**: Epistemic (stochastic embedding perturbation sensitivity), aleatoric (k-NN entropy), and distributional (shrinkage-regularized Mahalanobis distance) uncertainty quantification with OOD detection. *(Full MC Dropout planned for future torch-dependent release.)*
+*   **Explainable AI**: Embedding-space feature attribution (which support examples influenced the prediction), confidence decomposition with historical penalty tracking, counterfactual explanations, and per-dimension saliency analysis.
+*   **Contrastive Prototypes**: Gradient-trained class representations via InfoNCE contrastive loss with 2-layer MLP projection head and EMA momentum prototype refinement.
 *   **Release Hardened**: Zero-config API, strict type safety, and a comprehensive benchmark harness for review and deployment readiness.
 *   **Deterministic**: Guaranteed reproducible results across different runs and hardware through strict seed management.
 
@@ -62,10 +65,19 @@ $ pip install adaptshot
 
 </div>
 
+**Core dependencies**: numpy, Pillow (~15 MB total). PyTorch is **optional** — install it only if you need training/fine-tuning:
+
+```bash
+pip install "adaptshot[torch]"    # adds PyTorch + torchvision for training
+```
+
+> **Fast install**: The base library installs in under 60 seconds on standard connections — no GPU drivers, no CUDA, no 2 GB downloads.
+
 ### Optional Dependencies
 
 AdaptShot provides optional extras for specialized workflows. The native Python API remains the source of truth; the GUI is an optional wrapper around it:
 
+*   **PyTorch (Training)**: `pip install "adaptshot[torch]"` (Required for CA-EWC fine-tuning and custom backbones)
 *   **FAISS Acceleration**: `pip install "adaptshot[faiss]"` (Recommended for support sets >100 images)
 *   **Gradio UI**: `pip install "adaptshot[ui]"` (For interactive pilots and human-in-the-loop dashboards)
 *   **Studio GUI**: `pip install "adaptshot[gui]"` (For the offline, folder-aware AdaptShot Studio workspace)
@@ -111,15 +123,21 @@ if result.uncertainty_flag:
 
 ---
 
-## 🆕 What's New in v0.1.1
+## 🆕 What's New in v0.2.0
 
-- **Energy Profiling & Eco Mode**: Track joules per inference and enable early-exit thresholds to reduce carbon footprint by up to 40%
-- **EmbeddingCache Isolation**: Instance-scoped cache prevents cross-learner contamination in multi-model workflows
-- **Dynamic Dimension Inference**: Backbone output dimensions are auto-detected from the model, not hardcoded
-- **OOD Detection**: Built-in out-of-distribution detection flags images too far from known support distributions
-- **String Label Corrections**: `correct()` now accepts human-readable string labels directly (e.g. `"maize_blight"`)
-- **Prototypical Inference**: New prototype-based classification mode alongside nearest-neighbor search
-- **574 Downloads on PyPI**: v0.1.0 reached researchers and practitioners in over 30 countries
+- **Conformal Prediction**: Distribution-free prediction sets with true leave-one-out calibration guaranteeing finite-sample coverage at configurable significance levels
+- **Contrastive Prototype Learning**: Gradient-trained InfoNCE class prototypes with 2-layer MLP projection head (full backpropagation through W1/b1/W2/b2)
+- **Advanced Uncertainty**: Three complementary signals — epistemic (stochastic perturbation sensitivity), aleatoric (k-NN entropy), and distributional (shrinkage-regularized Mahalanobis OOD) — fused with mode-gated computation
+- **XAI Explainability**: Embedding-space feature attribution, confidence decomposition with historical penalty tracking, counterfactual analysis, and per-dimension saliency
+- **Cross-conformal prediction mode**: K-fold cross-conformal quantile averaging for more stable prediction sets
+- **Bootstrap Temperature Calibration**: Autonomous LOO grid-search temperature optimization for cold-start scenarios
+- **UP-UGF LSH Acceleration**: Approximate O(N log N) redundancy scoring via random projection locality-sensitive hashing for large buffers (>100 examples)
+- **Memory Profiling**: `MemoryTracker` with tracemalloc + psutil instrumentation for verifying <250MB RAM operation
+- **miniImageNet Benchmarks**: Standard few-shot benchmarks with baseline references (Prototypical Networks, Matching Networks, MAML)
+- **ONNX Export**: Bundled backbone export script with SHA-256 verification for torch-free inference
+- **ACT Symmetric Updates**: Mean-reverting threshold adaptation prevents monotonic drift in autonomous operation
+- **37 new tests** (92 total) across conformal, contrastive, uncertainty, and explainability modules
+- **12 new documentation pages**: Architecture deep-dive, algorithm theory, API reference, 5 tutorials, 2 GUI guides
 
 ## 🛠️ Configuration
 
@@ -147,7 +165,7 @@ AdaptShot uses a strictly typed, immutable `AdaptShotConfig` to ensure reproduci
 | Parameter | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `similarity_metric` | `str` | `"euclidean"` | Distance metric (`cosine` or `euclidean`) |
-| `inference_mode` | `str` | `"prototypical"` | Classification mode (`nearest_neighbor` or `prototypical`) |
+| `inference_mode` | `str` | `"prototypical"` | Classification mode (`nearest_neighbor`, `prototypical`, or `contrastive`) |
 | `use_faiss` | `bool` | `False` | Enable FAISS-CPU acceleration for large support sets |
 | `faiss_nprobe` | `int` | `8` | FAISS IVF index probing depth |
 
@@ -182,6 +200,15 @@ AdaptShot uses a strictly typed, immutable `AdaptShotConfig` to ensure reproduci
 | :--- | :--- | :--- | :--- |
 | `max_buffer_size` | `int` | `100` | Maximum replay buffer capacity (enforced by UP-UGF) |
 | `log_dir` | `Optional[str]` | `None` | Optional log output directory |
+
+### Advanced Algorithms (v0.2.0)
+
+| Parameter | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `conformal_alpha` | `float` | `0.05` | Significance level for conformal prediction sets (0.01-0.50) |
+| `conformal_mode` | `str` | `"split"` | Conformal prediction mode (`split` or `cross`) |
+| `uncertainty_mode` | `str` | `"ensemble"` | Uncertainty mode (`mcdropout`, `entropy`, `mahalanobis`, or `ensemble`) |
+| `explainability_enabled` | `bool` | `True` | Enable XAI explainability for predictions |
 
 ---
 
@@ -246,7 +273,7 @@ Built in Mbeya, Tanzania 🇹🇿
 | ✅ Updated **Docs badge** to live MkDocs URL | Users can access accurate, searchable documentation immediately |
 | ✅ Fixed **installation instructions** to match `pyproject.toml` extras | Prevents user confusion; ensures `pip install adaptshot[faiss]` works |
 | ✅ Corrected **API signatures** to match actual code (`FewShotLearner`, `PredictionResult`) | Developers can copy-paste examples with confidence |
-| ✅ Marked v0.1.1 content as **stable / released** | Confirms publication status is accurate |
+| ✅ Marked v0.1.2 content as **stable / released** | Confirms publication status is accurate |
 | ✅ Removed placeholder links (`arXiv:2604.XXXXX`, `adaptshot.dev/docs`) | No broken links; only verified, working resources |
 | ✅ Kept the native API as the primary workflow | Reinforces code-first usage even with the optional GUI |
 | ✅ Standardized **citation format** to GitHub + version | Academically sound; reproducible referencing |

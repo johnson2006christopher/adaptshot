@@ -59,8 +59,13 @@ def test_invalid_backbone_raises_value_error() -> None:
         extract_embedding(dummy_img, config)
 
 
-def test_backbone_factories_do_not_request_pretrained_weights(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Ensure the backbone registry builds offline by default."""
+def test_backbone_factories_request_imagenet_pretrained_weights(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Ensure backbone factories request ImageNet pretrained weights.
+
+    ImageNet statistics are baked into the preprocessing pipeline, so
+    random weights would yield meaningless embeddings. The factory
+    lambdas must pass weights="IMAGENET1K_V1".
+    """
 
     captured: dict[str, object] = {}
 
@@ -72,8 +77,10 @@ def test_backbone_factories_do_not_request_pretrained_weights(monkeypatch: pytes
         captured["mobilenet_weights"] = weights
         return torch.nn.Identity()
 
-    monkeypatch.setattr("src.adaptshot.core.extractor.models.resnet18", fake_resnet18)
-    monkeypatch.setattr("src.adaptshot.core.extractor.models.mobilenet_v3_small", fake_mobilenet_v3_small)
+    # Patch torchvision.models directly – extractor.py now uses lazy imports via
+    # _get_tv_models() rather than a module-level 'models' attribute.
+    monkeypatch.setattr("torchvision.models.resnet18", fake_resnet18)
+    monkeypatch.setattr("torchvision.models.mobilenet_v3_small", fake_mobilenet_v3_small)
 
     resnet_factory = cast(Any, BackboneRegistry["resnet18"])
     mobilenet_factory = cast(Any, BackboneRegistry["mobilenet_v3_small"])
@@ -81,5 +88,5 @@ def test_backbone_factories_do_not_request_pretrained_weights(monkeypatch: pytes
     resnet_factory()
     mobilenet_factory()
 
-    assert captured["resnet18_weights"] is None
-    assert captured["mobilenet_weights"] is None
+    assert captured["resnet18_weights"] == "IMAGENET1K_V1"
+    assert captured["mobilenet_weights"] == "IMAGENET1K_V1"

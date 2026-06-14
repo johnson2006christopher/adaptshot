@@ -329,6 +329,59 @@ Full guide: [MziziGuard Complete Guide](mziziguard-complete-guide.md)
 
 ---
 
+## Profiling and Monitoring Across Use Cases — v0.2.0
+
+Every deployment should incorporate production monitoring. Here is how to add profiling to any use case:
+
+### Add Memory Tracking
+
+```python
+from adaptshot.profiling import MemoryTracker
+
+tracker = MemoryTracker()
+tracker.start()
+
+# In your inference loop:
+with tracker.section("batch_inference"):
+    for img_path in unlabeled_images:
+        result = learner.predict(img_path)
+
+report = tracker.get_report()
+if report['peak_memory_mb'] > 250:
+    print(f"⚠️ Memory budget exceeded: {report['peak_memory_mb']:.0f} MB")
+```
+
+### Add Penalty Trend Monitoring
+
+```python
+# After each correction, check penalty trends
+if hasattr(learner, 'explainability_engine'):
+    penalties = learner.explainability_engine.get_penalty_summary()
+    if penalties.get('global_trend') == 'degrading':
+        print("⚠️ Model penalties are increasing — consider refreshing support set")
+```
+
+### Periodic Cache Clearing
+
+```python
+# For long-running services (conservation camera traps, manufacturing QC):
+# Clear backbone cache every 1000 predictions
+if prediction_count % 1000 == 0:
+    learner.clear_backbone_cache()
+```
+
+### Use Case Monitoring Matrix
+
+| Use Case | Key Metric | Alert Threshold | Action |
+|----------|-----------|----------------|--------|
+| Crop Disease | Memory peak | > 200 MB | Reduce `max_buffer_size` |
+| Medical Triage | ECE | > 0.10 | Recalibrate with `scaling_binning` |
+| Camera Traps | Penalty trend | "degrading" | Refresh support set |
+| Manufacturing | OOD rate | > 20% | Add more "defective" examples |
+| Education | Latency | > 500 ms | Switch to `mobilenet_v3_small` |
+
+---
+
 ## Verification Checklist
 
 - [ ] You can run the crop disease example on your machine.

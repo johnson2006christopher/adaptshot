@@ -5,7 +5,6 @@ from __future__ import annotations
 from typing import Dict, List, Optional
 
 import numpy as np
-import torch
 
 
 class CalibrationEngine:
@@ -25,7 +24,7 @@ class CalibrationEngine:
         self.window_size = max(1, int(window_size))
         self.eval_bins = max(self.n_bins, int(evaluation_bins or self.n_bins))
         self.scaling_binning_bins = max(2, int(scaling_binning_bins or self.n_bins))
-        self.temperature = torch.nn.Parameter(torch.tensor(float(temperature_init), dtype=torch.float32))
+        self.temperature = float(temperature_init)
         self.method = method
 
         self._window_confidences: List[float] = []
@@ -148,7 +147,7 @@ class CalibrationEngine:
                 best_loss = float(loss)
                 best_temp = float(candidate)
 
-        self.temperature = torch.nn.Parameter(torch.tensor(best_temp, dtype=torch.float32))
+        self.temperature = best_temp
 
     def _refit_conformal_margin(self) -> None:
         """Update a conservative conformal-style correction margin."""

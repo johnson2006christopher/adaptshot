@@ -62,7 +62,7 @@ def test_save_load_roundtrip(
     learner.save(str(checkpoint))
 
     state = _load_raw_state(checkpoint)
-    assert state["schema_version"] == "0.1.1"
+    assert state["schema_version"] == "0.2.0"
     assert "integrity" in state
     assert state["integrity"]["checksum_sha256"]
 
