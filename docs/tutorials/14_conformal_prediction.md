@@ -1,6 +1,6 @@
 # Tutorial 14: Conformal Prediction
 
-> **v0.2.0** | Hands-on guide to distribution-free prediction sets
+> **v0.2.0** | Hands-on guide to distribution-free prediction sets with true LOO calibration
 
 ---
 
@@ -14,6 +14,8 @@
 ## What is Conformal Prediction?
 
 Conformal prediction produces **prediction sets** instead of single class predictions. A prediction set at significance level \(\alpha = 0.05\) contains the true class with at least 95% probability — a mathematically guaranteed coverage, not just an estimate.
+
+In v0.2.0, AdaptShot's conformal engine was production-hardened with **true leave-one-out (LOO) calibration** — a more data-efficient alternative to the classic split-conformal approach.
 
 ---
 
@@ -45,7 +47,12 @@ print(f"Set size: {result.set_size}")              # 1
 
 ## Step 2: Building a Calibration Buffer
 
-For meaningful prediction sets, you need calibration data:
+For meaningful prediction sets, you need calibration data. AdaptShot supports two calibration modes:
+
+| Mode | How it works | Best for |
+|------|-------------|----------|
+| **`split`** | Holds out a separate calibration set | Large datasets (100+ calibration samples) |
+| **`loo`** | Leave-one-out: uses all but one calibration point per quantile | Small to medium datasets (10–100 samples) |
 
 ```python
 # Simulate calibration: add nonconformity scores from past predictions
@@ -77,7 +84,31 @@ print(f"Empirical coverage: {result.coverage_estimate:.1%}")
 
 ---
 
-## Step 4: Using Conformal Prediction with FewShotLearner
+## Step 4: LOO (Leave-One-Out) Calibration — v0.2.0
+
+The LOO mode computes quantiles more efficiently by leveraging every calibration point:
+
+```python
+# LOO engine — better for small calibration sets
+engine_loo = ConformalEngine(alpha=0.10, mode="loo")
+
+# Same calibration data, but quantiles use all-but-one at each step
+for score in [0.1, 0.15, 0.2, 0.25, 0.3, 0.1, 0.12, 0.18, 0.22, 0.35]:
+    engine_loo.update_calibration(score, true_label="cat")
+
+# LOO typically gives tighter (smaller) sets than split for the same data
+result_split = engine.predict_set(distances, labels, "cat", 0.95)
+result_loo = engine_loo.predict_set(distances, labels, "cat", 0.95)
+
+print(f"Split mode set size: {result_split.set_size}")
+print(f"LOO mode set size:   {result_loo.set_size}")
+```
+
+**Why LOO matters**: Split-conformal wastes data by reserving a hold-out set. LOO uses every sample for calibration, giving tighter prediction sets when data is scarce — critical for few-shot learning where calibration samples are limited.
+
+---
+
+## Step 5: Using Conformal Prediction with FewShotLearner
 
 The `FewShotLearner` automatically computes conformal prediction sets:
 
@@ -86,8 +117,8 @@ from adaptshot import FewShotLearner, AdaptShotConfig
 
 config = AdaptShotConfig(
     device="cpu",
-    conformal_alpha=0.10,    # 90% coverage target
-    conformal_mode="split",
+    conformal_alpha=0.10,       # 90% coverage target
+    conformal_mode="loo",       # v0.2.0: use LOO for tighter sets
 )
 
 learner = FewShotLearner(config=config)
@@ -104,7 +135,7 @@ print(f"Confidence: {result.calibrated_confidence:.3f}")
 
 ---
 
-## Step 5: Online Calibration Updates
+## Step 6: Online Calibration Updates
 
 As you collect human feedback, the conformal engine adapts:
 
@@ -169,9 +200,11 @@ print(f"Std score: {summary['std_score']:.3f}")
 ## Best Practices
 
 1. **Start with \(\alpha = 0.10\)** — 90% coverage gives reasonably sized sets
-2. **Collect 50+ calibration samples** before relying on set sizes
-3. **Use class-conditional mode** for imbalanced datasets: `predict_set_class_conditional()`
-4. **Monitor coverage gap**: If observed coverage drops below target, recalibrate
+2. **Prefer `loo` mode** for ≤ 100 calibration samples — tighter sets with no data waste
+3. **Use `split` mode** for > 100 samples — faster computation with negligible efficiency loss
+4. **Collect 50+ calibration samples** before relying on set sizes
+5. **Use class-conditional mode** for imbalanced datasets: `predict_set_class_conditional()`
+6. **Monitor coverage gap**: If observed coverage drops below target, recalibrate
 
 ---
 
