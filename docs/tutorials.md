@@ -14,7 +14,7 @@ This tutorial simulates a two-class crop disease task: `maize_healthy` and `maiz
 ### Prerequisites
 
 - Python 3.9+
-- AdaptShot v0.1.0
+- AdaptShot v0.2.0
 - CPU execution
 
 ### Step 1: Install
