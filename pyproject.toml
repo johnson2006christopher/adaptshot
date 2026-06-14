@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "adaptshot"
-version = "0.2.0-dev"
+version = "0.2.0"
 description = "Human-aligned few-shot vision learning for resource-constrained environments"
 readme = "README.md"
 license = "MIT"
