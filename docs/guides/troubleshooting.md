@@ -38,7 +38,7 @@ Source: [src/adaptshot/utils/exceptions.py](src/adaptshot/utils/exceptions.py)
 | `"ood_absolute_min_distance must be >= 0.0"` | Negative distance threshold | Set to 0.0 or higher. |
 | `"confidence_weight must be in [0.0, 1.0]"` | Correction weight outside range | Use a value between 0.0 and 1.0. |
 | `"similarity_metric must be 'cosine' or 'euclidean'"` | Invalid metric name | Use `"cosine"` or `"euclidean"`. |
-| `"inference_mode must be 'nearest_neighbor' or 'prototypical'"` | Invalid mode name | Use `"nearest_neighbor"` or `"prototypical"`. |
+| `"inference_mode must be 'nearest_neighbor', 'prototypical', or 'contrastive'"` | Invalid mode name | Use `"nearest_neighbor"`, `"prototypical"`, or `"contrastive"`. |
 
 ### `InvalidImageError`
 
@@ -125,7 +125,7 @@ or
 |---------------|------------|-----|
 | Calibration buffer too small | `summary['calibration_size'] < 10` | Add more calibration data via `correct()`. LOO mode helps with fewer samples. |
 | Alpha too strict | `conformal_alpha=0.01` (99% coverage) | Relax to `conformal_alpha=0.10` or `0.20`. |
-| Using split mode with tiny buffer | `conformal_mode="split"` with < 50 samples | Switch to `conformal_mode="loo"`. |
+| Using split mode with tiny buffer | `conformal_mode="split"` with < 50 samples | Switch to `conformal_mode="cross"`. |
 
 ### Issue: Contrastive mode produces worse results than prototypical
 
