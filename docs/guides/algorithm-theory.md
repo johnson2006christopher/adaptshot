@@ -88,6 +88,16 @@ AdaptShot computes **debiased ECE** to correct for small-sample binning artifact
 
 \[\text{ECE}_{\text{debiased}} = \text{ECE} - \frac{1}{2MN} \sum_{m=1}^{M} \hat{p}_m(1 - \hat{p}_m)\]
 
+### Bootstrap Temperature Estimation (v0.2.0)
+
+When the calibration window is small (< 30 samples), a single temperature estimate can be unstable. v0.2.0 uses bootstrap resampling for a more robust estimate:
+
+\[T_{\text{bootstrap}} = \text{median}\left(\{T_1, T_2, ..., T_B\}\right)\]
+
+Where each \(T_b\) is the temperature estimated from a bootstrap sample (with replacement) of the calibration window. The number of bootstrap iterations \(B\) defaults to 100. The median is used instead of the mean because temperature estimates can be right-skewed when the window is small.
+
+This produces more stable calibrated confidences during early deployment when few corrections have been collected.
+
 ---
 
 ## 4. Adaptive Confidence Thresholding (ACT)
