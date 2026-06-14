@@ -169,3 +169,12 @@ learner = FewShotLearner(config=config)
 - [ ] `predict()` returns a `PredictionResult` with `conformal_set` and `uncertainty_report`.
 - [ ] `correct()` accepts integer labels and returns a dictionary with `fine_tuned`.
 - [ ] Latency and memory are measured locally with `time.perf_counter()` and `tracemalloc`.
+
+---
+
+## What's Next?
+
+- **[Beginner 101](beginner-101.md)** — Understand every field in the output
+- **[Tutorials](../tutorials.md)** — 18 hands-on guides from basic to advanced
+- **[⭐ Star us on GitHub](https://github.com/johnson2006christopher/adaptshot)** — Help us reach more developers
+- **[📱 Join WhatsApp](https://chat.whatsapp.com/J6AbrvbjmBc5XXX2fnN6RK)** — Get help and share your experience
