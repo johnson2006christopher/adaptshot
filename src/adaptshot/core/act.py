@@ -92,9 +92,22 @@ class ACTEngine:
         state = self._class_state[class_idx]
         threshold = float(np.clip(state["threshold"], self.min_threshold, self.max_threshold))
 
-        # Update threshold: Δτ = η * (incorrect_rate - γ * correct_rate)
-        delta = self.eta * (recent_incorrect_rate - self.gamma * recent_correct_rate)
-        state["threshold"] = threshold + delta
+        # v0.2.0 fix: Symmetric bounded update with mean reversion.
+        # Previous formula (v0.2.0-dev): delta = η * (incorrect - γ * correct)
+        # This monotonically decreased thresholds because γ=0.5 multiplied the
+        # (usually larger) correct rate, creating a permanent downward bias.
+        #
+        # New formula: delta = η * (incorrect_rate - correct_rate) + μ * (base - τ)
+        # - Symmetric: equal weight to incorrect vs correct signals
+        # - Mean-reversion: thresholds drift back toward base_threshold slowly
+        # - Clamped: thresholds stay within [min_threshold, max_threshold]
+        error_signal = recent_incorrect_rate - recent_correct_rate
+        delta = self.eta * error_signal
+        # Mean-reversion toward base (prevents runaway drift)
+        delta += self._mean_reversion_strength * (self._base_threshold - threshold)
+        state["threshold"] = float(np.clip(
+            threshold + delta, self.min_threshold, self.max_threshold
+        ))
 
         # Update counters (EMA-style tracking)
         state["total"] += 1.0
@@ -103,11 +116,15 @@ class ACTEngine:
         else:
             state["correct"] += 1.0
 
-        accept = confidence >= threshold
+        # Re-read threshold after update for decision
+        threshold_updated = float(np.clip(
+            state["threshold"], self.min_threshold, self.max_threshold
+        ))
+        accept = confidence >= threshold_updated
         action = "ACCEPT" if accept else "REQUEST_FEEDBACK"
 
         logger.debug(
-            f"ACT | Class {class_idx} | Conf: {confidence:.3f} | τ: {threshold:.3f} | Action: {action}"
+            f"ACT | Class {class_idx} | Conf: {confidence:.3f} | τ: {threshold_updated:.3f} | Action: {action}"
         )
 
         return accept, action
