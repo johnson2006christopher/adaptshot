@@ -244,6 +244,17 @@ Now that you understand the basics:
 - **[Tutorial 2: Human in the Loop](../tutorials/02_human_in_the_loop.md)**: Master corrections and continual learning
 - **[Memory Profiling](../tutorials/13_profiling_memory.md)**: Monitor RAM usage at every lifecycle stage
 
+---
+
+## Join the Community
+
+AdaptShot is built by and for a global community. Here's how to get involved:
+
+- **[⭐ Star on GitHub](https://github.com/johnson2006christopher/adaptshot)** — Every star helps us reach more developers who need CPU-first AI
+- **[📱 Join WhatsApp](https://chat.whatsapp.com/J6AbrvbjmBc5XXX2fnN6RK)** — Ask questions, share projects, collaborate in real time
+- **[💬 GitHub Discussions](https://github.com/johnson2006christopher/adaptshot/discussions)** — Propose features, share use cases, get help
+- **[🔧 Contribute](../contributing.md)** — Write code, improve docs, or report bugs
+
 ## Troubleshooting
 
 | Problem | Solution |
