@@ -65,7 +65,7 @@ This release represents a full production hardening pass over the v0.2.0-dev fea
 ### Changed
 - Schema version bumped to `"0.2.0"`.
 - Default `inference_mode` is now `"prototypical"`.
-- Default `conformal_mode` is `"loo"` (was `"split"` in dev).
+- Default `conformal_mode` is `"split"` (was hardcoded split-only in dev). Cross-conformal (`"cross"`) available for k-fold averaged quantiles.
 - `PredictionResult` fields expanded with v0.2.0 additions.
 - ACT engine uses symmetric updates with mean-reversion.
 - UP-UGF pruning uses LSH-accelerated redundancy scoring.
