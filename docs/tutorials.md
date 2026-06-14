@@ -177,25 +177,27 @@ See [tutorials/12_studio_guide.md](tutorials/12_studio_guide.md) for the Gradio 
 
 ## v0.2.0 Tutorials
 
+Each v0.2.0 tutorial documents the production-hardened algorithms shipped in this release.
+
 ### Tutorial 14: Conformal Prediction
 
-See [tutorials/14_conformal_prediction.md](tutorials/14_conformal_prediction.md) for distribution-free prediction sets with guaranteed coverage.
+See [tutorials/14_conformal_prediction.md](tutorials/14_conformal_prediction.md) for distribution-free prediction sets with guaranteed coverage. **v0.2.0**: documents true LOO (leave-one-out) calibration for tighter prediction sets with sparse data.
 
 ### Tutorial 15: Advanced Uncertainty Quantification
 
-See [tutorials/15_advanced_uncertainty.md](tutorials/15_advanced_uncertainty.md) for multi-signal uncertainty estimation and OOD detection.
+See [tutorials/15_advanced_uncertainty.md](tutorials/15_advanced_uncertainty.md) for multi-signal uncertainty estimation and OOD detection. **v0.2.0**: documents shrinkage covariance Mahalanobis for robust OOD with small support sets, plus adaptive alpha threshold.
 
 ### Tutorial 16: Explainability & XAI
 
-See [tutorials/16_explainability.md](tutorials/16_explainability.md) for interpreting predictions with feature attribution, confidence decomposition, and counterfactuals.
+See [tutorials/16_explainability.md](tutorials/16_explainability.md) for interpreting predictions with feature attribution, confidence decomposition, and counterfactuals. **v0.2.0**: documents historical penalty tracking with per-class trend analysis.
 
 ### Tutorial 17: Contrastive Prototype Learning
 
-See [tutorials/17_contrastive_learning.md](tutorials/17_contrastive_learning.md) for InfoNCE-based prototype refinement.
+See [tutorials/17_contrastive_learning.md](tutorials/17_contrastive_learning.md) for InfoNCE-based prototype refinement. **v0.2.0**: documents gradient-trained projection head (W₁,b₁,W₂,b₂ trained via InfoNCE backprop with SGD momentum).
 
 ### Tutorial 18: End-to-End Production Workflow
 
-See [tutorials/18_end_to_end_workflow.md](tutorials/18_end_to_end_workflow.md) for a complete production pipeline with monitoring and quality control.
+See [tutorials/18_end_to_end_workflow.md](tutorials/18_end_to_end_workflow.md) for a complete production pipeline with monitoring and quality control. **v0.2.0**: documents MemoryTracker profiling, backbone cache clearing, and penalty trend monitoring.
 
 ## Tutorial: CIFAR-10 Smoke Benchmark
 
