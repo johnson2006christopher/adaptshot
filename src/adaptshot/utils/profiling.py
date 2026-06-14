@@ -15,7 +15,7 @@ from typing import Any, Dict, List
 
 # Try psutil for more accurate RSS measurement
 try:
-    import psutil
+    import psutil  # type: ignore[import-untyped]
     _PSUTIL_AVAILABLE = True
 except ImportError:
     _PSUTIL_AVAILABLE = False
