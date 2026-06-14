@@ -39,21 +39,23 @@ graph TB
 src/adaptshot/
 ├── __init__.py              # Public API exports, version string
 ├── config/
-│   └── settings.py          # Immutable AdaptShotConfig dataclass
+│   └── settings.py          # Immutable AdaptShotConfig dataclass (27 fields in v0.2.0)
 ├── core/
 │   ├── learner.py           # FewShotLearner — main orchestrator
 │   ├── extractor.py         # Embedding extraction (ONNX + PyTorch backends)
 │   ├── similarity.py        # Distance metrics, k-NN, prototype search
-│   ├── calibration.py       # Temperature scaling, ECE, Platt scaling
-│   ├── act.py               # Adaptive Confidence Thresholding engine
-│   ├── conformal.py         # v0.2.0: Distribution-free conformal prediction
-│   ├── contrastive.py       # v0.2.0: Contrastive prototype learning
-│   ├── uncertainty.py       # v0.2.0: Multi-signal uncertainty quantification
-│   └── explain.py           # v0.2.0: XAI explainability module
+│   ├── calibration.py       # Temperature scaling, bootstrap, ECE, Platt scaling
+│   ├── act.py               # ACT with symmetric updates and mean-reversion (v0.2.0)
+│   ├── conformal.py         # v0.2.0: LOO + split conformal prediction
+│   ├── contrastive.py       # v0.2.0: Gradient-trained projection head (W₁/b₁/W₂/b₂)
+│   ├── uncertainty.py       # v0.2.0: Shrinkage covariance Mahalanobis + adaptive alpha
+│   └── explain.py           # v0.2.0: XAI with historical penalty tracking
 ├── training/
 │   ├── feedback_router.py   # Corrections routing with fine-tune triggers
-│   ├── finetune.py          # CA-EWC continual fine-tuning
-│   └── up_ugf.py            # UP-UGF buffer management and pruning
+│   ├── finetune.py          # CA-EWC head-only fine-tuning (~2K params)
+│   └── up_ugf.py            # UP-UGF buffer management with LSH acceleration
+├── profiling/               # v0.2.0: MemoryTracker, section-level profiling
+│   └── memory.py            # MemoryTracker with section breakdowns
 ├── utils/
 │   ├── exceptions.py        # Custom exception hierarchy
 │   └── migrations.py        # Checkpoint schema migration
@@ -228,6 +230,43 @@ All learner state mutations happen in a single thread. The design is intentional
 - Compatibility: works with Python's GIL model
 
 For multi-threaded use, create separate `FewShotLearner` instances or serialize access externally.
+
+---
+
+## v0.2.0 Hardening Architecture Changes
+
+### Production-Hardened Components
+
+| Component | v0.1.x | v0.2.0 Change | Impact |
+|-----------|--------|---------------|--------|
+| **Conformal** | Split only | + True LOO calibration | Tighter prediction sets with ≤100 calibration samples |
+| **Uncertainty** | Raw empirical covariance | Shrinkage covariance Mahalanobis | Robust OOD detection with < 10 samples/class |
+| **Contrastive** | Fixed/random projection head | Gradient-trained W₁,b₁,W₂,b₂ via InfoNCE backprop | Learned class separation, loss history tracked |
+| **ACT** | Asymmetric threshold updates | Symmetric updates with mean-reversion | Prevents threshold drift in long-running services |
+| **UP-UGF** | Exact similarity computation | LSH-accelerated redundancy scoring | Faster pruning on large buffers |
+| **Calibration** | Temperature scaling only | + Bootstrap temperature estimation | More stable temperature with small calibration windows |
+| **Explainability** | Per-prediction attribution only | + Historical penalty tracking per class | Trend-based degradation alerts |
+| **Profiling** | Manual tracemalloc | MemoryTracker with section-level breakdowns | Pinpoint memory hotspots by pipeline stage |
+| **Extractor** | Unbounded cache | clear_backbone_cache() | Prevent memory leaks in long-running services |
+
+### Data Flow Changes
+
+The prediction pipeline now includes bootstrap calibration sampling between the raw calibrator and ACT gating, and LOO quantile computation in the conformal engine when `conformal_mode="loo"`:
+
+```mermaid
+graph LR
+    A[Similarity Search] --> B[Raw Calibrator]
+    B --> C[Bootstrap Temperature]
+    C --> D[ACT Gating]
+    D --> E[Conformal Set]
+    D --> F[Uncertainty]
+    D --> G[Explanation]
+    F --> H[Shrinkage Covariance]
+    G --> I[Historical Penalties]
+    E --> J[PredictionResult]
+    F --> J
+    G --> J
+```
 
 ---
 
