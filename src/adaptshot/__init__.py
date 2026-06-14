@@ -1,6 +1,6 @@
 """AdaptShot: Human-Aligned Few-Shot Vision Learning."""
 
-__version__ = "0.2.0"
+__version__ = "0.2.0.post0"
 
 from .config.settings import AdaptShotConfig
 from .core.learner import FewShotLearner

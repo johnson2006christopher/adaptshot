@@ -5,6 +5,8 @@ of previously learned classes while adapting to new domain corrections.
 Fisher Information diagonal computation is weighted by human feedback confidence.
 """
 
+from __future__ import annotations
+
 import logging
 from typing import Any, Dict, Optional
 
