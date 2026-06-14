@@ -1270,27 +1270,20 @@ class FewShotLearner:
             if len(loo_embs) == 0:
                 continue
 
-            # Nearest-prototype prediction
-            try:
-                result = find_nearest_prototype(
-                    query=emb_i,
-                    prototypes=*compute_class_prototypes(loo_embs, loo_labels)[:2],
-                    prototype_labels=None,  # will be set by compute_class_prototypes
-                )
-                # Actually use find_nearest_prototype properly
-                from src.adaptshot.core.similarity import compute_class_prototypes, euclidean_distance_numpy
-                loo_protos, loo_proto_labels, _ = compute_class_prototypes(loo_embs, loo_labels)
-                # Find nearest prototype
-                distance_to_all = euclidean_distance_numpy(emb_i, loo_protos, normalize=True)
-                best_idx = int(np.argmin(distance_to_all.reshape(-1)))
-                pred_label = loo_proto_labels[best_idx]
-                # Raw confidence from distance
-                min_dist = float(distance_to_all.reshape(-1)[best_idx])
-                raw_conf = float(1.0 / (1.0 + min_dist))
-                raw_confs.append(raw_conf)
-                correctness.append(bool(pred_label == label_i))
-            except Exception:
+            # Nearest-prototype prediction (LOO)
+            loo_protos, loo_proto_labels, _ = compute_class_prototypes(
+                loo_embs, loo_labels
+            )
+            if len(loo_protos) == 0:
                 continue
+            distance_to_all = euclidean_distance_numpy(emb_i, loo_protos, normalize=True)
+            best_idx = int(np.argmin(distance_to_all.reshape(-1)))
+            pred_label = loo_proto_labels[best_idx]
+            # Raw confidence from distance
+            min_dist = float(distance_to_all.reshape(-1)[best_idx])
+            raw_conf = float(1.0 / (1.0 + min_dist))
+            raw_confs.append(raw_conf)
+            correctness.append(bool(pred_label == label_i))
 
         if len(raw_confs) < 5:
             return
