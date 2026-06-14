@@ -991,7 +991,7 @@ class FewShotLearner:
             # This allows autonomous predict() to work from the first call
             # without requiring a separate calibration step.
             self.calibrator._window_confidences.append(float(raw_confidence))
-            self.calibrator._window_correctness.append(True)  # optimistic prior
+            self.calibrator._window_correct.append(True)  # optimistic prior
             return self._raw_to_unit_interval(raw_confidence)
         return float(self.calibrator.calibrate(raw_confidence))
 
@@ -1304,7 +1304,7 @@ class FewShotLearner:
         # Seed the calibration window with these bootstrapped observations
         for raw, correct in zip(raw_confs, correctness):
             self.calibrator._window_confidences.append(float(raw))
-            self.calibrator._window_correctness.append(bool(correct))
+            self.calibrator._window_correct.append(bool(correct))
         self.calibrator.temperature = float(best_temp)
 
     def _ensure_label_index(self, label: Union[str, int]) -> int:
