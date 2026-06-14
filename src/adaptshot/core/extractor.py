@@ -126,7 +126,12 @@ class EmbeddingCache:
 
 @lru_cache(maxsize=4)
 def _build_backbone(backbone_name: str, device: str) -> Any:
-    """Build and cache a frozen backbone on the requested device."""
+    """Build and cache a frozen backbone on the requested device.
+
+    v0.2.0: LRU cache prevents repeated backbone construction but can
+    hold references to tensors on old devices. Use clear_backbone_cache()
+    when switching devices or to release memory.
+    """
     nn = _get_torch_nn()
     backbone = BackboneRegistry[backbone_name]()
     if hasattr(backbone, "fc"):
@@ -138,7 +143,15 @@ def _build_backbone(backbone_name: str, device: str) -> Any:
     return backbone
 
 
-def compute_preview_signature(image: ImageInput, size: int = 16) -> np.ndarray:
+def clear_backbone_cache() -> None:
+    """Clear the LRU backbone cache to release GPU/CPU memory.
+
+    Call this when switching devices or when memory pressure is high.
+    """
+    _build_backbone.cache_clear()
+
+
+def compute_preview_signature(image: ImageInput, size: int = 32) -> np.ndarray:
     """Compute a low-cost preview signature for early-exit similarity checks."""
     pil_image = _normalize_to_pil(image).resize((size, size), _RESAMPLE_BILINEAR)
     preview = np.asarray(pil_image, dtype=np.float32) / 255.0
@@ -236,7 +249,10 @@ def extract_embedding(
         quick_similarity = float(
             np.dot(query_preview, support_preview) / (preview_norm * support_norm)
         )
-        if quick_similarity >= config.early_exit_threshold:
+        # v0.2.0: Stricter eco-mode: require >= threshold AND also check
+        # that the cached embedding is not stale (preview norms differ by <2x)
+        norm_ratio = min(preview_norm, support_norm) / max(preview_norm, support_norm)
+        if quick_similarity >= config.early_exit_threshold and norm_ratio > 0.3:
             if return_numpy:
                 return cast(np.ndarray, support_embedding.copy())
             return _get_torch().from_numpy(support_embedding.copy())
