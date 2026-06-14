@@ -2348,8 +2348,8 @@
 <tr>
 <td>Conformal prediction</td>
 <td>Split mode only</td>
-<td>Split + LOO (leave-one-out) modes</td>
-<td>Set <code>conformal_mode="loo"</code> for tighter prediction sets</td>
+<td>Split + cross-conformal modes, with automatic LOO self-calibration at load time</td>
+<td>Set <code>conformal_mode="cross"</code> for tighter prediction sets via k-fold averaging</td>
 </tr>
 <tr>
 <td>Uncertainty</td>
@@ -2412,7 +2412,7 @@
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span>
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="c1"># --- New in v0.2.0 ---</span>
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">conformal_alpha</span><span class="o">=</span><span class="mf">0.10</span><span class="p">,</span>         <span class="c1"># default: 0.10 (90% coverage)</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">conformal_mode</span><span class="o">=</span><span class="s2">&quot;loo&quot;</span><span class="p">,</span>         <span class="c1"># default: &quot;loo&quot; (new in v0.2.0)</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">conformal_mode</span><span class="o">=</span><span class="s2">&quot;cross&quot;</span><span class="p">,</span>       <span class="c1"># optional: &quot;cross&quot; for k-fold cross-conformal</span>
 </span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="n">uncertainty_mode</span><span class="o">=</span><span class="s2">&quot;entropy&quot;</span><span class="p">,</span>   <span class="c1"># default: &quot;entropy&quot;</span>
 </span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="n">explainability_enabled</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># default: False</span>
 </span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="p">)</span>
@@ -2458,7 +2458,7 @@ Your code runs unchanged. You get hardened implementations for free.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">config</span> <span class="o">=</span> <span class="n">AdaptShotConfig</span><span class="p">(</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="c1"># ... your existing config ...</span>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="n">conformal_alpha</span><span class="o">=</span><span class="mf">0.10</span><span class="p">,</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">conformal_mode</span><span class="o">=</span><span class="s2">&quot;loo&quot;</span><span class="p">,</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">conformal_mode</span><span class="o">=</span><span class="s2">&quot;cross&quot;</span><span class="p">,</span>
 </span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="p">)</span>
 </span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="c1"># Now result.conformal_set is populated</span>
 </span></code></pre></div>

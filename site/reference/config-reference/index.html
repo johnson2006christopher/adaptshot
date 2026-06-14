@@ -2703,9 +2703,9 @@
 <tr>
 <td>25</td>
 <td><code>conformal_mode</code></td>
-<td><code>Literal["split", "loo"]</code></td>
-<td><code>"loo"</code></td>
-<td>v0.2.0: Conformal calibration mode. <code>"split"</code> reserves a hold-out calibration set. <code>"loo"</code> (leave-one-out) uses every calibration point more efficiently — tighter prediction sets when calibration data is sparse.</td>
+<td><code>Literal["split", "cross"]</code></td>
+<td><code>"split"</code></td>
+<td>v0.2.0: Conformal prediction mode for inference-time quantile computation. <code>"split"</code> uses the full calibration buffer. <code>"cross"</code> uses k-fold cross-conformal averaging for more stable thresholds, at the cost of slightly conservative coverage. <strong>Note</strong>: True leave-one-out (LOO) self-calibration runs automatically at <code>load_support_images()</code> time regardless of this setting — it seeds the calibration buffer with exchangeable scores, enabling valid coverage from the first prediction.</td>
 </tr>
 <tr>
 <td>26</td>
@@ -2739,7 +2739,7 @@
 <td><code>ValueError</code></td>
 </tr>
 <tr>
-<td><code>conformal_mode in ("split", "loo")</code></td>
+<td><code>conformal_mode in ("split", "cross")</code></td>
 <td><code>ValueError</code></td>
 </tr>
 </tbody>

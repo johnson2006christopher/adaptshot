@@ -2565,7 +2565,7 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
 <ul>
 <li>Schema version bumped to <code>"0.2.0"</code>.</li>
 <li>Default <code>inference_mode</code> is now <code>"prototypical"</code>.</li>
-<li>Default <code>conformal_mode</code> is <code>"loo"</code> (was <code>"split"</code> in dev).</li>
+<li>Default <code>conformal_mode</code> is <code>"split"</code> (was hardcoded split-only in dev). Cross-conformal (<code>"cross"</code>) available for k-fold averaged quantiles.</li>
 <li><code>PredictionResult</code> fields expanded with v0.2.0 additions.</li>
 <li>ACT engine uses symmetric updates with mean-reversion.</li>
 <li>UP-UGF pruning uses LSH-accelerated redundancy scoring.</li>
