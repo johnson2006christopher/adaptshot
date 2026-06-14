@@ -25,6 +25,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **12 new documentation pages**: Architecture deep-dive, algorithm theory, full API reference,
   5 advanced tutorials (conformal prediction, uncertainty, explainability, contrastive learning,
   end-to-end workflow), 2 comprehensive GUI guides (Studio, Pilot Dashboard).
+- **True Leave-One-Out Conformal Calibration**: Per-example prototype recomputation for valid
+  finite-sample coverage guarantees under exchangeability.
+- **Shrinkage Covariance Estimation**: Ledoit-Wolf-style shrinkage with adaptive alpha = d/(d+n_k)
+  for robust Mahalanobis OOD detection in high-dimensional few-shot settings.
+- **Bootstrap Temperature Calibration**: LOO grid-search temperature optimization for
+  autonomous operation without requiring pre-calibrated temperature.
+- **Random Projection LSH for UP-UGF**: Approximate O(N log N) redundancy scoring via
+  random projection locality-sensitive hashing when buffer exceeds 100 examples.
+- **Memory Profiling** (`utils/profiling.py`): `MemoryTracker` context manager with
+  tracemalloc + psutil instrumentation; `estimate_model_memory_mb()` for pre-flight checks.
+- **ONNX Export Script** (`scripts/export_backbones.py`): Exports ResNet-18 and
+  MobileNetV3-Small to ONNX with SHA-256 verification and metadata generation.
+- **miniImageNet Benchmark Support**: CSV-based miniImageNet loading, `BASELINE_REFERENCES`
+  for Prototypical/Matching/MAML baselines, and `--full-benchmark` CLI flag.
+- **Historical Penalty Tracking**: `ExplainabilityEngine` tracks ACT and OOD penalties
+  over time for intelligent confidence decomposition fallbacks (replaces magic numbers).
+- **Eco-Mode Enhancements**: 32×32 preview resolution (up from 16×16), `clear_backbone_cache()`
+  for `@lru_cache` invalidation on config change, norm ratio eco-mode safety guard.
 
 ### Changed
 - Schema version bumped to `0.2.0` with backwards-compatible migration.
@@ -45,6 +63,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **OOD detection unified**: `predict()` now uses Mahalanobis-based OOD detection via `UncertaintyQuantifier.is_ood()` as the primary path instead of the legacy distance-threshold method.
 - **Confidence decomposition clarified**: Simplified math in `decompose_confidence()` to `calibrated + penalties`, eliminating confusing intermediate calculations.
 - **Documentation accuracy**: Replaced "gradient-based saliency" claims with honest "embedding-space saliency" language; updated epistemic uncertainty description from MC Dropout to perturbation sensitivity.
+- **Contrastive projection head training**: `_train_projection_head()` now performs full InfoNCE gradient descent through W1/b1/W2/b2 with momentum SGD (was previously initialized but never trained, making the projection head an identity transform).
+- **Conformal LOO calibration**: `_self_calibrate_conformal()` recomputes prototypes excluding each support example for true leave-one-out nonconformity scores (was reusing full-support prototypes, invalidating coverage guarantees).
+- **Mahalanobis shrinkage**: `fit_class_distributions()` uses shrinkage covariance estimation with adaptive alpha, falling back to diagonal when n_per_class < embedding_dim (was using raw sample covariance, which is singular in few-shot high-dim settings).
+- **CA-EWC scope honesty**: `CAEWCFinetuner` docstring now explicitly states head-only scope (~2K params for 5-way ResNet-18), not full-network EWC.
+- **ACT symmetric update**: Threshold delta replaced with `η * (incorrect_rate − correct_rate)` plus mean-reversion toward base threshold, eliminating monotonic drift.
+- **Confidence decomposition fallbacks**: Replaced magic numbers `-0.15`/`-0.25` with historical 20-window averages of tracked ACT penalties.
+- **UP-UGF LSH mode**: `_compute_redundancy_scores()` splits into exact (N≤100) and approximate LSH (N>100) paths, reducing O(N²) to O(N log N) for large buffers.
+- **Graceful calibration fallback**: `_calibrate_or_raise()` no longer raises on first predict; uses bootstrap temperature calibration when conformal buffer is cold.
+- **Eco-mode resolution**: Preview upgraded from 16×16 to 32×32 with norm ratio guard (>0.3 required before early-exit gating).
 - **Config default fixed**: `uncertainty_mode` default changed from `"entropy"` to `"ensemble"` (now consistent with README).
 - **Conformal calibration wired**: Self-calibration on `load_support_images()` populates calibration buffer via leave-one-out scores; `correct()` feeds ground-truth nonconformity scores into the conformal engine. Prediction sets now produce meaningful multi-class outputs instead of degenerate singletons.
 - **Torch lazy imports in learner.py**: Moved `import torch`, `DataLoader`, `TensorDataset` out of module level into lazy getters (`_get_torch()`, `_get_torch_nn()`, `_get_data_loader()`). `FewShotLearner` is now importable without a hard torch dependency — PyTorch is truly optional.
