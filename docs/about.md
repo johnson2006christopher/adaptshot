@@ -147,6 +147,6 @@ Comprehensive algorithmic and production hardening across all subsystems:
 ### It learns humbly, admits uncertainty,
 ### and improves through every human correction."
 
-[⭐ Star on GitHub](https://github.com/johnson2006christopher/adaptshot) · [📖 Read the Docs](https://johnson2006christopher.github.io/adaptshot/) · [💬 Join the Community](https://github.com/johnson2006christopher/adaptshot/discussions)
+[⭐ Star on GitHub](https://github.com/johnson2006christopher/adaptshot) · [📖 Read the Docs](https://johnson2006christopher.github.io/adaptshot/) · [💬 GitHub Discussions](https://github.com/johnson2006christopher/adaptshot/discussions) · [📱 WhatsApp Community](https://chat.whatsapp.com/J6AbrvbjmBc5XXX2fnN6RK)
 
 </div>
