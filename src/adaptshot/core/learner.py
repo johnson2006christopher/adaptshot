@@ -1148,48 +1148,72 @@ class FewShotLearner:
         support_embeddings: np.ndarray,
         support_labels: np.ndarray,
     ) -> None:
-        """Bootstrap conformal calibration from support set via leave-one-out.
+        """Bootstrap conformal calibration via TRUE leave-one-out.
 
-        For each support example, computes its nonconformity score against
-        class prototypes (excluding itself from prototype computation where
-        possible, then using the full prototype as an approximation). This
-        populates the conformal engine's calibration buffer so that
-        predict_set() can produce meaningful multi-class prediction sets
-        from the very first inference call.
+        For each support example i, recomputes class prototypes excluding
+        example i, then computes the nonconformity score against those
+        leave-one-out prototypes. This guarantees valid marginal coverage
+        under the exchangeability assumption.
+
+        Previous implementation (v0.2.0-dev) used full prototypes including
+        the example itself, which violates the exchangeability requirement.
 
         Args:
             support_embeddings: [N, D] support set embeddings (512-dim).
             support_labels: [N] support class labels.
         """
-        if len(support_embeddings) < self.conformal.min_calibration_size:
-            # Not enough data for useful calibration — singleton sets until
-            # enough corrections come in via correct().
+        n = len(support_embeddings)
+        if n < self.conformal.min_calibration_size:
             return
 
         self.conformal.reset()
-        proto_labels = self._prototype_labels
 
-        for i in range(len(support_embeddings)):
+        # Pre-group indices by label for efficient LOO prototype recomputation
+        label_to_indices: Dict[object, List[int]] = {}
+        for i in range(n):
+            key = self._label_key(support_labels[i])
+            if key not in label_to_indices:
+                label_to_indices[key] = []
+            label_to_indices[key].append(i)
+
+        for i in range(n):
             emb_i = np.asarray(support_embeddings[i], dtype=np.float32)
             label_i = support_labels[i]
+            key_i = self._label_key(label_i)
 
-            # Compute distances to all class prototypes
-            distances_i = self._compute_all_prototype_distances(emb_i)
-            if len(distances_i) == 0:
+            # Leave-one-out: exclude example i from prototypes
+            loo_prototypes: List[np.ndarray] = []
+            loo_labels: List[object] = []
+
+            for key, indices in label_to_indices.items():
+                loo_indices = [j for j in indices if j != i]
+                if not loo_indices:
+                    continue
+                loo_embs = np.array(
+                    [np.asarray(support_embeddings[j], dtype=np.float32) for j in loo_indices],
+                    dtype=np.float32,
+                )
+                loo_prototypes.append(loo_embs.mean(axis=0))
+                loo_labels.append(support_labels[loo_indices[0]])
+
+            if len(loo_prototypes) == 0:
                 continue
+
+            loo_proto_arr = np.array(loo_prototypes, dtype=np.float32)
+            loo_labels_arr = np.array(loo_labels, dtype=object)
+            diffs = emb_i.reshape(1, -1) - loo_proto_arr
+            distances_i = np.sqrt(np.sum(diffs ** 2, axis=1))
 
             if self.conformal.score_method == "softmax":
                 score = self.conformal.softmax_nonconformity(
-                    distances_i, proto_labels, label_i
+                    distances_i, loo_labels_arr, label_i
                 )
             else:
-                proto_idx = self._prototype_index_for_label(label_i)
-                if proto_idx is not None and proto_idx < len(distances_i):
-                    dist_to_own = float(distances_i[proto_idx])
+                own_indices = [j for j, lbl in enumerate(loo_labels) if self._label_key(lbl) == key_i]
+                if own_indices:
+                    dist_to_own = float(distances_i[own_indices[0]])
                     ref_threshold = float(np.median(distances_i)) + float(np.std(distances_i))
-                    score = self.conformal.distance_nonconformity(
-                        dist_to_own, ref_threshold
-                    )
+                    score = self.conformal.distance_nonconformity(dist_to_own, ref_threshold)
                 else:
                     score = 1.0
 
