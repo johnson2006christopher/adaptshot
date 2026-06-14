@@ -88,21 +88,27 @@ nav:
     - 10 Module Map: tutorials/10_module_map.md
     - 11 UI Pilot Dashboard: tutorials/11_ui_pilot_dashboard.md
     - 12 Studio Guide: tutorials/12_studio_guide.md
-    - 13 Memory Profiling: tutorials/13_profiling_memory.md
-    - 14 Conformal Prediction: tutorials/14_conformal_prediction.md
-    - 15 Advanced Uncertainty: tutorials/15_advanced_uncertainty.md
-    - 16 Explainability: tutorials/16_explainability.md
-    - 17 Contrastive Learning: tutorials/17_contrastive_learning.md
-    - 18 End-to-End Workflow: tutorials/18_end_to_end_workflow.md
-    - 19 ONNX Deployment: tutorials/19_onnx_deployment.md
+    - 13 MziziGuard Crop Demo: tutorials/13_crop_disease_demo.md
+    - 14 Memory Profiling: tutorials/13_profiling_memory.md
+    - 15 Conformal Prediction: tutorials/14_conformal_prediction.md
+    - 16 Advanced Uncertainty: tutorials/15_advanced_uncertainty.md
+    - 17 Explainability: tutorials/16_explainability.md
+    - 18 Contrastive Learning: tutorials/17_contrastive_learning.md
+    - 19 End-to-End Workflow: tutorials/18_end_to_end_workflow.md
+    - 20 ONNX Deployment: tutorials/19_onnx_deployment.md
   - API Reference:
     - Full API Reference: api/reference.md
     - Core Engine: api/core.md
     - Training & Continual Learning: api/training.md
     - Configuration & Utils: api/config.md
   - Guides:
+    - MziziGuard Complete Guide: guides/mziziguard-complete-guide.md
+    - AdaptShot Deep Dive: guides/adaptshot-deep-dive.md
+    - Architecture & System Design: guides/architecture.md
     - Architecture Deep-Dive: guides/architecture-deep-dive.md
     - Algorithm Theory: guides/algorithm-theory.md
+    - Best Practices & Optimization: guides/best-practices.md
+    - Deployment Guide: guides/deployment-guide.md
     - Studio Complete Guide: guides/studio-complete-guide.md
     - Pilot Dashboard Guide: guides/ui-pilot-guide.md
     - Real-World Use Cases: guides/real-world-use-cases.md
