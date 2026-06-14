@@ -87,7 +87,7 @@ All other fields use sensible defaults. You only need to set what you want to ch
 | # | Field | Type | Default | Description |
 |---|-------|------|---------|-------------|
 | 24 | `conformal_alpha` | `float` | `0.05` | v0.2.0: Target miscoverage rate for conformal prediction sets. Must be in (0.0, 1.0). At alpha=0.05, prediction sets contain the true class with ≥95% probability. |
-| 25 | `conformal_mode` | `Literal["split", "loo"]` | `"loo"` | v0.2.0: Conformal calibration mode. `"split"` reserves a hold-out calibration set. `"loo"` (leave-one-out) uses every calibration point more efficiently — tighter prediction sets when calibration data is sparse. |
+| 25 | `conformal_mode` | `Literal["split", "cross"]` | `"split"` | v0.2.0: Conformal prediction mode for inference-time quantile computation. `"split"` uses the full calibration buffer. `"cross"` uses k-fold cross-conformal averaging for more stable thresholds, at the cost of slightly conservative coverage. **Note**: True leave-one-out (LOO) self-calibration runs automatically at `load_support_images()` time regardless of this setting — it seeds the calibration buffer with exchangeable scores, enabling valid coverage from the first prediction. |
 | 26 | `uncertainty_mode` | `Literal["mcdropout", "entropy", "mahalanobis", "ensemble"]` | `"ensemble"` | v0.2.0: Uncertainty quantification signal to use. `"entropy"` = k-NN entropy. `"mcdropout"` = MC Dropout variance. `"mahalanobis"` = distance-based. `"ensemble"` = weighted fusion of all three. |
 | 27 | `explainability_enabled` | `bool` | `True` | v0.2.0: Enable XAI explanations. When `True`, `FewShotLearner.explain()` generates feature attributions, confidence decomposition, counterfactual analysis, and historical penalty tracking. |
 
@@ -100,7 +100,7 @@ The following rules are checked in `AdaptShotConfig.__post_init__()` in addition
 | Rule | Error if violated |
 |------|-------------------|
 | `0.0 < conformal_alpha < 1.0` | `ValueError` |
-| `conformal_mode in ("split", "loo")` | `ValueError` |
+| `conformal_mode in ("split", "cross")` | `ValueError` |
 
 ---
 
