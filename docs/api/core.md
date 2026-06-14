@@ -91,6 +91,8 @@ feedback = learner.correct(
 - `"calibration_updated"`: `bool` indicating if ECE/temperature was updated
 - `"fine_tuned"`: `bool` indicating if CA-EWC head optimization ran
 - `"total_corrections"`: Lifetime correction count
+- `"calibration_summary"`: (v0.2.0, if `recalibrate_after_feedback=True`) Current calibration diagnostics
+- `"buffer_management_warning"`: (if pruning encountered issues) Warning message
 
 ### `save(path)` / `load(path)`
 Serializes and restores learner state. v0.2.0: SHA-256 integrity verification, schema version migration from v0.1.x, atomic writes.
@@ -183,7 +185,7 @@ Dataclass returned by `FewShotLearner.predict()`. Extended in v0.2.0 with confor
 | `act_action` | `str` | `"ACCEPT"`, `"REQUEST_FEEDBACK"`, or `"REQUEST_FEEDBACK_OOD"` |
 | `conformal_set` | `List` | v0.2.0: Prediction set with guaranteed coverage |
 | `uncertainty_report` | `Dict` | v0.2.0: Epistemic, aleatoric, distributional signals |
-| `explanation_result` | `ExplanationResult` | v0.2.0: Feature attribution and confidence decomposition |
+| `nearest_neighbors` | `List[Dict]` | v0.2.0: Top-5 nearest support examples with distances |
 | `ood_flag` | `bool` | v0.2.0: Shrinkage-regularized Mahalanobis OOD detection |
 | `distance_to_prototype` | `float` | Distance to predicted class prototype |
 | `prototype_margin` | `float` | Gap between best and second-best prototype |
