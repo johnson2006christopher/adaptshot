@@ -58,6 +58,9 @@ class AdaptShotConfig:
     # Memory management (UP-UGF)
     max_buffer_size: int = 100
 
+    # Timeout
+    inference_timeout_ms: float = 5000.0
+
     # Logging & debugging
     verbose: bool = True
     log_dir: Optional[str] = None
@@ -82,6 +85,10 @@ class AdaptShotConfig:
             raise ValueError("conformal_alpha must be in (0.0, 1.0).")
         if self.conformal_mode not in ("split", "cross"):
             raise ValueError("conformal_mode must be 'split' or 'cross'.")
+        if self.inference_timeout_ms <= 0:
+            raise ValueError("inference_timeout_ms must be positive.")
+        if self.inference_timeout_ms > 60000:
+            raise ValueError("inference_timeout_ms must be <= 60000 (1 minute).")
         if self.device == "cuda":
             try:
                 import torch
