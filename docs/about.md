@@ -107,7 +107,27 @@ Comprehensive algorithmic and production hardening across all subsystems:
 - [ ] Swahili documentation translation
 - [ ] Federated buffer sharing for multi-device deployments
 
-### v1.0.0 (Target: 2027)
+### v0.2.1 (Planned: Q4 2026)
+- [ ] Multi-modal prototypes (k prototypes per class via k-means)
+- [ ] Episodic training for backbone adaptation
+- [ ] Batch prediction with vectorized inference
+- [ ] Continuous temperature optimization and Platt scaling
+- [ ] MC Dropout for true epistemic uncertainty
+- [ ] Non-parametric OOD detection (k-NN distance)
+- [ ] Support set quality assessment and domain shift detection
+- [ ] Ordinal feedback integration for human corrections
+- [ ] Grad-CAM pixel-level explanations
+- [ ] Research papers: Multi-Modal Prototypes, Episodic Calibration
+
+### v0.3.0 (Planned: 2027)
+- [ ] Adaptive shot counting (dynamic support set sizing)
+- [ ] Carbon-aware configuration optimizer
+- [ ] Confidence-weighted continual learning
+- [ ] Multi-modal conformal prediction
+- [ ] Lightweight domain adaptation via style transfer
+- [ ] Field pilot in rural Tanzania (12 agricultural extension officers)
+
+### v1.0.0 (Target: 2028)
 - Field pilot results from 3+ NGOs in Tanzania, Kenya, and Uganda
 - Peer-reviewed ablation studies
 - Carbon-neutral CI/CD pipeline
