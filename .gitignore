@@ -54,3 +54,23 @@ Thumbs.db
 # Logs & Benchmarks (keep templates, ignore runtime)
 logs/*.log
 benchmarks/results/
+
+# MkDocs build output (deployed to gh-pages by CI, never committed to main)
+/site/
+/.cache/
+
+# Coverage & test artifacts
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Gradio runtime artifacts
+.gradio/
+
+# Node (not used — this is a pure Python project)
+node_modules/
+package-lock.json
