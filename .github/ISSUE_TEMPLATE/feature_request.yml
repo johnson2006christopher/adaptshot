@@ -1,0 +1,40 @@
+name: Feature request
+description: Propose a new capability for AdaptShot
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the real-world situation, not the implementation you have in mind.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed approach
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Constraint compatibility
+      description: >
+        AdaptShot's constraints are non-negotiable for core functionality.
+        A feature that breaks them can still land — but only behind an optional extra.
+      options:
+        - label: Runs on CPU with no GPU required
+        - label: Fits within the <250 MB RAM target
+        - label: Is deterministic (reproducible at a fixed seed)
+        - label: Adds no dependency outside the existing pyproject.toml extras
+        - label: None of the above — this needs to be an optional extra
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Supporting evidence
+      description: >
+        Papers, benchmarks, or deployment experience backing this. AdaptShot does not
+        accept unsubstantiated performance claims.
