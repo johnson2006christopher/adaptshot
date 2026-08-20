@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../images/adaptshot-logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -31,7 +31,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -2107,7 +2107,7 @@
 <ol>
 <li>Quick verify: start Python and import the main learner class:</li>
 </ol>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import sys, os; sys.path.insert(0, os.path.join(os.getcwd(), &#39;src&#39;)); from adaptshot.core.learner import FewShotLearner; print(&#39;AdaptShot import OK&#39;)&quot;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">"import sys, os; sys.path.insert(0, os.path.join(os.getcwd(), 'src')); from adaptshot.core.learner import FewShotLearner; print('AdaptShot import OK')"</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="c1"># Expected output: AdaptShot import OK</span>
 </span></code></pre></div>
 <div class="admonition tip">
@@ -2118,11 +2118,11 @@
 <p>Read → Type → Run → See Output → Understand Why.</p>
 <p>Create a new file called <code>first_predict.py</code> at the repository root and paste this exact script. It is 8 lines (no extra blank lines) and is runnable from the repo root. The script creates tiny example images on disk, loads them as the support set, runs a prediction, and prints the structured result.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span><span class="o">,</span><span class="w"> </span><span class="nn">sys</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s2">&quot;src&quot;</span><span class="p">))</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s2">"src"</span><span class="p">))</span>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">adaptshot.core.learner</span><span class="w"> </span><span class="kn">import</span> <span class="n">FewShotLearner</span>
 </span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">paths</span><span class="o">=</span><span class="p">[(</span><span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s2">&quot;RGB&quot;</span><span class="p">,(</span><span class="mi">32</span><span class="p">,</span><span class="mi">32</span><span class="p">),(</span><span class="n">i</span><span class="o">*</span><span class="mi">30</span><span class="p">,</span><span class="n">i</span><span class="o">*</span><span class="mi">30</span><span class="p">,</span><span class="n">i</span><span class="o">*</span><span class="mi">30</span><span class="p">))</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">p</span><span class="o">:=</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;tmp_support_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">.png&quot;</span><span class="p">))</span> <span class="ow">or</span> <span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)]</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;leaf&quot;</span><span class="p">,</span><span class="s2">&quot;bark&quot;</span><span class="p">,</span><span class="s2">&quot;leaf&quot;</span><span class="p">]</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">paths</span><span class="o">=</span><span class="p">[(</span><span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s2">"RGB"</span><span class="p">,(</span><span class="mi">32</span><span class="p">,</span><span class="mi">32</span><span class="p">),(</span><span class="n">i</span><span class="o">*</span><span class="mi">30</span><span class="p">,</span><span class="n">i</span><span class="o">*</span><span class="mi">30</span><span class="p">,</span><span class="n">i</span><span class="o">*</span><span class="mi">30</span><span class="p">))</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">p</span><span class="o">:=</span><span class="p">(</span><span class="sa">f</span><span class="s2">"tmp_support_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">.png"</span><span class="p">))</span> <span class="ow">or</span> <span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)]</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s2">"leaf"</span><span class="p">,</span><span class="s2">"bark"</span><span class="p">,</span><span class="s2">"leaf"</span><span class="p">]</span>
 </span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="n">learner</span><span class="o">=</span><span class="n">FewShotLearner</span><span class="p">()</span>  <span class="c1"># constructor: see src/adaptshot/core/learner.py</span>
 </span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="n">learner</span><span class="o">.</span><span class="n">load_support_images</span><span class="p">(</span><span class="n">paths</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>  <span class="c1"># loads 3 example images (see load_support_images in src/adaptshot/core/learner.py)</span>
 </span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="nb">print</span><span class="p">(</span><span class="n">learner</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">paths</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>  <span class="c1"># run prediction and print PredictionResult (see predict in src/adaptshot/core/learner.py)</span>
@@ -2229,7 +2229,7 @@
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.expand", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

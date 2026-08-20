@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../images/adaptshot-logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -31,7 +31,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -3152,7 +3152,7 @@
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>python3<span class="w"> </span>python3-pip<span class="w"> </span>python3-venv
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>adaptshot_env
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="nb">source</span><span class="w"> </span>adaptshot_env/bin/activate
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;adaptshot[ui]&quot;</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"adaptshot[ui]"</span>
 </span></code></pre></div>
 <h4 id="2-prepare-training-images">2. Prepare Training Images<a class="headerlink" href="#2-prepare-training-images" title="Permanent link">&para;</a></h4>
 <p>Create a USB stick or local folder with crop photos:</p>
@@ -3187,15 +3187,15 @@
 <h4 id="6-save-the-trained-model">6. Save the Trained Model<a class="headerlink" href="#6-save-the-trained-model" title="Permanent link">&para;</a></h4>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">examples.mziziguard</span><span class="w"> </span><span class="kn">import</span> <span class="n">MziziGuard</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">guard</span> <span class="o">=</span> <span class="n">MziziGuard</span><span class="p">()</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">guard</span><span class="o">.</span><span class="n">load_images_from_dir</span><span class="p">(</span><span class="s2">&quot;training_images/&quot;</span><span class="p">)</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">guard</span><span class="o">.</span><span class="n">save_model</span><span class="p">(</span><span class="s2">&quot;models/field_model.json&quot;</span><span class="p">)</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">guard</span><span class="o">.</span><span class="n">load_images_from_dir</span><span class="p">(</span><span class="s2">"training_images/"</span><span class="p">)</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">guard</span><span class="o">.</span><span class="n">save_model</span><span class="p">(</span><span class="s2">"models/field_model.json"</span><span class="p">)</span>
 </span></code></pre></div>
 <h4 id="7-create-a-desktop-launcher-ubuntu">7. Create a Desktop Launcher (Ubuntu)<a class="headerlink" href="#7-create-a-desktop-launcher-ubuntu" title="Permanent link">&para;</a></h4>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>cat<span class="w"> </span>&gt;<span class="w"> </span>~/Desktop/mziziguard.desktop<span class="w"> </span><span class="s">&lt;&lt; &#39;EOF&#39;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>cat<span class="w"> </span>&gt;<span class="w"> </span>~/Desktop/mziziguard.desktop<span class="w"> </span><span class="s">&lt;&lt; 'EOF'</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="s">[Desktop Entry]</span>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="s">Name=MziziGuard</span>
 </span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="s">Comment=Crop Disease Detection</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="s">Exec=bash -c &quot;cd /path/to/adaptshot &amp;&amp; source adaptshot_env/bin/activate &amp;&amp; python -m examples.mziziguard.app&quot;</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="s">Exec=bash -c "cd /path/to/adaptshot &amp;&amp; source adaptshot_env/bin/activate &amp;&amp; python -m examples.mziziguard.app"</span>
 </span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="s">Type=Application</span>
 </span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="s">Terminal=true</span>
 </span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="s">EOF</span>
@@ -3235,8 +3235,8 @@
 <div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">adaptshot</span><span class="w"> </span><span class="kn">import</span> <span class="n">AdaptShotConfig</span><span class="p">,</span> <span class="n">FewShotLearner</span>
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
 </span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">config</span> <span class="o">=</span> <span class="n">AdaptShotConfig</span><span class="p">(</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">backbone</span><span class="o">=</span><span class="s2">&quot;mobilenet_v3_small&quot;</span><span class="p">,</span>    <span class="c1"># Smallest backbone (~10MB)</span>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">backbone</span><span class="o">=</span><span class="s2">"mobilenet_v3_small"</span><span class="p">,</span>    <span class="c1"># Smallest backbone (~10MB)</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="n">device</span><span class="o">=</span><span class="s2">"cpu"</span><span class="p">,</span>
 </span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="n">eco_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>                      <span class="c1"># Battery saving</span>
 </span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="n">early_exit_threshold</span><span class="o">=</span><span class="mf">0.85</span><span class="p">,</span>          <span class="c1"># More aggressive early exit</span>
 </span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    <span class="n">use_faiss</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>                    <span class="c1"># Skip FAISS memory overhead</span>
@@ -3246,30 +3246,30 @@
 </span></code></pre></div>
 <h3 id="startup-script-auto-resume">Startup Script (auto-resume)<a class="headerlink" href="#startup-script-auto-resume" title="Permanent link">&para;</a></h3>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="ch">#!/usr/bin/env python3</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="sd">&quot;&quot;&quot;MziziGuard field launcher — auto-resumes from last session.&quot;&quot;&quot;</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="sd">"""MziziGuard field launcher — auto-resumes from last session."""</span>
 </span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 </span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">examples.mziziguard</span><span class="w"> </span><span class="kn">import</span> <span class="n">MziziGuard</span>
 </span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="n">MODEL_PATH</span> <span class="o">=</span> <span class="s2">&quot;field_model.json&quot;</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="n">MODEL_PATH</span> <span class="o">=</span> <span class="s2">"field_model.json"</span>
 </span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>
 </span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="n">guard</span> <span class="o">=</span> <span class="n">MziziGuard</span><span class="p">()</span>
 </span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>
 </span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="k">if</span> <span class="n">Path</span><span class="p">(</span><span class="n">MODEL_PATH</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
 </span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>    <span class="n">count</span> <span class="o">=</span> <span class="n">guard</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">MODEL_PATH</span><span class="p">)</span>
-</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Resumed from </span><span class="si">{</span><span class="n">MODEL_PATH</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2"> images)&quot;</span><span class="p">)</span>
+</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Resumed from </span><span class="si">{</span><span class="n">MODEL_PATH</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2"> images)"</span><span class="p">)</span>
 </span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="k">else</span><span class="p">:</span>
-</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No saved model found. Training from samples...&quot;</span><span class="p">)</span>
+</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">"No saved model found. Training from samples..."</span><span class="p">)</span>
 </span><span id="__span-6-15"><a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>    <span class="n">guard</span><span class="o">.</span><span class="n">initialize_with_samples</span><span class="p">(</span><span class="n">n_support</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </span><span id="__span-6-16"><a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a>
 </span><span id="__span-6-17"><a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a><span class="c1"># Now use guard.diagnose() or launch the app</span>
 </span></code></pre></div>
 <h3 id="periodic-sync-when-wifi-available">Periodic Sync (When WiFi Available)<a class="headerlink" href="#periodic-sync-when-wifi-available" title="Permanent link">&para;</a></h3>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Officer A: save their corrections</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">guard</span><span class="o">.</span><span class="n">save_model</span><span class="p">(</span><span class="s2">&quot;officer_a_corrections.json&quot;</span><span class="p">)</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">guard</span><span class="o">.</span><span class="n">save_model</span><span class="p">(</span><span class="s2">"officer_a_corrections.json"</span><span class="p">)</span>
 </span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1"># Officer B: load Officer A&#39;s corrections</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="n">guard</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;officer_a_corrections.json&quot;</span><span class="p">)</span>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="c1"># Now both officers benefit from each other&#39;s corrections</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1"># Officer B: load Officer A's corrections</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="n">guard</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">"officer_a_corrections.json"</span><span class="p">)</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="c1"># Now both officers benefit from each other's corrections</span>
 </span></code></pre></div>
 <hr />
 <h2 id="scenario-3-multi-user-server">Scenario 3: Multi-User Server<a class="headerlink" href="#scenario-3-multi-user-server" title="Permanent link">&para;</a></h2>
@@ -3296,23 +3296,23 @@
 </span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>python<span class="w"> </span>-m<span class="w"> </span>examples.mziziguard.app<span class="w"> </span>--port<span class="w"> </span><span class="m">7863</span><span class="w"> </span><span class="p">&amp;</span>
 </span></code></pre></div>
 <p>Each instance is independent. Share models by saving to a shared directory:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">guard</span><span class="o">.</span><span class="n">save_model</span><span class="p">(</span><span class="s2">&quot;/shared/models/officer_a_latest.json&quot;</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">guard</span><span class="o">.</span><span class="n">save_model</span><span class="p">(</span><span class="s2">"/shared/models/officer_a_latest.json"</span><span class="p">)</span>
 </span></code></pre></div>
 <h3 id="shared-model-aggregation">Shared Model Aggregation<a class="headerlink" href="#shared-model-aggregation" title="Permanent link">&para;</a></h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="sd">&quot;&quot;&quot;Merge corrections from multiple officers into a master model.&quot;&quot;&quot;</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="sd">"""Merge corrections from multiple officers into a master model."""</span>
 </span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">examples.mziziguard</span><span class="w"> </span><span class="kn">import</span> <span class="n">MziziGuard</span>
 </span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
 </span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="n">master</span> <span class="o">=</span> <span class="n">MziziGuard</span><span class="p">()</span>
 </span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="n">master</span><span class="o">.</span><span class="n">initialize_with_samples</span><span class="p">(</span><span class="n">n_support</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>  <span class="c1"># Base training</span>
 </span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>
-</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="c1"># Absorb each officer&#39;s corrections</span>
-</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="k">for</span> <span class="n">officer</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;officer_a&quot;</span><span class="p">,</span> <span class="s2">&quot;officer_b&quot;</span><span class="p">,</span> <span class="s2">&quot;officer_c&quot;</span><span class="p">]:</span>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="c1"># Absorb each officer's corrections</span>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="k">for</span> <span class="n">officer</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"officer_a"</span><span class="p">,</span> <span class="s2">"officer_b"</span><span class="p">,</span> <span class="s2">"officer_c"</span><span class="p">]:</span>
 </span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>    <span class="n">temp</span> <span class="o">=</span> <span class="n">MziziGuard</span><span class="p">()</span>
-</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>    <span class="n">temp</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;/shared/</span><span class="si">{</span><span class="n">officer</span><span class="si">}</span><span class="s2">_latest.json&quot;</span><span class="p">)</span>
+</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>    <span class="n">temp</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="sa">f</span><span class="s2">"/shared/</span><span class="si">{</span><span class="n">officer</span><span class="si">}</span><span class="s2">_latest.json"</span><span class="p">)</span>
 </span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>    <span class="c1"># Corrections are embedded in the buffer — load them all</span>
 </span><span id="__span-11-12"><a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>    <span class="c1"># (Simplified: in practice, merge embeddings/labels)</span>
 </span><span id="__span-11-13"><a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a>
-</span><span id="__span-11-14"><a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span class="n">master</span><span class="o">.</span><span class="n">save_model</span><span class="p">(</span><span class="s2">&quot;/shared/master_latest.json&quot;</span><span class="p">)</span>
+</span><span id="__span-11-14"><a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span class="n">master</span><span class="o">.</span><span class="n">save_model</span><span class="p">(</span><span class="s2">"/shared/master_latest.json"</span><span class="p">)</span>
 </span></code></pre></div>
 <h3 id="systemd-service-ubuntu">Systemd Service (Ubuntu)<a class="headerlink" href="#systemd-service-ubuntu" title="Permanent link">&para;</a></h3>
 <div class="language-ini highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># /etc/systemd/system/mziziguard.service</span>
@@ -3376,12 +3376,12 @@
 </span><span id="__span-14-10"><a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a>pip<span class="w"> </span>install<span class="w"> </span>torch<span class="w"> </span>torchvision<span class="w"> </span>--index-url<span class="w"> </span>https://download.pytorch.org/whl/cpu
 </span><span id="__span-14-11"><a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a>
 </span><span id="__span-14-12"><a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a><span class="c1"># AdaptShot</span>
-</span><span id="__span-14-13"><a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;adaptshot[ui]&quot;</span>
+</span><span id="__span-14-13"><a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"adaptshot[ui]"</span>
 </span></code></pre></div>
 <h3 id="optimized-config-for-pi">Optimized Config for Pi<a class="headerlink" href="#optimized-config-for-pi" title="Permanent link">&para;</a></h3>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">config</span> <span class="o">=</span> <span class="n">AdaptShotConfig</span><span class="p">(</span>
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>    <span class="n">backbone</span><span class="o">=</span><span class="s2">&quot;mobilenet_v3_small&quot;</span><span class="p">,</span>    <span class="c1"># Must: ResNet too heavy for Pi</span>
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>    <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>    <span class="n">backbone</span><span class="o">=</span><span class="s2">"mobilenet_v3_small"</span><span class="p">,</span>    <span class="c1"># Must: ResNet too heavy for Pi</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>    <span class="n">device</span><span class="o">=</span><span class="s2">"cpu"</span><span class="p">,</span>
 </span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>    <span class="n">eco_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 </span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>    <span class="n">early_exit_threshold</span><span class="o">=</span><span class="mf">0.80</span><span class="p">,</span>         <span class="c1"># Aggressive early exit</span>
 </span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>    <span class="n">max_buffer_size</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>                <span class="c1"># Minimal buffer</span>
@@ -3394,7 +3394,7 @@
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># ~/.config/autostart/mziziguard.desktop</span>
 </span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="o">[</span>Desktop<span class="w"> </span>Entry<span class="o">]</span>
 </span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="nv">Name</span><span class="o">=</span>MziziGuard
-</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="nv">Exec</span><span class="o">=</span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;cd /home/pi/adaptshot &amp;&amp; source adaptshot_env/bin/activate &amp;&amp; python -m examples.mziziguard.app&quot;</span>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="nv">Exec</span><span class="o">=</span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">"cd /home/pi/adaptshot &amp;&amp; source adaptshot_env/bin/activate &amp;&amp; python -m examples.mziziguard.app"</span>
 </span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="nv">Type</span><span class="o">=</span>Application
 </span></code></pre></div>
 <h3 id="expected-pi-4-performance">Expected Pi 4 Performance<a class="headerlink" href="#expected-pi-4-performance" title="Permanent link">&para;</a></h3>
@@ -3428,7 +3428,7 @@
 <h2 id="scenario-5-demo-presentation">Scenario 5: Demo / Presentation<a class="headerlink" href="#scenario-5-demo-presentation" title="Permanent link">&para;</a></h2>
 <p><strong>Target</strong>: Any laptop. Public shareable link for remote audience. Time-limited session.</p>
 <h3 id="quick-launch">Quick Launch<a class="headerlink" href="#quick-launch" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;adaptshot[ui]&quot;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"adaptshot[ui]"</span>
 </span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>python<span class="w"> </span>-m<span class="w"> </span>examples.mziziguard.app<span class="w"> </span>--share
 </span></code></pre></div>
 <p>The <code>--share</code> flag creates a public Gradio link (valid for 72 hours). Share the URL with your audience.</p>
@@ -3447,18 +3447,18 @@
 </span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>
 </span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="k">WORKDIR</span><span class="w"> </span><span class="s">/app</span>
 </span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>
-</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="k">RUN</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;adaptshot[ui]&quot;</span>
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="k">RUN</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"adaptshot[ui]"</span>
 </span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>
 </span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="k">COPY</span><span class="w"> </span>examples/mziziguard/<span class="w"> </span>/app/examples/mziziguard/
 </span><span id="__span-18-8"><a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>
 </span><span id="__span-18-9"><a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="c"># Pre-download backbone weights</span>
-</span><span id="__span-18-10"><a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a><span class="k">RUN</span><span class="w"> </span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;from adaptshot import FewShotLearner; \</span>
+</span><span id="__span-18-10"><a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a><span class="k">RUN</span><span class="w"> </span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">"from adaptshot import FewShotLearner; \</span>
 </span><span id="__span-18-11"><a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a><span class="s2">    from adaptshot.config.settings import AdaptShotConfig; \</span>
-</span><span id="__span-18-12"><a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a><span class="s2">    FewShotLearner(config=AdaptShotConfig(device=&#39;cpu&#39;))&quot;</span>
+</span><span id="__span-18-12"><a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a><span class="s2">    FewShotLearner(config=AdaptShotConfig(device='cpu'))"</span>
 </span><span id="__span-18-13"><a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a>
 </span><span id="__span-18-14"><a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a><span class="k">EXPOSE</span><span class="w"> </span><span class="s">7860</span>
 </span><span id="__span-18-15"><a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a>
-</span><span id="__span-18-16"><a id="__codelineno-18-16" name="__codelineno-18-16" href="#__codelineno-18-16"></a><span class="k">CMD</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;python&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;-m&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;examples.mziziguard.app&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;--port&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;7860&quot;</span><span class="p">]</span>
+</span><span id="__span-18-16"><a id="__codelineno-18-16" name="__codelineno-18-16" href="#__codelineno-18-16"></a><span class="k">CMD</span><span class="w"> </span><span class="p">[</span><span class="s2">"python"</span><span class="p">,</span><span class="w"> </span><span class="s2">"-m"</span><span class="p">,</span><span class="w"> </span><span class="s2">"examples.mziziguard.app"</span><span class="p">,</span><span class="w"> </span><span class="s2">"--port"</span><span class="p">,</span><span class="w"> </span><span class="s2">"7860"</span><span class="p">]</span>
 </span></code></pre></div>
 <h3 id="build-and-run">Build and Run<a class="headerlink" href="#build-and-run" title="Permanent link">&para;</a></h3>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>mziziguard<span class="w"> </span>.
@@ -3470,7 +3470,7 @@
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>adaptshot
 </span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>
 </span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="c1"># Verify</span>
-</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;from adaptshot import FewShotLearner; print(&#39;OK&#39;)&quot;</span>
+</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">"from adaptshot import FewShotLearner; print('OK')"</span>
 </span></code></pre></div>
 <h3 id="upgrading-mziziguard">Upgrading MziziGuard<a class="headerlink" href="#upgrading-mziziguard" title="Permanent link">&para;</a></h3>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="c1"># Pull latest from GitHub</span>
@@ -3490,11 +3490,11 @@
 <div class="language-python highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">examples.mziziguard</span><span class="w"> </span><span class="kn">import</span> <span class="n">MziziGuard</span>
 </span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>
 </span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="n">guard</span> <span class="o">=</span> <span class="n">MziziGuard</span><span class="p">()</span>
-</span><span id="__span-22-4"><a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="n">guard</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;backup/model.json&quot;</span><span class="p">)</span>
+</span><span id="__span-22-4"><a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="n">guard</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">"backup/model.json"</span><span class="p">)</span>
 </span><span id="__span-22-5"><a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a>
 </span><span id="__span-22-6"><a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="c1"># Verify</span>
-</span><span id="__span-22-7"><a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="n">result</span> <span class="o">=</span> <span class="n">guard</span><span class="o">.</span><span class="n">diagnose</span><span class="p">(</span><span class="s2">&quot;test_photo.jpg&quot;</span><span class="p">)</span>
-</span><span id="__span-22-8"><a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Model loaded: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">swahili</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">confidence</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+</span><span id="__span-22-7"><a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="n">result</span> <span class="o">=</span> <span class="n">guard</span><span class="o">.</span><span class="n">diagnose</span><span class="p">(</span><span class="s2">"test_photo.jpg"</span><span class="p">)</span>
+</span><span id="__span-22-8"><a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Model loaded: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">swahili</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">confidence</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
 </span></code></pre></div>
 <hr />
 <p><em>Created by <a href="https://github.com/johnson2006christopher">Johnson Christopher Hassan</a></em><br />
@@ -3554,7 +3554,7 @@
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.expand", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

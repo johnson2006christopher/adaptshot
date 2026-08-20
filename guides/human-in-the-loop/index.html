@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../images/adaptshot-logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -31,7 +31,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -2442,7 +2442,7 @@
 <p>The loop is continuous: predictions inform corrections, corrections refine calibration, and accumulated corrections trigger lightweight fine-tuning. The model gets better with use.</p>
 <hr />
 <h2 id="step-1-making-a-prediction">Step 1: Making a Prediction<a class="headerlink" href="#step-1-making-a-prediction" title="Permanent link">&para;</a></h2>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">&quot;field_photo.jpg&quot;</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"field_photo.jpg"</span><span class="p">)</span>
 </span></code></pre></div>
 <p><code>predict()</code> returns a <code>PredictionResult</code> dataclass with these fields:</p>
 <table>
@@ -2526,21 +2526,21 @@
 <p>You can also use a more nuanced approach:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">decide_action</span><span class="p">(</span><span class="n">result</span><span class="p">:</span> <span class="n">PredictionResult</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">ood_flag</span><span class="p">:</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>        <span class="k">return</span> <span class="s2">&quot;REJECT&quot;</span>           <span class="c1"># Image doesn&#39;t match anything we know</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>        <span class="k">return</span> <span class="s2">"REJECT"</span>           <span class="c1"># Image doesn't match anything we know</span>
 </span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">uncertainty_flag</span><span class="p">:</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>        <span class="k">return</span> <span class="s2">&quot;REVIEW&quot;</span>           <span class="c1"># ACT says we need human input</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>        <span class="k">return</span> <span class="s2">"REVIEW"</span>           <span class="c1"># ACT says we need human input</span>
 </span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">calibrated_confidence</span> <span class="o">&lt;</span> <span class="mf">0.70</span><span class="p">:</span>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>        <span class="k">return</span> <span class="s2">&quot;REVIEW&quot;</span>           <span class="c1"># Low confidence even if ACT accepted</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>        <span class="k">return</span> <span class="s2">"REVIEW"</span>           <span class="c1"># Low confidence even if ACT accepted</span>
 </span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">prototype_margin</span> <span class="o">&lt;</span> <span class="mf">0.05</span><span class="p">:</span>
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>        <span class="k">return</span> <span class="s2">&quot;REVIEW&quot;</span>           <span class="c1"># Very close to another class</span>
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="k">return</span> <span class="s2">&quot;ACCEPT&quot;</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>        <span class="k">return</span> <span class="s2">"REVIEW"</span>           <span class="c1"># Very close to another class</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="k">return</span> <span class="s2">"ACCEPT"</span>
 </span></code></pre></div>
 <hr />
 <h2 id="step-3-routing-a-correction">Step 3: Routing a Correction<a class="headerlink" href="#step-3-routing-a-correction" title="Permanent link">&para;</a></h2>
 <p>When a human corrects a prediction:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">feedback</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="n">image_path</span><span class="o">=</span><span class="s2">&quot;field_photo.jpg&quot;</span><span class="p">,</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="n">true_label</span><span class="o">=</span><span class="s2">&quot;maize_blight&quot;</span><span class="p">,</span>      <span class="c1"># Human-provided true label</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="n">image_path</span><span class="o">=</span><span class="s2">"field_photo.jpg"</span><span class="p">,</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="n">true_label</span><span class="o">=</span><span class="s2">"maize_blight"</span><span class="p">,</span>      <span class="c1"># Human-provided true label</span>
 </span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">confidence_weight</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span>          <span class="c1"># How sure the human is [0.0, 1.0]</span>
 </span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="p">)</span>
 </span></code></pre></div>
@@ -2640,21 +2640,21 @@
 <h2 id="step-5-comparative-feedback-v011">Step 5: Comparative Feedback (v0.1.1+)<a class="headerlink" href="#step-5-comparative-feedback-v011" title="Permanent link">&para;</a></h2>
 <p>For cases where absolute labels are hard but relative comparisons are easy:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">correct_comparative</span><span class="p">(</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="n">image_path</span><span class="o">=</span><span class="s2">&quot;hard_case.jpg&quot;</span><span class="p">,</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="n">preferred_label</span><span class="o">=</span><span class="s2">&quot;maize_blight&quot;</span><span class="p">,</span>      <span class="c1"># &quot;More like blight than healthy&quot;</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">alternative_label</span><span class="o">=</span><span class="s2">&quot;maize_healthy&quot;</span><span class="p">,</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="n">image_path</span><span class="o">=</span><span class="s2">"hard_case.jpg"</span><span class="p">,</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="n">preferred_label</span><span class="o">=</span><span class="s2">"maize_blight"</span><span class="p">,</span>      <span class="c1"># "More like blight than healthy"</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">alternative_label</span><span class="o">=</span><span class="s2">"maize_healthy"</span><span class="p">,</span>
 </span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="n">confidence_weight</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>
 </span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="p">)</span>
 </span></code></pre></div>
 <p>This maps a relative question ("is this more like A or B?") to a standard correction update. The result includes comparative diagnostics:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="p">{</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="s2">&quot;calibration_updated&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="s2">&quot;comparative_feedback&quot;</span><span class="p">:</span> <span class="p">{</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>        <span class="s2">&quot;preferred_label&quot;</span><span class="p">:</span> <span class="s2">&quot;maize_blight&quot;</span><span class="p">,</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>        <span class="s2">&quot;alternative_label&quot;</span><span class="p">:</span> <span class="s2">&quot;maize_healthy&quot;</span><span class="p">,</span>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>        <span class="s2">&quot;preferred_distance&quot;</span><span class="p">:</span> <span class="mf">0.34</span><span class="p">,</span>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>        <span class="s2">&quot;alternative_distance&quot;</span><span class="p">:</span> <span class="mf">0.67</span><span class="p">,</span>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>        <span class="s2">&quot;supports_preference&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>  <span class="c1"># preferred is indeed closer</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="s2">"calibration_updated"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="s2">"comparative_feedback"</span><span class="p">:</span> <span class="p">{</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>        <span class="s2">"preferred_label"</span><span class="p">:</span> <span class="s2">"maize_blight"</span><span class="p">,</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>        <span class="s2">"alternative_label"</span><span class="p">:</span> <span class="s2">"maize_healthy"</span><span class="p">,</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>        <span class="s2">"preferred_distance"</span><span class="p">:</span> <span class="mf">0.34</span><span class="p">,</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>        <span class="s2">"alternative_distance"</span><span class="p">:</span> <span class="mf">0.67</span><span class="p">,</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>        <span class="s2">"supports_preference"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>  <span class="c1"># preferred is indeed closer</span>
 </span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>    <span class="p">},</span>
 </span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="p">}</span>
 </span></code></pre></div>
@@ -2664,12 +2664,12 @@
 <div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">report</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">calibration_report</span><span class="p">()</span>
 </span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="nb">print</span><span class="p">(</span><span class="n">report</span><span class="p">)</span>
 </span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="c1"># {</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1">#     &quot;current_temperature&quot;: 0.82,</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="c1">#     &quot;current_ece&quot;: 0.043,</span>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="c1">#     &quot;debiased_ece&quot;: 0.038,</span>
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="c1">#     &quot;ood_distance_threshold&quot;: 0.27,</span>
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="c1">#     &quot;support_size&quot;: 47,</span>
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="c1">#     &quot;prototype_count&quot;: 12,</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1">#     "current_temperature": 0.82,</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="c1">#     "current_ece": 0.043,</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="c1">#     "debiased_ece": 0.038,</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="c1">#     "ood_distance_threshold": 0.27,</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="c1">#     "support_size": 47,</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="c1">#     "prototype_count": 12,</span>
 </span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="c1"># }</span>
 </span></code></pre></div>
 <table>
@@ -2706,14 +2706,14 @@
 <hr />
 <h2 id="step-7-persistence-saving-the-learned-state">Step 7: Persistence -- Saving the Learned State<a class="headerlink" href="#step-7-persistence-saving-the-learned-state" title="Permanent link">&para;</a></h2>
 <p>All corrections and fine-tuning are lost when the process exits unless you save:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">learner</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;checkpoints/session.json&quot;</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">learner</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">"checkpoints/session.json"</span><span class="p">)</span>
 </span></code></pre></div>
 <p>This creates three files:
 - <code>session.json</code> -- metadata, config, calibration, ACT thresholds, buffer labels, integrity checksums
 - <code>session.embeddings.npy</code> -- all support and correction embeddings as NumPy array
 - <code>session.head.pt</code> -- fine-tuned classification head weights (if fine-tuning has run)</p>
 <p>Load a previous session:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">restored</span> <span class="o">=</span> <span class="n">FewShotLearner</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;checkpoints/session.json&quot;</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">restored</span> <span class="o">=</span> <span class="n">FewShotLearner</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"checkpoints/session.json"</span><span class="p">)</span>
 </span></code></pre></div>
 <p>The loader validates checksums, runs schema migration if needed, and restores all internal state including calibration history and ACT thresholds.</p>
 <hr />
@@ -2798,7 +2798,7 @@
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.expand", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>
