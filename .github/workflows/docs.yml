@@ -1,0 +1,37 @@
+name: Docs
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    name: Build and deploy MkDocs site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+      - name: Install docs dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+          pip install mkdocs mkdocs-material "mkdocstrings[python]"
+      # TODO(stage-2): switch to `mkdocs build --strict` once the docs nav
+      # cleanup lands, so broken links and orphaned pages fail CI.
+      - name: Build site
+        run: mkdocs build
+      - name: Deploy to gh-pages
+        run: mkdocs gh-deploy --force
