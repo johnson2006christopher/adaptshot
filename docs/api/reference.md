@@ -323,7 +323,7 @@ print(result.summary)
 Lightweight memory profiling context manager. Uses tracemalloc with optional psutil enhancement.
 
 ```python
-from src.adaptshot.utils.profiling import MemoryTracker, estimate_model_memory_mb
+from adaptshot.utils.profiling import MemoryTracker, estimate_model_memory_mb
 
 # Pre-flight estimate
 est = estimate_model_memory_mb("resnet18", n_classes=5)
