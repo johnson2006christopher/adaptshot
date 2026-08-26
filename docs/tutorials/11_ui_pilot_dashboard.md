@@ -46,7 +46,7 @@ That code lives in [src/adaptshot/ui/app.py](src/adaptshot/ui/app.py).
 ### Start It From Python
 
 ```bash
-python -m src.adaptshot.ui.app
+python -m adaptshot.ui.app
 # Expected output: a Gradio app starts and prints a local URL or launch message
 ```
 
