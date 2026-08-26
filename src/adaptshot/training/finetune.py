@@ -5,6 +5,11 @@ of previously learned classes while adapting to new domain corrections.
 Fisher Information diagonal computation is weighted by human feedback confidence.
 """
 
+# NOTE: this import must stay. Annotations here reference `nn.Module`, which is
+# None when torch is absent; deferring evaluation keeps `import adaptshot`
+# working torch-free on Python < 3.14 (before PEP 649 made this the default).
+from __future__ import annotations
+
 import logging
 from typing import Any, Dict, Optional
 
