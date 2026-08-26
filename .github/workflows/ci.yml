@@ -29,13 +29,19 @@ jobs:
       - name: Type check with mypy (strict)
         run: mypy src/adaptshot --strict
 
+  # The full suite. Needs the torch extra: two test modules and the benchmark
+  # exercise torch-backed paths directly. See #33.
   test:
     name: Tests (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        # Target range is 3.10-3.14 (#34). 3.13 and 3.14 have never been tested;
+        # the dependency floors (numpy>=1.24, Pillow>=9) and the torch extra may
+        # not reach the top of this range. Failures here are the evidence #34 needs
+        # before pyproject.toml claims support.
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -45,7 +51,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[dev]"
+          pip install -e ".[dev,torch]"
       - name: Test with pytest
         run: pytest tests/ -v --tb=short --cov=src/adaptshot --cov-report=xml --cov-report=term-missing
       - name: Upload coverage artifact
@@ -53,6 +59,42 @@ jobs:
         with:
           name: coverage-${{ matrix.python-version }}
           path: coverage.xml
+
+  # The job that turns "torch is optional" from a README sentence into a tested
+  # property. Installs ONLY the core extra -- numpy, Pillow, and the dev tools.
+  #
+  # KNOWN RED: this currently fails with 14 errors, because inference itself requires
+  # torch -- `predict`, `correct`, and save/load all reach `torch.nn` (#35). That
+  # contradicts README.md:100 ("PyTorch is optional and needed only for training").
+  # `continue-on-error` is here so the failure stays VISIBLE while #35 is decided,
+  # rather than being hidden by narrowing what this job runs.
+  # REMOVE `continue-on-error` when #35 is resolved. It is a marker, not a soft-fail.
+  test-core:
+    name: Tests (core install, no torch)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+      - name: Install dependencies (no torch extra)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Assert torch really is absent
+        # Guards against a transitive dependency quietly pulling torch in, which
+        # would make this job pass without testing anything it claims to test.
+        run: |
+          python - <<'PY'
+          import importlib.util, sys
+          if importlib.util.find_spec("torch") is not None:
+              sys.exit("torch is installed in the core-only job; it no longer proves anything")
+          print("confirmed: torch is not installed")
+          PY
+      - name: Test with pytest
+        run: pytest tests/ -v --tb=short -rs
 
   benchmark:
     name: Deterministic smoke benchmark
@@ -64,8 +106,11 @@ jobs:
           python-version: "3.11"
           cache: "pip"
       - name: Install dependencies
+        # benchmarks/run_benchmark.py imports torch at module scope (line 19) and
+        # loads ResNet-18 via torchvision. Whether the benchmark should have a
+        # torch-free path is tracked in #12, not resolved here.
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[dev]"
+          pip install -e ".[dev,torch]"
       - name: Run CPU-only smoke benchmark
         run: python -m benchmarks.run_benchmark --smoke-test --seed 42
