@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from src.adaptshot import ConformalEngine, ConformalPredictionSet
+from adaptshot import ConformalEngine, ConformalPredictionSet
 
 
 class TestConformalPredictionSet:

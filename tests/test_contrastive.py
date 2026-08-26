@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from src.adaptshot import ContrastiveConfig, ContrastivePrototypeLearner
+from adaptshot import ContrastiveConfig, ContrastivePrototypeLearner
 
 
 class TestContrastiveConfig:

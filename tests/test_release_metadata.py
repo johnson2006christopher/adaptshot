@@ -13,7 +13,7 @@ from pathlib import Path
 
 import pytest
 
-from src.adaptshot import __version__
+from adaptshot import __version__
 
 PYPROJECT_PATH = Path(__file__).resolve().parents[1] / "pyproject.toml"
 

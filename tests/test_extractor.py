@@ -5,9 +5,9 @@ from PIL import Image
 from typing import Any, Optional, cast
 import torch
 
-from src.adaptshot.config.settings import AdaptShotConfig
-from src.adaptshot.core.extractor import extract_embedding, BackboneRegistry
-from src.adaptshot.utils.determinism import verify_determinism
+from adaptshot.config.settings import AdaptShotConfig
+from adaptshot.core.extractor import extract_embedding, BackboneRegistry
+from adaptshot.utils.determinism import verify_determinism
 
 
 def test_resnet18_embedding_shape() -> None:

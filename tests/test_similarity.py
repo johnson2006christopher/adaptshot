@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from src.adaptshot.core.similarity import (
+from adaptshot.core.similarity import (
     cosine_similarity_numpy,
     find_nearest_neighbor,
     FAISS_AVAILABLE,

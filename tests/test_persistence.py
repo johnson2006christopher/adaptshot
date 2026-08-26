@@ -11,7 +11,7 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from src.adaptshot import AdaptShotConfig, AdaptShotError, FewShotLearner
+from adaptshot import AdaptShotConfig, AdaptShotError, FewShotLearner
 
 
 @pytest.fixture
@@ -37,7 +37,7 @@ def patched_embeddings(monkeypatch: pytest.MonkeyPatch) -> None:
             return embedding
         return embedding
 
-    monkeypatch.setattr("src.adaptshot.core.learner.extract_embedding", fake_extract)
+    monkeypatch.setattr("adaptshot.core.learner.extract_embedding", fake_extract)
 
 
 def _load_raw_state(path: Path) -> Dict[str, Any]:

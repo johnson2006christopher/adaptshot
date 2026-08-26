@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from src.adaptshot import UncertaintyQuantifier, UncertaintyReport
+from adaptshot import UncertaintyQuantifier, UncertaintyReport
 
 
 class TestUncertaintyReport:
