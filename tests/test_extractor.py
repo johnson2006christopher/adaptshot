@@ -1,12 +1,25 @@
 """Unit tests for core/extractor.py and utils/determinism.py."""
 
+from typing import Any, Optional, cast
+
 import pytest
 from PIL import Image
-from typing import Any, Optional, cast
-import torch
 
 from adaptshot.config.settings import AdaptShotConfig
-from adaptshot.core.extractor import extract_embedding, BackboneRegistry
+from adaptshot.core.extractor import BackboneRegistry, extract_embedding
+
+# `config/settings.py` and `core/extractor.py` resolve torch lazily (see `_get_torch`),
+# so they import fine on a core-only install and sit above this guard. These tests do
+# not: they exercise the torch-backed paths directly and patch `torchvision.models`, so
+# on a core install the whole module skips rather than failing collection and taking the
+# other 93 tests down with it.
+torch = pytest.importorskip("torch")
+pytest.importorskip("torchvision")
+
+# `utils/determinism.py` imports torch eagerly at module scope (line 8), so unlike the
+# imports above it cannot be reached on a core-only install. It therefore has to sit
+# below the guard. That is a real gap in the torch-free contract, not a property of
+# this test -- tracked separately in #35.
 from adaptshot.utils.determinism import verify_determinism
 
 
