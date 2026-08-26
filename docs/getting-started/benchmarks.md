@@ -139,7 +139,7 @@ In v0.2.0, calibration uses a multi-layered approach:
 v0.2.0 includes built-in memory profiling via `src/adaptshot/utils/profiling.py`:
 
 ```python
-from src.adaptshot.utils.profiling import MemoryTracker, estimate_model_memory_mb
+from adaptshot.utils.profiling import MemoryTracker, estimate_model_memory_mb
 
 # Pre-flight estimate (no model loaded)
 est = estimate_model_memory_mb("resnet18", n_classes=5)
