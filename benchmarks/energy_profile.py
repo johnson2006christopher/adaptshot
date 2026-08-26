@@ -23,10 +23,10 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 from PIL import Image
 
-from src.adaptshot.config.settings import AdaptShotConfig
-from src.adaptshot.core.extractor import compute_preview_signature, extract_embedding, set_support_embedding_cache
-from src.adaptshot.core.similarity import find_nearest_neighbor
-from src.adaptshot.utils.determinism import set_deterministic_seed, verify_determinism
+from adaptshot.config.settings import AdaptShotConfig
+from adaptshot.core.extractor import compute_preview_signature, extract_embedding, set_support_embedding_cache
+from adaptshot.core.similarity import find_nearest_neighbor
+from adaptshot.utils.determinism import set_deterministic_seed, verify_determinism
 
 try:
     import psutil  # type: ignore

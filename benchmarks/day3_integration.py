@@ -8,10 +8,10 @@ through human-in-the-loop corrections.
 
 import torch
 import numpy as np
-from src.adaptshot.core.act import ACTEngine
-from src.adaptshot.core.calibration import CalibrationEngine
-from src.adaptshot.training.feedback_router import Correction, FeedbackRouter
-from src.adaptshot.training.finetune import CAEWCFinetuner
+from adaptshot.core.act import ACTEngine
+from adaptshot.core.calibration import CalibrationEngine
+from adaptshot.training.feedback_router import Correction, FeedbackRouter
+from adaptshot.training.finetune import CAEWCFinetuner
 
 # Lightweight mock classification head for simulation
 class MockClassificationHead(torch.nn.Linear):
