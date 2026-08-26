@@ -7,6 +7,12 @@ from pathlib import Path
 import pytest
 from PIL import Image
 
+# Unlike `core/extractor.py`, `studio/utils.py` imports torch eagerly at module
+# scope (line 25), so `adaptshot.studio` itself is unimportable without it. Studio
+# lives behind the `gui` extra and is not part of the torch-free core contract, so
+# the guard must precede the imports below rather than sit after them.
+pytest.importorskip("torch")
+
 from adaptshot.config.settings import AdaptShotConfig
 from adaptshot.core.learner import FewShotLearner
 from adaptshot.studio import utils as studio_utils
