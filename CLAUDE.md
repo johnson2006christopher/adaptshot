@@ -35,7 +35,7 @@ Docs preview: `mkdocs serve` (requires `mkdocs`, `mkdocs-material`, `mkdocstring
 
 ## Code conventions
 
-- **Imports in tests and repo-local code use the `src.` prefix**: `from src.adaptshot.core.learner import FewShotLearner`, not `from adaptshot...`. This is repo-wide and easy to get wrong.
+- **Always import the installed package, never the source tree**: `from adaptshot.core.learner import FewShotLearner`, never `from src.adaptshot...`. The two load as separate modules, so `isinstance` and `except` fail across them. Enforced by `tests/test_import_convention.py`.
 - Line length ≤ 100 (ruff, configured in `pyproject.toml`). Format with `ruff check --fix`.
 - Syntax must stay Python 3.9-compatible (`requires-python = ">=3.9"`, ruff `target-version = "py39"`) even though mypy runs under `python_version = "3.10"`.
 - `mypy --strict` is enforced: type hints required on all public functions and classes.
