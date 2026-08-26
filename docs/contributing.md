@@ -76,7 +76,7 @@ Example test structure:
 ```python
 # tests/test_new_module.py
 import pytest
-from src.adaptshot.new_module import NewComponent
+from adaptshot.new_module import NewComponent
 
 def test_new_component_basic():
     comp = NewComponent(param=42)

@@ -18,8 +18,8 @@ from typing import List, Tuple
 import numpy as np
 from PIL import Image
 
-from src.adaptshot.config.settings import AdaptShotConfig
-from src.adaptshot.core.learner import FewShotLearner
+from adaptshot.config.settings import AdaptShotConfig
+from adaptshot.core.learner import FewShotLearner
 
 
 def _generate_synthetic_dataset(

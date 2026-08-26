@@ -20,10 +20,10 @@ import torch
 from torchvision import datasets, transforms
 from torchvision.transforms import ToPILImage
 
-from src.adaptshot.config.settings import AdaptShotConfig
-from src.adaptshot.core.extractor import extract_embedding
-from src.adaptshot.core.similarity import find_nearest_neighbor
-from src.adaptshot.utils.determinism import set_deterministic_seed, verify_determinism
+from adaptshot.config.settings import AdaptShotConfig
+from adaptshot.core.extractor import extract_embedding
+from adaptshot.core.similarity import find_nearest_neighbor
+from adaptshot.utils.determinism import set_deterministic_seed, verify_determinism
 
 
 def load_few_shot_split(
@@ -361,7 +361,7 @@ def main() -> int:
         if args.profile_memory:
             print("\n📊 Memory Profile:")
             try:
-                from src.adaptshot.utils.profiling import estimate_model_memory_mb
+                from adaptshot.utils.profiling import estimate_model_memory_mb
                 mem_est = estimate_model_memory_mb(config.backbone, config.n_way)
                 print(f"   • Estimated total: {mem_est['estimated_total_mb']:.1f} MB")
                 print(f"   • Under 250MB: {'✅ YES' if mem_est['under_250mb'] else '❌ NO'}")

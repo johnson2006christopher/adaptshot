@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from src.adaptshot import (
+from adaptshot import (
     ExplainabilityEngine,
     ExplanationResult,
     FeatureAttribution,

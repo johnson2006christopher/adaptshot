@@ -10,8 +10,8 @@ enters the system.
 import time
 from typing import Dict, List
 
-from src.adaptshot.core.calibration import CalibrationEngine
-from src.adaptshot.training.feedback_router import Correction, FeedbackRouter
+from adaptshot.core.calibration import CalibrationEngine
+from adaptshot.training.feedback_router import Correction, FeedbackRouter
 
 
 def _print_header(title: str) -> None:

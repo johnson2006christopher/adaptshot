@@ -1,280 +1,313 @@
-
 <div align="center">
 
 <img src="docs/images/adaptshot-logo.png" width="300" alt="AdaptShot Logo">
 
 # AdaptShot
 
-**Human-Aligned Few-Shot Vision Learning for Resource-Constrained Environments**
+**A few-shot image classifier that knows when it doesn't know.**
 
 [![PyPI](https://img.shields.io/pypi/v/adaptshot.svg)](https://pypi.org/project/adaptshot/)
-[![GitHub Release](https://img.shields.io/github/v/release/johnson2006christopher/adaptshot?label=GitHub%20Release)](https://github.com/johnson2006christopher/adaptshot/releases)
 [![PyPI Downloads](https://static.pepy.tech/personalized-badge/adaptshot?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/adaptshot)
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Docs](https://img.shields.io/badge/docs-MkDocs-blue)](https://johnson2006christopher.github.io/adaptshot/)
-[![Built in Tanzania](https://img.shields.io/badge/Built%20in-Tanzania%20🇹🇿-gold.svg)](https://en.wikipedia.org/wiki/Tanzania)
 [![Code Style: Ruff](https://img.shields.io/badge/code%20style-ruff-black)](https://github.com/astral-sh/ruff)
 [![Type Checked: mypy](https://img.shields.io/badge/type--checked-mypy-blue)](https://mypy-lang.org/)
+[![Built in Tanzania](https://img.shields.io/badge/Built%20in-Tanzania%20🇹🇿-gold.svg)](https://en.wikipedia.org/wiki/Tanzania)
 
----
-
-**Documentation**: [https://johnson2006christopher.github.io/adaptshot/](https://johnson2006christopher.github.io/adaptshot/)
-
-**Source Code**: [https://github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)
-
----
-
-AdaptShot is a high-performance, CPU-optimized, human-in-the-loop few-shot vision library. It is designed to learn from every human correction, guarantee calibrated uncertainty, and run deterministically on edge hardware with minimal resources.
-
-v0.2.0-dev is the current release, hardened with 92 regression tests, strict type-checking, and a comprehensive benchmark harness. Built in Tanzania by a self-taught engineer with nothing but a laptop and determination.
+**[Documentation](https://johnson2006christopher.github.io/adaptshot/)** ·
+**[Source](https://github.com/johnson2006christopher/adaptshot)** ·
+**[Changelog](CHANGELOG.md)**
 
 </div>
 
-## 🚀 Key Features
-
-*   **CPU-First by Design**: Optimized for low-latency inference on standard CPUs, requiring less than 250MB of RAM.
-*   **Trustworthy & Calibrated**: Built-in **Expected Calibration Error (ECE)** minimization and **conformal prediction** with finite-sample coverage guarantees.
-*   **Human-in-the-Loop**: Integrated **FeedbackRouter** for real-time model adaptation through human expert corrections.
-*   **Continual Learning**: Implements **head-only CA-EWC** (Fisher-regularized classification head fine-tuning, ~2K parameters) and **UP-UGF** (Uncertainty-Guided Forgetting with LSH-accelerated redundancy scoring) for stable, long-term learning without catastrophic forgetting.
-*   **Multi-Signal Uncertainty**: Epistemic (stochastic embedding perturbation sensitivity), aleatoric (k-NN entropy), and distributional (shrinkage-regularized Mahalanobis distance) uncertainty quantification with OOD detection. *(Full MC Dropout planned for future torch-dependent release.)*
-*   **Explainable AI**: Embedding-space feature attribution (which support examples influenced the prediction), confidence decomposition with historical penalty tracking, counterfactual explanations, and per-dimension saliency analysis.
-*   **Contrastive Prototypes**: Gradient-trained class representations via InfoNCE contrastive loss with 2-layer MLP projection head and EMA momentum prototype refinement.
-*   **Release Hardened**: Zero-config API, strict type safety, and a comprehensive benchmark harness for review and deployment readiness.
-*   **Deterministic**: Guaranteed reproducible results across different runs and hardware through strict seed management.
-
 ---
 
-## 🧭 Why AdaptShot?
+Classify images from a handful of examples, on an ordinary CPU, and get an honest
+answer about how much to trust each prediction — including a **conformal prediction
+set with a coverage guarantee**, and an explicit *"I don't know, ask a human"* when
+the model is out of its depth.
 
-In many real-world scenarios—from rural clinics in Tanzania to remote agricultural fields—AI must operate under extreme constraints: sparse data, no GPU access, and limited connectivity.
+```python
+result = learner.predict("leaf.jpg")
 
-AdaptShot addresses these challenges by prioritizing **efficiency**, **transparency**, and **human collaboration**. It turns the constraint of small data into an opportunity for high-quality, human-guided learning.
-
----
-
-## 📦 Installation
-
-<div class="termy">
-
-```bash
-$ pip install adaptshot
-
----> 100%
+if result.uncertainty_flag:
+    route_to_human_expert(result)     # the model declined to guess
+else:
+    act_on(result.prediction, result.calibrated_confidence)
 ```
 
-</div>
+---
 
-**Core dependencies**: numpy, Pillow (~15 MB total). PyTorch is **optional** — install it only if you need training/fine-tuning:
+## Why this exists
 
-```bash
-pip install "adaptshot[torch]"    # adds PyTorch + torchvision for training
-```
+In a rural clinic or a smallholder farm, three scarcities collide:
 
-> **Fast install**: The base library installs in under 60 seconds on standard connections — no GPU drivers, no CUDA, no 2 GB downloads.
+| Scarcity | What it means |
+| :--- | :--- |
+| **Labels** | 5–50 examples per class, because labelling needs an expert who isn't there |
+| **Compute** | No GPU, no reliable internet, modest RAM |
+| **Trust** | A *confidently wrong* answer costs a harvest, or a life |
 
-### Optional Dependencies
+Most tools address the first two. The third is the hard one: neural networks are
+[systematically overconfident](https://arxiv.org/abs/1706.04599), so a raw softmax
+score of 0.97 tells you very little about whether the answer is right. A tool that
+guesses confidently and wrongly is worse than no tool, because people act on it.
 
-AdaptShot provides optional extras for specialized workflows. The native Python API remains the source of truth; the GUI is an optional wrapper around it:
-
-*   **PyTorch (Training)**: `pip install "adaptshot[torch]"` (Required for CA-EWC fine-tuning and custom backbones)
-*   **FAISS Acceleration**: `pip install "adaptshot[faiss]"` (Recommended for support sets >100 images)
-*   **Gradio UI**: `pip install "adaptshot[ui]"` (For interactive pilots and human-in-the-loop dashboards)
-*   **Studio GUI**: `pip install "adaptshot[gui]"` (For the offline, folder-aware AdaptShot Studio workspace)
-*   **Development**: `pip install "adaptshot[dev]"` (For contributors: testing, linting, and benchmarks)
+AdaptShot's position is that **a model which reliably says "I don't know" is worth
+more than one that is a few points more accurate and silently wrong.**
 
 ---
 
-## 💡 Quick Start
+## What AdaptShot is (and isn't)
 
-### Create a Learner and Predict
+**It is a library.** You construct a learner and call it. There is no inversion of
+control, no plugin system, no application lifecycle to inherit from. Your program
+stays in charge.
 
-It's as simple as initializing the `FewShotLearner`, loading your support images, and calling `predict()`.
+| | |
+| :--- | :--- |
+| ✅ **Is** | A Python library for few-shot image classification with calibrated, guaranteed uncertainty |
+| ✅ **Is** | CPU-first and offline-capable — no GPU, no cloud, no telemetry |
+| ✅ **Is** | Deterministic — same seed, same hardware, same answer |
+| ❌ **Is not** | A framework — it never calls your code |
+| ❌ **Is not** | A training platform — the backbone stays frozen; only a small head adapts |
+| ❌ **Is not** | A state-of-the-art accuracy play — it trades peak accuracy for trustworthy confidence |
+
+### When to reach for something else
+
+Being honest about this is more useful than pretending otherwise:
+
+| If you have… | Use instead | Because |
+| :--- | :--- | :--- |
+| Thousands of labels and a GPU | Fine-tune a CNN (`torchvision`, `timm`) | You will get materially higher accuracy |
+| Reliable internet and a budget | A hosted vision API | Simpler — but your data leaves the device and costs recur per call |
+| A large calibration set, non-vision data | A general conformal library (e.g. MAPIE, crepes) | More general and more mature; they assume more calibration data than few-shot provides |
+| GPU infrastructure and deep UQ needs | A torch-based uncertainty toolkit | Richer methods, if you can afford the hardware |
+
+**Reach for AdaptShot when all three are true:** you have few labels, you have no GPU
+or no connectivity, and a confident wrong answer is expensive.
+
+---
+
+## Installation
+
+```bash
+pip install adaptshot
+```
+
+Core dependencies are **numpy and Pillow only** — no CUDA, no GPU drivers, no
+multi-gigabyte download. PyTorch is optional and needed only for training:
+
+```bash
+pip install "adaptshot[torch]"   # CA-EWC fine-tuning and custom backbones
+pip install "adaptshot[faiss]"   # faster search for support sets >100 images
+pip install "adaptshot[gui]"     # the optional Studio workspace
+pip install "adaptshot[dev]"     # contributors: tests, linting, benchmarks
+```
+
+> The torch-free core install is enforced by CI on every push
+> (`tests/test_torch_optional.py`), not merely documented.
+
+---
+
+## Quick start
 
 ```python
 from adaptshot import FewShotLearner
 from adaptshot.config.settings import AdaptShotConfig
 
 # 1. Configure for your environment
-config = AdaptShotConfig(
-    backbone="resnet18",
-    device="cpu",
-    max_buffer_size=100
-)
+config = AdaptShotConfig(backbone="resnet18", device="cpu", max_buffer_size=100)
 
-# 2. Initialize the learner
+# 2. Initialise the learner
 learner = FewShotLearner(config=config)
 
-# 3. Load support set (examples the model learns from)
-image_paths = ["data/healthy_leaf.jpg", "data/blighted_leaf.jpg"]
-labels = ["healthy", "blight"]
-learner.load_support_images(image_paths, labels)
+# 3. Show it a few examples per class
+learner.load_support_images(
+    ["data/healthy_leaf.jpg", "data/blighted_leaf.jpg"],
+    ["healthy", "blight"],
+)
 
-# 4. Predict on a new image
+# 4. Predict
 result = learner.predict("data/query.jpg")
+print(result.prediction, f"{result.calibrated_confidence:.1%}")
 
-print(f"Prediction: {result.prediction}")
-print(f"Confidence: {result.calibrated_confidence:.2%}")
-
-# 5. Handle uncertainty
+# 5. Respect the uncertainty
 if result.uncertainty_flag:
-    print("⚠️  Model is unsure. Routing for human review...")
+    print("Model is unsure — routing for human review")
+```
+
+When a human corrects a prediction, feed it back — the correction updates
+calibration and the replay buffer, so the next prediction is better informed:
+
+```python
+learner.correct(image_path="data/query.jpg", true_label="blight")
 ```
 
 ---
 
-## 🆕 What's New in v0.2.0
+## The five ideas behind it
 
-- **Conformal Prediction**: Distribution-free prediction sets with true leave-one-out calibration guaranteeing finite-sample coverage at configurable significance levels
-- **Contrastive Prototype Learning**: Gradient-trained InfoNCE class prototypes with 2-layer MLP projection head (full backpropagation through W1/b1/W2/b2)
-- **Advanced Uncertainty**: Three complementary signals — epistemic (stochastic perturbation sensitivity), aleatoric (k-NN entropy), and distributional (shrinkage-regularized Mahalanobis OOD) — fused with mode-gated computation
-- **XAI Explainability**: Embedding-space feature attribution, confidence decomposition with historical penalty tracking, counterfactual analysis, and per-dimension saliency
-- **Cross-conformal prediction mode**: K-fold cross-conformal quantile averaging for more stable prediction sets
-- **Bootstrap Temperature Calibration**: Autonomous LOO grid-search temperature optimization for cold-start scenarios
-- **UP-UGF LSH Acceleration**: Approximate O(N log N) redundancy scoring via random projection locality-sensitive hashing for large buffers (>100 examples)
-- **Memory Profiling**: `MemoryTracker` with tracemalloc + psutil instrumentation for verifying <250MB RAM operation
-- **miniImageNet Benchmarks**: Standard few-shot benchmarks with baseline references (Prototypical Networks, Matching Networks, MAML)
-- **ONNX Export**: Bundled backbone export script with SHA-256 verification for torch-free inference
-- **ACT Symmetric Updates**: Mean-reverting threshold adaptation prevents monotonic drift in autonomous operation
-- **37 new tests** (92 total) across conformal, contrastive, uncertainty, and explainability modules
-- **12 new documentation pages**: Architecture deep-dive, algorithm theory, API reference, 5 tutorials, 2 GUI guides
+You do not need to understand these to use the library, but they are what makes it
+different from a nearest-neighbour search with a confidence number bolted on.
 
-## 🛠️ Configuration
+| Idea | What it does | Where |
+| :--- | :--- | :--- |
+| **Prototypes** | Each class becomes the mean embedding of its examples; a query is classified by distance to prototypes | `core/similarity.py` |
+| **Calibration** | Raw scores are rescaled so that "80% confident" actually means right 80% of the time, measured by Expected Calibration Error | `core/calibration.py` |
+| **Conformal prediction** | Returns a *set* of labels guaranteed to contain the truth at a chosen rate — distribution-free and valid in finite samples, given exchangeability | `core/conformal.py` |
+| **Uncertainty & OOD** | Separates *"the model is guessing"* from *"this input doesn't belong here"*, using a shrinkage-regularised Mahalanobis distance | `core/uncertainty.py` |
+| **Human corrections** | Corrections update calibration and a bounded replay buffer, with Fisher-regularised head-only updates to limit forgetting | `training/` |
 
-AdaptShot uses a strictly typed, immutable `AdaptShotConfig` to ensure reproducibility.
+The conformal guarantee is the core contribution. It is **marginal** coverage — over
+the whole distribution, not conditional on any particular class or subgroup. That
+distinction matters in deployment and is documented rather than glossed over.
 
-### Core Execution
+📖 [Algorithm theory](docs/guides/algorithm-theory.md) ·
+[Architecture](docs/guides/architecture.md) ·
+[Tutorials](docs/tutorials.md)
+
+---
+
+## Feature status
+
+Honest labels. Experimental means *implemented and tested, not yet validated on
+real-world data at scale.*
+
+| Area | Status |
+| :--- | :--- |
+| Few-shot inference (prototypical, nearest-neighbour) | **Stable** |
+| Calibration (temperature, scaling-binning, ECE) | **Stable** |
+| Conformal prediction (split, cross, leave-one-out) | **Stable** |
+| OOD detection (Mahalanobis with shrinkage) | **Stable** |
+| Human-in-the-loop corrections & replay buffer | **Stable** |
+| Determinism & checkpoint persistence | **Stable** |
+| Continual learning (head-only CA-EWC, ~2K params) | **Experimental** |
+| Contrastive prototypes (InfoNCE) | **Experimental** — requires torch |
+| Explainability (embedding-space attribution) | **Experimental** |
+| ONNX backbone export | **Experimental** |
+| Studio / Pilot GUIs | **Optional extras**, planned to move to a separate project |
+
+Memory: the library targets operation within roughly **250 MB of RAM** for core
+inference. `utils/profiling.py` provides a `MemoryTracker` so you can verify this on
+*your* hardware and workload rather than taking the number on faith.
+
+---
+
+## Configuration
+
+`AdaptShotConfig` is strictly typed and immutable, so a run is reproducible from its
+config alone. The most common fields:
 
 | Parameter | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `backbone` | `str` | `"resnet18"` | Feature extractor (`resnet18` or `mobilenet_v3_small`) |
 | `device` | `str` | `"cpu"` | Execution device (`cpu`, `cuda`, or `mps`) |
 | `seed` | `int` | `42` | Random seed for deterministic reproducibility |
-| `verbose` | `bool` | `True` | Enable INFO-level logging |
-
-### Few-Shot Learning
-
-| Parameter | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
 | `n_way` | `int` | `5` | Number of classes per episode |
 | `k_shot` | `int` | `10` | Support examples per class |
-| `query_size` | `int` | `15` | Query examples per class for evaluation |
-
-### Similarity & Inference
-
-| Parameter | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
 | `similarity_metric` | `str` | `"euclidean"` | Distance metric (`cosine` or `euclidean`) |
-| `inference_mode` | `str` | `"prototypical"` | Classification mode (`nearest_neighbor`, `prototypical`, or `contrastive`) |
-| `use_faiss` | `bool` | `False` | Enable FAISS-CPU acceleration for large support sets |
-| `faiss_nprobe` | `int` | `8` | FAISS IVF index probing depth |
+| `inference_mode` | `str` | `"prototypical"` | `nearest_neighbor`, `prototypical`, or `contrastive` |
+| `calibration_method` | `str` | `"temperature"` | `temperature`, `scaling_binning`, `conformal`, or `none` |
+| `conformal_alpha` | `float` | `0.05` | Significance level — coverage target is `1 − alpha` |
+| `conformal_mode` | `str` | `"split"` | `split` or `cross` (k-fold cross-conformal) |
+| `uncertainty_mode` | `str` | `"ensemble"` | `mcdropout`, `entropy`, `mahalanobis`, or `ensemble` |
+| `enable_ood_detection` | `bool` | `True` | Flag images outside the known support distribution |
+| `max_buffer_size` | `int` | `100` | Replay buffer capacity, enforced by UP-UGF pruning |
+| `eco_mode` | `bool` | `False` | Energy-saving early-exit thresholds |
 
-### Energy-Aware Inference
-
-| Parameter | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `eco_mode` | `bool` | `False` | Enable energy-saving early-exit thresholds |
-| `early_exit_threshold` | `float` | `0.95` | Confidence threshold for early-exit (0.5-1.0) |
-
-### Calibration & Uncertainty
-
-| Parameter | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `calibration_method` | `str` | `"temperature"` | Method: `temperature`, `scaling_binning`, `conformal`, or `none` |
-| `ece_n_bins` | `int` | `15` | Bins for Expected Calibration Error |
-| `calibration_eval_bins` | `int` | `100` | Bins for calibration evaluation |
-| `temperature_init` | `float` | `1.0` | Initial temperature scaling parameter |
-| `recalibrate_after_feedback` | `bool` | `True` | Recalibrate after each human correction |
-
-### OOD Detection
-
-| Parameter | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `enable_ood_detection` | `bool` | `True` | Flag images outside known support distribution |
-| `ood_threshold_quantile` | `float` | `0.98` | Quantile threshold for OOD rejection (0.5-1.0) |
-| `ood_absolute_min_distance` | `float` | `0.25` | Minimum absolute distance for OOD flagging |
-
-### Memory Management
-
-| Parameter | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `max_buffer_size` | `int` | `100` | Maximum replay buffer capacity (enforced by UP-UGF) |
-| `log_dir` | `Optional[str]` | `None` | Optional log output directory |
-
-### Advanced Algorithms (v0.2.0)
-
-| Parameter | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `conformal_alpha` | `float` | `0.05` | Significance level for conformal prediction sets (0.01-0.50) |
-| `conformal_mode` | `str` | `"split"` | Conformal prediction mode (`split` or `cross`) |
-| `uncertainty_mode` | `str` | `"ensemble"` | Uncertainty mode (`mcdropout`, `entropy`, `mahalanobis`, or `ensemble`) |
-| `explainability_enabled` | `bool` | `True` | Enable XAI explainability for predictions |
+📖 **[Full configuration reference — every field](docs/reference/config-reference.md)**
 
 ---
 
-## ☁️ Deployment
+## Deployment
 
-### Cloud Environments
-AdaptShot is ideal for cost-effective cloud deployments on standard CPU instances (e.g., AWS `t3.medium`, GCP `e2-standard-2`). Since it doesn't require GPUs, you can significantly reduce operational costs while maintaining high-throughput inference.
+Runs anywhere a CPU and Python 3.9+ exist:
 
-### On-Premise & Edge
-Designed for the edge, AdaptShot runs seamlessly on:
-*   **Single Board Computers**: Raspberry Pi 4+, Jetson Nano (CPU mode).
-*   **Legacy Hardware**: Older laptops and desktops with limited RAM.
-*   **Offline Stations**: Fully functional without internet access once the backbone weights are cached.
+- **Edge devices** — single-board computers and older laptops with limited RAM
+- **Offline stations** — fully functional without internet once backbone weights are cached
+- **Cloud** — standard CPU instances, with no GPU line on the bill
 
 ---
 
-## 🤝 Contributing
+## Project status
 
-We welcome contributions of all kinds! Whether you're fixing a bug, adding a new backbone, or improving documentation.
+**Current release: v0.2.0.** Pre-1.0 — the API may still change between minor
+versions, and each change is documented in the [changelog](CHANGELOG.md).
 
-1.  Check the [Contributing Guidelines](CONTRIBUTING.md).
-2.  Install development dependencies: `pip install -e ".[dev]"`.
-3.  Run tests to ensure everything is working: `pytest tests/`.
-4.  Submit a Pull Request.
+| Version | Theme |
+| :--- | :--- |
+| **v0.1.x** | *Built it.* Few-shot inference, calibration, human corrections, eco mode |
+| **v0.2.0** | *Made it honest.* Conformal prediction, multi-signal uncertainty, OOD detection — plus a substantial pass replacing claims that the code did not yet support |
+| **v0.3.0** *(in progress)* | *Make it provable.* Validation on real public datasets, a narrower and better-defended API, GUIs split into their own project |
+
+Quality gates on every change: `ruff`, `mypy --strict`, 98 tests across 14 modules,
+and a deterministic smoke benchmark. See [ROADMAP.md](ROADMAP.md) for what's planned.
+
+> **On benchmarks:** results on real public datasets are in progress for v0.3.0.
+> Until they land, treat AdaptShot as a well-tested implementation of well-established
+> methods, not as an empirically validated accuracy claim. Numbers will appear here
+> when they are reproducible, with seeds and hardware recorded.
 
 ---
 
-## 📜 License
+## Contributing
 
-AdaptShot is open-source software licensed under the **[MIT License](LICENSE)**.
+Contributions are welcome — code, documentation, testing, or a bug report from a
+real deployment.
+
+```bash
+git clone https://github.com/johnson2006christopher/adaptshot.git
+cd adaptshot
+pip install -e ".[dev,torch]"
+
+ruff check src/ tests/
+mypy src/adaptshot --strict
+pytest tests/ -v
+python -m benchmarks.run_benchmark --smoke-test --seed 42
+```
+
+All four must pass before a pull request. See [CONTRIBUTING.md](CONTRIBUTING.md),
+[SECURITY.md](SECURITY.md), and the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ---
 
-## 👤 About the Creator
+## Citing
+
+If AdaptShot is useful in your work:
+
+```bibtex
+@software{hassan_adaptshot,
+  author  = {Hassan, Johnson Christopher},
+  title   = {AdaptShot: Few-Shot Vision with Calibrated, Guaranteed Uncertainty},
+  url     = {https://github.com/johnson2006christopher/adaptshot},
+  version = {0.2.0},
+  year    = {2026}
+}
+```
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE).
+
+---
 
 <div align="center">
-<img src="docs/images/johnson.jpeg" width="150" style="border-radius: 50%;" alt="Johnson Christopher Hassan">
+<img src="docs/images/johnson.jpeg" width="140" style="border-radius: 50%;" alt="Johnson Christopher Hassan">
 
 **Johnson Christopher Hassan**
 
-*Vision AI Researcher & Software Engineer*
+Vision AI researcher and software engineer · Mbeya, Tanzania 🇹🇿
 
-Built in Mbeya, Tanzania 🇹🇿
+[GitHub](https://github.com/johnson2006christopher) ·
+[LinkedIn](https://www.linkedin.com/in/johnson-christopher-hassan) ·
+[Email](mailto:johnson2006christopher@gmail.com)
 
-[GitHub](https://github.com/johnson2006christopher) | [LinkedIn](https://www.linkedin.com/in/johnson-christopher-hassan) | [Email](mailto:johnson2006christopher@gmail.com)
+<br>
+
+*Built for the places where AI has to work without a GPU, without the internet,<br>and without the luxury of being confidently wrong.*
 
 </div>
-
----
-
-<div align="center">
-<p><i>"The best AI doesn't guess confidently. It learns humbly, admits uncertainty, and improves through every human correction."</i></p>
-</div>
-
----
-
-## 🔍 Summary of Key Updates
-
-| Change | Why It Matters |
-|--------|---------------|
-| ✅ Added **GitHub Release badge** | Points to the eventual packaged release assets |
-| ✅ Updated **Docs badge** to live MkDocs URL | Users can access accurate, searchable documentation immediately |
-| ✅ Fixed **installation instructions** to match `pyproject.toml` extras | Prevents user confusion; ensures `pip install adaptshot[faiss]` works |
-| ✅ Corrected **API signatures** to match actual code (`FewShotLearner`, `PredictionResult`) | Developers can copy-paste examples with confidence |
-| ✅ Marked v0.1.2 content as **stable / released** | Confirms publication status is accurate |
-| ✅ Removed placeholder links (`arXiv:2604.XXXXX`, `adaptshot.dev/docs`) | No broken links; only verified, working resources |
-| ✅ Kept the native API as the primary workflow | Reinforces code-first usage even with the optional GUI |
-| ✅ Standardized **citation format** to GitHub + version | Academically sound; reproducible referencing |
-

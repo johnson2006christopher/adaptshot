@@ -132,7 +132,7 @@ Executes `fn` multiple times with incrementally offset seeds. Returns `True` if 
 Context manager for measuring memory usage during key lifecycle points.
 
 ```python
-from src.adaptshot.utils.profiling import MemoryTracker
+from adaptshot.utils.profiling import MemoryTracker
 
 with MemoryTracker("predict") as tracker:
     result = learner.predict("query.jpg")
@@ -144,7 +144,7 @@ print(f"Latency: {tracker.latency_ms:.1f} ms")
 Pre-flight memory estimate without loading the model. Returns a dictionary of component-level estimates.
 
 ```python
-from src.adaptshot.utils.profiling import estimate_model_memory_mb
+from adaptshot.utils.profiling import estimate_model_memory_mb
 
 est = estimate_model_memory_mb("resnet18", n_classes=5)
 print(f"Estimated total: {est['estimated_total_mb']} MB")

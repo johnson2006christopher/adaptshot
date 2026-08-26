@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from src.adaptshot import (
+from adaptshot import (
     AdaptShotConfig,
     BufferCapacityError,
     CalibrationNotReadyError,
@@ -65,7 +65,7 @@ def test_predict_rejects_grayscale_array(rgb_image_path: str, monkeypatch: pytes
     learner = FewShotLearner(config=AdaptShotConfig(device="cpu"))
 
     monkeypatch.setattr(
-        "src.adaptshot.core.learner.extract_embedding",
+        "adaptshot.core.learner.extract_embedding",
         lambda image, cfg, **kwargs: np.ones(8, dtype=np.float32),
     )
 
@@ -83,11 +83,11 @@ def test_predict_falls_back_when_calibration_not_ready(
     learner = FewShotLearner(config=AdaptShotConfig(device="cpu"))
 
     monkeypatch.setattr(
-        "src.adaptshot.core.learner.extract_embedding",
+        "adaptshot.core.learner.extract_embedding",
         lambda image, cfg, **kwargs: np.ones(8, dtype=np.float32),
     )
     monkeypatch.setattr(
-        "src.adaptshot.core.learner.find_nearest_prototype",
+        "adaptshot.core.learner.find_nearest_prototype",
         lambda query, prototypes, prototype_labels, metric="euclidean": (
             prototype_labels[0],
             0.0,
@@ -114,7 +114,7 @@ def test_calibration_graceful_fallback_when_cold(rgb_image_path: str, monkeypatc
     learner = FewShotLearner(config=AdaptShotConfig(device="cpu"))
 
     monkeypatch.setattr(
-        "src.adaptshot.core.learner.extract_embedding",
+        "adaptshot.core.learner.extract_embedding",
         lambda image, cfg, **kwargs: np.ones(8, dtype=np.float32),
     )
 
@@ -129,11 +129,11 @@ def test_correct_raises_on_bad_confidence_weight(rgb_image_path: str, monkeypatc
     learner = FewShotLearner(config=AdaptShotConfig(device="cpu"))
 
     monkeypatch.setattr(
-        "src.adaptshot.core.learner.extract_embedding",
+        "adaptshot.core.learner.extract_embedding",
         lambda image, cfg, **kwargs: np.ones(8, dtype=np.float32),
     )
     monkeypatch.setattr(
-        "src.adaptshot.core.learner.find_nearest_neighbor",
+        "adaptshot.core.learner.find_nearest_neighbor",
         lambda query, support_embeddings, support_labels, use_faiss=False, metric="cosine", **kwargs: (
             support_labels[0],
             0.8,
@@ -154,11 +154,11 @@ def test_buffer_capacity_error_is_caught_in_correct(
     learner = FewShotLearner(config=AdaptShotConfig(device="cpu", max_buffer_size=10))
 
     monkeypatch.setattr(
-        "src.adaptshot.core.learner.extract_embedding",
+        "adaptshot.core.learner.extract_embedding",
         lambda image, cfg, **kwargs: np.ones(8, dtype=np.float32),
     )
     monkeypatch.setattr(
-        "src.adaptshot.core.learner.find_nearest_neighbor",
+        "adaptshot.core.learner.find_nearest_neighbor",
         lambda query, support_embeddings, support_labels, use_faiss=False, metric="cosine", **kwargs: (
             support_labels[0],
             0.8,

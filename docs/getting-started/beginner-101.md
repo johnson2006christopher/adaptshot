@@ -223,7 +223,7 @@ If you prefer clicking instead of coding, AdaptShot has two browser-based interf
 **Gradio Dashboard** (simpler):
 ```bash
 pip install "adaptshot[ui]"
-python -m src.adaptshot.ui.app
+python -m adaptshot.ui.app
 ```
 
 **AdaptShot Studio** (full-featured):

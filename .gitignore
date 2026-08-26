@@ -74,3 +74,4 @@ htmlcov/
 # Node (not used — this is a pure Python project)
 node_modules/
 package-lock.json
+notes/

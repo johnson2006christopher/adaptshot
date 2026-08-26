@@ -2,7 +2,7 @@
 
 - Primary public API lives in `src/adaptshot/core/learner.py` (`FewShotLearner`); verify any API or signature against `src/adaptshot/` before stating it.
 - CPU-only, <250MB RAM are non-negotiable; never assume GPU availability.
-- Import paths in code and tests use `src.adaptshot...` (not `adaptshot...`) when running from repo.
+- Import paths in code, tests, and benchmarks use `adaptshot...` (the installed package), never `src.adaptshot...`. Requires an editable install: `pip install -e ".[dev]"`.
 
 ## Commands that matter
 - Install dev deps: `pip install -e ".[dev]"`

@@ -7,10 +7,10 @@ from pathlib import Path
 import pytest
 from PIL import Image
 
-from src.adaptshot.config.settings import AdaptShotConfig
-from src.adaptshot.core.learner import FewShotLearner
-from src.adaptshot.studio import utils as studio_utils
-from src.adaptshot.studio.utils import (
+from adaptshot.config.settings import AdaptShotConfig
+from adaptshot.core.learner import FewShotLearner
+from adaptshot.studio import utils as studio_utils
+from adaptshot.studio.utils import (
     build_report_markdown,
     collect_image_sources,
     discover_images_in_folder,

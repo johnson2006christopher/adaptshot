@@ -6,7 +6,7 @@ and conformal prediction fallback logic.
 
 import numpy as np
 
-from src.adaptshot.core.calibration import CalibrationEngine
+from adaptshot.core.calibration import CalibrationEngine
 
 
 def test_initial_state():
