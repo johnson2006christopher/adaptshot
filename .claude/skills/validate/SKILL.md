@@ -25,7 +25,7 @@ Strict mode is mandatory for merge. Note that CI currently soft-fails this stage
 ```bash
 pytest tests/ -v --tb=short
 ```
-Tests import via the `src.` prefix (`from src.adaptshot...`). An `ImportError` on `adaptshot.*` usually means a test used the wrong prefix.
+Tests import the installed package (`from adaptshot...`). An `ImportError` on `adaptshot.*` usually means the editable install is missing — run `pip install -e ".[dev]"`.
 
 ## 4. Smoke benchmark (CPU-only, deterministic)
 ```bash
