@@ -21,7 +21,9 @@ This guide maps every module in AdaptShot, explains how components interact, and
 ├───────────────┴───────────────┴───────────────┴─────────────┤
 │                        Applications                          │
 ├───────────────────┬────────────────────┬────────────────────┤
-│   ui/app.py       │  studio/app.py     │  mziziguard/       │
+│   ui/app.py       │  studio/app.py     │  mziziguard/       │  <- three GUIs; being replaced by one (#45).
+│                   │                    │  (worked example,  │     mziziguard's sample data is synthetic.
+│                   │                    │   synthetic data)  │
 │   (Gradio pilot)  │  (Offline studio)  │  (Crop diagnosis)  │
 └───────────────────┴────────────────────┴────────────────────┘
 ```

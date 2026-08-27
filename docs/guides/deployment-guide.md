@@ -1,6 +1,20 @@
 # Deployment Guide — From Development to the Field
 
-**Step-by-step instructions for deploying AdaptShot and MziziGuard in real-world environments — laptops, field offices, mobile workstations, and embedded devices.**
+**Step-by-step instructions for running AdaptShot and MziziGuard on the hardware you are likely to have — laptops, field offices, mobile workstations, and embedded devices.**
+
+!!! warning "These are instructions, not a record"
+    This guide describes how you *would* deploy these tools. Neither AdaptShot nor
+    MziziGuard has been deployed in any of the scenarios below; none of them has been
+    validated on the hardware described, and the resource figures are estimates rather
+    than measurements.
+
+    MziziGuard's sample images are generated procedurally
+    (`ImageDraw.ellipse()` in `examples/mziziguard/data.py`), and it is being rebuilt as
+    [Tambua](https://github.com/johnson2006christopher/adaptshot/issues/45). Hardware
+    validation on ARM and phone-class devices is
+    [#31](https://github.com/johnson2006christopher/adaptshot/issues/31); measured
+    latency and memory are
+    [#20](https://github.com/johnson2006christopher/adaptshot/issues/20).
 
 ---
 

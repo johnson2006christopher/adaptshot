@@ -5,8 +5,10 @@ repo_url: https://github.com/johnson2006christopher/adaptshot
 repo_name: johnson2006christopher/adaptshot
 docs_dir: docs
 site_dir: site
+# Built and reachable by URL, but deliberately unlinked: these are historical
+# records of v0.1.1, not current documentation. See the banner at the top of each.
 not_in_nav: |
-  AUDIT_REPORT.md
+  archive/audit-report-v0.1.1.md
   release-checklist-v0.1.1.md
 
 theme:

@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] — Corrections
+
+### Corrected
+
+Documentation claims that were not true when written, retracted here rather than
+quietly edited away. A changelog that records a retraction is worth more than one that
+only lists features.
+
+- **"MziziGuard is deployed"** — it was not, and is not. No farmer has used it. Its
+  sample images are generated with `ImageDraw.ellipse()`. It is a worked example, and
+  is now labelled as one. Tracked in
+  [#17](https://github.com/johnson2006christopher/adaptshot/issues/17).
+- **"Torch-free inference via bundled backbones"** (v0.2.0 entry below, and the front
+  page) — there are no bundled backbones; `src/adaptshot/data/` contains only
+  `__init__.py`, and inference requires torch today. Tracked in
+  [#35](https://github.com/johnson2006christopher/adaptshot/issues/35) and
+  [#36](https://github.com/johnson2006christopher/adaptshot/issues/36).
+- **"20ms P95 latency"** — the benchmark artifact this figure cited reports
+  `latency_p95_ms: 36.43`. The claim was never true of the run it pointed at.
+- **"~150ms on CPU"** (MziziGuard) and **"<2MB RAM"** (v0.1.1 audit) — no script in
+  `benchmarks/` produces either number. Removed rather than re-estimated.
+- **"Distribution-free 95% coverage guarantee"** and **"<250MB RAM"** — these are
+  design targets, not measurements. Neither has been verified. Restated as targets;
+  tracked in [#14](https://github.com/johnson2006christopher/adaptshot/issues/14) and
+  [#13](https://github.com/johnson2006christopher/adaptshot/issues/13).
+
+Historical entries below are left as written. They record what was claimed at the time,
+which is the point of a changelog; the corrections above record what was actually true.
+
 ## [0.2.0] - 2026-06-14
 
 ### Production Hardening

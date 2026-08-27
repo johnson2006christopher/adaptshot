@@ -1,3 +1,18 @@
+!!! danger "Superseded — historical record only"
+    This is an audit of **v0.1.1**, kept for the record. Do not rely on anything in it.
+
+    Its findings, its metrics, and its coverage numbers describe a version that no
+    longer exists, and several are contradicted by the current state of the repository
+    (it reports 36 passing tests; there are now 109). It was removed from the
+    documentation navigation for that reason, and the absolute filesystem links it
+    contained — which pointed at a directory on a machine that no longer exists — have
+    been stripped.
+
+    For the current state, see the [changelog](../changelog.md) and the
+    [open issues](https://github.com/johnson2006christopher/adaptshot/issues).
+
+---
+
 # 🔍 AdaptShot v0.1.1: Industry-Readiness Audit Report 
  
  **Audit Date**: 2026-05-19  
@@ -19,8 +34,8 @@
  |------|---------|----------| 
  | Performance | Exceptional memory efficiency (Peak <2MB RAM) | `benchmarks/energy_profile.py` results | 
  | Determinism | 100% reproducible results with fixed seeds | `benchmarks/run_benchmark.py` --seed 42 | 
- | Architecture | Clean separation of ACT, Calibration, and UPUGF | [learner.py](file:///home/johnson_dev/coding%20for%20life/adaptshot/src/adaptshot/core/learner.py#L42) | 
- | Security | Atomic state writes and integrity hashing | [learner.py](file:///home/johnson_dev/coding%20for%20life/adaptshot/src/adaptshot/core/learner.py#L363-L368) | 
+ | Architecture | Clean separation of ACT, Calibration, and UPUGF | `learner.py` | 
+ | Security | Atomic state writes and integrity hashing | `learner.py` | 
  | Efficiency | Eco-mode successfully reduces latency and energy | `benchmarks/energy_profile.py` (6.7% reduction) | 
  
  --- 
@@ -29,8 +44,8 @@
  
  | Priority | Issue | Location | Impact | Fix Recommendation | 
  |----------|-------|----------|--------|-------------------| 
- | 🔴 High | MobileNetV3 head hardcoded to `.fc` | [extractor.py:L125](file:///home/johnson_dev/coding%20for%20life/adaptshot/src/adaptshot/core/extractor.py#L125) | Breaks embeddings for non-ResNet models | Add check for `.classifier` vs `.fc` | 
- | 🔴 High | ECE computation logic error | [calibration.py:L137](file:///home/johnson_dev/coding%20for%20life/adaptshot/src/adaptshot/core/calibration.py#L137) | Incorrect uncertainty triggers | Fix bin boundary comparison logic | 
+ | 🔴 High | MobileNetV3 head hardcoded to `.fc` | `extractor.py:L125` | Breaks embeddings for non-ResNet models | Add check for `.classifier` vs `.fc` | 
+ | 🔴 High | ECE computation logic error | `calibration.py:L137` | Incorrect uncertainty triggers | Fix bin boundary comparison logic | 
  | 🔴 High | 172 Documentation build warnings | `docs/tutorials/` | Non-functional help system | Fix relative source code links | 
  | 🟡 Medium | Version mismatch (0.1.0 vs 0.1.1) | `pyproject.toml`, `__init__.py` | Confusion in deployment | Sync all version strings to `0.1.1` | 
  | 🟡 Medium | Test coverage <85% (Currently 64%) | `src/adaptshot/` | Unverified edge cases | Add tests for `finetune.py` and `up_ugf.py` | 
@@ -86,15 +101,15 @@
  
  ### ❌ Not Yet: Major Work Required 
  
- **Recommendation**: Address the 🔴 High-priority issues in [extractor.py](file:///home/johnson_dev/coding%20for%20life/adaptshot/src/adaptshot/core/extractor.py), [calibration.py](file:///home/johnson_dev/coding%20for%20life/adaptshot/src/adaptshot/core/calibration.py), and the documentation links immediately. Do not tag v0.1.1 until `pytest` passes 100% and `mkdocs build --strict` completes without warnings.
+ **Recommendation**: Address the 🔴 High-priority issues in `extractor.py`, `calibration.py`, and the documentation links immediately. Do not tag v0.1.1 until `pytest` passes 100% and `mkdocs build --strict` completes without warnings.
  
  --- 
  
  ## 📎 Appendix: Detailed Findings 
  
  ### Code Quality Deep Dive 
- - **Head Modification**: In [extractor.py](file:///home/johnson_dev/coding%20for%20life/adaptshot/src/adaptshot/core/extractor.py), the assumption that all backbones use `.fc` for the final layer is incorrect. `MobileNetV3` uses `.classifier`.
- - **Immutability**: [settings.py](file:///home/johnson_dev/coding%20for%20life/adaptshot/src/adaptshot/config/settings.py) correctly uses `frozen=True` for `AdaptShotConfig`.
+ - **Head Modification**: In `extractor.py`, the assumption that all backbones use `.fc` for the final layer is incorrect. `MobileNetV3` uses `.classifier`.
+ - **Immutability**: `settings.py` correctly uses `frozen=True` for `AdaptShotConfig`.
  
  ### Test Coverage Report 
  - `src/adaptshot/training/finetune.py`: 25% (Missing unit tests for Fisher updates)
