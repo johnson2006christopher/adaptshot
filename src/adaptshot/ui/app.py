@@ -9,7 +9,7 @@ Provides a production-ready dashboard for:
 
 import os
 import tempfile
-from typing import List, Optional, Tuple, Union, cast
+from typing import cast
 
 import gradio as gr
 from PIL import Image
@@ -23,7 +23,7 @@ class AdaptShotUI:
 
     def __init__(self, config: AdaptShotConfig) -> None:
         self.config = config
-        self.learner: Optional[FewShotLearner] = None
+        self.learner: FewShotLearner | None = None
         self.support_dir: str = tempfile.mkdtemp(prefix="adaptshot_support_")
 
     def _ensure_learner(self) -> FewShotLearner:
@@ -34,13 +34,13 @@ class AdaptShotUI:
             # For the UI demo, we keep it uninitialized until files are uploaded.
         return self.learner
 
-    def load_support_files(self, files: List[object]) -> str:
+    def load_support_files(self, files: list[object]) -> str:
         """Handle support image uploads and index embeddings."""
         if not files:
             return "❌ No files uploaded."
         
-        paths: List[str] = []
-        labels: List[Union[str, int]] = []
+        paths: list[str] = []
+        labels: list[str | int] = []
         for f in files:
             # Gradio returns NamedTuple or string path depending on version
             path = str(f.name if hasattr(f, "name") else f)
@@ -54,10 +54,10 @@ class AdaptShotUI:
             learner.load_support_images(paths, labels)
             class_names = sorted({str(label) for label in labels})
             return f"✅ Indexed {len(paths)} support images for classes: {', '.join(class_names)}"
-        except Exception as e:
-            return f"❌ Error: {str(e)}"
+        except Exception as e:  # noqa: BLE001 - UI boundary: surface, never crash
+            return f"❌ Error: {e!s}"
 
-    def predict_image(self, image: Union[str, Image.Image]) -> Tuple[str, float, float, str, str]:
+    def predict_image(self, image: str | Image.Image) -> tuple[str, float, float, str, str]:
         """Run prediction and return metadata for UI display."""
         if self.learner is None:
             return "Error", 0.0, 0.0, "None", "Learner not initialized. Upload support images first."
@@ -76,7 +76,7 @@ class AdaptShotUI:
                 result.act_action,
                 "Ready for correction if needed."
             )
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 - UI boundary: surface, never crash
             return "Error", 0.0, 0.0, "Error", str(e)
 
     def submit_correction(self, true_label: str, confidence_weight: float) -> str:
@@ -92,8 +92,8 @@ class AdaptShotUI:
                 confidence_weight=confidence_weight
             )
             return f"✅ Correction routed! Fine-tuned: {res['fine_tuned']}, Buffer Size: {res['buffer_size']}"
-        except Exception as e:
-            return f"❌ Correction failed: {str(e)}"
+        except Exception as e:  # noqa: BLE001 - UI boundary: surface, never crash
+            return f"❌ Correction failed: {e!s}"
 
 
 def build_ui() -> gr.Blocks:
@@ -122,13 +122,12 @@ def build_ui() -> gr.Blocks:
                 cal_conf = gr.Number(label="Calibrated Confidence", interactive=False)
                 act_action = gr.Textbox(label="ACT Decision", interactive=False)
 
-        with gr.Row():
-            with gr.Column(scale=1):
-                gr.Markdown("### 3. Human Feedback")
-                true_label_input = gr.Textbox(label="Correct Label (if wrong)")
-                conf_weight = gr.Slider(0.0, 1.0, value=1.0, label="Your Confidence")
-                correct_btn = gr.Button("Submit Correction")
-                correction_status = gr.Textbox(label="Feedback Status", interactive=False)
+        with gr.Row(), gr.Column(scale=1):
+            gr.Markdown("### 3. Human Feedback")
+            true_label_input = gr.Textbox(label="Correct Label (if wrong)")
+            conf_weight = gr.Slider(0.0, 1.0, value=1.0, label="Your Confidence")
+            correct_btn = gr.Button("Submit Correction")
+            correction_status = gr.Textbox(label="Feedback Status", interactive=False)
 
         # Wiring
         load_btn.click(fn=app.load_support_files, inputs=support_files, outputs=load_status)
