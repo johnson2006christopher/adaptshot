@@ -14,14 +14,13 @@ from __future__ import annotations
 import os
 import time
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 import numpy as np
 import yaml
 
 # Import from the local AdaptShot source tree
 from adaptshot import AdaptShotConfig, FewShotLearner
-
 
 # ---------------------------------------------------------------------------
 # Data types
@@ -59,8 +58,8 @@ class DiagnosisResult:
 @dataclass
 class SessionHistory:
     """Tracks predictions and corrections in the current session."""
-    predictions: List[DiagnosisResult] = field(default_factory=list)
-    corrections: List[Dict[str, Any]] = field(default_factory=list)
+    predictions: list[DiagnosisResult] = field(default_factory=list)
+    corrections: list[dict[str, Any]] = field(default_factory=list)
     start_time: float = field(default_factory=time.time)
 
     def record_prediction(self, result: DiagnosisResult) -> None:
@@ -92,7 +91,7 @@ class SessionHistory:
             return 1.0
         return max(0.0, (self.total_predictions - self.total_corrections) / self.total_predictions)
 
-    def summary(self) -> Dict[str, Any]:
+    def summary(self) -> dict[str, Any]:
         return {
             "total_predictions": self.total_predictions,
             "total_corrections": self.total_corrections,
@@ -123,7 +122,7 @@ class MziziGuard:
         guard.save_model("models/session_1.json")
     """
 
-    def __init__(self, config_path: Optional[str] = None) -> None:
+    def __init__(self, config_path: str | None = None) -> None:
         """Initialize MziziGuard from a YAML configuration file.
 
         Args:
@@ -137,21 +136,21 @@ class MziziGuard:
         self.engine_cfg = self._build_engine_config()
 
         # Build disease maps
-        self.diseases: Dict[str, DiseaseInfo] = self._build_disease_map()
+        self.diseases: dict[str, DiseaseInfo] = self._build_disease_map()
 
         # AdaptShot learner (lazy-init)
-        self._learner: Optional[FewShotLearner] = None
+        self._learner: FewShotLearner | None = None
 
         # Session state
         self.history = SessionHistory()
-        self._last_image_path: Optional[str] = None
+        self._last_image_path: str | None = None
 
     # ------------------------------------------------------------------
     # Configuration
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _resolve_config_path(config_path: Optional[str]) -> str:
+    def _resolve_config_path(config_path: str | None) -> str:
         if config_path and os.path.isfile(config_path):
             return config_path
         # Search relative to this file's directory
@@ -168,7 +167,7 @@ class MziziGuard:
         )
 
     @staticmethod
-    def _load_config(path: str) -> Dict[str, Any]:
+    def _load_config(path: str) -> dict[str, Any]:
         with open(path, encoding="utf-8") as f:
             return yaml.safe_load(f)
 
@@ -184,9 +183,9 @@ class MziziGuard:
             enable_ood_detection=eng.get("enable_ood_detection", True),
         )
 
-    def _build_disease_map(self) -> Dict[str, DiseaseInfo]:
+    def _build_disease_map(self) -> dict[str, DiseaseInfo]:
         """Flatten all crops/diseases into a label → DiseaseInfo map."""
-        result: Dict[str, DiseaseInfo] = {}
+        result: dict[str, DiseaseInfo] = {}
         crops = self.cfg.get("crops", {})
         for crop_name, crop_data in crops.items():
             for disease_key, disease_data in crop_data.get("diseases", {}).items():
@@ -201,7 +200,7 @@ class MziziGuard:
         return result
 
     @property
-    def known_labels(self) -> List[str]:
+    def known_labels(self) -> list[str]:
         """All disease labels the system knows about."""
         return sorted(self.diseases.keys())
 
@@ -231,7 +230,7 @@ class MziziGuard:
     def initialize_with_samples(
         self,
         n_support: int = 5,
-        data_dir: Optional[str] = None,
+        data_dir: str | None = None,
         seed: int = 42,
     ) -> int:
         """Generate synthetic sample images and load into the learner.
@@ -299,7 +298,7 @@ class MziziGuard:
 
     def diagnose(
         self,
-        image: Union[str, np.ndarray, Any],
+        image: str | np.ndarray, Any,
     ) -> DiagnosisResult:
         """Run disease diagnosis on an image.
 
@@ -358,7 +357,7 @@ class MziziGuard:
         image_path: str,
         true_label: str,
         confidence_weight: float = 1.0,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Teach the model by correcting a prediction.
 
         Args:
@@ -427,8 +426,8 @@ class MziziGuard:
 
     def batch_diagnose(
         self,
-        image_paths: List[str],
-    ) -> List[DiagnosisResult]:
+        image_paths: list[str],
+    ) -> list[DiagnosisResult]:
         """Run diagnosis on a batch of images.
 
         Args:
@@ -437,7 +436,7 @@ class MziziGuard:
         Returns:
             List of DiagnosisResult, one per image.
         """
-        results: List[DiagnosisResult] = []
+        results: list[DiagnosisResult] = []
         for path in image_paths:
             try:
                 result = self.diagnose(path)
@@ -458,7 +457,7 @@ class MziziGuard:
                 ))
         return results
 
-    def batch_to_csv(self, results: List[DiagnosisResult]) -> str:
+    def batch_to_csv(self, results: list[DiagnosisResult]) -> str:
         """Convert batch results to CSV string."""
         lines = ["image_path,label,swahili,confidence,severity,action,ood_flag"]
         for r in results:
@@ -473,7 +472,7 @@ class MziziGuard:
     # System health
     # ------------------------------------------------------------------
 
-    def system_health(self) -> Dict[str, Any]:
+    def system_health(self) -> dict[str, Any]:
         """Return a combined health report (calibration + session stats)."""
         if not self.is_trained:
             return {"status": "not_trained", "message": "Load support images first."}
@@ -535,6 +534,6 @@ class MziziGuard:
             ),
         )
 
-    def all_disease_labels(self) -> List[str]:
+    def all_disease_labels(self) -> list[str]:
         """All disease labels sorted alphabetically."""
         return self.known_labels

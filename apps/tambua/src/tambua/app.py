@@ -16,16 +16,15 @@ Tabs:
 
 from __future__ import annotations
 
+import argparse
 import os
-import sys
-from typing import List, Optional, Tuple, cast
+from typing import cast
 
-# Make AdaptShot importable from this script's context
-_REPO_ROOT = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "..", "..")
-)
-if _REPO_ROOT not in sys.path:
-    sys.path.insert(0, _REPO_ROOT)
+# No sys.path manipulation here. This is an installed package that declares
+# `adaptshot` as a dependency, so the import resolves the way it does for any
+# other user of the library. The previous version inserted the repository root
+# into sys.path, which only worked when launched from one specific directory --
+# the same defect #11 removed from the library itself.
 
 # ---------------------------------------------------------------------------
 # Lazy Gradio import (only installed with [ui] extras)
@@ -40,13 +39,13 @@ except ImportError:
 # ---------------------------------------------------------------------------
 # Local imports
 # ---------------------------------------------------------------------------
-from examples.mziziguard.engine import MziziGuard  # noqa: E402
+from tambua.engine import MziziGuard
 
 # ---------------------------------------------------------------------------
 # Globals (per-process, single-user Gradio app)
 # ---------------------------------------------------------------------------
-_guard: Optional[MziziGuard] = None
-_config_path: Optional[str] = None
+_guard: MziziGuard | None = None
+_config_path: str | None = None
 
 
 def _get_guard() -> MziziGuard:
@@ -112,7 +111,7 @@ def _setup_status() -> str:
 # ===================================================================
 
 
-def _diagnose(image: Optional[str]) -> Tuple[str, str, float, str, str]:
+def _diagnose(image: str | None) -> tuple[str, str, float, str, str]:
     """Run diagnosis on an uploaded image."""
     if image is None:
         return "", "", 0.0, "", "⚠️ Upload an image first."
@@ -162,7 +161,7 @@ def _diagnose(image: Optional[str]) -> Tuple[str, str, float, str, str]:
 # ===================================================================
 
 
-def _get_label_choices() -> List[str]:
+def _get_label_choices() -> list[str]:
     guard = _get_guard()
     if guard.is_trained:
         return guard.known_labels
@@ -237,7 +236,7 @@ def _health_report() -> str:
 # ===================================================================
 
 
-def _batch_diagnose(files: List[str]) -> str:
+def _batch_diagnose(files: list[str]) -> str:
     """Process a batch of images."""
     if not files:
         return "⚠️ Upload images to process."
@@ -527,34 +526,55 @@ def build_app() -> gr.Blocks:
 # Entry point
 # ===================================================================
 
-if __name__ == "__main__":
-    import argparse
+def launch(argv: list[str] | None = None) -> None:
+    """Console-script entry point for ``tambua``.
+
+    Args:
+        argv: Command-line arguments. ``None`` reads them from ``sys.argv``.
+    """
+
+    global _config_path, _guard
 
     parser = argparse.ArgumentParser(
-        description="MziziGuard — Crop Disease Detection powered by AdaptShot"
+        prog="tambua",
+        description="Tambua — few-shot image classification, powered by AdaptShot",
     )
     parser.add_argument(
         "--config", type=str, default=None,
-        help="Path to config.yaml",
+        help="Path to a domain config (e.g. configs/maize.yaml)",
     )
     parser.add_argument(
         "--port", type=int, default=7860,
         help="Port for the Gradio server (default: 7860)",
     )
     parser.add_argument(
+        # Previously hardcoded to 0.0.0.0, which serves the UI to every machine on
+        # the network the moment the app starts. That is a reasonable thing to ask
+        # for -- a phone reaching a laptop over shared wifi -- but not a reasonable
+        # default for a `pip install`-able app that accepts file uploads and writes
+        # model files. Opt in explicitly.
+        "--host", type=str, default="127.0.0.1",
+        help="Interface to bind (default: 127.0.0.1, this machine only). "
+             "Pass 0.0.0.0 to serve other devices on your network.",
+    )
+    parser.add_argument(
         "--share", action="store_true",
         help="Create a public shareable link",
     )
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     _config_path = args.config
     _guard = MziziGuard(config_path=_config_path)
 
     demo = build_app()
     demo.launch(
-        server_name="0.0.0.0",
+        server_name=args.host,
         server_port=args.port,
         share=args.share,
         theme=gr.themes.Soft(),
         css=_CSS,
     )
+
+
+if __name__ == "__main__":
+    launch()
