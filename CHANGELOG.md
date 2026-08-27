@@ -5,6 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **BREAKING: minimum supported Python is now 3.10** (was 3.9). Python 3.13 and 3.14 are
+  now supported and tested. The CI matrix covers 3.10 through 3.14; every version listed
+  in the trove classifiers is a version that actually runs the test suite, enforced by
+  `tests/test_release_metadata.py`.
+
+  If you are on Python 3.9, stay on 0.2.x. Dropping 3.9 lets the codebase use native
+  `X | None` and builtin generics rather than `typing.Optional` and `typing.Dict`, which
+  removed 492 lint findings in one pass.
+
+- **Development tool versions are now upper-bounded.** `ruff`, `mypy`, `pytest`,
+  `pytest-cov`, and `pre-commit` previously had lower bounds only. A ruff release that
+  expanded its default rule set from roughly 60 rules to 413 turned CI red with 479
+  findings without a single line of project code changing. Tool bumps now arrive as
+  reviewable Dependabot PRs.
+
+- **The ruff rule set is now declared explicitly** in `[tool.ruff.lint]` rather than
+  inherited from whatever the installed version happens to default to.
+
+### Fixed
+
+- `utils/profiling.py` silently swallowed every exception from `psutil`, reporting
+  `0.0 MB` when a memory measurement failed. Callers could not distinguish a real
+  zero reading from a failed one — which would have made a `<250MB` ceiling assertion
+  pass for the wrong reason. Failures are now logged.
+- `core/backends/onnx_backend.py` used `functools.lru_cache` on a method, which keys on
+  `self` and would have retained every backend instance, along with up to four loaded
+  ONNX sessions and their weights, for the lifetime of the process. Replaced with a
+  per-instance cache that is released with the instance.
+
 ## [0.2.0-dev] - Unreleased
 
 ### Added
