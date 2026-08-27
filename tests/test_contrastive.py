@@ -87,7 +87,7 @@ class TestContrastivePrototypeLearner:
 
         # Query near class_0 center
         query = np.array([-2.0] + [0.0] * 63, dtype=np.float32).reshape(-1)
-        pred, conf, idx = learner.nearest_prototype(query, prototypes, proto_labels)
+        pred, conf, _idx = learner.nearest_prototype(query, prototypes, proto_labels)
         assert pred == "class_0"
         assert 0.0 <= conf <= 1.0
 
