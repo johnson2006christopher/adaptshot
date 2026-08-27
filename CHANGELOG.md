@@ -27,6 +27,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **The ruff rule set is now declared explicitly** in `[tool.ruff.lint]` rather than
   inherited from whatever the installed version happens to default to.
 
+- **`mypy --strict` now checks all 32 modules in the package** — previously zero. It
+  aborted inside numpy's stubs before reaching any project file, so every merge for
+  months passed a type check that had examined nothing. `python_version` is now 3.12
+  (the floor stays guarded by ruff's `target-version` and by a real 3.10 CI job), the
+  lint job installs the torch extra so torch calls are checked against real stubs, and
+  `tests/test_mypy_coverage.py` asserts on the number of files mypy reports checking,
+  not just on the error count.
+
 ### Fixed
 
 - `utils/profiling.py` silently swallowed every exception from `psutil`, reporting
@@ -37,6 +45,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `self` and would have retained every backend instance, along with up to four loaded
   ONNX sessions and their weights, for the lifetime of the process. Replaced with a
   per-instance cache that is released with the instance.
+- Eight type errors that had been invisible behind the aborted mypy run: four redundant
+  `cast()` calls, two stale `# type: ignore` comments, a numpy overload that resolved to
+  a scalar because a shape was typed `Any`, and an unproven non-null invariant in
+  `core/contrastive.py`. The last is now an explicit runtime check rather than a
+  `# type: ignore`, so a future edit that breaks the invariant fails where it is broken
+  instead of surfacing as a `TypeError` inside the training loop.
 
 ## [0.2.0-dev] - Unreleased
 
