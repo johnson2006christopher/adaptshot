@@ -8,7 +8,7 @@ import numpy as np
 
 # Attempt to import FAISS-CPU; gracefully degrade to pure NumPy if unavailable.
 try:
-    import faiss  # type: ignore[import-not-found]
+    import faiss
 
     FAISS_AVAILABLE = True
 except ImportError:  # pragma: no cover - optional dependency

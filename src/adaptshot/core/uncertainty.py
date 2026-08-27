@@ -353,8 +353,13 @@ class UncertaintyQuantifier:
         query_norm = float(np.linalg.norm(query)) + 1e-8
 
         perturbed_embeddings: list[np.ndarray] = []
+        # `query.shape` is Any because the parameter is a bare np.ndarray, and with an
+        # Any size numpy's overloads resolve to the scalar (size=None) signature, which
+        # returns a float. Naming the type picks the array overload instead. Runtime
+        # behaviour is unchanged -- this is a typing fix, not a logic fix.
+        noise_shape: tuple[int, ...] = query.shape
         for _ in range(self.perturbation_samples):
-            noise = rng.normal(0.0, self.perturbation_scale, size=query.shape).astype(np.float32)
+            noise = rng.normal(0.0, self.perturbation_scale, size=noise_shape).astype(np.float32)
             perturbed = query + noise * query_norm  # scale noise to embedding magnitude
             # L2 normalize to focus on directional sensitivity
             perturbed_norm = float(np.linalg.norm(perturbed)) + 1e-8

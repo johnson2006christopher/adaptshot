@@ -180,14 +180,14 @@ def get_support_embedding_cache() -> np.ndarray | None:
     """Return a copy of the cached support embedding used by eco mode."""
     if _DEFAULT_CACHE.embedding is None:
         return None
-    return cast(np.ndarray, _DEFAULT_CACHE.embedding.copy())
+    return _DEFAULT_CACHE.embedding.copy()
 
 
 def get_support_preview_cache() -> np.ndarray | None:
     """Return a copy of the cached support preview signature used by eco mode."""
     if _DEFAULT_CACHE.preview is None:
         return None
-    return cast(np.ndarray, _DEFAULT_CACHE.preview.copy())
+    return _DEFAULT_CACHE.preview.copy()
 
 
 def _normalize_to_pil(image: ImageInput) -> Any:
@@ -254,7 +254,7 @@ def extract_embedding(
         norm_ratio = min(preview_norm, support_norm) / max(preview_norm, support_norm)
         if quick_similarity >= config.early_exit_threshold and norm_ratio > 0.3:
             if return_numpy:
-                return cast(np.ndarray, support_embedding.copy())
+                return support_embedding.copy()
             return _get_torch().from_numpy(support_embedding.copy())
 
     backbone = _build_backbone(config.backbone, config.device)
