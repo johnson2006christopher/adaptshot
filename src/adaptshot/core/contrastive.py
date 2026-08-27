@@ -14,7 +14,7 @@ pure numpy operations with configurable learning rate and momentum.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List, Optional, Tuple, Union, cast
+from typing import cast
 
 import numpy as np
 
@@ -61,20 +61,20 @@ class ContrastivePrototypeLearner:
     head was random, v0.2.0 actually trains it via InfoNCE gradient descent.
     """
 
-    def __init__(self, config: Optional[ContrastiveConfig] = None) -> None:
+    def __init__(self, config: ContrastiveConfig | None = None) -> None:
         """Initialize the contrastive prototype learner.
 
         Args:
             config: ContrastiveConfig or defaults.
         """
         self.config = config or ContrastiveConfig()
-        self._projection_matrix: Optional[np.ndarray] = None
-        self._projection_bias: Optional[np.ndarray] = None
-        self._second_layer_matrix: Optional[np.ndarray] = None
-        self._second_layer_bias: Optional[np.ndarray] = None
-        self._input_dim: Optional[int] = None
+        self._projection_matrix: np.ndarray | None = None
+        self._projection_bias: np.ndarray | None = None
+        self._second_layer_matrix: np.ndarray | None = None
+        self._second_layer_bias: np.ndarray | None = None
+        self._input_dim: int | None = None
         self._is_fitted = False
-        self._head_training_loss: List[float] = []  # Track head training convergence
+        self._head_training_loss: list[float] = []  # Track head training convergence
 
     # ------------------------------------------------------------------
     # Projection head
@@ -130,7 +130,7 @@ class ContrastivePrototypeLearner:
         self,
         projected: np.ndarray,
         labels: np.ndarray,
-    ) -> Tuple[float, np.ndarray]:
+    ) -> tuple[float, np.ndarray]:
         """Compute InfoNCE loss and per-sample gradients.
 
         L = -1/N sum_i log( exp(sim(z_i, z_pos) / tau) / sum_j exp(sim(z_i, z_j) / tau) )
@@ -213,7 +213,7 @@ class ContrastivePrototypeLearner:
         labels: np.ndarray,
         label_indices: np.ndarray,
         seed: int = 42,
-    ) -> List[float]:
+    ) -> list[float]:
         """Train the 2-layer MLP projection head via InfoNCE gradient descent.
 
         This is the key fix for v0.2.0: previously the projection head was
@@ -247,7 +247,7 @@ class ContrastivePrototypeLearner:
         w2_vel = np.zeros_like(self._second_layer_matrix)
         b2_vel = np.zeros_like(self._second_layer_bias)
 
-        loss_history: List[float] = []
+        loss_history: list[float] = []
         n = len(embeddings)
 
         for epoch in range(n_epochs):
@@ -312,10 +312,10 @@ class ContrastivePrototypeLearner:
         self,
         embeddings: np.ndarray,
         labels: np.ndarray,
-        existing_prototypes: Optional[np.ndarray] = None,
-        existing_prototype_labels: Optional[np.ndarray] = None,
+        existing_prototypes: np.ndarray | None = None,
+        existing_prototype_labels: np.ndarray | None = None,
         seed: int = 42,
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Train projection head then contrastively refine class prototypes.
 
         v0.2.0: The projection head is now TRAINED via InfoNCE gradient
@@ -436,7 +436,7 @@ class ContrastivePrototypeLearner:
         query_embedding: np.ndarray,
         prototypes: np.ndarray,
         prototype_labels: np.ndarray,
-    ) -> Tuple[Union[str, int], float, int]:
+    ) -> tuple[str | int, float, int]:
         """Find nearest contrastive prototype for a query.
 
         Args:
@@ -482,8 +482,8 @@ class ContrastivePrototypeLearner:
         sims = prototypes @ prototypes.T  # [K, K] cosine similarities
         n = len(prototypes)
 
-        inter_sims: List[float] = []
-        intra_sims: List[float] = []
+        inter_sims: list[float] = []
+        intra_sims: list[float] = []
         for i in range(n):
             for j in range(i + 1, n):
                 if prototype_labels[i] == prototype_labels[j]:

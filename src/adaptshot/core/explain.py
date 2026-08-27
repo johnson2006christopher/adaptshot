@@ -26,7 +26,7 @@ saliency; torch-optional for future gradient-based saliency.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple, Union, cast
+from typing import Any, cast
 
 import numpy as np
 
@@ -44,7 +44,7 @@ class FeatureAttribution:
     """
 
     index: int = 0
-    label: Union[str, int] = ""
+    label: str | int = ""
     weight: float = 0.0
     distance: float = 0.0
     is_same_class: bool = False
@@ -68,7 +68,7 @@ class ConfidenceDecomposition:
     ood_penalty: float = 0.0
     final_confidence: float = 0.0
 
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> dict[str, float]:
         """Serialize to a flat dictionary."""
         return {
             "raw_similarity": self.raw_similarity,
@@ -95,8 +95,8 @@ class Counterfactual:
         swap_required: Minimum change in embedding space to flip prediction.
     """
 
-    current_prediction: Union[str, int] = ""
-    counterfactual_class: Union[str, int] = ""
+    current_prediction: str | int = ""
+    counterfactual_class: str | int = ""
     distance_to_counterfactual: float = 0.0
     distance_to_current: float = 0.0
     margin: float = 0.0
@@ -118,15 +118,15 @@ class ExplanationResult:
         summary: Human-readable summary string.
     """
 
-    prediction: Union[str, int] = ""
-    attributions: List[FeatureAttribution] = field(default_factory=list)
-    confidence_decomposition: Optional[ConfidenceDecomposition] = None
-    counterfactual: Optional[Counterfactual] = None
+    prediction: str | int = ""
+    attributions: list[FeatureAttribution] = field(default_factory=list)
+    confidence_decomposition: ConfidenceDecomposition | None = None
+    counterfactual: Counterfactual | None = None
     summary: str = ""
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to a nested dictionary."""
-        result: Dict[str, Any] = {
+        result: dict[str, Any] = {
             "prediction": str(self.prediction),
             "summary": self.summary,
             "attributions": [
@@ -176,8 +176,8 @@ class ExplainabilityEngine:
         self.top_k = top_k_attributions
         self.counterfactual_k = counterfactual_k
         # v0.2.0: Track historical penalties to derive intelligent fallbacks
-        self._act_penalty_history: List[float] = []
-        self._ood_penalty_history: List[float] = []
+        self._act_penalty_history: list[float] = []
+        self._ood_penalty_history: list[float] = []
         self._default_ood_score: float = 0.5  # Conservative default
 
     # ------------------------------------------------------------------
@@ -189,8 +189,8 @@ class ExplainabilityEngine:
         query_embedding: np.ndarray,
         support_embeddings: np.ndarray,
         support_labels: np.ndarray,
-        predicted_label: Union[str, int],
-    ) -> List[FeatureAttribution]:
+        predicted_label: str | int,
+    ) -> list[FeatureAttribution]:
         """Identify which support examples most influenced the prediction.
 
         Computes distances from query to all support examples, then
@@ -226,7 +226,7 @@ class ExplainabilityEngine:
         k = min(self.top_k, len(support))
         top_indices = np.argsort(weights)[-k:][::-1]
 
-        attributions: List[FeatureAttribution] = []
+        attributions: list[FeatureAttribution] = []
         for idx in top_indices:
             attributions.append(FeatureAttribution(
                 index=int(idx),
@@ -248,8 +248,8 @@ class ExplainabilityEngine:
         calibrated_confidence: float,
         act_action: str,
         is_ood: bool = False,
-        act_threshold: Optional[float] = None,
-        ood_score: Optional[float] = None,
+        act_threshold: float | None = None,
+        ood_score: float | None = None,
     ) -> ConfidenceDecomposition:
         """Break down confidence into its constituent components.
 
@@ -329,7 +329,7 @@ class ExplainabilityEngine:
         query_embedding: np.ndarray,
         support_embeddings: np.ndarray,
         support_labels: np.ndarray,
-        predicted_label: Union[str, int],
+        predicted_label: str | int,
     ) -> Counterfactual:
         """Determine the minimum change needed for a different prediction.
 
@@ -372,7 +372,7 @@ class ExplainabilityEngine:
 
         # Distances to alternative classes
         unique_labels = np.unique(labels)
-        alt_distances: List[Tuple[float, Union[str, int]]] = []
+        alt_distances: list[tuple[float, str | int]] = []
         for label in unique_labels:
             if label == predicted_label:
                 continue
@@ -414,13 +414,13 @@ class ExplainabilityEngine:
         query_embedding: np.ndarray,
         support_embeddings: np.ndarray,
         support_labels: np.ndarray,
-        predicted_label: Union[str, int],
+        predicted_label: str | int,
         raw_confidence: float,
         calibrated_confidence: float,
         act_action: str = "ACCEPT",
         is_ood: bool = False,
-        act_threshold: Optional[float] = None,
-        ood_score: Optional[float] = None,
+        act_threshold: float | None = None,
+        ood_score: float | None = None,
     ) -> ExplanationResult:
         """Generate a complete explanation for a prediction.
 
@@ -461,7 +461,7 @@ class ExplainabilityEngine:
         # Build summary
         same_class_attrs = [a for a in attributions if a.is_same_class]
         
-        summary_parts: List[str] = []
+        summary_parts: list[str] = []
         summary_parts.append(
             f"Predicted '{predicted_label}' with confidence {calibrated_confidence:.3f}."
         )
@@ -540,8 +540,8 @@ class ExplainabilityEngine:
         query_embedding: np.ndarray,
         support_embeddings: np.ndarray,
         support_labels: np.ndarray,
-        predicted_label: Union[str, int],
-    ) -> Dict[str, Any]:
+        predicted_label: str | int,
+    ) -> dict[str, Any]:
         """Generate a saliency-like explanation without requiring torch.
 
         Instead of pixel-level saliency (which requires gradient access

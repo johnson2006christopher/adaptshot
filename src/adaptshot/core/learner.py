@@ -8,16 +8,16 @@ prototype learning, advanced uncertainty quantification, and explainability.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
-import hashlib
 import os
 import tempfile
-import warnings
 import time
+import warnings
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union, cast
+from typing import Any, cast
 
 import numpy as np
 from PIL import Image, UnidentifiedImageError
@@ -38,7 +38,6 @@ from .act import ACTEngine
 from .calibration import CalibrationEngine
 from .conformal import ConformalEngine
 from .contrastive import ContrastivePrototypeLearner
-from .uncertainty import UncertaintyQuantifier
 from .explain import ExplainabilityEngine, ExplanationResult
 from .extractor import (
     BACKBONE_OUTPUT_DIM,
@@ -52,9 +51,7 @@ from .similarity import (
     find_nearest_neighbor,
     find_nearest_prototype,
 )
-
-if TYPE_CHECKING:
-    pass
+from .uncertainty import UncertaintyQuantifier
 
 # ---------------------------------------------------------------------------
 # Lazy import helpers – torch is resolved only when first needed.
@@ -87,7 +84,8 @@ def _get_torch_nn() -> Any:
 def _get_data_loader() -> Any:
     global _TORCH_UTILS_DATA
     if _TORCH_UTILS_DATA is None:
-        from torch.utils.data import DataLoader as _DL, TensorDataset as _TD
+        from torch.utils.data import DataLoader as _DL
+        from torch.utils.data import TensorDataset as _TD
 
         _TORCH_UTILS_DATA = (_DL, _TD)
     return _TORCH_UTILS_DATA
@@ -100,7 +98,7 @@ SCHEMA_VERSION = "0.2.0"
 class PredictionResult:
     """Structured return type for predict() calls."""
 
-    prediction: Union[str, int]
+    prediction: str | int
     raw_confidence: float
     calibrated_confidence: float
     neighbor_idx: int
@@ -111,15 +109,15 @@ class PredictionResult:
     ood_flag: bool = False
     debiased_ece: float = 0.0
     # v0.2.0 fields
-    conformal_set: Optional[List[Union[str, int]]] = None
-    uncertainty_report: Optional[Dict[str, float]] = None
-    nearest_neighbors: Optional[List[Dict[str, Any]]] = None
+    conformal_set: list[str | int] | None = None
+    uncertainty_report: dict[str, float] | None = None
+    nearest_neighbors: list[dict[str, Any]] | None = None
 
 
 class FewShotLearner:
     """Main entry point for AdaptShot few-shot learning and inference."""
 
-    def __init__(self, config: Optional[AdaptShotConfig] = None, **kwargs: Any) -> None:
+    def __init__(self, config: AdaptShotConfig | None = None, **kwargs: Any) -> None:
         """Initialize learner state.
 
         Args:
@@ -149,11 +147,11 @@ class FewShotLearner:
         )
         self.explainer = ExplainabilityEngine()
 
-        self._sim_embeddings: List[np.ndarray] = []
-        self._sim_labels: List[Union[str, int]] = []
-        self._sim_access_times: List[float] = []
-        self._sim_uncertainties: List[float] = []
-        self._sim_preview_signatures: List[np.ndarray] = []
+        self._sim_embeddings: list[np.ndarray] = []
+        self._sim_labels: list[str | int] = []
+        self._sim_access_times: list[float] = []
+        self._sim_uncertainties: list[float] = []
+        self._sim_preview_signatures: list[np.ndarray] = []
         self._prototype_embeddings: np.ndarray = np.empty((0, 0), dtype=np.float32)
         self._prototype_labels: np.ndarray = np.asarray([], dtype=object)
         self._prototype_counts: np.ndarray = np.asarray([], dtype=np.int64)
@@ -171,8 +169,8 @@ class FewShotLearner:
             redundancy_weight=1.0,
         )
 
-        self.finetuner: Optional[CAEWCFinetuner] = None
-        self._model_head: Optional[Any] = None  # torch.nn.Linear (lazy)
+        self.finetuner: CAEWCFinetuner | None = None
+        self._model_head: Any | None = None  # torch.nn.Linear (lazy)
 
         self.router = FeedbackRouter(
             buffer_capacity=self.config.max_buffer_size,
@@ -181,8 +179,8 @@ class FewShotLearner:
             finetune_fn=self._trigger_finetune,
         )
 
-        self._label_to_idx: Dict[Union[str, int], int] = {}
-        self._idx_to_label: Dict[int, Union[str, int]] = {}
+        self._label_to_idx: dict[str | int, int] = {}
+        self._idx_to_label: dict[int, str | int] = {}
         self._is_initialized = False
         self._embedding_cache = EmbeddingCache()
 
@@ -201,7 +199,7 @@ class FewShotLearner:
             ")"
         )
 
-    def load_support_images(self, image_paths: List[str], labels: List[Union[str, int]]) -> None:
+    def load_support_images(self, image_paths: list[str], labels: list[str | int]) -> None:
         """Ingest support set and initialize similarity index and CA-EWC head.
 
         Args:
@@ -222,7 +220,7 @@ class FewShotLearner:
         self._sim_preview_signatures.clear()
 
         current_time = time.time()
-        expected_dim: Optional[int] = None
+        expected_dim: int | None = None
 
         for path, label in zip(image_paths, labels):
             self._validate_label(label)
@@ -286,7 +284,7 @@ class FewShotLearner:
 
         self._is_initialized = True
 
-    def predict(self, image: Union[str, Image.Image, np.ndarray]) -> PredictionResult:
+    def predict(self, image: str | Image.Image | np.ndarray) -> PredictionResult:
         """Run inference with calibration and ACT gating.
 
         Args:
@@ -312,7 +310,7 @@ class FewShotLearner:
         support_labels = np.array(self._sim_labels, dtype=object)
 
         if self.config.inference_mode == "contrastive" and self.contrastive.is_fitted:
-            pred_label_raw, raw_conf, proto_idx = self.contrastive.nearest_prototype(
+            pred_label_raw, raw_conf, _proto_idx = self.contrastive.nearest_prototype(
                 query_emb, self._contrastive_prototype_embeddings, self._contrastive_prototype_labels
             )
             pred_label = self._coerce_label(pred_label_raw)
@@ -329,7 +327,7 @@ class FewShotLearner:
                 prototype_labels=self._prototype_labels,
                 metric=self.config.similarity_metric,
             )
-            pred_label_raw = cast(Union[str, int], result[0])
+            pred_label_raw = cast(str | int, result[0])
             raw_conf = result[1]
             distance_to_prototype = result[3]
             prototype_margin = result[4]
@@ -425,7 +423,7 @@ class FewShotLearner:
             nearest_neighbors=nearest_neighbors,
         )
 
-    def explain(self, image: Union[str, Image.Image, np.ndarray]) -> ExplanationResult:
+    def explain(self, image: str | Image.Image | np.ndarray) -> ExplanationResult:
         """Generate a multi-faceted explanation for a prediction.
 
         Combines feature attribution (which support examples influenced the
@@ -460,7 +458,7 @@ class FewShotLearner:
         # Derive ACT threshold and OOD score from the prediction
         class_idx = self._label_to_idx.get(result.prediction, 0)
         act_threshold = self.act.get_threshold(class_idx)
-        ood_score: Optional[float] = None
+        ood_score: float | None = None
         if result.ood_flag and result.uncertainty_report is not None:
             ood_score = float(result.uncertainty_report.get("ood_score", 0.0))
 
@@ -480,9 +478,9 @@ class FewShotLearner:
     def correct(
         self,
         image_path: str,
-        true_label: Union[str, int],
+        true_label: str | int,
         confidence_weight: float = 1.0,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Route a human correction into the continual learning pipeline.
 
         Args:
@@ -579,10 +577,10 @@ class FewShotLearner:
     def correct_comparative(
         self,
         image_path: str,
-        preferred_label: Union[str, int],
-        alternative_label: Union[str, int],
+        preferred_label: str | int,
+        alternative_label: str | int,
         confidence_weight: float = 1.0,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Apply comparative human feedback inspired by ordinal supervision.
 
         The annotator answers a relative question ("more like A than B"), which
@@ -623,7 +621,7 @@ class FewShotLearner:
         }
         return result
 
-    def calibration_report(self) -> Dict[str, float]:
+    def calibration_report(self) -> dict[str, float]:
         """Return calibration and uncertainty diagnostics for monitoring."""
 
         report = self.calibrator.calibration_summary()
@@ -705,7 +703,7 @@ class FewShotLearner:
                     temp_path.unlink(missing_ok=True)
 
     @classmethod
-    def load(cls, path: str) -> "FewShotLearner":
+    def load(cls, path: str) -> FewShotLearner:
         """Restore learner state from disk.
 
         Args:
@@ -815,8 +813,8 @@ class FewShotLearner:
 
     def _validate_support_inputs(
         self,
-        image_paths: List[str],
-        labels: List[Union[str, int]],
+        image_paths: list[str],
+        labels: list[str | int],
     ) -> None:
         if not image_paths:
             raise ConfigValidationError(
@@ -834,7 +832,7 @@ class FewShotLearner:
                 "See docs/getting-started/quickstart.md."
             )
 
-    def _validate_label(self, label: Union[str, int]) -> None:
+    def _validate_label(self, label: str | int) -> None:
         if isinstance(label, str) and label.strip() == "":
             raise ConfigValidationError(
                 "Label strings cannot be empty. Provide a non-empty class label."
@@ -889,7 +887,7 @@ class FewShotLearner:
                 f"Image dimensions must be positive, got ({image.width}, {image.height}) for '{source}'."
             )
 
-    def _normalize_predict_image(self, image: Union[str, Image.Image, np.ndarray]) -> Image.Image:
+    def _normalize_predict_image(self, image: str | Image.Image | np.ndarray) -> Image.Image:
         if isinstance(image, str):
             return self._load_rgb_image_from_path(image)
 
@@ -1031,7 +1029,7 @@ class FewShotLearner:
             return label.item()
         return label
 
-    def _coerce_label(self, label: object) -> Union[str, int]:
+    def _coerce_label(self, label: object) -> str | int:
         normalized = self._label_key(label)
         if isinstance(normalized, (str, int)):
             return normalized
@@ -1040,7 +1038,7 @@ class FewShotLearner:
             f"Expected str|int, got {type(normalized).__name__}."
         )
 
-    def _prototype_index_for_label(self, label: Union[str, int]) -> Optional[int]:
+    def _prototype_index_for_label(self, label: str | int) -> int | None:
         label_key = self._label_key(label)
         for idx, proto_label in enumerate(self._prototype_labels):
             if self._label_key(proto_label) == label_key:
@@ -1050,7 +1048,7 @@ class FewShotLearner:
     def _distance_to_label_prototype(
         self,
         query_embedding: np.ndarray,
-        label: Union[str, int],
+        label: str | int,
     ) -> float:
         if self._prototype_embeddings.size == 0:
             return 0.0
@@ -1066,7 +1064,7 @@ class FewShotLearner:
     def _nearest_support_index_for_label(
         self,
         query_embedding: np.ndarray,
-        label: Union[str, int],
+        label: str | int,
     ) -> int:
         candidates = [idx for idx, value in enumerate(self._sim_labels) if value == label]
         if not candidates:
@@ -1115,7 +1113,7 @@ class FewShotLearner:
             self._ood_distance_threshold = self.config.ood_absolute_min_distance
             return
 
-        distances: List[float] = []
+        distances: list[float] = []
         for embedding, label in zip(self._sim_embeddings, self._sim_labels):
             proto_idx = self._prototype_index_for_label(label)
             if proto_idx is None:
@@ -1176,7 +1174,7 @@ class FewShotLearner:
         self.conformal.reset()
 
         # Pre-group indices by label for efficient LOO prototype recomputation
-        label_to_indices: Dict[object, List[int]] = {}
+        label_to_indices: dict[object, list[int]] = {}
         for i in range(n):
             key = self._label_key(support_labels[i])
             if key not in label_to_indices:
@@ -1189,8 +1187,8 @@ class FewShotLearner:
             key_i = self._label_key(label_i)
 
             # Leave-one-out: exclude example i from prototypes
-            loo_prototypes: List[np.ndarray] = []
-            loo_labels: List[object] = []
+            loo_prototypes: list[np.ndarray] = []
+            loo_labels: list[object] = []
 
             for key, indices in label_to_indices.items():
                 loo_indices = [j for j in indices if j != i]
@@ -1249,8 +1247,8 @@ class FewShotLearner:
             return
 
         # Collect raw confidences via LOO nearest-prototype
-        raw_confs: List[float] = []
-        correctness: List[bool] = []
+        raw_confs: list[float] = []
+        correctness: list[bool] = []
 
         for i in range(n):
             emb_i = np.asarray(support_embeddings[i], dtype=np.float32)
@@ -1307,7 +1305,7 @@ class FewShotLearner:
             self.calibrator._window_correct.append(bool(correct))
         self.calibrator.temperature = float(best_temp)
 
-    def _ensure_label_index(self, label: Union[str, int]) -> int:
+    def _ensure_label_index(self, label: str | int) -> int:
         if label in self._label_to_idx:
             return self._label_to_idx[label]
 
@@ -1318,15 +1316,19 @@ class FewShotLearner:
         return idx
 
     def _temporary_path(self, target: Path, suffix: str) -> Path:
-        handle = tempfile.NamedTemporaryFile(delete=False, dir=target.parent, suffix=suffix)
+        # delete=False is deliberate: the caller needs the path to outlive this
+        # function. The handle is closed immediately below, so there is no leak.
+        handle = tempfile.NamedTemporaryFile(  # noqa: SIM115
+            delete=False, dir=target.parent, suffix=suffix
+        )
         handle.close()
         return Path(handle.name)
 
     def _build_integrity_payload(
         self,
-        config_payload: Dict[str, Any],
+        config_payload: dict[str, Any],
         embeddings_payload: np.ndarray,
-    ) -> Dict[str, str]:
+    ) -> dict[str, str]:
         config_bytes = json.dumps(config_payload, sort_keys=True, separators=(",", ":")).encode(
             "utf-8"
         )
@@ -1342,8 +1344,8 @@ class FewShotLearner:
             "checksum_sha256": checksum_hash,
         }
 
-    def _build_preview_signatures_from_embeddings(self, embeddings: np.ndarray) -> List[np.ndarray]:
-        previews: List[np.ndarray] = []
+    def _build_preview_signatures_from_embeddings(self, embeddings: np.ndarray) -> list[np.ndarray]:
+        previews: list[np.ndarray] = []
         for row in embeddings:
             vector = np.asarray(row, dtype=np.float32).reshape(-1)
             preview = np.zeros(48, dtype=np.float32)
@@ -1355,7 +1357,7 @@ class FewShotLearner:
 
     def _load_state_payload(
         self,
-        state: Dict[str, Any],
+        state: dict[str, Any],
         embeddings: np.ndarray,
         source_path: Path,
         legacy_checkpoint: bool,
@@ -1377,9 +1379,9 @@ class FewShotLearner:
 
     def _validate_and_normalize_state(
         self,
-        state: Dict[str, Any],
+        state: dict[str, Any],
         embeddings: np.ndarray,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         required_keys = ["config", "calibration", "act_thresholds", "buffer"]
         for key in required_keys:
             if key not in state:
@@ -1421,7 +1423,7 @@ class FewShotLearner:
 
     def _restore_from_state(
         self,
-        state: Dict[str, Any],
+        state: dict[str, Any],
         embeddings: np.ndarray,
         source_path: Path,
     ) -> None:
@@ -1525,7 +1527,7 @@ class FewShotLearner:
     def _append_correction_to_similarity_buffer(
         self,
         embedding: np.ndarray,
-        label: Union[str, int],
+        label: str | int,
         preview_signature: np.ndarray,
     ) -> None:
         self._sim_embeddings.append(embedding)
@@ -1540,7 +1542,7 @@ class FewShotLearner:
                 self._sim_preview_signatures[0],
             )
 
-    def _trigger_finetune(self, corrections: List[Correction]) -> None:
+    def _trigger_finetune(self, corrections: list[Correction]) -> None:
         if self.finetuner is None or self._model_head is None:
             return
 
@@ -1559,9 +1561,9 @@ class FewShotLearner:
             )
             self.finetuner.update_fisher(fisher_loader)
 
-        emb_list: List[np.ndarray] = []
-        label_list: List[int] = []
-        weight_list: List[float] = []
+        emb_list: list[np.ndarray] = []
+        label_list: list[int] = []
+        weight_list: list[float] = []
 
         for correction in corrections:
             image = self._load_rgb_image_from_path(correction.image_path)
@@ -1593,7 +1595,7 @@ class FewShotLearner:
         pruned_unc: np.ndarray,
         pruned_times: np.ndarray,
     ) -> None:
-        lengths: Tuple[int, int, int, int] = (
+        lengths: tuple[int, int, int, int] = (
             len(pruned_emb),
             len(pruned_labels),
             len(pruned_unc),
