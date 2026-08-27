@@ -4,10 +4,21 @@
 
 **Human-Aligned Few-Shot Vision Learning for Resource-Constrained Environments**
 
-AdaptShot is a production-hardened, CPU-first few-shot vision library that learns from every human correction, guarantees calibrated uncertainty, and runs deterministically on edge hardware. Built in Tanzania by [Johnson Christopher Hassan](https://github.com/johnson2006christopher).
+AdaptShot is a CPU-first few-shot vision library that learns from human corrections, reports calibrated uncertainty, and runs deterministically. Built in Tanzania by [Johnson Christopher Hassan](https://github.com/johnson2006christopher).
 
-!!! success "v0.2.0 Production Hardened"
-    92 regression tests, strict mypy type-checking, 0 ruff lint errors, 68% CIFAR-10 benchmark accuracy at 20ms latency. [Full changelog →](changelog.md)
+!!! success "Current quality gates"
+    109 tests passing · `mypy --strict` across all 32 modules · 0 ruff findings ·
+    68% accuracy on the CIFAR-10 smoke benchmark. [Full changelog →](changelog.md)
+
+!!! warning "What is measured, and what is not"
+    The 68% above comes from `benchmarks/run_benchmark.py --smoke-test --seed 42`:
+    5-way 10-shot, **25 query images**. That is a smoke test — enough to catch a
+    regression, far too small to be a result. It carries no confidence interval and
+    says nothing about performance on real data.
+
+    The first real benchmark is
+    [in progress](https://github.com/johnson2006christopher/adaptshot/issues/18).
+    Until it lands, treat every number on this site as provisional.
 
 ---
 
@@ -15,14 +26,14 @@ AdaptShot is a production-hardened, CPU-first few-shot vision library that learn
 
 | Category | Capability | Detail |
 |----------|-----------|--------|
-| 🧠 **Few-Shot Learning** | Prototypical, nearest-neighbor, and contrastive inference | 5-way 10-shot classification at 68%+ accuracy |
-| 🔒 **Conformal Prediction** | True leave-one-out calibration | Distribution-free 95% coverage guarantee |
+| 🧠 **Few-Shot Learning** | Prototypical, nearest-neighbor, and contrastive inference | 68% on the 5-way 10-shot CIFAR-10 smoke test (seed 42, 25 queries) |
+| 🔒 **Conformal Prediction** | True leave-one-out calibration | Targets distribution-free coverage; not yet measured empirically ([#14](https://github.com/johnson2006christopher/adaptshot/issues/14)) |
 | 📊 **Uncertainty Quantification** | Epistemic · Aleatoric · Distributional (Mahalanobis) | Three complementary signals with shrinkage covariance |
 | 🔍 **Explainability** | Feature attribution · Confidence decomposition · Counterfactuals | Historical penalty tracking, no magic numbers |
 | 🔄 **Continual Learning** | Head-only CA-EWC fine-tuning · UP-UGF pruning with LSH acceleration | O(N log N) buffer management for >100 examples |
-| ⚡ **CPU-First** | Numpy-based · <250MB RAM · 20ms P95 latency | No GPU required; PyTorch optional |
+| ⚡ **CPU-First** | Numpy-based · <250MB RAM is a design target, not yet asserted by a test ([#13](https://github.com/johnson2006christopher/adaptshot/issues/13)) | No GPU required; PyTorch currently required — see below |
 | 🤝 **Human-in-the-Loop** | ACT adaptive thresholds · Feedback routing · Bootstrap calibration | Symmetric threshold updates with mean-reversion |
-| 🚀 **Production Ready** | ONNX export · Memory profiling · Deterministic seeding · SHA-256 checkpoints | Torch-free inference via bundled backbones |
+| 🛠️ **Tooling** | ONNX export · Memory profiling · Deterministic seeding · SHA-256 checkpoints | Torch-free inference is **not** implemented yet ([#35](https://github.com/johnson2006christopher/adaptshot/issues/35), [#36](https://github.com/johnson2006christopher/adaptshot/issues/36)) |
 
 ---
 
