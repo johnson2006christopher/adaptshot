@@ -2,6 +2,13 @@
 
 This guide covers every exception AdaptShot can raise, what each one means, and how to fix the underlying problem. It also covers common runtime issues that don't produce exceptions.
 
+!!! warning "MziziGuard is a worked example, not a deployed system"
+    MziziGuard has never been deployed and its sample images are generated
+    procedurally (`ImageDraw.ellipse()` in `examples/mziziguard/data.py`). It is being
+    rebuilt as [Tambua](https://github.com/johnson2006christopher/adaptshot/issues/45)
+    and evaluated on real photographs
+    ([#18](https://github.com/johnson2006christopher/adaptshot/issues/18)).
+
 ---
 
 ## Exception Hierarchy
