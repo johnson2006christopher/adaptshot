@@ -279,9 +279,25 @@ else:
 
 ---
 
-## 6. MziziGuard: Deployed Crop Disease Detection
+## 6. MziziGuard: A Worked Example (Crop Disease)
 
-MziziGuard is a complete, production-ready application built entirely on AdaptShot. It's deployed as a Gradio web application with 5 interactive tabs and runs on a standard laptop with no internet.
+!!! warning "This is a demonstration, not a deployment"
+    MziziGuard has **never been deployed**. No farmer has used it. An earlier version
+    of this page described it as deployed and production-ready; that was wrong, and it
+    is corrected here.
+
+    Its sample images are **generated procedurally** — see
+    `examples/mziziguard/data.py`, which draws them with `ImageDraw.ellipse()`. Any
+    accuracy you observe on them measures the classifier's ability to tell drawn shapes
+    apart, and nothing else.
+
+    The application is being rebuilt as
+    [Tambua](https://github.com/johnson2006christopher/adaptshot/issues/45), a general
+    few-shot application, and evaluated against real photographs
+    ([#18](https://github.com/johnson2006christopher/adaptshot/issues/18)). This section
+    will be replaced when that lands.
+
+MziziGuard is a complete Gradio application with 5 interactive tabs, built entirely on AdaptShot. It runs on a standard laptop with no internet, and demonstrates the full API end to end: support-set loading, prediction, OOD rejection, and human correction.
 
 ### Architecture
 
@@ -295,16 +311,22 @@ Farmer takes photo → MziziGuard Web UI → MziziGuard Engine → AdaptShot Few
 
 ### Key Numbers
 
-| Metric | Value |
-|--------|-------|
-| Training images needed | 5 per disease class |
-| Supported crops | Configurable via YAML |
-| Languages | English + Swahili |
-| Memory usage | <250MB |
-| Inference latency | ~150ms on CPU |
-| Internet required | No (after install) |
+| Property | Value | Backed by |
+|----------|-------|-----------|
+| Training images needed | 5 per disease class | `examples/mziziguard/config.yaml` |
+| Supported crops | Configurable via YAML | `examples/mziziguard/config.yaml` |
+| Languages | English + Swahili | `localization` block in the config |
+| Internet required | No (after install) | no network calls after backbone download |
 
-### How to Deploy
+!!! note "Removed from this table"
+    It previously listed `Memory usage: <250MB` and `Inference latency: ~150ms on CPU`.
+    Neither figure was produced by any script in `benchmarks/`. They have been removed
+    rather than re-estimated. Memory is tracked in
+    [#13](https://github.com/johnson2006christopher/adaptshot/issues/13) and latency in
+    [#20](https://github.com/johnson2006christopher/adaptshot/issues/20); both will
+    return with hardware and seed recorded alongside them.
+
+### How to Run It
 
 ```bash
 pip install "adaptshot[ui]"
