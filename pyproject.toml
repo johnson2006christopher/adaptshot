@@ -112,17 +112,35 @@ ignore = [
 "tests/**" = ["S101"]
 
 [tool.mypy]
-python_version = "3.10"
+# NOT the 3.10 floor from `requires-python`, deliberately. numpy's bundled stubs
+# use PEP 695 `type X = ...` statements, which mypy can only parse when analysing
+# at 3.12 or later; at 3.10 it reports a syntax error inside numpy itself and
+# aborts before checking a single file of ours (#16).
+#
+# The floor is guarded elsewhere, and more convincingly:
+#   - ruff `target-version = "py310"` rejects syntax newer than the floor;
+#   - the CI matrix actually runs the suite on 3.10.
+# An executed test on the real interpreter beats a static guess about it.
+python_version = "3.12"
 strict = true
 warn_return_any = true
 warn_unused_configs = true
 
+# Optional dependencies that ship no type information, or are absent from the
+# lint environment entirely. An unresolved import is an error but not a fatal one:
+# mypy still checks the rest of the tree, so these were never the cause of #16 --
+# they only made the type check exit non-zero, and padded the failure so the one
+# error that *did* abort the run looked like a third of the problem.
+# Each entry costs real checking of that library's API, so add one only for a
+# genuinely optional dependency, never to silence an error in our own modules.
 [[tool.mypy.overrides]]
-module = "onnxruntime"
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = "torchvision.*"
+module = [
+    "onnxruntime",
+    "torchvision.*",
+    "gradio.*",
+    "faiss",
+    "psutil",
+]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
