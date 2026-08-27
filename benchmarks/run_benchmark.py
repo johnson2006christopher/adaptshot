@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Minimal benchmark harness for AdaptShot core pipeline.
 
 This module provides a reproducible, CPU-only evaluation harness for validating
@@ -10,11 +9,11 @@ Usage:
 
 import argparse
 import json
+import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any
 
-import csv
 import numpy as np
 import torch
 from torchvision import datasets, transforms
@@ -32,7 +31,7 @@ def load_few_shot_split(
     k_shot: int = 10,
     seed: int = 42,
     data_dir: str = "./data",
-) -> Tuple[List[Tuple[torch.Tensor, int]], List[Tuple[torch.Tensor, int]]]:
+) -> tuple[list[tuple[torch.Tensor, int]], list[tuple[torch.Tensor, int]]]:
     """
     Load a few-shot split from a torchvision dataset.
 
@@ -93,10 +92,10 @@ def load_few_shot_split(
             )
 
         # Read train.csv to get file-to-label mapping
-        label_to_images: Dict[str, List[str]] = {}
+        label_to_images: dict[str, list[str]] = {}
         with open(csv_path, "r") as f:
             reader = csv.reader(f)
-            header = next(reader)
+            next(reader)  # skip the header row
             for row in reader:
                 filename, label = row[0], row[1]
                 if label not in label_to_images:
@@ -115,8 +114,8 @@ def load_few_shot_split(
             transforms.ToTensor(),
         ])
 
-        support_data: List[Tuple[torch.Tensor, int]] = []
-        query_data: List[Tuple[torch.Tensor, int]] = []
+        support_data: list[tuple[torch.Tensor, int]] = []
+        query_data: list[tuple[torch.Tensor, int]] = []
 
         for cls_idx, label in enumerate(selected_labels):
             images = label_to_images[label]
@@ -143,7 +142,7 @@ def load_few_shot_split(
 # These are NOT claims about AdaptShot performance — they are provided for
 # context when interpreting AdaptShot benchmark results.
 # ---------------------------------------------------------------------------
-BASELINE_REFERENCES: Dict[str, Dict[str, Any]] = {
+BASELINE_REFERENCES: dict[str, dict[str, Any]] = {
     "prototypical_networks": {
         "paper": "Snell et al. (2017) Prototypical Networks for Few-shot Learning",
         "miniImageNet_5way_1shot": 49.42,
@@ -168,7 +167,7 @@ BASELINE_REFERENCES: Dict[str, Dict[str, Any]] = {
 }
 
 
-def run_smoke_test(config: AdaptShotConfig, dataset: str = "cifar10") -> Dict[str, Any]:
+def run_smoke_test(config: AdaptShotConfig, dataset: str = "cifar10") -> dict[str, Any]:
     """
     Run minimal end-to-end pipeline and return metrics.
 
@@ -194,8 +193,8 @@ def run_smoke_test(config: AdaptShotConfig, dataset: str = "cifar10") -> Dict[st
 
     # Extract support embeddings
     print("   • Extracting support embeddings...")
-    support_embeddings: List[np.ndarray] = []
-    support_labels: List[int] = []
+    support_embeddings: list[np.ndarray] = []
+    support_labels: list[int] = []
 
     start_time = time.perf_counter()
     for img_tensor, label in support_data:
@@ -211,14 +210,14 @@ def run_smoke_test(config: AdaptShotConfig, dataset: str = "cifar10") -> Dict[st
     # Evaluate on query set
     print("   • Evaluating on query set...")
     correct = 0
-    latencies: List[float] = []
+    latencies: list[float] = []
 
     for img_tensor, true_label in query_data:
         img_pil = ToPILImage()(img_tensor)
         start = time.perf_counter()
 
         # Get prediction
-        pred_label, confidence, _ = find_nearest_neighbor(
+        pred_label, _confidence, _ = find_nearest_neighbor(
             query=extract_embedding(img_pil, config),
             support_embeddings=support_embeddings_np,
             support_labels=np.array(support_labels),
@@ -339,7 +338,7 @@ def main() -> int:
             for name, ref in BASELINE_REFERENCES.items():
                 s1 = ref.get("miniImageNet_5way_1shot", "N/A")
                 s5 = ref.get("miniImageNet_5way_5shot", "N/A")
-                print(f"   {name:<25} {str(s1):>8} {str(s5):>8}")
+                print(f"   {name:<25} {s1!s:>8} {s5!s:>8}")
             print()
             print("   AdaptShot results shown above are from: " + dataset_name)
 
@@ -392,4 +391,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    exit(main())
+    sys.exit(main())

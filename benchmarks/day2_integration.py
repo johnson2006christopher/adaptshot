@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Day 2 Integration: Simulated human-in-the-loop learning loop.
 
 Demonstrates how online calibration, temperature scaling, and feedback routing
@@ -8,7 +7,6 @@ enters the system.
 """
 
 import time
-from typing import Dict, List
 
 from adaptshot.core.calibration import CalibrationEngine
 from adaptshot.training.feedback_router import Correction, FeedbackRouter

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Energy-aware benchmark harness for AdaptShot.
 
 Measures wall-clock latency, memory footprint, CPU utilization/frequency, and
@@ -14,17 +13,21 @@ import argparse
 import json
 import platform
 import random
-from dataclasses import asdict
 import time
 import tracemalloc
+from dataclasses import asdict
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import numpy as np
 from PIL import Image
 
 from adaptshot.config.settings import AdaptShotConfig
-from adaptshot.core.extractor import compute_preview_signature, extract_embedding, set_support_embedding_cache
+from adaptshot.core.extractor import (
+    compute_preview_signature,
+    extract_embedding,
+    set_support_embedding_cache,
+)
 from adaptshot.core.similarity import find_nearest_neighbor
 from adaptshot.utils.determinism import set_deterministic_seed, verify_determinism
 
@@ -48,7 +51,7 @@ def _cpu_frequency_mhz() -> float:
         if freq is not None and freq.current is not None:
             return float(freq.current)
 
-    cpu_mhz_values: List[float] = []
+    cpu_mhz_values: list[float] = []
     try:
         with open("/proc/cpuinfo", "r", encoding="utf-8") as handle:
             for line in handle:
@@ -70,17 +73,17 @@ def _cpu_utilization_fraction(wall_time_s: float, process_time_s: float) -> floa
     return float(max(0.0, min(1.0, process_time_s / wall_time_s)))
 
 
-def _deterministic_images(seed: int, count: int) -> List[Image.Image]:
+def _deterministic_images(seed: int, count: int) -> list[Image.Image]:
     """Create a deterministic set of RGB images for profiling."""
     rng = np.random.default_rng(seed)
-    images: List[Image.Image] = []
+    images: list[Image.Image] = []
     for _ in range(count):
         array = rng.integers(0, 256, size=(IMAGE_SIZE[0], IMAGE_SIZE[1], 3), dtype=np.uint8)
         images.append(Image.fromarray(array, mode="RGB"))
     return images
 
 
-def _run_profile(config: AdaptShotConfig, support_count: int, query_count: int) -> Dict[str, Any]:
+def _run_profile(config: AdaptShotConfig, support_count: int, query_count: int) -> dict[str, Any]:
     """Execute deterministic profiling and return serializable metrics."""
     set_deterministic_seed(config.seed)
     random.seed(config.seed)
@@ -89,7 +92,7 @@ def _run_profile(config: AdaptShotConfig, support_count: int, query_count: int) 
     query_images = _deterministic_images(config.seed + 1, query_count)
     support_labels = list(range(support_count))
 
-    support_embeddings: List[np.ndarray] = []
+    support_embeddings: list[np.ndarray] = []
     support_start = time.perf_counter()
     for image in support_images:
         support_embeddings.append(extract_embedding(image, config))
@@ -98,7 +101,7 @@ def _run_profile(config: AdaptShotConfig, support_count: int, query_count: int) 
     support_embeddings_np = np.stack(support_embeddings)
     set_support_embedding_cache(support_embeddings_np[0], compute_preview_signature(support_images[0]))
 
-    latencies: List[float] = []
+    latencies: list[float] = []
     correct = 0
     run_wall_start = time.perf_counter()
     run_cpu_start = time.process_time()
@@ -149,7 +152,7 @@ def _run_profile(config: AdaptShotConfig, support_count: int, query_count: int) 
     }
 
 
-def run_smoke_test(config: AdaptShotConfig) -> Dict[str, Any]:
+def run_smoke_test(config: AdaptShotConfig) -> dict[str, Any]:
     """Run the energy smoke test with deterministic synthetic data."""
     tracemalloc.start()
     try:
