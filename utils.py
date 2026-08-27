@@ -8,18 +8,19 @@ truthful diagnostics from the existing AdaptShot runtime objects.
 from __future__ import annotations
 
 import hashlib
+import importlib
 import json
 import logging
-import importlib
 import os
 import platform
 import resource
 import sys
 import time
 import zipfile
+from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Mapping, Optional, Sequence, Tuple, Union, cast
+from typing import Any, Literal, cast
 
 import numpy as np
 import torch
@@ -37,7 +38,7 @@ EXPORT_ROOT = Path.home() / ".adaptshot" / "studio_exports"
 IMAGE_EXTENSIONS = {".bmp", ".gif", ".jpeg", ".jpg", ".png", ".webp", ".tif", ".tiff"}
 
 
-def default_config_values() -> Dict[str, Any]:
+def default_config_values() -> dict[str, Any]:
     """Return the default studio configuration values.
 
     Returns:
@@ -85,7 +86,7 @@ def config_to_json(config: AdaptShotConfig) -> str:
     return json.dumps(asdict(config), indent=2, sort_keys=True)
 
 
-def estimate_runtime_profile(config: AdaptShotConfig, support_count: int = 0) -> Dict[str, float]:
+def estimate_runtime_profile(config: AdaptShotConfig, support_count: int = 0) -> dict[str, float]:
     """Estimate idle RAM and inference latency for display purposes.
 
     These are heuristic estimates, not benchmark claims.
@@ -108,7 +109,7 @@ def estimate_runtime_profile(config: AdaptShotConfig, support_count: int = 0) ->
     }
 
 
-def runtime_health_snapshot() -> Dict[str, Any]:
+def runtime_health_snapshot() -> dict[str, Any]:
     """Collect local-only runtime diagnostics."""
 
     return {
@@ -131,7 +132,7 @@ def _process_rss_mb() -> float:
     return float(usage) / 1024.0
 
 
-def validate_file_bundle(paths: Sequence[Union[str, Path]], max_total_mb: int = 100) -> List[Path]:
+def validate_file_bundle(paths: Sequence[str | Path], max_total_mb: int = 100) -> list[Path]:
     """Validate uploaded file size and existence constraints."""
 
     normalized = [Path(path) for path in paths]
@@ -153,7 +154,7 @@ def validate_file_bundle(paths: Sequence[Union[str, Path]], max_total_mb: int = 
     return normalized
 
 
-def discover_images_in_folder(folder: Union[str, Path], recursive: bool = True) -> List[Path]:
+def discover_images_in_folder(folder: str | Path, recursive: bool = True) -> list[Path]:
     """Discover image files inside a local folder.
 
     Args:
@@ -176,10 +177,10 @@ def discover_images_in_folder(folder: Union[str, Path], recursive: bool = True) 
 
 
 def collect_image_sources(
-    file_paths: Sequence[Union[str, Path]],
+    file_paths: Sequence[str | Path],
     folder_text: str = "",
     recursive: bool = True,
-) -> List[Path]:
+) -> list[Path]:
     """Combine uploaded files with folder-based imports.
 
     Args:
@@ -196,13 +197,13 @@ def collect_image_sources(
     for folder in folder_candidates:
         collected.extend(discover_images_in_folder(folder, recursive=recursive))
 
-    unique: Dict[str, Path] = {}
+    unique: dict[str, Path] = {}
     for path in collected:
         unique[str(path.resolve())] = path.resolve()
     return sorted(unique.values(), key=lambda path: str(path))
 
 
-def infer_labels(paths: Sequence[Path], strategy: str, manual_labels: str = "") -> List[str]:
+def infer_labels(paths: Sequence[Path], strategy: str, manual_labels: str = "") -> list[str]:
     """Infer labels from uploaded images."""
 
     if strategy == "manual":
@@ -225,10 +226,10 @@ def infer_labels(paths: Sequence[Path], strategy: str, manual_labels: str = "") 
     raise ConfigValidationError(f"Unknown label strategy '{strategy}'.")
 
 
-def summarize_folder_imports(paths: Sequence[Path]) -> Dict[str, int]:
+def summarize_folder_imports(paths: Sequence[Path]) -> dict[str, int]:
     """Summarize how many images were imported from each folder."""
 
-    summary: Dict[str, int] = {}
+    summary: dict[str, int] = {}
     for path in paths:
         key = str(path.parent)
         summary[key] = summary.get(key, 0) + 1
@@ -252,7 +253,7 @@ class DeploymentSimilarityModel(torch.nn.Module):
         self.register_buffer("support_labels", label_tensor)
         self.register_buffer("temperature", torch.tensor(float(temperature), dtype=torch.float32))
 
-    def forward(self, query_embedding: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def forward(self, query_embedding: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Return top label index, raw similarity, and calibrated confidence."""
 
         if query_embedding.dim() == 1:
@@ -281,7 +282,7 @@ def build_deployment_model(learner: FewShotLearner) -> DeploymentSimilarityModel
     return DeploymentSimilarityModel(embeddings, support_labels, temperature)
 
 
-def export_deployment_bundle(learner: FewShotLearner, export_format: str, session: Optional["StudioSession"] = None) -> Path:
+def export_deployment_bundle(learner: FewShotLearner, export_format: str, session: StudioSession | None = None) -> Path:
     """Export a deployment bundle in native, TorchScript, or ONNX format."""
 
     EXPORT_ROOT.mkdir(parents=True, exist_ok=True)
@@ -308,7 +309,7 @@ def export_deployment_bundle(learner: FewShotLearner, export_format: str, sessio
     idx_to_label = {int(idx): str(label) for label, idx in label_to_idx.items()}
     labels_path.write_text(json.dumps(idx_to_label, indent=2, sort_keys=True), encoding="utf-8")
 
-    extra_files: List[Path] = [
+    extra_files: list[Path] = [
         checkpoint_path,
         checkpoint_path.with_suffix(".embeddings.npy"),
         checkpoint_path.with_suffix(".head.pt"),
@@ -360,7 +361,7 @@ def export_deployment_bundle(learner: FewShotLearner, export_format: str, sessio
     return zip_path
 
 
-def load_project_bundle(bundle_path: Union[str, Path]) -> FewShotLearner:
+def load_project_bundle(bundle_path: str | Path) -> FewShotLearner:
     """Load a native checkpoint bundle or extracted checkpoint JSON."""
 
     target = Path(bundle_path)
@@ -391,7 +392,7 @@ def load_project_bundle(bundle_path: Union[str, Path]) -> FewShotLearner:
     )
 
 
-def benchmark_smoke_metrics(config: AdaptShotConfig) -> Dict[str, Any]:
+def benchmark_smoke_metrics(config: AdaptShotConfig) -> dict[str, Any]:
     """Run the existing deterministic energy smoke test for truthful metrics."""
 
     try:
@@ -399,11 +400,11 @@ def benchmark_smoke_metrics(config: AdaptShotConfig) -> Dict[str, Any]:
     except Exception as exc:  # pragma: no cover - benchmark module should exist in this repo
         raise ConfigValidationError(f"Benchmark smoke test could not be imported: {exc}") from exc
 
-    run_smoke_test = cast(Any, getattr(benchmark_module, "run_smoke_test"))
-    return cast(Dict[str, Any], run_smoke_test(config))
+    run_smoke_test = cast(Any, benchmark_module.run_smoke_test)
+    return cast(dict[str, Any], run_smoke_test(config))
 
 
-def _split_labels(text: str) -> List[str]:
+def _split_labels(text: str) -> list[str]:
     """Split a user-provided label specification into individual labels."""
 
     if not text.strip():
@@ -412,10 +413,10 @@ def _split_labels(text: str) -> List[str]:
     return [part.strip() for part in normalized.split(",") if part.strip()]
 
 
-def file_metadata_rows(paths: Sequence[Path], labels: Sequence[Union[str, int]]) -> List[Dict[str, Any]]:
+def file_metadata_rows(paths: Sequence[Path], labels: Sequence[str | int]) -> list[dict[str, Any]]:
     """Build a metadata table for support uploads."""
 
-    rows: List[Dict[str, Any]] = []
+    rows: list[dict[str, Any]] = []
     for path, label in zip(paths, labels):
         rows.append(
             {
@@ -429,7 +430,7 @@ def file_metadata_rows(paths: Sequence[Path], labels: Sequence[Union[str, int]])
     return rows
 
 
-def gallery_items(paths: Sequence[Path], labels: Sequence[Union[str, int]]) -> List[Tuple[str, str]]:
+def gallery_items(paths: Sequence[Path], labels: Sequence[str | int]) -> list[tuple[str, str]]:
     """Build gallery items for Gradio image previews."""
 
     return [(str(path), f"{path.name} | {label}") for path, label in zip(paths, labels)]
@@ -460,10 +461,10 @@ def prediction_rows(
     paths: Sequence[Path],
     results: Sequence[Any],
     latencies_ms: Sequence[float],
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """Format inference outputs for tables and downloads."""
 
-    rows: List[Dict[str, Any]] = []
+    rows: list[dict[str, Any]] = []
     for index, (path, result, latency_ms) in enumerate(zip(paths, results, latencies_ms), start=1):
         calibrated_confidence = float(getattr(result, "calibrated_confidence", 0.0))
         rows.append(
@@ -484,13 +485,13 @@ def prediction_rows(
     return rows
 
 
-def prediction_choices(rows: Sequence[Mapping[str, Any]]) -> List[str]:
+def prediction_choices(rows: Sequence[Mapping[str, Any]]) -> list[str]:
     """Build human-readable dropdown choices for prediction selection."""
 
     return [f"{row['id']} | {row['file']} | {row['prediction']}" for row in rows]
 
 
-def choose_prediction_row(rows: Sequence[Mapping[str, Any]], selection: str) -> Optional[Mapping[str, Any]]:
+def choose_prediction_row(rows: Sequence[Mapping[str, Any]], selection: str) -> Mapping[str, Any] | None:
     """Select a prediction row by dropdown value or fallback to the latest row."""
 
     if not rows:
@@ -501,10 +502,10 @@ def choose_prediction_row(rows: Sequence[Mapping[str, Any]], selection: str) -> 
     return rows[-1]
 
 
-def summarize_labels(labels: Sequence[Union[str, int]]) -> Dict[str, int]:
+def summarize_labels(labels: Sequence[str | int]) -> dict[str, int]:
     """Return a class distribution summary."""
 
-    counts: Dict[str, int] = {}
+    counts: dict[str, int] = {}
     for label in labels:
         label_text = str(label)
         counts[label_text] = counts.get(label_text, 0) + 1
@@ -516,7 +517,7 @@ def build_support_summary(rows: Sequence[Mapping[str, Any]]) -> str:
 
     if not rows:
         return "No support images loaded yet."
-    counts: Dict[str, int] = {}
+    counts: dict[str, int] = {}
     for row in rows:
         label = str(row.get("label", "unknown"))
         counts[label] = counts.get(label, 0) + 1
@@ -533,7 +534,7 @@ def build_prediction_summary(rows: Sequence[Mapping[str, Any]]) -> str:
     return f"Predictions: {len(rows)} | Uncertain: {uncertain}"
 
 
-def buffer_snapshot(learner: FewShotLearner) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
+def buffer_snapshot(learner: FewShotLearner) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     """Inspect the learner's current replay buffer state."""
 
     embeddings = np.asarray(getattr(learner, "_sim_embeddings", []), dtype=np.float32)
@@ -556,7 +557,7 @@ def buffer_snapshot(learner: FewShotLearner) -> Tuple[List[Dict[str, Any]], Dict
     max_sim = np.max(sim_matrix, axis=1)
     now = time.time()
 
-    rows: List[Dict[str, Any]] = []
+    rows: list[dict[str, Any]] = []
     for index, label in enumerate(labels):
         embedding = np.ascontiguousarray(embeddings[index], dtype=np.float32)
         rows.append(
@@ -590,7 +591,7 @@ def estimate_buffer_memory_mb(learner: FewShotLearner) -> float:
     return round(float(embeddings.nbytes) / (1024.0 * 1024.0), 3)
 
 
-def build_report_markdown(learner: FewShotLearner, session: Optional["StudioSession"] = None) -> str:
+def build_report_markdown(learner: FewShotLearner, session: StudioSession | None = None) -> str:
     """Build a truthful markdown summary for export."""
 
     support_size = len(getattr(learner, "_sim_embeddings", []))
@@ -642,7 +643,7 @@ def build_report_markdown(learner: FewShotLearner, session: Optional["StudioSess
     return "\n".join(lines)
 
 
-def export_native_bundle(learner: FewShotLearner, session: Optional["StudioSession"] = None) -> Path:
+def export_native_bundle(learner: FewShotLearner, session: StudioSession | None = None) -> Path:
     """Export the native AdaptShot checkpoint bundle as a zip file."""
 
     EXPORT_ROOT.mkdir(parents=True, exist_ok=True)
@@ -678,7 +679,7 @@ def export_native_bundle(learner: FewShotLearner, session: Optional["StudioSessi
     return zip_path
 
 
-def save_log_file(log_lines: Sequence[str], path: Optional[Union[str, Path]] = None) -> Path:
+def save_log_file(log_lines: Sequence[str], path: str | Path | None = None) -> Path:
     """Persist the studio log buffer to disk."""
 
     target = Path(path) if path is not None else EXPORT_ROOT / "adaptshot_studio.log"
@@ -687,20 +688,20 @@ def save_log_file(log_lines: Sequence[str], path: Optional[Union[str, Path]] = N
     return target
 
 
-def append_log(session: "StudioSession", message: str, level: str = "info") -> None:
+def append_log(session: StudioSession, message: str, level: str = "info") -> None:
     """Append a timestamped log entry to the studio session."""
 
     timestamp = time.strftime("%H:%M:%S")
     session.logs.append(f"[{timestamp}] {level.upper()}: {message}")
 
 
-def log_text(session: "StudioSession") -> str:
+def log_text(session: StudioSession) -> str:
     """Render the current session log as plain text."""
 
     return "\n".join(session.logs[-200:])
 
 
-def persist_session_snapshot(session: "StudioSession", path: Union[str, Path] = SESSION_PATH) -> Path:
+def persist_session_snapshot(session: StudioSession, path: str | Path = SESSION_PATH) -> Path:
     """Persist a lightweight session snapshot to disk."""
 
     target = Path(path)
@@ -709,7 +710,7 @@ def persist_session_snapshot(session: "StudioSession", path: Union[str, Path] = 
     return target
 
 
-def load_session_snapshot(path: Union[str, Path] = SESSION_PATH) -> "StudioSession":
+def load_session_snapshot(path: str | Path = SESSION_PATH) -> StudioSession:
     """Load a lightweight session snapshot from disk if it exists."""
 
     target = Path(path)
@@ -723,25 +724,25 @@ def load_session_snapshot(path: Union[str, Path] = SESSION_PATH) -> "StudioSessi
 class StudioSession:
     """Mutable per-browser-session state for AdaptShot Studio."""
 
-    config_values: Dict[str, Any] = field(default_factory=default_config_values)
-    learner: Optional[FewShotLearner] = None
-    support_paths: List[str] = field(default_factory=list)
-    support_labels: List[Union[str, int]] = field(default_factory=list)
-    support_rows: List[Dict[str, Any]] = field(default_factory=list)
-    query_paths: List[str] = field(default_factory=list)
-    prediction_rows: List[Dict[str, Any]] = field(default_factory=list)
-    prediction_choices: List[str] = field(default_factory=list)
+    config_values: dict[str, Any] = field(default_factory=default_config_values)
+    learner: FewShotLearner | None = None
+    support_paths: list[str] = field(default_factory=list)
+    support_labels: list[str | int] = field(default_factory=list)
+    support_rows: list[dict[str, Any]] = field(default_factory=list)
+    query_paths: list[str] = field(default_factory=list)
+    prediction_rows: list[dict[str, Any]] = field(default_factory=list)
+    prediction_choices: list[str] = field(default_factory=list)
     selected_prediction_id: str = ""
-    ece_history: List[float] = field(default_factory=list)
-    logs: List[str] = field(default_factory=list)
+    ece_history: list[float] = field(default_factory=list)
+    logs: list[str] = field(default_factory=list)
     last_error: str = ""
-    export_paths: List[str] = field(default_factory=list)
-    buffer_rows: List[Dict[str, Any]] = field(default_factory=list)
-    buffer_summary: Dict[str, Any] = field(default_factory=dict)
-    health_snapshot: Dict[str, Any] = field(default_factory=runtime_health_snapshot)
-    benchmark_snapshot: Dict[str, Any] = field(default_factory=dict)
+    export_paths: list[str] = field(default_factory=list)
+    buffer_rows: list[dict[str, Any]] = field(default_factory=list)
+    buffer_summary: dict[str, Any] = field(default_factory=dict)
+    health_snapshot: dict[str, Any] = field(default_factory=runtime_health_snapshot)
+    benchmark_snapshot: dict[str, Any] = field(default_factory=dict)
 
-    def snapshot(self) -> Dict[str, Any]:
+    def snapshot(self) -> dict[str, Any]:
         """Return a JSON-serializable session snapshot."""
 
         return {
@@ -764,7 +765,7 @@ class StudioSession:
         }
 
     @classmethod
-    def from_snapshot(cls, payload: Mapping[str, Any]) -> "StudioSession":
+    def from_snapshot(cls, payload: Mapping[str, Any]) -> StudioSession:
         """Restore a session snapshot from disk."""
 
         session = cls()
