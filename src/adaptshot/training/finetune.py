@@ -11,12 +11,12 @@ Fisher Information diagonal computation is weighted by human feedback confidence
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
 
 try:
     import torch
-    import torch.nn as nn
     import torch.nn.functional as F
+    from torch import nn
     from torch.utils.data import DataLoader, TensorDataset
 
     _TORCH_AVAILABLE = True
@@ -85,10 +85,10 @@ class CAEWCFinetuner:
         self.batch_size = batch_size
 
         # State to store Fisher Information and old parameters
-        self._fisher: Optional[Dict[str, torch.Tensor]] = None
-        self._old_params: Optional[Dict[str, torch.Tensor]] = None
+        self._fisher: dict[str, torch.Tensor] | None = None
+        self._old_params: dict[str, torch.Tensor] | None = None
 
-    def update_fisher(self, data_loader: DataLoader[Any]) -> Dict[str, torch.Tensor]:
+    def update_fisher(self, data_loader: DataLoader[Any]) -> dict[str, torch.Tensor]:
         """
         Approximate diagonal Fisher Information Matrix for the model parameters.
         This should be called on the support set (old knowledge) before fine-tuning.
@@ -100,7 +100,7 @@ class CAEWCFinetuner:
             Dict mapping parameter names to their diagonal Fisher tensors
         """
         self.model.eval()
-        fisher: Dict[str, torch.Tensor] = {}
+        fisher: dict[str, torch.Tensor] = {}
         
         # Initialize fisher dict
         for name, param in self.model.named_parameters():
@@ -132,7 +132,7 @@ class CAEWCFinetuner:
         self, 
         new_embeddings: torch.Tensor, 
         new_labels: torch.Tensor, 
-        confidence_weights: Optional[torch.Tensor] = None
+        confidence_weights: torch.Tensor | None = None
     ) -> None:
         """
         Fine-tune the model on new embeddings with CA-EWC penalty.

@@ -11,9 +11,9 @@ Designed for CPU-first edge deployment with strict memory ceilings.
 
 import logging
 import time
-from typing import Optional, Tuple
 
 import numpy as np
+
 logger = logging.getLogger(__name__)
 
 
@@ -53,7 +53,7 @@ class UPUGFPruner:
         embeddings: np.ndarray,
         uncertainties: np.ndarray,
         last_access_times: np.ndarray,
-        current_time: Optional[float] = None,
+        current_time: float | None = None,
     ) -> np.ndarray:
         """
         Compute UP-UGF utility score for each embedding in the buffer.
@@ -132,7 +132,7 @@ class UPUGFPruner:
         labels: np.ndarray,
         uncertainties: np.ndarray,
         last_access_times: np.ndarray,
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """
         Enforce buffer capacity by evicting lowest-scoring examples.
 
