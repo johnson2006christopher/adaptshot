@@ -32,9 +32,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev,torch]"
       - name: Lint with ruff
-        run: ruff check src/ tests/ benchmarks/
+        run: ruff check src/ tests/ benchmarks/ apps/
       - name: Type check with mypy (strict)
         run: mypy src/adaptshot --strict
+      - name: Type check the application (strict)
+        # A separate invocation: the app is its own distribution, and mypy should
+        # resolve `adaptshot` through the install rather than the source tree.
+        run: mypy apps/tambua/src/tambua --strict
 
   # The full suite. Needs the torch extra: two test modules and the benchmark
   # exercise torch-backed paths directly. See #33.
