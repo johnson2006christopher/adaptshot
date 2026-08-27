@@ -114,9 +114,9 @@ def verify_export(backbone_name: str, output_dir: str = "src/adaptshot/data") ->
         return False
 
     session = ort.InferenceSession(str(onnx_path))
-    dummy = np.random.randn(1, 3, 224, 224).astype(np.float32)
+    dummy: np.ndarray = np.random.randn(1, 3, 224, 224).astype(np.float32)
     outputs = session.run(None, {"input": dummy})
-    embedding = outputs[0]
+    embedding: np.ndarray = outputs[0]
 
     expected_dim = {"resnet18": 512, "mobilenet_v3_small": 576}[backbone_name]
     if embedding.shape[1] != expected_dim:
