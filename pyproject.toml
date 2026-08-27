@@ -8,15 +8,16 @@ version = "0.2.0"
 description = "Human-aligned few-shot vision learning for resource-constrained environments"
 readme = "README.md"
 license = "MIT"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [{name = "Johnson Christopher Hassan", email = "johnson2006christopher@gmail.com"}]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [
@@ -29,12 +30,16 @@ torch = ["torch>=2.0.0", "torchvision>=0.15.0"]
 faiss = ["faiss-cpu>=1.7.4"]
 ui = ["gradio>=3.50.0"]
 gui = ["gradio>=3.50.0", "pandas>=2.0.0", "onnx>=1.16.0", "onnxscript>=0.3.0", "onnxruntime>=1.14.0"]
+# Upper bounds are deliberate. Linters and type checkers add rules in minor
+# releases, so an unbounded pin means a tool release can turn CI red without any
+# code change -- which is exactly what happened (see #15). Dependabot proposes
+# bumps as reviewable PRs instead.
 dev = [
-    "pytest>=7.4.0",
-    "pytest-cov>=4.1.0",
-    "mypy>=1.5.0",
-    "ruff>=0.1.0",
-    "pre-commit>=3.4.0",
+    "pytest>=7.4.0,<10",
+    "pytest-cov>=4.1.0,<8",
+    "mypy>=1.5.0,<3",
+    "ruff>=0.16.0,<0.17",
+    "pre-commit>=3.4.0,<5",
 ]
 all = ["adaptshot[torch,faiss,gui,dev]"]
 
@@ -54,8 +59,57 @@ where = ["src"]
 "adaptshot" = ["data/*.onnx", "data/*.onnx.data"]
 
 [tool.ruff]
-target-version = "py39"
+target-version = "py310"
 line-length = 100
+
+# The rule set is chosen explicitly. Inheriting ruff's default meant a tool
+# release could change what "green" means without any code change -- ruff 0.16
+# enables 413 rules by default where earlier versions enabled about 60, which
+# turned CI red with 479 errors overnight (#15). An explicit list is a decision;
+# an implicit one is a hostage to the next release.
+[tool.ruff.lint]
+select = [
+    "E4", "E7", "E9",  # pycodestyle: imports, statements, syntax
+    "F",               # pyflakes: unused imports and names, undefined names
+    "I",               # isort: import ordering
+    "UP",              # pyupgrade: modern syntax for the supported Python range
+    "B",               # bugbear: likely bugs (mutable defaults, method lru_cache)
+    "SIM",             # simplify
+    "RUF",             # ruff-specific
+    "C4",              # comprehensions
+    "BLE",             # blind except
+    "EXE",             # shebang / executable-bit consistency
+    "PLE", "PLW",      # pylint errors and warnings
+    "LOG", "G",        # logging correctness
+    "PIE",             # misc lint
+]
+ignore = [
+    # Ambiguous-unicode checks fire on en dashes and arrows in prose docstrings,
+    # which are intentional. They are about homoglyph attacks in identifiers,
+    # not documentation.
+    "RUF001", "RUF002", "RUF003",
+
+    # Deferred, not dismissed: each of these is a real finding that needs a code
+    # change rather than a mechanical fix (module-level `global`, zip strict=,
+    # loop-variable rebinding, warning stacklevels). 38 occurrences, tracked in
+    # #41. Remove entries from this list as they are cleared.
+    "PLW0603",  # global statement
+    "PLW2901",  # loop variable overwritten by assignment
+    "PLW3301",  # nested min/max
+    "PLW0108",  # unnecessary lambda
+    "B905",     # zip() without an explicit strict=
+    "B007",     # unused loop control variable
+    "B028",     # no explicit stacklevel in warnings.warn
+    "G004",     # logging statement uses f-string
+    "UP015",    # redundant open() mode parameter
+    "SIM108",   # use ternary instead of if-else block
+    "C416",     # unnecessary comprehension
+    "E402",     # module import not at top of file
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests legitimately use assert, and fixtures shadow names by design.
+"tests/**" = ["S101"]
 
 [tool.mypy]
 python_version = "3.10"
