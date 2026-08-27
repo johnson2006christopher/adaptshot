@@ -18,6 +18,8 @@ from typing import cast
 
 import numpy as np
 
+from adaptshot.utils.exceptions import AdaptShotError
+
 
 @dataclass
 class ContrastiveConfig:
@@ -241,6 +243,24 @@ class ContrastivePrototypeLearner:
         if self._projection_matrix is None or self._input_dim != input_dim:
             self._init_projection_head(input_dim, seed)
 
+        # The four head parameters are only ever set together (by
+        # `_init_projection_head`) or cleared together (by `reset`), but that
+        # invariant lives across method boundaries where a type checker cannot
+        # follow it. State it once, here, instead of scattering `type: ignore`
+        # over every use below -- and make it a real runtime check, so a future
+        # edit that breaks the invariant fails loudly rather than raising an
+        # unrelated TypeError deep inside the training loop.
+        if (
+            self._projection_matrix is None
+            or self._projection_bias is None
+            or self._second_layer_matrix is None
+            or self._second_layer_bias is None
+        ):
+            raise AdaptShotError(
+                "Projection head is only partially initialized; all four parameter "
+                "arrays must be set together."
+            )
+
         # Momentum accumulators for projection matrices
         w1_vel = np.zeros_like(self._projection_matrix)
         b1_vel = np.zeros_like(self._projection_bias)
@@ -271,7 +291,7 @@ class ContrastivePrototypeLearner:
             #   dL/dW2 = relu(x).T @ grad_projected  [d, d]
             #   dL/db2 = sum(grad_projected, axis=0)  [d]
             #   dL/d(relu(x)) = grad_projected @ W2.T  [N, d]
-            grad_l2 = grad_projected @ self._second_layer_matrix.T  # type: ignore[union-attr]
+            grad_l2 = grad_projected @ self._second_layer_matrix.T
 
             # ReLU backward: grad on pre-activation
             grad_relu = grad_l2 * (x > 0).astype(np.float32)  # [N, d]

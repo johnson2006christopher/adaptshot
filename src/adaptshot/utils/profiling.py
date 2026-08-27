@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 # Try psutil for more accurate RSS measurement
 try:
-    import psutil  # type: ignore[import-untyped]
+    import psutil
     _PSUTIL_AVAILABLE = True
 except ImportError:
     _PSUTIL_AVAILABLE = False
