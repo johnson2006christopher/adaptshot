@@ -124,11 +124,12 @@ def test_requires_python_matches_lowest_tested_version() -> None:
     )
 
 
-def test_ruff_and_mypy_target_the_lowest_supported_version() -> None:
-    """Static analysis must run against the oldest Python we claim to support.
+def test_ruff_targets_the_lowest_supported_version() -> None:
+    """ruff must reject syntax that is newer than the floor we promise.
 
-    Targeting a newer version silently reduces what is verified: syntax and
-    typing valid on 3.12 may not be valid on the floor we promise.
+    ruff has no third-party stubs to parse, so nothing stops it from analysing
+    at the floor -- and it is the guard that catches 3.11+ syntax slipping into
+    code that claims to run on 3.10.
     """
 
     text = PYPROJECT_PATH.read_text(encoding="utf-8")
@@ -142,8 +143,29 @@ def test_ruff_and_mypy_target_the_lowest_supported_version() -> None:
         f"(expected {expected_ruff})"
     )
 
+
+def test_mypy_targets_at_least_the_lowest_supported_version() -> None:
+    """mypy may analyse above the floor, but never below it.
+
+    This deliberately does not require equality. mypy parses third-party stubs
+    under `python_version`, and numpy's stubs use PEP 695 syntax that only
+    parses at 3.12+; pinning mypy to the 3.10 floor makes it abort inside numpy
+    before checking any of our code (#16). Analysing above the floor is a real
+    cost -- typing valid at 3.12 may not hold at 3.10 -- which is why the floor
+    is guarded by ruff above and by an actual 3.10 job in the CI matrix.
+
+    Below the floor would be incoherent, so that stays an error.
+    """
+
+    text = PYPROJECT_PATH.read_text(encoding="utf-8")
+    floor = _requires_python_floor()
+
     mypy_version = re.search(r'^python_version\s*=\s*"([^"]+)"', text, flags=re.MULTILINE)
     assert mypy_version is not None, "no mypy `python_version` found"
-    assert mypy_version.group(1) == floor, (
-        f"mypy checks against {mypy_version.group(1)} but requires-python floor is {floor}"
+
+    as_tuple = tuple(int(part) for part in mypy_version.group(1).split("."))
+    floor_tuple = tuple(int(part) for part in floor.split("."))
+    assert as_tuple >= floor_tuple, (
+        f"mypy checks against {mypy_version.group(1)}, below the requires-python "
+        f"floor of {floor}; it would accept code that cannot run on {floor}"
     )
