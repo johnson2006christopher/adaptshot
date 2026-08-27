@@ -43,6 +43,7 @@ def _run_without_torch(body: str) -> subprocess.CompletedProcess[str]:
     script = _BLOCK_TORCH_PREAMBLE + textwrap.dedent(body)
     return subprocess.run(
         [sys.executable, "-c", script],
+        check=False,  # the caller asserts on returncode
         capture_output=True,
         text=True,
         cwd=str(REPO_ROOT),

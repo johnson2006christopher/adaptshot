@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Dict, List, Tuple, cast
+from typing import cast
 
 import numpy as np
 
@@ -65,7 +65,7 @@ def euclidean_distance_numpy(
     return cast(np.ndarray, np.linalg.norm(diffs, axis=2))
 
 
-def _euclidean_top1_faiss(query: np.ndarray, support: np.ndarray) -> Tuple[float, int]:
+def _euclidean_top1_faiss(query: np.ndarray, support: np.ndarray) -> tuple[float, int]:
     if not FAISS_AVAILABLE:
         raise ImportError(
             "FAISS-CPU is not installed. Install via `pip install faiss-cpu`, "
@@ -96,7 +96,7 @@ def distance_to_confidence(distance: float) -> float:
 def compute_class_prototypes(
     support_embeddings: np.ndarray,
     support_labels: np.ndarray,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Compute one prototype vector (mean embedding) per class label."""
 
     support = np.asarray(support_embeddings, dtype=np.float32)
@@ -113,10 +113,10 @@ def compute_class_prototypes(
     if support.shape[0] == 0:
         raise ValueError("Cannot compute prototypes from an empty support set.")
 
-    ordered_labels: List[object] = []
-    index_by_label: Dict[object, int] = {}
-    sums: List[np.ndarray] = []
-    counts: List[int] = []
+    ordered_labels: list[object] = []
+    index_by_label: dict[object, int] = {}
+    sums: list[np.ndarray] = []
+    counts: list[int] = []
 
     for idx, raw_label in enumerate(labels):
         label_key = raw_label.item() if hasattr(raw_label, "item") else raw_label
@@ -146,7 +146,7 @@ def find_nearest_neighbor(
     support_labels: np.ndarray,
     use_faiss: bool = False,
     metric: str = "cosine",
-) -> Tuple[str, float, int]:
+) -> tuple[str, float, int]:
     """Find top-1 nearest support sample using cosine or Euclidean metric."""
 
     support = np.asarray(support_embeddings, dtype=np.float32)
@@ -192,7 +192,7 @@ def find_nearest_prototype(
     prototypes: np.ndarray,
     prototype_labels: np.ndarray,
     metric: str = "euclidean",
-) -> Tuple[object, float, int, float, float]:
+) -> tuple[object, float, int, float, float]:
     """Find top-1 nearest class prototype and return prediction diagnostics.
 
     Returns:

@@ -14,7 +14,6 @@ Integration points:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Set, Union
 
 import numpy as np
 
@@ -33,15 +32,15 @@ class ConformalPredictionSet:
         confidence: Calibrated confidence of the top prediction.
     """
 
-    prediction_set: Set[Union[str, int]] = field(default_factory=set)
+    prediction_set: set[str | int] = field(default_factory=set)
     set_size: int = 0
     alpha: float = 0.05
     q_hat: float = 0.0
     coverage_estimate: float = 0.0
-    prediction: Union[str, int] = ""
+    prediction: str | int = ""
     confidence: float = 0.0
 
-    def contains(self, label: Union[str, int]) -> bool:
+    def contains(self, label: str | int) -> bool:
         """Check whether a label is within the conformal prediction set."""
         return label in self.prediction_set
 
@@ -98,9 +97,9 @@ class ConformalEngine:
         self.score_method = score_method
 
         # Rolling calibration buffer: nonconformity scores for correct predictions
-        self._calibration_scores: List[float] = []
+        self._calibration_scores: list[float] = []
         # Per-class score distributions for class-conditional conformal
-        self._class_scores: Dict[Union[str, int], List[float]] = {}
+        self._class_scores: dict[str | int, list[float]] = {}
         # Tracking
         self._total_predictions: int = 0
         self._covered: int = 0
@@ -113,7 +112,7 @@ class ConformalEngine:
     def softmax_nonconformity(
         distances: np.ndarray,
         labels: np.ndarray,
-        true_label: Union[str, int],
+        true_label: str | int,
     ) -> float:
         """Compute nonconformity as 1 - softmax(true_label | distances).
 
@@ -173,7 +172,7 @@ class ConformalEngine:
     def update_calibration(
         self,
         score: float,
-        true_label: Union[str, int],
+        true_label: str | int,
         predicted_in_set: bool = False,
     ) -> None:
         """Add a nonconformity score to the calibration buffer.
@@ -217,7 +216,7 @@ class ConformalEngine:
     # Quantile computation
     # ------------------------------------------------------------------
 
-    def _compute_quantile(self, scores: List[float]) -> float:
+    def _compute_quantile(self, scores: list[float]) -> float:
         """Compute the (1-alpha) empirical quantile with finite-sample correction.
 
         Uses the standard conformal quantile formula:
@@ -239,7 +238,7 @@ class ConformalEngine:
         idx = max(0, min(idx, n - 1))
         return float(sorted_scores[idx])
 
-    def _compute_cross_quantile(self, scores: List[float]) -> float:
+    def _compute_cross_quantile(self, scores: list[float]) -> float:
         """Compute cross-conformal quantile via k-fold averaging.
 
         Partitions calibration scores into n_bins folds, computes the
@@ -263,7 +262,7 @@ class ConformalEngine:
         scores_arr = np.asarray(scores, dtype=np.float64)
         fold_size = n // self.n_bins
 
-        q_hats: List[float] = []
+        q_hats: list[float] = []
         for fold in range(self.n_bins):
             start = fold * fold_size
             end = start + fold_size if fold < self.n_bins - 1 else n
@@ -281,7 +280,7 @@ class ConformalEngine:
         self,
         distances: np.ndarray,
         labels: np.ndarray,
-        top_prediction: Union[str, int],
+        top_prediction: str | int,
         confidence: float,
     ) -> ConformalPredictionSet:
         """Generate a conformal prediction set for a query.
@@ -318,7 +317,7 @@ class ConformalEngine:
         result.coverage_estimate = self.empirical_coverage
 
         # Build prediction set: include classes with score <= q_hat
-        prediction_set: Set[Union[str, int]] = set()
+        prediction_set: set[str | int] = set()
         for i in range(len(distances)):
             label = labels[i]
             dist = float(distances[i])
@@ -345,7 +344,7 @@ class ConformalEngine:
         self,
         distances: np.ndarray,
         labels: np.ndarray,
-        top_prediction: Union[str, int],
+        top_prediction: str | int,
         confidence: float,
     ) -> ConformalPredictionSet:
         """Generate prediction set using class-conditional quantiles.
@@ -376,8 +375,8 @@ class ConformalEngine:
             result.coverage_estimate = 1.0 - self.alpha
             return result
 
-        prediction_set: Set[Union[str, int]] = set()
-        q_hats: List[float] = []
+        prediction_set: set[str | int] = set()
+        q_hats: list[float] = []
 
         for i in range(len(distances)):
             label = labels[i]
@@ -410,7 +409,7 @@ class ConformalEngine:
     # Diagnostics
     # ------------------------------------------------------------------
 
-    def get_calibration_summary(self) -> Dict[str, float]:
+    def get_calibration_summary(self) -> dict[str, float]:
         """Return diagnostic summary of calibration state."""
         return {
             "calibration_size": float(len(self._calibration_scores)),

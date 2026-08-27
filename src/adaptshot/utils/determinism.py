@@ -2,13 +2,14 @@
 
 import os
 import random
-from typing import Any, Callable, Optional
+from collections.abc import Callable
+from typing import Any
 
 import numpy as np
 import torch
 
 
-def set_deterministic_seed(seed: int = 42, device: Optional[torch.device] = None) -> None:
+def set_deterministic_seed(seed: int = 42, device: torch.device | None = None) -> None:
     """
     Set all random seeds for deterministic execution across PyTorch, NumPy, and Python.
 

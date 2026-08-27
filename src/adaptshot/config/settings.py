@@ -1,7 +1,7 @@
 """Immutable configuration dataclasses for AdaptShot."""
 
 from dataclasses import dataclass
-from typing import Literal, Optional
+from typing import Literal
 
 
 @dataclass(frozen=True)
@@ -60,7 +60,7 @@ class AdaptShotConfig:
 
     # Logging & debugging
     verbose: bool = True
-    log_dir: Optional[str] = None
+    log_dir: str | None = None
 
     def __post_init__(self) -> None:
         """Validate configuration constraints immediately after creation."""

@@ -26,7 +26,7 @@ Design: numpy-first with optional torch acceleration planned for MC Dropout.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any
 
 import numpy as np
 
@@ -57,7 +57,7 @@ class UncertaintyReport:
     entropy: float = 0.0
     variance: float = 0.0
 
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> dict[str, float]:
         """Serialize to a flat dictionary."""
         return {
             "epistemic": self.epistemic,
@@ -126,14 +126,14 @@ class UncertaintyQuantifier:
         self.reg = mahalanobis_regularization
 
         # Class-conditional Gaussian parameters for Mahalanobis
-        self._class_means: Dict[Union[str, int], np.ndarray] = {}
-        self._class_covs: Dict[Union[str, int], np.ndarray] = {}
-        self._class_cov_invs: Dict[Union[str, int], np.ndarray] = {}
-        self._global_mean: Optional[np.ndarray] = None
+        self._class_means: dict[str | int, np.ndarray] = {}
+        self._class_covs: dict[str | int, np.ndarray] = {}
+        self._class_cov_invs: dict[str | int, np.ndarray] = {}
+        self._global_mean: np.ndarray | None = None
 
         # OOD threshold (computed from calibration data)
         self._ood_threshold: float = float("inf")
-        self._calibration_distances: List[float] = []
+        self._calibration_distances: list[float] = []
 
     # ------------------------------------------------------------------
     # Mahalanobis OOD (distributional uncertainty)
@@ -218,7 +218,7 @@ class UncertaintyQuantifier:
     def mahalanobis_distance(
         self,
         embedding: np.ndarray,
-        class_label: Union[str, int],
+        class_label: str | int,
     ) -> float:
         """Compute Mahalanobis distance to a class-conditional distribution.
 
@@ -243,7 +243,7 @@ class UncertaintyQuantifier:
     def min_mahalanobis_distance(
         self,
         embedding: np.ndarray,
-    ) -> Tuple[float, Union[str, int], float]:
+    ) -> tuple[float, str | int, float]:
         """Find the minimum Mahalanobis distance across all known classes.
 
         Args:
@@ -255,7 +255,7 @@ class UncertaintyQuantifier:
         if not self._class_means:
             return 0.0, "unknown", 0.0
 
-        distances: List[Tuple[float, Union[str, int]]] = []
+        distances: list[tuple[float, str | int]] = []
         for label in self._class_means:
             dist = self.mahalanobis_distance(embedding, label)
             distances.append((dist, label))
@@ -284,7 +284,7 @@ class UncertaintyQuantifier:
             self._ood_threshold = float("inf")
             return
 
-        distances: List[float] = []
+        distances: list[float] = []
         for i in range(len(embeddings)):
             emb = embeddings[i]
             label = labels[i]
@@ -296,7 +296,7 @@ class UncertaintyQuantifier:
             np.percentile(distances, self.ood_percentile)
         )
 
-    def is_ood(self, embedding: np.ndarray) -> Tuple[bool, float]:
+    def is_ood(self, embedding: np.ndarray) -> tuple[bool, float]:
         """Check if an embedding is out-of-distribution.
 
         Args:
@@ -325,8 +325,8 @@ class UncertaintyQuantifier:
     def estimate_epistemic(
         self,
         query_embedding: np.ndarray,
-        seed: Optional[int] = None,
-    ) -> Tuple[float, float]:
+        seed: int | None = None,
+    ) -> tuple[float, float]:
         """Estimate epistemic uncertainty via stochastic embedding perturbation.
 
         Adds small Gaussian noise to the query embedding with a non-deterministic
@@ -352,7 +352,7 @@ class UncertaintyQuantifier:
         query = np.asarray(query_embedding, dtype=np.float32)
         query_norm = float(np.linalg.norm(query)) + 1e-8
 
-        perturbed_embeddings: List[np.ndarray] = []
+        perturbed_embeddings: list[np.ndarray] = []
         for _ in range(self.perturbation_samples):
             noise = rng.normal(0.0, self.perturbation_scale, size=query.shape).astype(np.float32)
             perturbed = query + noise * query_norm  # scale noise to embedding magnitude
@@ -370,8 +370,8 @@ class UncertaintyQuantifier:
 
     @staticmethod
     def compute_perturbation_variance(
-        perturbed_embeddings: List[np.ndarray],
-    ) -> Tuple[float, float]:
+        perturbed_embeddings: list[np.ndarray],
+    ) -> tuple[float, float]:
         """Compute variance across a set of perturbed or sampled embeddings.
 
         The sample variance of L2-normalized embeddings indicates model uncertainty:
@@ -401,7 +401,7 @@ class UncertaintyQuantifier:
         query_embedding: np.ndarray,
         support_embeddings: np.ndarray,
         support_labels: np.ndarray,
-    ) -> Tuple[float, float]:
+    ) -> tuple[float, float]:
         """Compute entropy of softmax over k nearest neighbors.
 
         High entropy indicates ambiguous class boundaries (data uncertainty).
@@ -502,7 +502,9 @@ class UncertaintyQuantifier:
 
         # Distributional: Mahalanobis OOD
         if compute_distributional:
-            min_dist, closest_class, margin = self.min_mahalanobis_distance(query_embedding)
+            # NOTE: is_ood() below recomputes min_mahalanobis_distance internally,
+            # so this distance is calculated twice per query. See #40.
+            _min_dist, _closest_class, margin = self.min_mahalanobis_distance(query_embedding)
             is_ood_flag, ood_score = self.is_ood(query_embedding)
             report.distributional = ood_score
             report.is_ood = is_ood_flag
@@ -530,7 +532,7 @@ class UncertaintyQuantifier:
     # Diagnostics
     # ------------------------------------------------------------------
 
-    def get_ood_summary(self) -> Dict[str, Any]:
+    def get_ood_summary(self) -> dict[str, Any]:
         """Return diagnostic summary of OOD detection state."""
         return {
             "ood_threshold": self._ood_threshold,
@@ -546,9 +548,9 @@ class UncertaintyQuantifier:
             "min_ood_samples": self.min_ood_samples,
         }
 
-    def get_class_statistics(self) -> Dict[str, Dict[str, Any]]:
+    def get_class_statistics(self) -> dict[str, dict[str, Any]]:
         """Return per-class distribution statistics."""
-        stats: Dict[str, Dict[str, Any]] = {}
+        stats: dict[str, dict[str, Any]] = {}
         for label in self._class_means:
             mean = self._class_means[label]
             cov = self._class_covs.get(label)

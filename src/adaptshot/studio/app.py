@@ -12,28 +12,33 @@ import asyncio
 import json
 import logging
 import time
+from collections.abc import Mapping, Sequence
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import Any
 
-from ..utils.exceptions import AdaptShotError, BufferCapacityError, ConfigValidationError, InvalidImageError
+from ..utils.exceptions import (
+    AdaptShotError,
+    BufferCapacityError,
+    ConfigValidationError,
+    InvalidImageError,
+)
 from .utils import (
     SESSION_PATH,
     StudioSession,
     append_log,
+    benchmark_smoke_metrics,
+    buffer_snapshot,
     build_config,
     build_prediction_summary,
     build_report_markdown,
     build_support_summary,
-    buffer_snapshot,
     choose_prediction_row,
+    collect_image_sources,
     config_to_json,
     create_learner,
-    collect_image_sources,
-    benchmark_smoke_metrics,
     estimate_buffer_memory_mb,
     estimate_runtime_profile,
     export_deployment_bundle,
-    load_project_bundle as load_project_bundle_file,
     file_metadata_rows,
     gallery_items,
     infer_labels,
@@ -44,9 +49,12 @@ from .utils import (
     prediction_rows,
     runtime_health_snapshot,
     save_log_file,
-    summarize_labels,
     summarize_folder_imports,
+    summarize_labels,
     validate_file_bundle,
+)
+from .utils import (
+    load_project_bundle as load_project_bundle_file,
 )
 
 logger = logging.getLogger(__name__)
@@ -120,12 +128,12 @@ def _require_gradio() -> Any:
     return gr
 
 
-def _coerce_file_paths(files: Optional[Sequence[Any]]) -> List[Path]:
+def _coerce_file_paths(files: Sequence[Any] | None) -> list[Path]:
     """Normalize Gradio file inputs into concrete file paths."""
 
     if not files:
         return []
-    normalized: List[Path] = []
+    normalized: list[Path] = []
     for entry in files:
         raw_path = getattr(entry, "name", entry)
         normalized.append(Path(str(raw_path)).expanduser())
@@ -144,7 +152,7 @@ def _format_json(data: Mapping[str, Any]) -> str:
     return json.dumps(data, indent=2, sort_keys=True)
 
 
-def _unique_labels(labels: Sequence[Union[str, int]]) -> List[str]:
+def _unique_labels(labels: Sequence[str | int]) -> list[str]:
     """Return sorted unique labels for dropdown options."""
 
     unique = sorted({str(label) for label in labels})
@@ -181,7 +189,7 @@ class StudioController:
         max_buffer_size: int,
         calibration_method: str,
         seed: int,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Collect config fields from the UI controls."""
 
         return {
@@ -200,7 +208,7 @@ class StudioController:
         calibration_method: str,
         seed: int,
         session: StudioSession,
-    ) -> Tuple[Any, ...]:
+    ) -> tuple[Any, ...]:
         """Validate configuration inputs and display heuristic estimates."""
 
         values = self._config_values(backbone, eco_mode, max_buffer_size, calibration_method, seed)
@@ -235,7 +243,7 @@ class StudioController:
         self,
         support_folder_text: str,
         support_folder_recursive: bool,
-        support_files: Optional[Sequence[Any]],
+        support_files: Sequence[Any] | None,
         label_strategy: str,
         manual_labels: str,
         backbone: str,
@@ -244,7 +252,7 @@ class StudioController:
         calibration_method: str,
         seed: int,
         session: StudioSession,
-    ) -> Tuple[Any, ...]:
+    ) -> tuple[Any, ...]:
         """Load support images into a fresh learner and summarize the class set."""
 
         paths = collect_image_sources(
@@ -313,9 +321,9 @@ class StudioController:
 
     async def load_project_bundle(
         self,
-        bundle_file: Optional[Any],
+        bundle_file: Any | None,
         session: StudioSession,
-    ) -> Tuple[Any, ...]:
+    ) -> tuple[Any, ...]:
         """Load a saved project checkpoint or bundle into the current session."""
 
         if bundle_file is None:
@@ -365,11 +373,11 @@ class StudioController:
         self,
         query_folder_text: str,
         query_folder_recursive: bool,
-        query_image: Optional[Any],
-        query_files: Optional[Sequence[Any]],
+        query_image: Any | None,
+        query_files: Sequence[Any] | None,
         batch_mode: bool,
         session: StudioSession,
-    ) -> Tuple[Any, ...]:
+    ) -> tuple[Any, ...]:
         """Run inference on one image or a batch of query images."""
 
         learner = session.learner
@@ -402,8 +410,8 @@ class StudioController:
 
         try:
             normalized_paths = validate_file_bundle(paths)
-            results: List[Any] = []
-            latencies_ms: List[float] = []
+            results: list[Any] = []
+            latencies_ms: list[float] = []
             for path in normalized_paths:
                 start = time.perf_counter()
                 result = await _to_thread(learner.predict, str(path))
@@ -441,7 +449,7 @@ class StudioController:
         custom_label: str,
         confidence_weight: float,
         session: StudioSession,
-    ) -> Tuple[Any, ...]:
+    ) -> tuple[Any, ...]:
         """Submit a correction into the existing learner feedback router."""
 
         learner = session.learner
@@ -501,7 +509,7 @@ class StudioController:
         learning_rate: float,
         show_boundaries: bool,
         session: StudioSession,
-    ) -> Tuple[Any, ...]:
+    ) -> tuple[Any, ...]:
         """Recalibrate the learner and refresh ACT thresholds."""
 
         learner = session.learner
@@ -557,7 +565,7 @@ class StudioController:
             session,
         )
 
-    async def prune_buffer(self, pruning_enabled: bool, session: StudioSession) -> Tuple[Any, ...]:
+    async def prune_buffer(self, pruning_enabled: bool, session: StudioSession) -> tuple[Any, ...]:
         """Prune the learner buffer using the existing capacity controls."""
 
         learner = session.learner
@@ -590,7 +598,7 @@ class StudioController:
         self._store(session)
         return message, _make_dataframe(session.buffer_rows), _format_json(session.buffer_summary), session
 
-    async def export_model(self, export_format: str, session: StudioSession) -> Tuple[Any, ...]:
+    async def export_model(self, export_format: str, session: StudioSession) -> tuple[Any, ...]:
         """Export the current learner state to a zip package or TODO message."""
 
         learner = session.learner
@@ -628,7 +636,7 @@ class StudioController:
             session,
         )
 
-    async def benchmark_snapshot(self, session: StudioSession) -> Tuple[Any, ...]:
+    async def benchmark_snapshot(self, session: StudioSession) -> tuple[Any, ...]:
         """Run the deterministic benchmark smoke test and store the results."""
 
         learner = session.learner
@@ -659,7 +667,7 @@ class StudioController:
             self._store(session)
             return message, "", [], session
 
-    async def export_logs(self, session: StudioSession) -> Tuple[Any, ...]:
+    async def export_logs(self, session: StudioSession) -> tuple[Any, ...]:
         """Export the current log buffer to a local file."""
 
         if not session.logs:
@@ -672,7 +680,7 @@ class StudioController:
         self._store(session)
         return f"✅ Log file written to {log_path.name}.", str(log_path), session
 
-    async def health_check(self, session: StudioSession) -> Tuple[Any, ...]:
+    async def health_check(self, session: StudioSession) -> tuple[Any, ...]:
         """Refresh local diagnostics for the diagnostics tab."""
 
         session.health_snapshot = runtime_health_snapshot()
@@ -999,7 +1007,7 @@ def launch(server_name: str = "127.0.0.1", server_port: int = 7860, inbrowser: b
     gr = _require_gradio()
     demo = build_ui()
     ports_to_try = [server_port] + [port for port in range(server_port + 1, server_port + 6)]
-    launch_error: Optional[Exception] = None
+    launch_error: Exception | None = None
 
     for port in ports_to_try:
         try:

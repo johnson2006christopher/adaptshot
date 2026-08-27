@@ -1,6 +1,6 @@
 """Unit tests for core/extractor.py and utils/determinism.py."""
 
-from typing import Any, Optional, cast
+from typing import Any, cast
 
 import pytest
 from PIL import Image
@@ -82,11 +82,11 @@ def test_backbone_factories_request_imagenet_pretrained_weights(monkeypatch: pyt
 
     captured: dict[str, object] = {}
 
-    def fake_resnet18(*, weights: Optional[object] = None) -> torch.nn.Module:
+    def fake_resnet18(*, weights: object | None = None) -> torch.nn.Module:
         captured["resnet18_weights"] = weights
         return torch.nn.Identity()
 
-    def fake_mobilenet_v3_small(*, weights: Optional[object] = None) -> torch.nn.Module:
+    def fake_mobilenet_v3_small(*, weights: object | None = None) -> torch.nn.Module:
         captured["mobilenet_weights"] = weights
         return torch.nn.Identity()
 

@@ -14,7 +14,7 @@ is available and the preview similarity already exceeds the configured bound.
 
 from dataclasses import dataclass, field
 from functools import lru_cache
-from typing import Any, Dict, Optional, Union, cast
+from typing import Any, cast
 
 import numpy as np
 from PIL import Image
@@ -75,7 +75,7 @@ ImageInput = Any  # str | np.ndarray | PIL.Image | torch.Tensor
 # the backbone produces features the normalisation was designed for.
 # ---------------------------------------------------------------------------
 
-BackboneRegistry: Dict[str, Any] = {
+BackboneRegistry: dict[str, Any] = {
     "resnet18": lambda: _get_tv_models().resnet18(weights="IMAGENET1K_V1"),
     "mobilenet_v3_small": lambda: _get_tv_models().mobilenet_v3_small(
         weights="IMAGENET1K_V1"
@@ -83,12 +83,12 @@ BackboneRegistry: Dict[str, Any] = {
 }
 
 # Output dimensionality for each backbone (used for dynamic dimension inference)
-BACKBONE_OUTPUT_DIM: Dict[str, int] = {
+BACKBONE_OUTPUT_DIM: dict[str, int] = {
     "resnet18": 512,
     "mobilenet_v3_small": 576,
 }
 
-_RESAMPLE_BILINEAR = getattr(getattr(Image, "Resampling", Image), "BILINEAR")
+_RESAMPLE_BILINEAR = getattr(Image, "Resampling", Image).BILINEAR
 
 
 @dataclass
@@ -99,13 +99,13 @@ class EmbeddingCache:
     cross-instance interference that occurred with module-level globals.
     """
 
-    embedding: Optional[np.ndarray] = field(default=None, repr=False)
-    preview: Optional[np.ndarray] = field(default=None, repr=False)
+    embedding: np.ndarray | None = field(default=None, repr=False)
+    preview: np.ndarray | None = field(default=None, repr=False)
 
     def set(
         self,
-        embedding: Optional[np.ndarray],
-        preview_signature: Optional[np.ndarray] = None,
+        embedding: np.ndarray | None,
+        preview_signature: np.ndarray | None = None,
     ) -> None:
         """Register a support embedding and its preview for eco-mode checks."""
         if embedding is None:
@@ -164,8 +164,8 @@ _DEFAULT_CACHE = EmbeddingCache()
 
 
 def set_support_embedding_cache(
-    embedding: Optional[np.ndarray],
-    preview_signature: Optional[np.ndarray] = None,
+    embedding: np.ndarray | None,
+    preview_signature: np.ndarray | None = None,
 ) -> None:
     """Register the top-1 support embedding and preview for eco-mode early exit.
 
@@ -176,14 +176,14 @@ def set_support_embedding_cache(
     _DEFAULT_CACHE.set(embedding, preview_signature)
 
 
-def get_support_embedding_cache() -> Optional[np.ndarray]:
+def get_support_embedding_cache() -> np.ndarray | None:
     """Return a copy of the cached support embedding used by eco mode."""
     if _DEFAULT_CACHE.embedding is None:
         return None
     return cast(np.ndarray, _DEFAULT_CACHE.embedding.copy())
 
 
-def get_support_preview_cache() -> Optional[np.ndarray]:
+def get_support_preview_cache() -> np.ndarray | None:
     """Return a copy of the cached support preview signature used by eco mode."""
     if _DEFAULT_CACHE.preview is None:
         return None
@@ -218,8 +218,8 @@ def extract_embedding(
     image: ImageInput,
     config: AdaptShotConfig,
     return_numpy: bool = True,
-    cache: Optional[EmbeddingCache] = None,
-) -> Union[Any, np.ndarray]:
+    cache: EmbeddingCache | None = None,
+) -> Any | np.ndarray:
     """Extract feature embedding from input image using a frozen backbone.
 
     Args:

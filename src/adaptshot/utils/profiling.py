@@ -7,11 +7,14 @@ and measure latency at lifecycle key points. Uses only stdlib
 
 from __future__ import annotations
 
+import logging
 import time
 import tracemalloc
 from contextlib import contextmanager
 from dataclasses import dataclass, field
-from typing import Any, Dict, List
+from typing import Any
+
+logger = logging.getLogger(__name__)
 
 # Try psutil for more accurate RSS measurement
 try:
@@ -39,7 +42,7 @@ class MemorySnapshot:
     tracemalloc_peak_mb: float = 0.0
     timestamp: float = 0.0
 
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> dict[str, float]:
         return {
             "rss_mb": self.rss_mb,
             "tracemalloc_mb": self.tracemalloc_mb,
@@ -59,13 +62,13 @@ class MemoryProfile:
         passes_ram_budget: Whether peak RSS is under the budget (default 250MB).
     """
 
-    snapshots: List[MemorySnapshot] = field(default_factory=list)
+    snapshots: list[MemorySnapshot] = field(default_factory=list)
     peak_rss_mb: float = 0.0
     peak_tracemalloc_mb: float = 0.0
     passes_ram_budget: bool = True
     ram_budget_mb: float = 250.0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "snapshots": [s.to_dict() for s in self.snapshots],
             "peak_rss_mb": self.peak_rss_mb,
@@ -89,7 +92,7 @@ class MemoryTracker:
 
     def __init__(self, ram_budget_mb: float = 250.0, start: bool = True) -> None:
         self.ram_budget_mb = ram_budget_mb
-        self._snapshots: List[MemorySnapshot] = []
+        self._snapshots: list[MemorySnapshot] = []
         self._start_time = time.time()
         if start:
             tracemalloc.start()
@@ -115,7 +118,10 @@ class MemoryTracker:
                 proc = psutil.Process()
                 rss_mb = proc.memory_info().rss / (1024 * 1024)
             except Exception:
-                pass
+                # Never swallow this silently: callers cannot distinguish a genuine
+                # 0.0 MB reading from a failed measurement, and the <250MB ceiling
+                # test would then pass for the wrong reason.
+                logger.warning("psutil RSS measurement failed; reporting 0.0 MB", exc_info=True)
         return MemorySnapshot(
             label=label,
             rss_mb=rss_mb,
@@ -138,7 +144,7 @@ class MemoryTracker:
         )
 
 
-def estimate_model_memory_mb(backbone: str = "resnet18", n_classes: int = 5) -> Dict[str, float]:
+def estimate_model_memory_mb(backbone: str = "resnet18", n_classes: int = 5) -> dict[str, float]:
     """Estimate memory usage without loading the model.
 
     Returns rough upper-bound estimates based on known architecture sizes.

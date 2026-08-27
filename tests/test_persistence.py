@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import warnings
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import numpy as np
 import pytest
@@ -40,12 +40,12 @@ def patched_embeddings(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("adaptshot.core.learner.extract_embedding", fake_extract)
 
 
-def _load_raw_state(path: Path) -> Dict[str, Any]:
+def _load_raw_state(path: Path) -> dict[str, Any]:
     with path.open("r", encoding="utf-8") as handle:
         return json.load(handle)
 
 
-def _write_raw_state(path: Path, state: Dict[str, Any]) -> None:
+def _write_raw_state(path: Path, state: dict[str, Any]) -> None:
     with path.open("w", encoding="utf-8") as handle:
         json.dump(state, handle, indent=2)
 
