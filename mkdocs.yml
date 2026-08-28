@@ -71,6 +71,7 @@ markdown_extensions:
 nav:
   - Home: index.md
   - About: about.md
+  - Technical Note: technical-note.md
   - Getting Started:
     - Beginner 101: getting-started/beginner-101.md
     - Installation: getting-started/installation.md

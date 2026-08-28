@@ -229,3 +229,43 @@ def test_readme_memory_figure_is_the_single_cycle_not_the_harness() -> None:
     assert f"**Peak memory for that cold-start cycle: {cycle:.0f} MB**" in readme
     assert f"harness itself peaks at {harness:.0f} MB" in readme
 
+
+
+def test_technical_note_figures_trace_to_the_artifact() -> None:
+    """The note's numbers are formatted from the artifact here and must appear verbatim (#26).
+
+    Two pages of claims are exactly the place a stale figure hides longest, so
+    every headline number in docs/technical-note.md is checked against the
+    file it says it comes from -- accuracy, coverage, set size, the baseline it
+    is compared to, latency by stage, cold start, and the single-cycle memory.
+    """
+
+    record = json.loads(PLANTVILLAGE_RESULT_PATH.read_text(encoding="utf-8"))
+    acc = record["accuracy"]
+    conformal = record["conformal"]
+    top1 = record["top1_threshold"]
+    timing = record["timing"]
+
+    expected = [
+        f"{acc['adaptshot']['mean'] * 100:.1f}% ± {acc['adaptshot']['ci95_half_width'] * 100:.1f}",
+        f"{acc['nearest_centroid']['mean'] * 100:.1f}% ± {acc['nearest_centroid']['ci95_half_width'] * 100:.1f}",
+        f"{acc['linear_probe']['mean'] * 100:.1f}% ± {acc['linear_probe']['ci95_half_width'] * 100:.1f}",
+        f"{acc['knn_1']['mean'] * 100:.1f}% ± {acc['knn_1']['ci95_half_width'] * 100:.1f}",
+        f"{acc['knn_5']['mean'] * 100:.1f}% ± {acc['knn_5']['ci95_half_width'] * 100:.1f}",
+        f"{conformal['empirical_coverage']['mean'] * 100:.1f}% ± {conformal['empirical_coverage']['ci95_half_width'] * 100:.1f}",
+        f"{conformal['mean_set_size']['mean']:.2f} ± {conformal['mean_set_size']['ci95_half_width']:.2f}",
+        f"{top1['coverage']['mean'] * 100:.1f}% ± {top1['coverage']['ci95_half_width'] * 100:.1f}",
+        f"{timing['embedding_ms']['median']:.1f} ms | {timing['embedding_ms']['p95']:.1f} ms",
+        f"{timing['support_fit_ms']['median']:.0f} ms | {timing['support_fit_ms']['p95']:.0f} ms",
+        f"{timing['predict_ms']['median']:.1f} ms | {timing['predict_ms']['p95']:.1f} ms",
+        f"{timing['cold_start']['seconds']:.2f} s",
+        f"**{timing['cold_start']['peak_rss_mb']:.0f} MB**",
+        f"seed {record['protocol']['seed']}",
+        f"{record['protocol']['episodes']} episodes",
+    ]
+    note = (REPO_ROOT / "docs" / "technical-note.md").read_text(encoding="utf-8")
+    missing = [text for text in expected if text not in note]
+    assert not missing, (
+        "docs/technical-note.md does not quote these figures from "
+        "results/plantvillage_5way5shot.json:\n  " + "\n  ".join(missing)
+    )
