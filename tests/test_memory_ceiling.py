@@ -142,7 +142,9 @@ def _peak_rss_mb() -> float:
 
 @pytest.fixture(scope="module")
 def peak_rss_mb() -> float:
-    pytest.importorskip("torch", reason="inference requires the torch extra (#35)")
+    pytest.importorskip(
+        "torch", reason="this fixture measures the with-torch install specifically"
+    )
     measured = _peak_rss_mb()
     print(f"\npeak RSS for a full support-to-prediction cycle: {measured:.0f} MB")
     print(f"  documented ceiling: {DOCUMENTED_CEILING_MB} MB")
