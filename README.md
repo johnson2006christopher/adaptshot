@@ -8,7 +8,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/adaptshot.svg)](https://pypi.org/project/adaptshot/)
 [![PyPI Downloads](https://static.pepy.tech/personalized-badge/adaptshot?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/adaptshot)
-[![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Docs](https://img.shields.io/badge/docs-MkDocs-blue)](https://johnson2006christopher.github.io/adaptshot/)
 [![Code Style: Ruff](https://img.shields.io/badge/code%20style-ruff-black)](https://github.com/astral-sh/ruff)
@@ -131,36 +131,40 @@ and the smoke benchmark returns the same accuracy through either. `resnet18` is
 
 ## Quick start
 
+Seven lines, no dataset, no GPU, no network. The photographs ship in the wheel.
+
 ```python
 from adaptshot import FewShotLearner
-from adaptshot.config.settings import AdaptShotConfig
+from adaptshot.data import sample_images
 
-# 1. Configure for your environment
-config = AdaptShotConfig(backbone="resnet18", device="cpu", max_buffer_size=100)
-
-# 2. Initialise the learner
-learner = FewShotLearner(config=config)
-
-# 3. Show it a few examples per class
-learner.load_support_images(
-    ["data/healthy_leaf.jpg", "data/blighted_leaf.jpg"],
-    ["healthy", "blight"],
-)
-
-# 4. Predict
-result = learner.predict("data/query.jpg")
-print(result.prediction, f"{result.calibrated_confidence:.1%}")
-
-# 5. Respect the uncertainty
-if result.uncertainty_flag:
-    print("Model is unsure — routing for human review")
+paths, labels = sample_images()                      # nine real maize-leaf photos, three per class
+learner = FewShotLearner()
+learner.load_support_images(paths[:-1], labels[:-1])  # teach it eight
+result = learner.predict(paths[-1])                   # ask about the ninth
+print(result.prediction, f"{result.calibrated_confidence:.0%}", "-- ask a human" if result.uncertainty_flag else "")
 ```
+
+That block is executed by CI on every push, with torch and the network both
+blocked, so it cannot drift (`tests/test_quickstart.py`). The images are
+PlantVillage's, CC BY-SA 3.0, with citation and checksums in
+`src/adaptshot/data/samples/README.md`.
+
+**Measured**, from a clean virtualenv on a laptop CPU, one run each:
+
+| step | wall clock | what it does |
+|---|---|---|
+| `pip install adaptshot` | 4.5 s | a 3.5 MB wheel, plus numpy, Pillow and onnxruntime from PyPI |
+| the block above, fresh process, network blocked | 0.4 s | load the backbone, embed nine photos, predict |
+
+Site-packages afterwards: 176 MB. That is one machine on a fast connection; on a
+poor one the install is the part that grows, and it is the only part that
+touches the network at all.
 
 When a human corrects a prediction, feed it back — the correction updates
 calibration and the replay buffer, so the next prediction is better informed:
 
 ```python
-learner.correct(image_path="data/query.jpg", true_label="blight")
+learner.correct(image_path=paths[-1], true_label=labels[-1])
 ```
 
 ---
