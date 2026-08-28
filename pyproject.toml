@@ -56,7 +56,12 @@ Repository = "https://github.com/johnson2006christopher/adaptshot.git"
 where = ["src"]
 
 [tool.setuptools.package-data]
-"adaptshot" = ["data/*.onnx", "data/*.onnx.data"]
+# py.typed (PEP 561) is what tells a type checker that this library's annotations
+# are real and may be relied on. Without it, `mypy --strict` in a downstream
+# project treats every AdaptShot symbol as `Any` -- the library type-checks itself
+# cleanly while giving its users nothing. Found by building an actual consumer
+# (apps/tambua), which is the only way this kind of gap shows up.
+"adaptshot" = ["py.typed", "data/*.onnx", "data/*.onnx.data"]
 
 [tool.ruff]
 target-version = "py310"
@@ -110,6 +115,7 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 # Tests legitimately use assert, and fixtures shadow names by design.
 "tests/**" = ["S101"]
+"apps/*/tests/**" = ["S101"]
 
 [tool.mypy]
 # NOT the 3.10 floor from `requires-python`, deliberately. numpy's bundled stubs
@@ -144,7 +150,10 @@ module = [
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+# `apps/` holds separately-installable applications built on the library. Their
+# tests run here so a change to the library cannot break them unnoticed, but they
+# are skipped cleanly when the app is not installed.
+testpaths = ["tests", "apps"]
 addopts = "-ra --strict-markers"
 filterwarnings = ["error::DeprecationWarning:adaptshot.*"]
 
