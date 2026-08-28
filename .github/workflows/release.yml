@@ -92,7 +92,12 @@ jobs:
       - name: Install
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[dev,torch]"
+          # CPU-only torch, on purpose (#60): the CUDA build is 2.6 GB of wheels the
+          # tests never exercise, and caching it for five Pythons blew past the
+          # repository's 10 GB cache limit -- which evicted the CIFAR-10 cache and
+          # turned a two-minute benchmark job into a thirty-five-minute download.
+          pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+          pip install -e ".[dev]"
           pip install -e "apps/tambua[dev]"
       # gradio writes its component stubs into site-packages on first import;
       # they are not in the wheel, and mypy needs them on disk (see ci.yml).
