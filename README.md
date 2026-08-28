@@ -276,13 +276,60 @@ versions, and each change is documented in the [changelog](CHANGELOG.md).
 | **v0.2.0** | *Made it honest.* Conformal prediction, multi-signal uncertainty, OOD detection — plus a substantial pass replacing claims that the code did not yet support |
 | **v0.3.0** *(in progress)* | *Make it provable.* Validation on real public datasets, a narrower and better-defended API, GUIs split into their own project |
 
-Quality gates on every change: `ruff`, `mypy --strict`, 98 tests across 14 modules,
-and a deterministic smoke benchmark. See [ROADMAP.md](ROADMAP.md) for what's planned.
+Quality gates on every change: `ruff`, `mypy --strict`, 232 tests, and a
+deterministic smoke benchmark. See [ROADMAP.md](ROADMAP.md) for what's planned.
 
-> **On benchmarks:** results on real public datasets are in progress for v0.3.0.
-> Until they land, treat AdaptShot as a well-tested implementation of well-established
-> methods, not as an empirically validated accuracy claim. Numbers will appear here
-> when they are reproducible, with seeds and hardware recorded.
+---
+
+## Results on real data
+
+PlantVillage, **5-way 5-shot, 100 episodes, seed 42**, `mobilenet_v3_small`.
+Every method sees the same episodes and the same embeddings. Accuracy is the
+mean over episodes with a 95% confidence interval — never a bare point estimate.
+
+| Method | Accuracy |
+|---|---|
+| **AdaptShot** | **91.4% ± 1.0** |
+| Nearest centroid | 91.4% ± 1.0 |
+| Linear probe (logistic regression) | 91.4% ± 1.2 |
+| 1-NN | 89.0% ± 1.3 |
+| 5-NN | 87.7% ± 1.2 |
+
+**AdaptShot's accuracy is nearest-centroid's accuracy.** Not approximately —
+across 500 queries the two disagree on zero of them. The top-1 prediction *is* a
+cosine nearest-centroid classifier, and the layers above it do not change which
+class comes out. If accuracy is all you need, the five-line version is the same
+five lines.
+
+What those layers do change is what you are told alongside the prediction:
+
+| At α = 0.1 (90% target coverage) | Conformal sets | Top-1 + threshold |
+|---|---|---|
+| Empirical coverage | **97.5% ± 0.7** | 83.9% ± 1.4 |
+| Mean set size | 2.05 ± 0.18 | 0.89 ± 0.02 |
+
+The threshold baseline is calibrated on the same held-out split, to the same
+target, and it *misses* it — 83.9% against a promised 90%. Conformal clears it
+with room to spare, and the price is roughly 2.3× the set size. That is the
+trade, stated plainly: the guarantee is real, it is not free, and if you do not
+need it the cheaper thing is genuinely cheaper.
+
+Conformal over-covers here (97.5% against a 90% target), which costs set size
+it did not have to spend. That is a known consequence of self-calibrating by
+leave-one-out on 25 support points and is not yet tuned.
+
+OOD flagged 1.5% ± 0.5 of this pool, which is entirely in-distribution.
+
+Reproduce:
+
+```bash
+python scripts/fetch_plantvillage.py --out data/pv_bench --per-class 20 --preset benchmark
+python -m benchmarks.run_plantvillage --seed 42
+```
+
+Full output including hardware, dataset commit and licence is written to
+`results/plantvillage_5way5shot.json`. The download is manual and pinned to a
+content-addressed commit; nothing in this repository fetches data silently.
 
 ---
 
