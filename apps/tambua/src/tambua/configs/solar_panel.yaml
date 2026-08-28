@@ -1,0 +1,57 @@
+# SolarCheck — off-grid solar panel inspection
+# ============================================
+# The second configuration exists to make the generality claim testable rather
+# than merely asserted. It shares no vocabulary with maize.yaml: different
+# domain, different classes, different advice, same application and same code
+# path. `tambua --config configs/solar_panel.yaml` is the whole difference.
+#
+# Off-grid solar is the case this is drawn from: a technician servicing village
+# installations needs the same loop the farmer needs -- photograph it, get a
+# name and an action, correct the model when it is wrong.
+
+application:
+  name: "SolarCheck"
+  version: "0.2.0"
+  description: "Solar panel condition triage for off-grid technicians — powered by AdaptShot"
+
+engine:
+  backbone: "mobilenet_v3_small" # a lighter backbone than the flagship, deliberately
+  device: "cpu"
+  seed: 42
+  inference_mode: "prototypical"
+  similarity_metric: "cosine"
+  eco_mode: true
+  enable_ood_detection: true
+
+domains:
+  photovoltaic_module:
+    local_name: "paneli ya jua"
+    classes:
+      module_clean:
+        local_name: "paneli safi"
+        action: "Hakuna hatua inayohitajika. Rudia ukaguzi baada ya miezi mitatu."
+        description: "Clean module, uniform cell colour, no visible obstruction or damage."
+        severity: "low"
+      module_soiled:
+        local_name: "paneli yenye vumbi"
+        action: "Safisha kwa maji safi na kitambaa laini asubuhi au jioni. Usitumie maji baridi kwenye paneli moto."
+        description: "Dust, sand or bird droppings covering the glass. Output loss is real but fully recoverable by cleaning."
+        severity: "moderate"
+      module_hotspot:
+        local_name: "alama za joto"
+        action: "Pima voltage ya kila string. Tenga paneli hii kwenye mzunguko na uripoti kwa fundi mkuu."
+        description: "Brown or discoloured patches over individual cells, typical of a hotspot from partial shading or a failed bypass diode."
+        severity: "high"
+      module_cracked:
+        local_name: "kioo kilichopasuka"
+        action: "Ondoa paneli kwenye mzunguko mara moja. Kioo kilichopasuka huingiza maji na ni hatari ya umeme."
+        description: "Fractured front glass or visible cell cracking. Moisture ingress follows, and the module becomes an electrical hazard."
+        severity: "critical"
+
+localization:
+  language: "sw"
+  fallback: "en"
+
+paths:
+  model_dir: "models"
+  sample_data: "samples"

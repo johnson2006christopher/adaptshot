@@ -1,15 +1,17 @@
-# MziziGuard — Crop Disease Detection Configuration
-# ==================================================
-# Edit this file to add your own crops, diseases, and treatment advice.
-# The application loads this at startup and rebuilds the label set.
+# MziziGuard — maize disease identification
+# =========================================
+# The flagship Tambua configuration. Edit this file to add crops, diseases and
+# treatment advice; the application reads it at startup and rebuilds the label
+# set from it. Nothing here is compiled into the code.
+#
+# Every value is validated on load. A mistake is reported with the file, the
+# line and the fix -- see apps/tambua/src/tambua/config.py.
 
-# Application metadata
 application:
   name: "MziziGuard"
-  version: "0.1.0"
-  description: "Crop disease detection for smallholder farmers — powered by AdaptShot"
+  version: "0.2.0"
+  description: "Maize disease identification for smallholder farmers — powered by AdaptShot"
 
-# AdaptShot engine settings
 engine:
   backbone: "resnet18"           # resnet18 | mobilenet_v3_small
   device: "cpu"                  # cpu | cuda | mps
@@ -17,41 +19,42 @@ engine:
   inference_mode: "prototypical" # prototypical | nearest_neighbor
   similarity_metric: "euclidean" # euclidean | cosine
   eco_mode: true                 # carbon-aware inference
-  enable_ood_detection: true     # detect non-crop images
+  enable_ood_detection: true     # flag images unlike anything it was taught
 
-# Crop disease definitions
-# Each crop has one or more diseases plus a "healthy" class.
+# What the application can recognise.
+#
+# Class keys share a single label space across all domains, so they must be
+# unique file-wide -- the engine predicts one label, not a (domain, label) pair.
+#
 # Fields:
-#   swahili:      Name in Swahili for the farmer-facing UI
-#   action:       Treatment advice shown to the farmer
-#   description:  Longer description for extension officers
+#   local_name:   label shown in the interface, in localization.language
+#   action:       what the person holding the phone should do next
+#   description:  the longer form, for an extension officer
 #   severity:     low | moderate | high | critical
-crops:
+domains:
   maize:
-    swahili: "mahindi"
-    diseases:
+    local_name: "mahindi"
+    classes:
       healthy_maize:
-        swahili: "mahindi yenye afya"
+        local_name: "mahindi yenye afya"
         action: "Hakuna matibabu yanayohitajika. Endelea na utunzaji wa kawaida."
         description: "Healthy maize with no visible disease symptoms."
         severity: "low"
       northern_leaf_blight:
-        swahili: "ugonjwa wa mabaka ya kahawia"
+        local_name: "ugonjwa wa mabaka ya kahawia"
         action: "Ondoa majani yaliyoathirika. Tumia dawa ya kuvu (fungicide) ikiwa imeenea sana. Panda mbegu sugu msimu ujao."
         description: "Cigar-shaped gray-green to tan lesions on leaves, caused by Exserohilum turcicum."
         severity: "moderate"
       gray_leaf_spot:
-        swahili: "ugonjwa wa mabaka ya kijivu"
+        local_name: "ugonjwa wa mabaka ya kijivu"
         action: "Tumia dawa ya kuvu mapema. Badilisha mazao. Epuka kupanda mahindi shambani mwaka baada ya mwaka."
         description: "Rectangular gray lesions restricted by leaf veins, caused by Cercospora zeae-maydis."
         severity: "high"
 
-# UI localization
 localization:
-  language: "sw"                 # sw = Swahili, en = English
-  fallback: "en"
+  language: "sw"                 # the language local_name is written in
+  fallback: "en"                 # used when a class has no local_name
 
-# Paths (relative to this config file or absolute)
 paths:
-  model_dir: "models"            # where to save/load trained models
+  model_dir: "models"            # where taught models are saved, relative to this file
   sample_data: "samples"         # sample image cache

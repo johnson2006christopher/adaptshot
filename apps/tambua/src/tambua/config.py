@@ -21,21 +21,40 @@ import difflib
 import os
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, TypeVar, cast, get_args
 
 import yaml
 
+from adaptshot import (
+    Backbone,
+    Device,
+    InferenceMode,
+    SimilarityMetric,
+)
 from adaptshot.utils.exceptions import ConfigValidationError
 
 SEVERITIES = ("low", "moderate", "high", "critical")
-BACKBONES = ("resnet18", "mobilenet_v3_small")
-DEVICES = ("cpu", "cuda", "mps")
-INFERENCE_MODES = ("prototypical", "nearest_neighbor")
-SIMILARITY_METRICS = ("euclidean", "cosine")
+
+#: Preserves the specific literal type of whatever set of choices is being
+#: checked, so a validated value can be handed on without widening to `str`.
+_Choice = TypeVar("_Choice", bound=str)
+
+# Read out of AdaptShot's own annotations rather than restated here. Two hand-kept
+# lists drift: the previous copy omitted "contrastive", so a valid AdaptShot
+# inference mode was rejected by the app for no reason anyone had decided on.
+# Deriving them means a backbone added upstream is accepted the day it lands.
+
+
+BACKBONES: tuple[Backbone, ...] = get_args(Backbone)
+DEVICES: tuple[Device, ...] = get_args(Device)
+INFERENCE_MODES: tuple[InferenceMode, ...] = get_args(InferenceMode)
+SIMILARITY_METRICS: tuple[SimilarityMetric, ...] = get_args(SimilarityMetric)
 
 # A domain with one class cannot be classified into -- there is nothing to tell
 # it apart from. Two is the smallest config that means anything.
 MIN_CLASSES_PER_DOMAIN = 2
+
+
 
 _TOP_LEVEL = {"application", "engine", "domains", "localization", "paths"}
 _REQUIRED_TOP = ("application", "domains")
@@ -98,13 +117,19 @@ class ApplicationInfo:
 
 @dataclass(frozen=True)
 class EngineSettings:
-    """AdaptShot settings, validated before they reach `AdaptShotConfig`."""
+    """AdaptShot settings, validated before they reach `AdaptShotConfig`.
 
-    backbone: str
-    device: str
+    The four choice fields reuse AdaptShot's own `Literal` types rather than
+    widening to `str`. Validation has already established the value is one of
+    them, and saying so keeps that guarantee visible to the type checker all the
+    way to the `AdaptShotConfig` constructor.
+    """
+
+    backbone: Backbone
+    device: Device
     seed: int
-    inference_mode: str
-    similarity_metric: str
+    inference_mode: InferenceMode
+    similarity_metric: SimilarityMetric
     eco_mode: bool
     enable_ood_detection: bool
 
@@ -281,8 +306,8 @@ class _Validator:
         return value
 
     def choice(
-        self, found: Mapping[str, Any], key: str, allowed: Sequence[str], where: _Path
-    ) -> str:
+        self, found: Mapping[str, Any], key: str, allowed: Sequence[_Choice], where: _Path
+    ) -> _Choice:
         value = found.get(key, allowed[0])
         if value not in allowed:
             shown = f'"{value}"' if isinstance(value, str) else repr(value)
@@ -292,7 +317,10 @@ class _Validator:
                 "must be one of: " + ", ".join(allowed),
             )
             return allowed[0]
-        return str(value)
+        # Membership in `allowed` was just established, which is exactly the
+        # premise the Literal type encodes; the checker cannot see that through
+        # an untyped YAML mapping.
+        return cast(_Choice, value)
 
     def flag(self, found: Mapping[str, Any], key: str, where: _Path, default: bool) -> bool:
         value = found.get(key, default)

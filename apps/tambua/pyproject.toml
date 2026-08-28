@@ -49,4 +49,7 @@ Homepage = "https://github.com/johnson2006christopher/adaptshot"
 where = ["src"]
 
 [tool.setuptools.package-data]
-"tambua" = ["py.typed"]
+# The configs live inside the package, not beside it, because they are not
+# examples -- they are the application's identity. A `pip install tambua` with
+# no config on disk has nothing to run.
+"tambua" = ["py.typed", "configs/*.yaml"]

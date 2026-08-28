@@ -1,27 +1,70 @@
-"""MziziGuard Engine: crop disease detection powered by AdaptShot.
+"""The Tambua engine: AdaptShot wrapped in whatever domain the config describes.
 
-Wraps FewShotLearner with:
-  - Crop configuration from YAML
-  - Swahili/English translation maps
-  - Model save/load persistence
-  - Per-session history tracking
-  - Batch prediction
-  - System health reporting
+Adds to `FewShotLearner`:
+  - a validated domain configuration (see `tambua.config`)
+  - human-readable results -- local label, advice, severity -- for each prediction
+  - session history, so corrections and accuracy are visible
+  - batch prediction and CSV export
+  - model save/load and a health report
+
+Nothing in this module knows what it is classifying. Every domain-specific word
+reaching a user comes out of the config file.
 """
 
 from __future__ import annotations
 
 import logging
-import os
 import time
 from dataclasses import dataclass, field
+from importlib import resources
 from typing import Any
 
 import numpy as np
-import yaml
 
 from adaptshot import AdaptShotConfig, FewShotLearner
 from adaptshot.utils.exceptions import ConfigValidationError
+from tambua.config import ClassInfo, TambuaConfig, load_config
+
+#: The config loaded when the caller names none. MziziGuard is the flagship
+#: domain, but it is one config among several, not a special case in the code.
+DEFAULT_CONFIG = "maize"
+
+
+def bundled_configs() -> list[str]:
+    """Names of every configuration shipped with this installation."""
+
+    return sorted(
+        entry.name.removesuffix(".yaml")
+        for entry in (resources.files("tambua") / "configs").iterdir()
+        if entry.name.endswith(".yaml")
+    )
+
+
+def bundled_config(name: str) -> str:
+    """Path to a configuration shipped inside the package.
+
+    The configs are package data rather than files beside the source tree, so
+    they survive `pip install` -- an installed application with no config on disk
+    would have nothing to run.
+
+    Args:
+        name: Config stem, e.g. "maize" or "solar_panel".
+
+    Returns:
+        Absolute path to the YAML file.
+
+    Raises:
+        ConfigValidationError: If no config of that name ships with the package.
+    """
+
+    path = resources.files("tambua") / "configs" / f"{name}.yaml"
+    if not path.is_file():
+        raise ConfigValidationError(
+            f"no bundled config named {name!r}. "
+            f"Available: {', '.join(bundled_configs())}. "
+            "For your own config, pass its path directly."
+        )
+    return str(path)
 
 # Broad handlers below are boundaries too -- one bad image must not abort a batch,
 # and a failed correction must not lose the session. They log before returning.
@@ -32,22 +75,31 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-@dataclass
-class DiseaseInfo:
-    """Structured disease metadata from config."""
-    key: str
-    swahili: str
-    action: str
-    description: str
-    severity: str  # low | moderate | high | critical
-    crop: str = ""
+#: Severity reported for a label the config does not describe -- one added by a
+#: human correction, or restored from a model saved under another config. It is
+#: deliberately outside the config vocabulary: it records the absence of a
+#: description rather than a level of urgency, and must not be mistaken for one.
+UNDESCRIBED_SEVERITY = "undescribed"
+
+
+def _undescribed(label: str) -> ClassInfo:
+    """A placeholder for a label with no entry in the loaded config."""
+
+    return ClassInfo(
+        key=label,
+        local_name=label,
+        action="No advice is configured for this label.",
+        description="",
+        severity=UNDESCRIBED_SEVERITY,
+        domain="",
+    )
 
 
 @dataclass
-class DiagnosisResult:
-    """Single prediction result with human-readable context."""
+class Identification:
+    """One prediction, with the human-readable context the config supplies."""
     label: str
-    swahili: str
+    local_name: str
     confidence: float
     raw_confidence: float
     action: str
@@ -63,11 +115,11 @@ class DiagnosisResult:
 @dataclass
 class SessionHistory:
     """Tracks predictions and corrections in the current session."""
-    predictions: list[DiagnosisResult] = field(default_factory=list)
+    predictions: list[Identification] = field(default_factory=list)
     corrections: list[dict[str, Any]] = field(default_factory=list)
     start_time: float = field(default_factory=time.time)
 
-    def record_prediction(self, result: DiagnosisResult) -> None:
+    def record_prediction(self, result: Identification) -> None:
         self.predictions.append(result)
 
     def record_correction(
@@ -106,42 +158,47 @@ class SessionHistory:
 
 
 # ---------------------------------------------------------------------------
-# MziziGuard Engine
+# Engine
 # ---------------------------------------------------------------------------
 
 
-class MziziGuard:
-    """Crop disease detection engine powered by AdaptShot few-shot learning.
+class TambuaEngine:
+    """Few-shot identification for whatever domain the config describes.
 
     Usage::
 
-        guard = MziziGuard("config.yaml")
-        guard.initialize_with_samples(n_support=5)  # or guard.load_images_from_dir(...)
-        result = guard.diagnose("photo_of_leaf.jpg")
-        print(result.swahili, result.confidence, result.action)
+        engine = TambuaEngine()                       # ships with maize.yaml
+        engine.initialize_with_samples(n_support=5)   # or load_images_from_dir(...)
+        result = engine.identify("photo.jpg")
+        print(result.local_name, result.confidence, result.action)
 
         # Human correction
-        guard.teach("photo_of_leaf.jpg", true_label="northern_leaf_blight")
+        engine.teach("photo.jpg", true_label="northern_leaf_blight")
 
         # Save for next session
-        guard.save_model("models/session_1.json")
+        engine.save_model("models/session_1.json")
+
+    Point it at another config and it is a different application::
+
+        engine = TambuaEngine(bundled_config("solar_panel"))
     """
 
     def __init__(self, config_path: str | None = None) -> None:
-        """Initialize MziziGuard from a YAML configuration file.
+        """Initialise from a YAML domain configuration.
 
         Args:
-            config_path: Path to config.yaml. If None, searches relative to
-                         the package directory.
+            config_path: Path to a config file. Defaults to the bundled
+                `maize.yaml`.
+
+        Raises:
+            ConfigValidationError: If the config is missing or invalid. The
+                message names the file, the line and the fix for every problem.
         """
-        self.config_path = self._resolve_config_path(config_path)
-        self.cfg = self._load_config(self.config_path)
+        self.config_path = config_path or bundled_config(DEFAULT_CONFIG)
+        self.cfg: TambuaConfig = load_config(self.config_path)
 
-        # Build AdaptShot engine config
         self.engine_cfg = self._build_engine_config()
-
-        # Build disease maps
-        self.diseases: dict[str, DiseaseInfo] = self._build_disease_map()
+        self.classes: dict[str, ClassInfo] = dict(self.cfg.classes)
 
         # AdaptShot learner (lazy-init)
         self._learner: FewShotLearner | None = None
@@ -149,83 +206,33 @@ class MziziGuard:
         # Session state
         self.history = SessionHistory()
         self._last_image_path: str | None = None
+        self._data_dir: str | None = None
 
     # ------------------------------------------------------------------
     # Configuration
     # ------------------------------------------------------------------
 
-    @staticmethod
-    def _resolve_config_path(config_path: str | None) -> str:
-        if config_path and os.path.isfile(config_path):
-            return config_path
-        # Search relative to this file's directory
-        candidates = [
-            config_path or "",
-            os.path.join(os.path.dirname(__file__), "config.yaml"),
-        ]
-        for path in candidates:
-            if path and os.path.isfile(path):
-                return path
-        raise FileNotFoundError(
-            "config.yaml not found. Either pass config_path or place "
-            "config.yaml next to engine.py."
-        )
-
-    @staticmethod
-    def _load_config(path: str) -> dict[str, Any]:
-        """Load and shape-check a domain config.
-
-        `yaml.safe_load` returns whatever the document contains -- ``None`` for an
-        empty file, a list for a top-level sequence. Returning that unchecked
-        turns a one-character typo in the config into an `AttributeError` several
-        frames away, which is the failure mode #47 exists to prevent. Fail here,
-        naming the file.
-        """
-
-        with open(path, encoding="utf-8") as f:
-            loaded = yaml.safe_load(f)
-
-        if loaded is None:
-            raise ConfigValidationError(f"{path} is empty; a domain config is required")
-        if not isinstance(loaded, dict):
-            raise ConfigValidationError(
-                f"{path} must contain a mapping at the top level, "
-                f"found {type(loaded).__name__}"
-            )
-        return loaded
+    @property
+    def name(self) -> str:
+        """What this configuration calls the application."""
+        return self.cfg.application.name
 
     def _build_engine_config(self) -> AdaptShotConfig:
-        eng = self.cfg.get("engine", {})
+        eng = self.cfg.engine
         return AdaptShotConfig(
-            backbone=eng.get("backbone", "resnet18"),
-            device=eng.get("device", "cpu"),
-            seed=eng.get("seed", 42),
-            inference_mode=eng.get("inference_mode", "prototypical"),
-            similarity_metric=eng.get("similarity_metric", "euclidean"),
-            eco_mode=eng.get("eco_mode", True),
-            enable_ood_detection=eng.get("enable_ood_detection", True),
+            backbone=eng.backbone,
+            device=eng.device,
+            seed=eng.seed,
+            inference_mode=eng.inference_mode,
+            similarity_metric=eng.similarity_metric,
+            eco_mode=eng.eco_mode,
+            enable_ood_detection=eng.enable_ood_detection,
         )
-
-    def _build_disease_map(self) -> dict[str, DiseaseInfo]:
-        """Flatten all crops/diseases into a label → DiseaseInfo map."""
-        result: dict[str, DiseaseInfo] = {}
-        crops = self.cfg.get("crops", {})
-        for crop_name, crop_data in crops.items():
-            for disease_key, disease_data in crop_data.get("diseases", {}).items():
-                result[disease_key] = DiseaseInfo(
-                    key=disease_key,
-                    swahili=disease_data.get("swahili", disease_key),
-                    action=disease_data.get("action", "Consult extension officer."),
-                    description=disease_data.get("description", ""),
-                    severity=disease_data.get("severity", "moderate"),
-                    crop=crop_name,
-                )
-        return result
 
     @property
     def known_labels(self) -> list[str]:
-        """All disease labels the system knows about."""
-        return sorted(self.diseases.keys())
+        """Every label the engine can currently predict."""
+        return sorted(self.classes)
 
     @property
     def is_initialized(self) -> bool:
@@ -254,29 +261,30 @@ class MziziGuard:
         self,
         n_support: int = 5,
         data_dir: str | None = None,
-        seed: int = 42,
     ) -> int:
-        """Generate synthetic sample images and load into the learner.
+        """Generate placeholder images for every configured class and load them.
+
+        The classes come from the loaded config, so the generated label set
+        always matches what this configuration can recognise.
 
         Args:
-            n_support: Number of support images per disease class.
-            data_dir: Where to write images. Uses temp dir if None.
-            seed: Random seed for reproducibility.
+            n_support: Number of placeholder images per class.
+            data_dir: Where to write images. Uses a temp dir if None.
 
         Returns:
             Number of support images loaded.
         """
-        from . import data as mzizi_data
+        from tambua import data as sample_data
 
         if data_dir is None:
             import tempfile
-            data_dir = tempfile.mkdtemp(prefix="mziziguard_samples_")
+            data_dir = tempfile.mkdtemp(prefix="tambua_samples_")
 
-        support_paths, support_labels, _, _ = mzizi_data.generate_samples(
+        support_paths, support_labels, _, _ = sample_data.generate_samples(
             output_dir=data_dir,
+            class_keys=self.cfg.labels,
             n_support=n_support,
             n_query=0,
-            seed=seed,
         )
         self.learner.load_support_images(support_paths, support_labels)
         self._data_dir = data_dir
@@ -292,12 +300,15 @@ class MziziGuard:
         Expected structure::
 
             image_dir/
-                healthy_maize/
+                <class_key>/
                     img1.png
                     img2.jpg
-                northern_leaf_blight/
+                <another_class_key>/
                     img3.png
                     ...
+
+        The directory names must match class keys in the loaded config, or the
+        model will learn labels the interface cannot describe.
 
         Args:
             image_dir: Root directory with one subfolder per class.
@@ -306,9 +317,9 @@ class MziziGuard:
         Returns:
             Number of support images loaded.
         """
-        from . import data as mzizi_data
+        from tambua import data as sample_data
 
-        paths, labels = mzizi_data.load_from_folders(image_dir, max_per_class)
+        paths, labels = sample_data.load_from_folders(image_dir, max_per_class)
         if not paths:
             raise ValueError(f"No images found in {image_dir}")
         self.learner.load_support_images(paths, labels)
@@ -319,17 +330,18 @@ class MziziGuard:
     # Prediction / Diagnosis
     # ------------------------------------------------------------------
 
-    def diagnose(
+    def identify(
         self,
         image: str | np.ndarray | Any,
-    ) -> DiagnosisResult:
-        """Run disease diagnosis on an image.
+    ) -> Identification:
+        """Identify one image.
 
         Args:
             image: File path, NumPy array, or PIL Image.
 
         Returns:
-            DiagnosisResult with prediction, confidence, Swahili name, and action.
+            An `Identification` carrying the predicted label together with the
+            local name, advice and severity the config gives it.
         """
         if not self.is_trained:
             raise RuntimeError(
@@ -343,24 +355,16 @@ class MziziGuard:
         if isinstance(image, str):
             self._last_image_path = image
 
-        disease_info = self.diseases.get(
-            str(result.prediction),
-            DiseaseInfo(
-                key=str(result.prediction),
-                swahili=str(result.prediction),
-                action="Consult extension officer.",
-                description="Unknown class.",
-                severity="unknown",
-            ),
-        )
+        label = str(result.prediction)
+        info = self.classes.get(label) or _undescribed(label)
 
-        diagnosis = DiagnosisResult(
-            label=str(result.prediction),
-            swahili=disease_info.swahili,
+        identification = Identification(
+            label=label,
+            local_name=info.local_name,
             confidence=float(result.calibrated_confidence),
             raw_confidence=float(result.raw_confidence),
-            action=disease_info.action,
-            severity=disease_info.severity,
+            action=info.action,
+            severity=info.severity,
             ood_flag=result.ood_flag,
             uncertainty_flag=result.uncertainty_flag,
             act_action=result.act_action,
@@ -368,8 +372,8 @@ class MziziGuard:
             calibrated_ece=result.debiased_ece,
         )
 
-        self.history.record_prediction(diagnosis)
-        return diagnosis
+        self.history.record_prediction(identification)
+        return identification
 
     # ------------------------------------------------------------------
     # Human-in-the-loop correction
@@ -385,7 +389,7 @@ class MziziGuard:
 
         Args:
             image_path: Path to the image being corrected.
-            true_label: The correct disease label.
+            true_label: The correct label.
             confidence_weight: How confident you are (0.0–1.0).
 
         Returns:
@@ -408,15 +412,11 @@ class MziziGuard:
             weight=confidence_weight,
         )
 
-        # If the corrected label is new, add it to our disease map
-        if true_label not in self.diseases:
-            self.diseases[true_label] = DiseaseInfo(
-                key=true_label,
-                swahili=true_label,
-                action="Consult extension officer.",
-                description="Added via human correction.",
-                severity="moderate",
-            )
+        # A correction can introduce a label the config never described. Record it
+        # so predictions do not crash, but mark it undescribed rather than
+        # inventing advice and a severity that nobody wrote.
+        if true_label not in self.classes:
+            self.classes[true_label] = _undescribed(true_label)
 
         return result
 
@@ -448,32 +448,36 @@ class MziziGuard:
     # Batch processing
     # ------------------------------------------------------------------
 
-    def batch_diagnose(
+    def batch_identify(
         self,
         image_paths: list[str],
-    ) -> list[DiagnosisResult]:
-        """Run diagnosis on a batch of images.
+    ) -> list[Identification]:
+        """Identify a batch of images, one result per input.
+
+        A failure on one image is recorded as a failed row rather than aborting
+        the batch: someone processing a folder of field photographs should not
+        lose forty results to one corrupt file.
 
         Args:
-            image_paths: List of paths to image files.
+            image_paths: Paths to image files.
 
         Returns:
-            List of DiagnosisResult, one per image.
+            One `Identification` per input path, in order.
         """
-        results: list[DiagnosisResult] = []
+        results: list[Identification] = []
         for path in image_paths:
             try:
-                result = self.diagnose(path)
+                result = self.identify(path)
                 results.append(result)
             except Exception:
                 logger.exception("batch item failed: %s", path)
-                results.append(DiagnosisResult(
+                results.append(Identification(
                     label="error",
-                    swahili="hitilafu",
+                    local_name="error",
                     confidence=0.0,
                     raw_confidence=0.0,
                     action="Could not process this image.",
-                    severity="unknown",
+                    severity=UNDESCRIBED_SEVERITY,
                     ood_flag=True,
                     uncertainty_flag=True,
                     act_action="ERROR",
@@ -482,13 +486,13 @@ class MziziGuard:
                 ))
         return results
 
-    def batch_to_csv(self, results: list[DiagnosisResult]) -> str:
-        """Convert batch results to CSV string."""
-        lines = ["image_path,label,swahili,confidence,severity,action,ood_flag"]
+    def batch_to_csv(self, results: list[Identification]) -> str:
+        """Convert batch results to a CSV string."""
+        lines = ["image_path,label,local_name,confidence,severity,action,ood_flag"]
         for r in results:
             lines.append(
                 f"{getattr(r, 'image_path', 'unknown')},"
-                f"{r.label},{r.swahili},{r.confidence:.3f},"
+                f"{r.label},{r.local_name},{r.confidence:.3f},"
                 f"{r.severity},\"{r.action}\",{r.ood_flag}"
             )
         return "\n".join(lines)
@@ -512,7 +516,7 @@ class MziziGuard:
                 "backbone": self.engine_cfg.backbone,
                 "device": self.engine_cfg.device,
                 "eco_mode": self.engine_cfg.eco_mode,
-                "known_classes": len(self.diseases),
+                "known_classes": len(self.classes),
                 "support_size": calib.get("support_size", 0),
             },
         }
@@ -546,19 +550,10 @@ class MziziGuard:
     # Re-export key info for UI display
     # ------------------------------------------------------------------
 
-    def label_to_info(self, label: str) -> DiseaseInfo:
-        """Get DiseaseInfo for a given label string."""
-        return self.diseases.get(
-            label,
-            DiseaseInfo(
-                key=label,
-                swahili=label,
-                action="Consult extension officer.",
-                description="",
-                severity="unknown",
-            ),
-        )
+    def label_to_info(self, label: str) -> ClassInfo:
+        """The configured description of a label, or an undescribed placeholder."""
+        return self.classes.get(label) or _undescribed(label)
 
-    def all_disease_labels(self) -> list[str]:
-        """All disease labels sorted alphabetically."""
+    def all_labels(self) -> list[str]:
+        """Every predictable label, sorted alphabetically."""
         return self.known_labels
