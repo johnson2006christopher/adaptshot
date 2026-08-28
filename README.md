@@ -280,12 +280,22 @@ If AdaptShot is useful in your work:
 ```bibtex
 @software{hassan_adaptshot,
   author  = {Hassan, Johnson Christopher},
-  title   = {AdaptShot: Few-Shot Vision with Calibrated, Guaranteed Uncertainty},
+  title   = {AdaptShot: Human-Aligned Few-Shot Vision Learning for
+             Resource-Constrained Environments},
   url     = {https://github.com/johnson2006christopher/adaptshot},
   version = {0.2.0},
   year    = {2026}
 }
 ```
+
+GitHub also renders a **Cite this repository** button from
+[`CITATION.cff`](CITATION.cff), in APA and BibTeX. The two are kept in step by
+`tests/test_citation.py`, which fails if the versions drift apart.
+
+<!-- TODO(maintainer): once the repository is connected to Zenodo and a release
+     is published, add the concept DOI badge here and a `doi` field to
+     CITATION.cff. Deliberately absent rather than faked: a DOI that does not
+     resolve is worse than no DOI. See issue #24 for the steps. -->
 
 ---
 
