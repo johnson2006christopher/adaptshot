@@ -296,16 +296,24 @@ class UncertaintyQuantifier:
             np.percentile(distances, self.ood_percentile)
         )
 
-    def is_ood(self, embedding: np.ndarray) -> tuple[bool, float]:
+    def is_ood(
+        self, embedding: np.ndarray, *, min_dist: float | None = None
+    ) -> tuple[bool, float]:
         """Check if an embedding is out-of-distribution.
 
         Args:
             embedding: [D] feature vector.
+            min_dist: The embedding's minimum Mahalanobis distance, if the
+                caller has already computed it. Mahalanobis is O(D^2) per class
+                and is the most expensive step here, so a caller that has the
+                number should not pay for it twice (#40). Omit it and the
+                distance is computed from `embedding` as before.
 
         Returns:
             (is_ood, ood_score_normalized)
         """
-        min_dist, _, _ = self.min_mahalanobis_distance(embedding)
+        if min_dist is None:
+            min_dist, _, _ = self.min_mahalanobis_distance(embedding)
 
         if self._ood_threshold == float("inf") or not self._calibration_distances:
             return False, 0.0
@@ -507,10 +515,10 @@ class UncertaintyQuantifier:
 
         # Distributional: Mahalanobis OOD
         if compute_distributional:
-            # NOTE: is_ood() below recomputes min_mahalanobis_distance internally,
-            # so this distance is calculated twice per query. See #40.
-            _min_dist, _closest_class, margin = self.min_mahalanobis_distance(query_embedding)
-            is_ood_flag, ood_score = self.is_ood(query_embedding)
+            # One Mahalanobis computation, shared. It used to run twice per
+            # query: once here for the margin, and again inside is_ood() (#40).
+            min_dist, _closest_class, margin = self.min_mahalanobis_distance(query_embedding)
+            is_ood_flag, ood_score = self.is_ood(query_embedding, min_dist=min_dist)
             report.distributional = ood_score
             report.is_ood = is_ood_flag
             report.ood_score = ood_score
