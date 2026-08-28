@@ -137,14 +137,15 @@ jobs:
       - name: Test with pytest
         run: pytest tests/ -v --tb=short -rs
 
-  # Proves the claim in #12: the documented validation gate runs with no network
-  # at all. It uses the synthetic fixture, so it reports determinism and latency
-  # and deliberately no accuracy -- a figure measured on random tensors would
+  # Proves the claim in #12: the validation gate needs no dataset download. It
+  # uses the synthetic fixture, so it reports determinism and latency and
+  # deliberately no accuracy -- a figure measured on random tensors would
   # describe nothing.
   #
   # No pip cache and no dataset cache here on purpose: a cache is a form of
   # network access that already happened, and this job exists to prove the run
-  # needs neither.
+  # needs neither. Backbone weights are the one documented exception -- see the
+  # step that fetches them, and #36.
   benchmark-offline:
     name: Smoke benchmark (offline)
     runs-on: ubuntu-latest
@@ -170,6 +171,22 @@ jobs:
               sys.exit(f"CUDA-enabled torch ({torch.version.cuda}) in a CPU-only job")
           print(f"confirmed: CPU-only torch {torch.__version__}")
           PY
+      - name: Warm the backbone weight cache
+        # A documented exception, fetched here deliberately so the boundary is
+        # visible rather than accidental.
+        #
+        # core/extractor.py loads `resnet18(weights="IMAGENET1K_V1")`, which
+        # torchvision fetches from download.pytorch.org on first use and caches
+        # under TORCH_HOME. So AdaptShot cannot currently run from a genuinely
+        # cold install with no network -- that is #35/#36, not #12, and the
+        # README must not claim otherwise until they land.
+        #
+        # What the isolated step below therefore proves is narrower but still
+        # worth having: once the weights are present, the inference path needs
+        # no dataset download and makes no other network call. Any new one added
+        # by a dependency fails the build.
+        run: |
+          python -c "from torchvision.models import resnet18; resnet18(weights='IMAGENET1K_V1')"
       - name: Verify the namespace really has no network
         # Ubuntu 24.04 restricts unprivileged user namespaces through AppArmor,
         # so a plain `unshare -rn` fails with
