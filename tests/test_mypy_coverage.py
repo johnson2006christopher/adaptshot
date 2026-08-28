@@ -23,6 +23,7 @@ added tomorrow cannot quietly reopen the hole.
 
 from __future__ import annotations
 
+import importlib.util
 import re
 import subprocess
 import sys
@@ -44,7 +45,30 @@ def _module_count() -> int:
     return len(list(PACKAGE_ROOT.rglob("*.py")))
 
 
+def _materialise_dynamic_stubs() -> None:
+    """Import gradio, if present, so that its type stubs exist on disk.
+
+    gradio attaches `.click()` / `.change()` to its components dynamically, in a
+    metaclass, and writes the matching `.pyi` files into site-packages the first
+    time it is imported. They are not shipped in the wheel. mypy reads files, not
+    metaclasses, so on a fresh install it reports
+
+        error: "Button" has no attribute "click"  [attr-defined]
+
+    against our code, which is a lie about our code.
+
+    Worse, it made this check non-deterministic: whether it passed depended on
+    whether anything earlier in the session happened to import gradio. Doing it
+    here, explicitly, is what makes the result reproducible.
+    """
+
+    if importlib.util.find_spec("gradio") is None:
+        return
+    importlib.import_module("gradio")
+
+
 def _run_mypy() -> subprocess.CompletedProcess[str]:
+    _materialise_dynamic_stubs()
     return subprocess.run(
         [sys.executable, "-m", "mypy", str(PACKAGE_ROOT), "--strict"],
         cwd=REPO_ROOT,
