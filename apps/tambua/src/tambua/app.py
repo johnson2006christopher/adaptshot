@@ -51,6 +51,7 @@ except ImportError:
 # Local imports
 # ---------------------------------------------------------------------------
 import adaptshot
+from tambua import data
 from tambua.config import load_config
 from tambua.engine import (
     DEFAULT_CONFIG,
@@ -79,20 +80,21 @@ def _get_engine() -> TambuaEngine:
 # ===================================================================
 
 
-def _setup_with_samples(n_support: int) -> str:
-    """Generate synthetic samples and train the model."""
-    try:
-        engine = _get_engine()
-        count = engine.initialize_with_samples(n_support=n_support)
-        labels = engine.known_labels
-        return (
-            f"✅ Generated {count} support images across {len(labels)} classes:\n"
-            + "\n".join(f"  • {label}" for label in labels)
-            + "\n\n🧠 Model ready. Switch to the **Diagnose** tab to test."
-        )
-    except Exception as exc:
-        logger.exception("sample setup failed")
-        return f"❌ Setup failed: {exc}"
+def _check_folder(folder_path: str) -> str:
+    """Report whether a folder can support training, without training on it.
+
+    Separate from loading so that someone assembling a dataset can iterate --
+    add photographs, check again -- instead of discovering the shortfall as a
+    failure at the end of a training run.
+    """
+
+    if not folder_path:
+        return "Enter the path to a folder of photographs."
+    engine = _get_engine()
+    problems = data.inspect_folder(folder_path, engine.cfg.labels)
+    if not problems:
+        return "✅ This folder is usable. Click **Load & train**."
+    return "⚠️ " + data.render_problems(problems)
 
 
 def _setup_from_folder(folder_path: str, max_per_class: int) -> str:
@@ -318,6 +320,7 @@ def build_app() -> gr.Blocks:
     cfg = _get_engine().cfg
     app_name = cfg.application.name
     adaptshot_version = adaptshot.__version__
+    _layout_example = data.describe_expected_layout(cfg.labels)
     domains = ", ".join(cfg.domains)
 
     with gr.Blocks(title=app_name) as app:
@@ -337,54 +340,57 @@ def build_app() -> gr.Blocks:
             # ========== TAB 1: SETUP ==========
             with gr.TabItem("⚙️ Setup"):
                 gr.Markdown(
-                    """
-                    ### Train the model with support images
+                    f"""
+                    ### Teach the model with your own photographs
 
-                    **Option A:** Generate placeholder images (quick, no data needed).
-                    **Option B:** Point at a folder of your own photos, one folder per class.
+                    {app_name} ships no images. Five photographs per class is
+                    enough to start — that is the whole point of few-shot
+                    learning, and photographs you took yourself beat any
+                    dataset for the thing you actually need to recognise.
+
+                    Arrange them one folder per class, named exactly as in the
+                    configuration:
+
+                    ```
+                    {_layout_example}
+                    ```
+
+                    **Check** tells you whether the folder is usable before you
+                    spend a training run finding out.
                     """
                 )
                 with gr.Row():
                     with gr.Column(scale=1):
-                        gr.Markdown("#### Option A: Synthetic Samples")
-                        n_support = gr.Slider(
-                            1, 20, value=5, step=1,
-                            label="Images per class",
-                            info="More images = better accuracy.",
-                        )
-                        gen_btn = gr.Button("🎲 Generate Samples & Train", variant="primary")
-                        gen_status = gr.Textbox(
-                            label="Result", interactive=False, lines=6,
-                        )
-
-                    with gr.Column(scale=1):
-                        gr.Markdown("#### Option B: Real Images")
                         folder_input = gr.Textbox(
-                            label="Image folder path",
-                            placeholder="/path/to/images/",
-                            info="Folder should have one subfolder per disease class.",
+                            label="Photo folder path",
+                            placeholder="/path/to/your_photos/",
+                            info="One subfolder per class, named as in the config.",
                         )
                         max_per = gr.Number(
                             value=0, label="Max images per class (0 = unlimited)",
                             precision=0,
                         )
-                        folder_btn = gr.Button("📂 Load from Folder", variant="primary")
+                        with gr.Row():
+                            check_btn = gr.Button("🔍 Check folder")
+                            folder_btn = gr.Button("📂 Load & train", variant="primary")
+
+                    with gr.Column(scale=1):
                         folder_status = gr.Textbox(
-                            label="Result", interactive=False, lines=6,
+                            label="Result", interactive=False, lines=12,
                         )
 
                 gr.Markdown("---")
                 gr.Markdown("#### Current Model Status")
                 status_btn = gr.Button("🔍 Check Status")
                 status_text = gr.Markdown(
-                    "⚪ Not trained yet. Generate samples or load images above."
+                    "⚪ Not trained yet. Load photographs above."
                 )
 
                 # Wiring
-                gen_btn.click(
-                    fn=_setup_with_samples,
-                    inputs=[n_support],
-                    outputs=[gen_status],
+                check_btn.click(
+                    fn=_check_folder,
+                    inputs=[folder_input],
+                    outputs=[folder_status],
                 )
                 folder_btn.click(
                     fn=_setup_from_folder,

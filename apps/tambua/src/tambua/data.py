@@ -1,194 +1,181 @@
-"""Tambua: sample generation and real-image loading.
+"""Tambua: loading real images, and telling you when a folder is not usable.
 
-Two modes:
+Tambua ships no images. It used to generate them -- coloured shapes drawn with
+`ImageDraw`, offered through the interface as "sample data" -- and that was
+removed in #53. Drawn patterns are not data. A model that separates a blue ring
+from a green blob at 95% has told you nothing about maize, and anyone quoting
+that number will be right to be disbelieved.
 
-1. **Placeholder generation** -- deterministic synthetic images, one visually
-   distinct pattern per configured class, so the whole loop can be demonstrated
-   before anyone has collected a dataset.
-2. **Real image loading** -- a folder-per-class directory tree.
+The premise is few-shot: five photographs per class. Anyone who wants this has
+photographs, which is why they want it. So what ships is a path to their data
+and an honest account of whether it is usable, not a substitute for it.
 
-The placeholders deliberately look like nothing in particular. An earlier version
-drew maize leaves, which was worse in two ways: it hard-coded one domain's
-vocabulary into the code, and it invited a viewer to believe the model was
-analysing foliage when it was in fact separating drawn shapes. Neutral patterns
-make the demo honest about what it is. Real evaluation is #18.
+The generator still exists, under `tests/support/images.py`, where deterministic
+licence-free images are the right tool for asserting that the pipeline runs.
 """
 
 from __future__ import annotations
 
-import colorsys
-import hashlib
 import os
 from collections.abc import Sequence
+from dataclasses import dataclass
 
-import numpy as np
-from PIL import Image, ImageDraw
+from PIL import Image, UnidentifiedImageError
 
-# ---------------------------------------------------------------------------
-# Deterministic placeholder generation
-# ---------------------------------------------------------------------------
+#: Below this, a class contributes almost nothing to a prototype and the result
+#: is dominated by whichever example happened to be photographed well.
+MIN_IMAGES_PER_CLASS = 3
 
-#: How many visually distinct pattern families the generator can produce. Two
-#: classes that collide onto the same family are still separable -- they get
-#: different hues and densities -- but distinctness degrades past this many.
-PATTERN_FAMILIES = 4
-
-IMAGE_SIZE = 224
+#: Backbones resize to 224x224. An image smaller than this is being upscaled,
+#: which invents detail the camera never captured.
+MIN_EDGE_PIXELS = 224
 
 
-def _class_signature(class_key: str) -> tuple[int, float, int, int]:
-    """Derive stable visual parameters from a class name.
+@dataclass(frozen=True)
+class FolderProblem:
+    """Something wrong with a training folder, and how to fix it."""
 
-    `hashlib`, not the builtin `hash()`: hash randomisation is seeded per process,
-    so the builtin would give a different picture every run and quietly break the
-    determinism the project guarantees.
-
-    Returns:
-        (family, hue, blob_count, seed) -- fixed for a given class name forever.
-    """
-
-    digest = hashlib.blake2b(class_key.encode("utf-8"), digest_size=8).digest()
-    family = digest[0] % PATTERN_FAMILIES
-    hue = digest[1] / 255.0
-    blob_count = 4 + (digest[2] % 9)
-    seed = int.from_bytes(digest[4:8], "big")
-    return family, hue, blob_count, seed
+    where: str
+    problem: str
+    remedy: str
 
 
-def _rgb(hue: float, saturation: float, value: float) -> tuple[int, int, int]:
-    r, g, b = colorsys.hsv_to_rgb(hue % 1.0, saturation, value)
-    return int(r * 255), int(g * 255), int(b * 255)
+def describe_expected_layout(class_keys: Sequence[str]) -> str:
+    """The folder layout this configuration expects, as text for the interface."""
+
+    shown = list(class_keys)[:3]
+    lines = [f"    {key}/" for key in shown]
+    if len(class_keys) > len(shown):
+        lines.append(f"    ...and {len(class_keys) - len(shown)} more")
+    return "your_photos/\n" + "\n".join(f"{line}\n        photo_01.jpg" for line in lines)
 
 
-def make_placeholder(class_key: str, variant: int = 0, size: int = IMAGE_SIZE) -> Image.Image:
-    """Render one placeholder image for a class.
+def inspect_folder(image_dir: str, class_keys: Sequence[str]) -> list[FolderProblem]:
+    """Report everything wrong with a training folder, before training on it.
+
+    Finding out that half a class is unreadable *after* a model is trained wastes
+    the training and hides the cause. Every problem is reported at once, naming
+    the folder and the fix, in the same style as the config validator.
 
     Args:
-        class_key: The class this image is an example of. Fixes the pattern.
-        variant: Which example. Jitters position and size so the support set has
-            genuine within-class variation rather than N identical copies.
-        size: Output edge length in pixels.
+        image_dir: Root directory, one subdirectory per class.
+        class_keys: The classes the loaded configuration defines.
 
     Returns:
-        A square RGB image, identical on every run for the same arguments.
+        Problems found, in reading order. Empty means the folder is usable.
     """
 
-    family, hue, blob_count, seed = _class_signature(class_key)
-    rng = np.random.default_rng(seed + variant)
+    problems: list[FolderProblem] = []
 
-    background = _rgb(hue, 0.25, 0.90)
-    foreground = _rgb(hue + 0.5, 0.65, 0.55)
-    accent = _rgb(hue + 0.5, 0.45, 0.75)
-
-    img = Image.new("RGB", (size, size), background)
-    draw = ImageDraw.Draw(img)
-
-    if family == 0:  # scattered discs
-        for _ in range(blob_count):
-            r = int(rng.integers(size // 14, size // 7))
-            cx = int(rng.integers(r, size - r))
-            cy = int(rng.integers(r, size - r))
-            draw.ellipse([cx - r, cy - r, cx + r, cy + r], fill=foreground, outline=accent, width=2)
-    elif family == 1:  # diagonal bands
-        step = max(6, size // blob_count)
-        for offset in range(-size, size * 2, step):
-            jitter = int(rng.integers(-3, 4))
-            draw.line(
-                [(offset + jitter, 0), (offset - size + jitter, size)],
-                fill=foreground,
-                width=max(3, step // 3),
+    if not os.path.isdir(image_dir):
+        return [
+            FolderProblem(
+                where=image_dir,
+                problem="is not a directory",
+                remedy="point at a folder containing one subfolder per class",
             )
-    elif family == 2:  # concentric rings
-        centre = size // 2 + int(rng.integers(-size // 12, size // 12))
-        for ring in range(blob_count):
-            r = int((ring + 1) * size / (2 * blob_count + 1))
-            draw.ellipse(
-                [centre - r, centre - r, centre + r, centre + r],
-                outline=foreground if ring % 2 else accent,
-                width=max(2, size // 40),
+        ]
+
+    subdirs = sorted(
+        entry for entry in os.listdir(image_dir)
+        if os.path.isdir(os.path.join(image_dir, entry))
+    )
+    if not subdirs:
+        return [
+            FolderProblem(
+                where=image_dir,
+                problem="contains no subfolders",
+                remedy=(
+                    "create one subfolder per class, named exactly as in the "
+                    "config: " + ", ".join(class_keys)
+                ),
             )
-    else:  # angular blocks
-        for _ in range(blob_count):
-            w = int(rng.integers(size // 10, size // 4))
-            h = int(rng.integers(size // 10, size // 4))
-            x = int(rng.integers(0, size - w))
-            y = int(rng.integers(0, size - h))
-            draw.rectangle([x, y, x + w, y + h], fill=foreground, outline=accent, width=2)
+        ]
 
-    return img
+    configured = set(class_keys)
+    for name in subdirs:
+        if name not in configured:
+            problems.append(
+                FolderProblem(
+                    where=os.path.join(image_dir, name),
+                    problem=f'"{name}" is not a class in the loaded configuration',
+                    remedy=(
+                        "rename it to one of: " + ", ".join(sorted(configured))
+                        + ", or add it to the config under a domain's classes:"
+                    ),
+                )
+            )
+            continue
 
+        folder = os.path.join(image_dir, name)
+        usable = 0
+        for filename in sorted(os.listdir(folder)):
+            path = os.path.join(folder, filename)
+            if not os.path.isfile(path):
+                continue
+            try:
+                with Image.open(path) as img:
+                    width, height = img.size
+                    img.verify()
+            except (UnidentifiedImageError, OSError):
+                problems.append(
+                    FolderProblem(
+                        where=path,
+                        problem="could not be read as an image",
+                        remedy="remove it, or re-export it as JPEG or PNG",
+                    )
+                )
+                continue
+            if min(width, height) < MIN_EDGE_PIXELS:
+                problems.append(
+                    FolderProblem(
+                        where=path,
+                        problem=f"is {width}x{height}, smaller than {MIN_EDGE_PIXELS}px",
+                        remedy=(
+                            "use the original photograph; upscaling invents detail "
+                            "the camera never captured"
+                        ),
+                    )
+                )
+                continue
+            usable += 1
 
-def make_unrelated_image(size: int = IMAGE_SIZE, seed: int = 0) -> Image.Image:
-    """Render structureless noise, for demonstrating out-of-distribution flagging.
+        if usable < MIN_IMAGES_PER_CLASS:
+            problems.append(
+                FolderProblem(
+                    where=folder,
+                    problem=f"has {usable} usable image{'' if usable == 1 else 's'}",
+                    remedy=(
+                        f"at least {MIN_IMAGES_PER_CLASS} are needed; five or more "
+                        "gives the prototype something to average"
+                    ),
+                )
+            )
 
-    It belongs to no configured class by construction, which is exactly the
-    property the OOD check should notice.
-    """
-
-    rng = np.random.default_rng(seed)
-    base = rng.integers(80, 180, (size, size, 3), dtype=np.int16)
-    noise = rng.integers(-20, 20, (size, size, 3), dtype=np.int16)
-    pixels = np.clip(base + noise, 0, 255).astype(np.uint8)
-    return Image.fromarray(pixels)
-
-
-# ---------------------------------------------------------------------------
-# Sample dataset generation
-# ---------------------------------------------------------------------------
-
-
-def generate_samples(
-    output_dir: str,
-    class_keys: Sequence[str],
-    n_support: int = 5,
-    n_query: int = 3,
-) -> tuple[list[str], list[str], list[str], list[str]]:
-    """Write a placeholder dataset covering the given classes.
-
-    The classes come from the caller -- in practice, from the loaded config -- so
-    the generated label set always matches what the application was configured to
-    recognise. Nothing here knows what the classes mean.
-
-    Args:
-        output_dir: Directory to write PNGs into. Created if absent.
-        class_keys: The classes to generate examples for.
-        n_support: Images per class for the support set.
-        n_query: Images per class for the query set. 0 to skip.
-
-    Returns:
-        (support_paths, support_labels, query_paths, query_labels)
-
-    Raises:
-        ValueError: If `class_keys` is empty.
-    """
-
-    if not class_keys:
-        raise ValueError(
-            "generate_samples needs at least one class; the loaded config defines none"
+    missing = configured - set(subdirs)
+    for name in sorted(missing):
+        problems.append(
+            FolderProblem(
+                where=os.path.join(image_dir, name),
+                problem=f'no folder for configured class "{name}"',
+                remedy=(
+                    "add photographs for it, or remove the class from the config "
+                    "-- a class with no examples can never be predicted"
+                ),
+            )
         )
 
-    os.makedirs(output_dir, exist_ok=True)
+    return problems
 
-    support_paths: list[str] = []
-    support_labels: list[str] = []
-    query_paths: list[str] = []
-    query_labels: list[str] = []
 
-    for class_key in class_keys:
-        for i in range(n_support):
-            path = os.path.join(output_dir, f"{class_key}_support_{i:02d}.png")
-            make_placeholder(class_key, variant=i).save(path)
-            support_paths.append(path)
-            support_labels.append(class_key)
-        for i in range(n_query):
-            # Offset the variant so query images are never byte-identical to a
-            # support image -- otherwise the demo measures memorisation.
-            path = os.path.join(output_dir, f"{class_key}_query_{i:02d}.png")
-            make_placeholder(class_key, variant=1000 + i).save(path)
-            query_paths.append(path)
-            query_labels.append(class_key)
+def render_problems(problems: Sequence[FolderProblem]) -> str:
+    """Format folder problems for a person, not a log."""
 
-    return support_paths, support_labels, query_paths, query_labels
+    if not problems:
+        return ""
+    head = f"{len(problems)} problem{'s' if len(problems) != 1 else ''} with this folder:"
+    body = "\n".join(f"\n{p.where}: {p.problem}\n  {p.remedy}" for p in problems)
+    return head + "\n" + body
 
 
 # ---------------------------------------------------------------------------

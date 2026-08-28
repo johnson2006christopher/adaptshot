@@ -172,28 +172,43 @@ def test_no_domain_vocabulary_is_hard_coded_in_the_application() -> None:
     )
 
 
-def test_synthetic_data_is_labelled_as_synthetic() -> None:
-    """The generated-data disclosure must live in the code, not only in the docs.
+def test_the_package_ships_no_image_generation() -> None:
+    """No module in the distribution may draw an image (#53).
 
-    A reader who opens `data.py` before the documentation must still learn that
-    these are drawn shapes rather than photographs (#17).
+    Drawn shapes are not data. A number measured on them is not a result, and
+    offering them through the interface as "samples" invites exactly the
+    confusion that #17 already cost a release to correct.
+
+    The generator still exists under tests/support/, where deterministic
+    licence-free images are the right tool for checking that the pipeline runs.
+    This test is what keeps it from drifting back into the product.
     """
 
-    source = (APP_ROOT / "src" / "tambua" / "data.py").read_text(encoding="utf-8")
-    assert "synthetic" in source.lower(), "data.py must say that its images are synthetic"
+    drawing = ("ImageDraw", "Image.new(", "make_placeholder", "generate_samples")
+    offenders = [
+        f"{path.relative_to(APP_ROOT)}:{n}: {marker}"
+        for path in (APP_ROOT / "src").rglob("*.py")
+        for n, line in _code_lines(path)
+        for marker in drawing
+        if marker in line
+    ]
+    assert not offenders, (
+        "the shipped package generates images; it must only read them:\n  "
+        + "\n  ".join(offenders)
+    )
 
 
-def test_placeholder_images_are_deterministic_and_class_distinct() -> None:
-    """Same class and variant must render identically on every run (#determinism).
+def test_the_generator_survives_where_it_belongs() -> None:
+    """Same class and variant must render identically, and classes must differ.
 
-    And two different classes must not render identically, or the demo would be
-    measuring nothing -- a "classifier" separating images that are byte-for-byte
-    the same is just reporting its own tie-break.
+    Determinism uses `hashlib`, never the builtin `hash()`, whose per-process
+    salt would give a different picture every run. Two classes rendering
+    identically would make a test that "passes" while measuring nothing.
     """
 
     pytest.importorskip("tambua", reason="the application is not installed in this environment")
+    from support.images import make_placeholder
     from tambua import bundled_config, load_config
-    from tambua.data import make_placeholder
 
     assert make_placeholder("a_class", 2).tobytes() == make_placeholder("a_class", 2).tobytes()
 

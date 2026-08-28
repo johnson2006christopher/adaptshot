@@ -22,7 +22,7 @@ from typing import Any
 import numpy as np
 
 from adaptshot import AdaptShotConfig, FewShotLearner
-from adaptshot.utils.exceptions import ConfigValidationError
+from adaptshot.utils.exceptions import AdaptShotError, ConfigValidationError
 from tambua.config import ClassInfo, TambuaConfig, load_config
 
 #: The config loaded when the caller names none. MziziGuard is the flagship
@@ -80,6 +80,15 @@ logger = logging.getLogger(__name__)
 #: deliberately outside the config vocabulary: it records the absence of a
 #: description rather than a level of urgency, and must not be mistaken for one.
 UNDESCRIBED_SEVERITY = "undescribed"
+
+
+class ImageFolderError(AdaptShotError):
+    """A training folder is not usable, with every reason stated.
+
+    Its own type rather than a bare ValueError: the interface catches this to
+    show the problems to the person who chose the folder, and must not swallow
+    an unrelated ValueError from somewhere deeper while doing so.
+    """
 
 
 def _undescribed(label: str) -> ClassInfo:
@@ -168,7 +177,7 @@ class TambuaEngine:
     Usage::
 
         engine = TambuaEngine()                       # ships with maize.yaml
-        engine.initialize_with_samples(n_support=5)   # or load_images_from_dir(...)
+        engine.load_images_from_dir("my_photos/")     # one folder per class
         result = engine.identify("photo.jpg")
         print(result.local_name, result.confidence, result.action)
 
@@ -257,39 +266,6 @@ class TambuaEngine:
     # Initialization: sample data or real images
     # ------------------------------------------------------------------
 
-    def initialize_with_samples(
-        self,
-        n_support: int = 5,
-        data_dir: str | None = None,
-    ) -> int:
-        """Generate placeholder images for every configured class and load them.
-
-        The classes come from the loaded config, so the generated label set
-        always matches what this configuration can recognise.
-
-        Args:
-            n_support: Number of placeholder images per class.
-            data_dir: Where to write images. Uses a temp dir if None.
-
-        Returns:
-            Number of support images loaded.
-        """
-        from tambua import data as sample_data
-
-        if data_dir is None:
-            import tempfile
-            data_dir = tempfile.mkdtemp(prefix="tambua_samples_")
-
-        support_paths, support_labels, _, _ = sample_data.generate_samples(
-            output_dir=data_dir,
-            class_keys=self.cfg.labels,
-            n_support=n_support,
-            n_query=0,
-        )
-        self.learner.load_support_images(support_paths, support_labels)
-        self._data_dir = data_dir
-        return len(support_paths)
-
     def load_images_from_dir(
         self,
         image_dir: str,
@@ -316,12 +292,20 @@ class TambuaEngine:
 
         Returns:
             Number of support images loaded.
-        """
-        from tambua import data as sample_data
 
-        paths, labels = sample_data.load_from_folders(image_dir, max_per_class)
-        if not paths:
-            raise ValueError(f"No images found in {image_dir}")
+        Raises:
+            ImageFolderError: If the folder cannot support training. The message
+                names every problem and its remedy.
+        """
+        from tambua import data as image_data
+
+        problems = image_data.inspect_folder(image_dir, self.cfg.labels)
+        if problems:
+            # Reported before training rather than after, so the cause is visible
+            # and no time is spent learning from a folder that cannot support it.
+            raise ImageFolderError(image_data.render_problems(problems))
+
+        paths, labels = image_data.load_from_folders(image_dir, max_per_class)
         self.learner.load_support_images(paths, labels)
         self._data_dir = image_dir
         return len(paths)
@@ -345,8 +329,8 @@ class TambuaEngine:
         """
         if not self.is_trained:
             raise RuntimeError(
-                "Model not trained. Call initialize_with_samples() or "
-                "load_images_from_dir() first."
+                "No support images loaded. Call load_images_from_dir() with a "
+                "folder of photographs, one subfolder per class."
             )
 
         result = self.learner.predict(image)
