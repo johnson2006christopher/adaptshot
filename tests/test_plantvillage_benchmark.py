@@ -289,3 +289,43 @@ def test_confidence_interval_of_a_single_episode_is_not_claimed() -> None:
     mean, half = mean_and_ci([0.8])
     assert mean == pytest.approx(0.8)
     assert half == 0.0
+
+
+# ---------------------------------------------------------------------------
+# Provenance and timing helpers (#20)
+# ---------------------------------------------------------------------------
+
+
+def test_median_p95_reports_the_tail_not_the_mean() -> None:
+    from benchmarks.run_plantvillage import median_p95
+
+    # One slow call in twenty: the mean would hide it, the p95 must not.
+    samples = [10.0] * 19 + [200.0]
+    stats = median_p95(samples)
+    assert stats["median"] == 10.0
+    assert stats["p95"] > 10.0
+    assert stats["n"] == 20
+
+
+def test_hardware_names_the_cpu_and_the_install() -> None:
+    """A number without its machine is the failure mode #20 exists to prevent."""
+
+    from benchmarks.run_plantvillage import hardware
+
+    record = hardware()
+    for key in ("cpu_model", "cpu_count", "ram_gb", "python", "numpy", "onnxruntime", "install"):
+        assert key in record, f"hardware() is missing {key}"
+    assert record["install"] in {"core", "torch"}
+    assert record["cpu_model"] is None or isinstance(record["cpu_model"], str)
+
+
+def test_peak_rss_reads_this_process_on_linux() -> None:
+    import sys
+
+    from benchmarks.run_plantvillage import peak_rss_mb
+
+    peak = peak_rss_mb()
+    if sys.platform.startswith("linux"):
+        assert peak is not None and peak > 10.0, "a running interpreter has more than 10 MB resident"
+    else:
+        assert peak is None
