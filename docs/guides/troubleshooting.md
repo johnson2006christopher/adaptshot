@@ -214,7 +214,7 @@ Include:
 |---------|-------|-----|
 | All predictions are same class | Too few support images | Increase `n_support` to 5–10 |
 | Confidence always 100% | Calibration not warmed up | Make 10+ predictions with corrections |
-| "Model not trained" in Diagnose tab | Skipped Setup tab | Go to Setup → Generate Samples or Load from Folder |
+| "Model not trained" in Diagnose tab | Skipped Setup tab | Go to Setup → Check folder → Load & train |
 | Folder loading finds 0 images | Wrong folder structure | Use `class_name/*.png` structure |
 
 ### OOD Detection Issues
@@ -244,7 +244,7 @@ from tambua import TambuaEngine
 engine = TambuaEngine()
 print(f'Config loaded: {len(engine.known_labels)} diseases')
 
-engine.initialize_with_samples(n_support=3)
+engine.load_images_from_dir("photos/", max_per_class=3)
 print(f'Trained: {engine.is_trained}')
 
 result = engine.identify(engine._data_dir + '/healthy_maize_support_00.png')

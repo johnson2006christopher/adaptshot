@@ -53,7 +53,7 @@ Then open **http://localhost:7860** in your browser. You'll see 5 tabs:
 
 | Tab | What it does |
 |-----|-------------|
-| ⚙️ **Setup** | Generate synthetic samples or load real images from folders |
+| ⚙️ **Setup** | Check a folder of photographs, then load and train on it |
 | 🔍 **Diagnose** | Upload a crop photo → instant Swahili diagnosis with confidence |
 | 👩‍🏫 **Teach** | Correct wrong predictions — the model learns immediately |
 | 🏥 **Health** | System calibration dashboard & session metrics |
@@ -203,11 +203,8 @@ from tambua import TambuaEngine
 # Load from config
 engine = TambuaEngine("apps/tambua/src/tambua/configs/maize.yaml")
 
-# Option A: Generate synthetic samples for quick start
-engine.initialize_with_samples(n_support=5)
-
-# Option B: Load real images from a folder structure
-# (folder/{class_name}/*.png)
+# Real photographs, one folder per class: folder/{class_key}/*.jpg
+# Tambua ships no images; five per class is enough to start.
 engine.load_images_from_dir("path/to/crop_photos/", max_per_class=10)
 
 # Diagnose

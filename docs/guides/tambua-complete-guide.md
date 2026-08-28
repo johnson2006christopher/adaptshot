@@ -175,16 +175,9 @@ Open your browser to `http://localhost:7860`. You should see:
 
 This is where you give MziziGuard its "knowledge" — the reference photos it uses to diagnose new images.
 
-**Option A: Generate Synthetic Samples (Quick Start)**
+Tambua ships no images. Five photographs per class is enough to start — that is what few-shot means, and photographs you took yourself beat any dataset for the thing you actually need to recognise.
 
-1. Use the slider to choose how many images per class (default: 5)
-2. Click **"Generate Samples & Train"**
-3. The system creates synthetic leaf images using PIL and loads them into AdaptShot
-4. Status message confirms training: `"Generated 15 support images across 3 classes"`
-
-**Option B: Load Real Images**
-
-Organize your photos in a folder structure:
+Organise your photos in a folder structure:
 
 ```
 my_crop_photos/
@@ -301,22 +294,29 @@ engine = TambuaEngine("path/to/my_config.yaml")
 
 ### Core Methods
 
-#### `initialize_with_samples(n_support=5, data_dir=None, seed=42) -> int`
+#### `inspect_folder(image_dir, class_keys) -> list[FolderProblem]`
 
-Generate synthetic training images and load them into the model.
+Report everything wrong with a training folder *before* training on it. Discovering afterwards that half a class was unreadable wastes the run and hides the cause.
 
 ```python
-count = engine.initialize_with_samples(n_support=5, seed=42)
-print(f"Loaded {count} support images")  # 15 = 3 classes × 5 images
+from tambua.data import inspect_folder, render_problems
+
+problems = inspect_folder("my_photos/", engine.cfg.labels)
+if problems:
+    print(render_problems(problems))
 ```
 
-**Parameters:**
+```
+2 problems with this folder:
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `n_support` | `int` | `5` | Images per disease class |
-| `data_dir` | `str` or `None` | `None` | Where to write images (temp dir if None) |
-| `seed` | `int` | `42` | Reproducibility seed |
+my_photos/northern_leaf_blight: has 2 usable images
+  at least 3 are needed; five or more gives the prototype something to average
+
+my_photos/healthy_maze: "healthy_maze" is not a class in the loaded configuration
+  rename it to one of: gray_leaf_spot, healthy_maize, northern_leaf_blight
+```
+
+`load_images_from_dir` runs this itself and raises `ImageFolderError` rather than training on a folder that cannot support it.
 
 #### `load_images_from_dir(image_dir, max_per_class=0) -> int`
 
@@ -454,7 +454,7 @@ from tambua import TambuaEngine
 
 # 1. Initialize
 engine = TambuaEngine()
-engine.initialize_with_samples(n_support=5, seed=42)
+engine.load_images_from_dir("photos/")
 
 # 2. Diagnose
 result = engine.identify("field_photo.jpg")
@@ -686,7 +686,7 @@ if Path(SESSION_FILE).exists():
     print(f"Resumed session with {count} images")
 else:
     # First time — train fresh
-    engine.initialize_with_samples(n_support=5)
+    engine.load_images_from_dir("photos/")
     print("Fresh training complete")
 
 # ... do work ...
@@ -703,7 +703,7 @@ engine.save_model(SESSION_FILE)
 
 ```python
 engine = TambuaEngine()
-engine.initialize_with_samples(n_support=5)
+engine.load_images_from_dir("photos/")
 
 # Process a folder
 from pathlib import Path
@@ -910,7 +910,7 @@ Each instance maintains independent state. Corrections from one don't affect the
 |-------|-------|-----|
 | `ModuleNotFoundError: No module named 'gradio'` | Gradio not installed | `pip install tambua` |
 | `ModuleNotFoundError: No module named 'yaml'` | PyYAML not installed | `pip install PyYAML` |
-| App starts but shows "Not trained" | No support images loaded | Go to Setup tab → Generate Samples |
+| App starts but shows "Not trained" | No support images loaded | Go to Setup tab → Check folder → Load & train |
 | All predictions are "healthy_maize" | Too few support images | Increase n_support to 5–10 per class |
 | Confidence is always 100% | Calibration not warmed up | Make 10+ predictions; correct some |
 | OOD flag never triggers | OOD detection not enabled | Set `enable_ood_detection: true` in config |
@@ -934,7 +934,7 @@ python -c "from tambua import TambuaEngine; print('OK')"
 python -c "
 from tambua import TambuaEngine
 engine = TambuaEngine()
-engine.initialize_with_samples(n_support=3)
+engine.load_images_from_dir("photos/", max_per_class=3)
 print(f'Trained: {engine.is_trained}, Classes: {engine.known_labels}')
 "
 ```

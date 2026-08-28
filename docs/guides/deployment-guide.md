@@ -167,7 +167,7 @@ if Path(MODEL_PATH).exists():
     print(f"Resumed from {MODEL_PATH} ({count} images)")
 else:
     print("No saved model found. Training from samples...")
-    engine.initialize_with_samples(n_support=5)
+    engine.load_images_from_dir("photos/")
 
 # Now use engine.identify() or launch the app
 ```
@@ -229,7 +229,7 @@ engine.save_model("/shared/models/officer_a_latest.json")
 from tambua import TambuaEngine
 
 master = TambuaEngine()
-master.initialize_with_samples(n_support=5)  # Base training
+master.load_images_from_dir("photos/")  # Base training
 
 # Absorb each officer's corrections
 for officer in ["officer_a", "officer_b", "officer_c"]:
