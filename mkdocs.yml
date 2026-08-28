@@ -120,7 +120,9 @@ nav:
   - Reference:
     - Config Reference (All 27 Fields): reference/config-reference.md
   - v0.1.1 Docs Roadmap: v0.1.1-docs-roadmap.md
-  - Contributing: contributing.md
+  - Contributing:
+    - Contributing Guide: contributing.md
+    - Release Checklist: release-checklist.md
   - Code of Conduct: code_of_conduct.md
   - Changelog: changelog.md
   - Community:

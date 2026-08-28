@@ -14,13 +14,14 @@ Dev tooling is not installed in the ambient environment — install it first:
 pip install -e ".[dev]"
 ```
 
-Full validation gate (all four must pass before a PR):
+Full validation gate (all five must pass before a PR):
 
 ```bash
 ruff check src/ tests/ benchmarks/ apps/ examples/ scripts/
 mypy src/adaptshot --strict
 pytest tests/ -v
 python -m benchmarks.run_benchmark --smoke-test --seed 42
+mkdocs build --strict   # every page must be in the nav or in not_in_nav; CI enforces this on PRs
 ```
 
 Single test: `pytest tests/test_conformal.py -k test_name -v`
