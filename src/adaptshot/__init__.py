@@ -4,7 +4,8 @@ Every name exported here is classified as stable or experimental in
 ``adaptshot.api``, and ``tests/test_api_surface.py`` holds the two in sync.
 """
 
-__version__ = "0.2.0"
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as _distribution_version
 
 # --- Stable -----------------------------------------------------------------
 from .config.settings import (
@@ -42,6 +43,16 @@ from .utils.exceptions import (
     ConfigValidationError,
     InvalidImageError,
 )
+
+# Read from the installed distribution's metadata, so pyproject.toml is the one
+# place the version is declared and the two-place drift that
+# tests/test_release_metadata.py used to catch cannot happen at all (#25). The
+# cost: after bumping pyproject.toml, an editable install reports the old value
+# until `pip install -e .` is run again. The release checklist says so.
+try:
+    __version__ = _distribution_version("adaptshot")
+except PackageNotFoundError:  # a source tree that was never installed
+    __version__ = "0.0.0+uninstalled"
 
 __all__ = [
     "ACTEngine",

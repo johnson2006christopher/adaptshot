@@ -35,8 +35,9 @@ def test_package_version_matches_pyproject() -> None:
 
     declared = _declared_version()
     assert __version__ == declared, (
-        f"version drift: src/adaptshot/__init__.py declares {__version__!r} "
-        f"but pyproject.toml declares {declared!r}"
+        f"version drift: the installed distribution reports {__version__!r} but "
+        f"pyproject.toml declares {declared!r}. __version__ is read from package "
+        "metadata, so this means the install is stale: run `pip install -e .`"
     )
 
 
