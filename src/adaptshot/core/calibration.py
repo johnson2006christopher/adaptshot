@@ -6,6 +6,8 @@ import itertools
 
 import numpy as np
 
+from ..utils.arrays import FloatArray
+
 
 class CalibrationEngine:
     """Track prediction calibration and apply post-hoc calibration transforms."""
@@ -32,8 +34,8 @@ class CalibrationEngine:
         self._ece_history: list[float] = []
 
         self._conformal_margin = 0.1
-        self._scaling_binning_edges: np.ndarray | None = None
-        self._scaling_binning_values: np.ndarray | None = None
+        self._scaling_binning_edges: FloatArray | None = None
+        self._scaling_binning_values: FloatArray | None = None
         # Minimum number of samples required before attempting temperature
         # refit or conformal margin refit. In few-shot / human-in-the-loop
         # settings the default is intentionally small to allow early adaptivity.
@@ -49,8 +51,8 @@ class CalibrationEngine:
             return value
         return float(np.clip((value + 1.0) / 2.0, 0.0, 1.0))
 
-    def _clip_logit_input(self, confidence: np.ndarray) -> np.ndarray:
-        result: np.ndarray = np.clip(confidence, 1e-6, 1.0 - 1e-6)
+    def _clip_logit_input(self, confidence: FloatArray) -> FloatArray:
+        result: FloatArray = np.clip(confidence, 1e-6, 1.0 - 1e-6)
         return result
 
     def update(
@@ -127,7 +129,7 @@ class CalibrationEngine:
         if len(self._window_confidences) < self.min_fit_samples:
             return
 
-        confs = np.asarray(self._window_confidences, dtype=np.float64)
+        confs: FloatArray = np.asarray(self._window_confidences, dtype=np.float64)
         correct = np.asarray(self._window_correct, dtype=np.float64)
         confs = self._clip_logit_input(confs)
         logits = np.log(confs / (1.0 - confs))
@@ -197,13 +199,13 @@ class CalibrationEngine:
 
     def compute_ece(
         self,
-        confidences: np.ndarray,
-        labels_correct: np.ndarray,
+        confidences: FloatArray,
+        labels_correct: FloatArray,
         n_bins: int | None = None,
     ) -> float:
         """Compute expected calibration error (ECE, L1) with equal-width bins."""
 
-        confs = np.asarray(confidences, dtype=np.float64).reshape(-1)
+        confs: FloatArray = np.asarray(confidences, dtype=np.float64).reshape(-1)
         correct = np.asarray(labels_correct, dtype=np.float64).reshape(-1)
         if confs.size == 0:
             return 0.0
@@ -234,13 +236,13 @@ class CalibrationEngine:
 
     def compute_debiased_ece(
         self,
-        confidences: np.ndarray,
-        labels_correct: np.ndarray,
+        confidences: FloatArray,
+        labels_correct: FloatArray,
         n_bins: int | None = None,
     ) -> float:
         """Estimate calibration via debiased squared CE, then map to an L2-style ECE."""
 
-        confs = np.asarray(confidences, dtype=np.float64).reshape(-1)
+        confs: FloatArray = np.asarray(confidences, dtype=np.float64).reshape(-1)
         correct = np.asarray(labels_correct, dtype=np.float64).reshape(-1)
         if confs.size == 0:
             return 0.0

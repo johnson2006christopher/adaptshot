@@ -20,6 +20,8 @@ import numpy as np
 
 from adaptshot.utils.exceptions import AdaptShotError
 
+from ..utils.arrays import FloatArray, IntArray, LabelArray
+
 
 @dataclass
 class ContrastiveConfig:
@@ -70,10 +72,10 @@ class ContrastivePrototypeLearner:
             config: ContrastiveConfig or defaults.
         """
         self.config = config or ContrastiveConfig()
-        self._projection_matrix: np.ndarray | None = None
-        self._projection_bias: np.ndarray | None = None
-        self._second_layer_matrix: np.ndarray | None = None
-        self._second_layer_bias: np.ndarray | None = None
+        self._projection_matrix: FloatArray | None = None
+        self._projection_bias: FloatArray | None = None
+        self._second_layer_matrix: FloatArray | None = None
+        self._second_layer_bias: FloatArray | None = None
         self._input_dim: int | None = None
         self._is_fitted = False
         self._head_training_loss: list[float] = []  # Track head training convergence
@@ -102,7 +104,7 @@ class ContrastivePrototypeLearner:
         self._second_layer_matrix = rng.normal(0, np.sqrt(2.0 / d), (d, d))
         self._second_layer_bias = np.zeros(d, dtype=np.float32)
 
-    def _project(self, embeddings: np.ndarray) -> np.ndarray:
+    def _project(self, embeddings: FloatArray) -> FloatArray:
         """Apply the 2-layer MLP projection.
 
         Args:
@@ -111,7 +113,16 @@ class ContrastivePrototypeLearner:
         Returns:
             [N, projection_dim] projected embeddings.
         """
-        if self._projection_matrix is None:
+        # All four are assigned together in `_init_projection`, but only the
+        # first was checked here. With bare `np.ndarray` annotations mypy could
+        # not see the other three were `| None`; a partially-restored head would
+        # have failed inside a matmul rather than at this guard.
+        if (
+            self._projection_matrix is None
+            or self._projection_bias is None
+            or self._second_layer_matrix is None
+            or self._second_layer_bias is None
+        ):
             raise RuntimeError(
                 "Projection head not initialized. Call refine_prototypes() first."
             )
@@ -122,7 +133,7 @@ class ContrastivePrototypeLearner:
         x = x @ self._second_layer_matrix + self._second_layer_bias
         # L2 normalize output
         norms = np.linalg.norm(x, axis=1, keepdims=True) + 1e-8
-        return cast(np.ndarray, x / norms)
+        return cast(FloatArray, x / norms)
 
     # ------------------------------------------------------------------
     # InfoNCE loss
@@ -130,9 +141,9 @@ class ContrastivePrototypeLearner:
 
     def _compute_infonce_loss(
         self,
-        projected: np.ndarray,
-        labels: np.ndarray,
-    ) -> tuple[float, np.ndarray]:
+        projected: FloatArray,
+        labels: LabelArray,
+    ) -> tuple[float, FloatArray]:
         """Compute InfoNCE loss and per-sample gradients.
 
         L = -1/N sum_i log( exp(sim(z_i, z_pos) / tau) / sum_j exp(sim(z_i, z_j) / tau) )
@@ -211,9 +222,9 @@ class ContrastivePrototypeLearner:
 
     def _train_projection_head(
         self,
-        embeddings: np.ndarray,
-        labels: np.ndarray,
-        label_indices: np.ndarray,
+        embeddings: FloatArray,
+        labels: LabelArray,
+        label_indices: IntArray,
         seed: int = 42,
     ) -> list[float]:
         """Train the 2-layer MLP projection head via InfoNCE gradient descent.
@@ -330,12 +341,12 @@ class ContrastivePrototypeLearner:
 
     def refine_prototypes(
         self,
-        embeddings: np.ndarray,
-        labels: np.ndarray,
-        existing_prototypes: np.ndarray | None = None,
-        existing_prototype_labels: np.ndarray | None = None,
+        embeddings: FloatArray,
+        labels: LabelArray,
+        existing_prototypes: FloatArray | None = None,
+        existing_prototype_labels: LabelArray | None = None,
         seed: int = 42,
-    ) -> tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[FloatArray, LabelArray]:
         """Train projection head then contrastively refine class prototypes.
 
         v0.2.0: The projection head is now TRAINED via InfoNCE gradient
@@ -373,7 +384,7 @@ class ContrastivePrototypeLearner:
         proto_dim = projected.shape[1]
 
         # Initial prototypes: class means in the trained projection space
-        prototypes = np.zeros((n_classes, proto_dim), dtype=np.float32)
+        prototypes: FloatArray = np.zeros((n_classes, proto_dim), dtype=np.float32)
         for k in range(n_classes):
             mask = label_indices == k
             if mask.sum() > 0:
@@ -434,7 +445,7 @@ class ContrastivePrototypeLearner:
     # Inference
     # ------------------------------------------------------------------
 
-    def project_query(self, query_embedding: np.ndarray) -> np.ndarray:
+    def project_query(self, query_embedding: FloatArray) -> FloatArray:
         """Project a query embedding into the contrastive space.
 
         Args:
@@ -449,13 +460,13 @@ class ContrastivePrototypeLearner:
             )
         query_2d = np.asarray(query_embedding, dtype=np.float32).reshape(1, -1)
         projected = self._project(query_2d)
-        return cast(np.ndarray, projected[0])
+        return cast(FloatArray, projected[0])
 
     def nearest_prototype(
         self,
-        query_embedding: np.ndarray,
-        prototypes: np.ndarray,
-        prototype_labels: np.ndarray,
+        query_embedding: FloatArray,
+        prototypes: FloatArray,
+        prototype_labels: LabelArray,
     ) -> tuple[str | int, float, int]:
         """Find nearest contrastive prototype for a query.
 
@@ -481,8 +492,8 @@ class ContrastivePrototypeLearner:
 
     def class_separation_score(
         self,
-        prototypes: np.ndarray,
-        prototype_labels: np.ndarray,
+        prototypes: FloatArray,
+        prototype_labels: LabelArray,
     ) -> float:
         """Measure inter-class separation in the contrastive space.
 
@@ -511,8 +522,8 @@ class ContrastivePrototypeLearner:
                 else:
                     inter_sims.append(float(sims[i, j]))
 
-        mean_inter = np.mean(inter_sims) if inter_sims else 0.0
-        mean_intra = np.mean(intra_sims) if intra_sims else 1.0
+        mean_inter = float(np.mean(inter_sims)) if inter_sims else 0.0
+        mean_intra = float(np.mean(intra_sims)) if intra_sims else 1.0
         if mean_intra < 1e-8:
             return 0.0
         return float(abs(mean_inter) / abs(mean_intra))

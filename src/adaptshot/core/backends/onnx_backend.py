@@ -10,10 +10,12 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 from PIL import Image
+
+from ...utils.arrays import FloatArray
 
 try:
     import onnxruntime as ort
@@ -80,16 +82,16 @@ class ONNXBackend:
 
     def extract(
         self, pil_image: Image.Image, backbone_name: str
-    ) -> np.ndarray:
+    ) -> FloatArray:
         """Run inference and return the feature embedding as a numpy array."""
         session = self._get_session(backbone_name)
         input_tensor = self._preprocess(pil_image)
         input_name = session.get_inputs()[0].name
         outputs = session.run(None, {input_name: input_tensor})
-        return outputs[0].squeeze(0)  # type: ignore[no-any-return]
+        return cast(FloatArray, outputs[0].squeeze(0))
 
     @staticmethod
-    def _preprocess(pil_image: Image.Image) -> np.ndarray:
+    def _preprocess(pil_image: Image.Image) -> FloatArray:
         """Apply ImageNet-standard preprocessing: resize → normalize → NCHW."""
         img = pil_image.resize((224, 224), Image.BILINEAR)  # type: ignore[attr-defined]
         img_array = np.asarray(img, dtype=np.float32) / 255.0

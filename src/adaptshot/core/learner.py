@@ -28,6 +28,7 @@ from ..config.settings import AdaptShotConfig
 from ..training.feedback_router import Correction, FeedbackRouter
 from ..training.finetune import CAEWCFinetuner
 from ..training.up_ugf import UPUGFPruner
+from ..utils.arrays import FloatArray, IntArray, LabelArray
 from ..utils.exceptions import (
     AdaptShotError,
     BufferCapacityError,
@@ -151,19 +152,19 @@ class FewShotLearner:
         )
         self.explainer = ExplainabilityEngine()
 
-        self._sim_embeddings: list[np.ndarray] = []
+        self._sim_embeddings: list[FloatArray] = []
         self._sim_labels: list[str | int] = []
         self._sim_access_times: list[float] = []
         self._sim_uncertainties: list[float] = []
-        self._sim_preview_signatures: list[np.ndarray] = []
-        self._prototype_embeddings: np.ndarray = np.empty((0, 0), dtype=np.float32)
-        self._prototype_labels: np.ndarray = np.asarray([], dtype=object)
-        self._prototype_counts: np.ndarray = np.asarray([], dtype=np.int64)
+        self._sim_preview_signatures: list[FloatArray] = []
+        self._prototype_embeddings: FloatArray = np.empty((0, 0), dtype=np.float32)
+        self._prototype_labels: LabelArray = np.asarray([], dtype=object)
+        self._prototype_counts: IntArray = np.asarray([], dtype=np.int64)
         # v0.2.0: Separate contrastive prototypes in projection-head space (128-dim)
         # These are used only when inference_mode="contrastive"; embedding-space
         # prototypes (_prototype_embeddings) remain 512-dim for conformal/OOD.
-        self._contrastive_prototype_embeddings: np.ndarray = np.empty((0, 0), dtype=np.float32)
-        self._contrastive_prototype_labels: np.ndarray = np.asarray([], dtype=object)
+        self._contrastive_prototype_embeddings: FloatArray = np.empty((0, 0), dtype=np.float32)
+        self._contrastive_prototype_labels: LabelArray = np.asarray([], dtype=object)
         self._ood_distance_threshold: float = self.config.ood_absolute_min_distance
 
         self.pruner = UPUGFPruner(
@@ -295,7 +296,7 @@ class FewShotLearner:
 
         self._is_initialized = True
 
-    def predict(self, image: str | Image.Image | np.ndarray) -> PredictionResult:
+    def predict(self, image: str | Image.Image | FloatArray) -> PredictionResult:
         """Run inference with calibration and ACT gating.
 
         Args:
@@ -434,7 +435,7 @@ class FewShotLearner:
             nearest_neighbors=nearest_neighbors,
         )
 
-    def explain(self, image: str | Image.Image | np.ndarray) -> ExplanationResult:
+    def explain(self, image: str | Image.Image | FloatArray) -> ExplanationResult:
         """Generate a multi-faceted explanation for a prediction.
 
         Combines feature attribution (which support examples influenced the
@@ -901,7 +902,7 @@ class FewShotLearner:
                 f"Image dimensions must be positive, got ({image.width}, {image.height}) for '{source}'."
             )
 
-    def _normalize_predict_image(self, image: str | Image.Image | np.ndarray) -> Image.Image:
+    def _normalize_predict_image(self, image: str | Image.Image | FloatArray) -> Image.Image:
         if isinstance(image, str):
             return self._load_rgb_image_from_path(image)
 
@@ -944,7 +945,7 @@ class FewShotLearner:
             f"Received '{type(image).__name__}'."
         )
 
-    def _extract_embedding_checked(self, image: Image.Image, source: str) -> np.ndarray:
+    def _extract_embedding_checked(self, image: Image.Image, source: str) -> FloatArray:
         try:
             embedding = extract_embedding(image, self.config, cache=self._embedding_cache)
         except (ValueError, RuntimeError, OSError) as exc:
@@ -1061,7 +1062,7 @@ class FewShotLearner:
 
     def _distance_to_label_prototype(
         self,
-        query_embedding: np.ndarray,
+        query_embedding: FloatArray,
         label: str | int,
     ) -> float:
         if self._prototype_embeddings.size == 0:
@@ -1077,7 +1078,7 @@ class FewShotLearner:
 
     def _nearest_support_index_for_label(
         self,
-        query_embedding: np.ndarray,
+        query_embedding: FloatArray,
         label: str | int,
     ) -> int:
         candidates = [idx for idx, value in enumerate(self._sim_labels) if value == label]
@@ -1105,7 +1106,7 @@ class FewShotLearner:
         local_idx = int(np.argmax(cosine_scores))
         return int(candidates[local_idx])
 
-    def _compute_all_prototype_distances(self, query_embedding: np.ndarray) -> np.ndarray:
+    def _compute_all_prototype_distances(self, query_embedding: FloatArray) -> FloatArray:
         """Compute distances from query to all class prototypes.
 
         Used by conformal prediction to build candidate set scores.
@@ -1116,7 +1117,7 @@ class FewShotLearner:
         query_2d = np.asarray(query_embedding, dtype=np.float32).reshape(1, -1)
         diffs = query_2d - self._prototype_embeddings
         distances = np.sqrt(np.sum(diffs ** 2, axis=1))
-        result: np.ndarray = np.asarray(distances, dtype=np.float32)
+        result: FloatArray = np.asarray(distances, dtype=np.float32)
         return result
 
     def _update_ood_threshold(self) -> None:
@@ -1166,8 +1167,8 @@ class FewShotLearner:
 
     def _self_calibrate_conformal(
         self,
-        support_embeddings: np.ndarray,
-        support_labels: np.ndarray,
+        support_embeddings: FloatArray,
+        support_labels: LabelArray,
     ) -> None:
         """Bootstrap conformal calibration via TRUE leave-one-out.
 
@@ -1203,7 +1204,7 @@ class FewShotLearner:
             key_i = self._label_key(label_i)
 
             # Leave-one-out: exclude example i from prototypes
-            loo_prototypes: list[np.ndarray] = []
+            loo_prototypes: list[FloatArray] = []
             loo_labels: list[object] = []
 
             for indices in label_to_indices.values():
@@ -1242,8 +1243,8 @@ class FewShotLearner:
 
     def _bootstrap_temperature_calibration(
         self,
-        support_embeddings: np.ndarray,
-        support_labels: np.ndarray,
+        support_embeddings: FloatArray,
+        support_labels: LabelArray,
     ) -> None:
         """Initialize temperature calibration from support set via LOO.
 
@@ -1343,7 +1344,7 @@ class FewShotLearner:
     def _build_integrity_payload(
         self,
         config_payload: dict[str, Any],
-        embeddings_payload: np.ndarray,
+        embeddings_payload: FloatArray,
     ) -> dict[str, str]:
         config_bytes = json.dumps(config_payload, sort_keys=True, separators=(",", ":")).encode(
             "utf-8"
@@ -1360,8 +1361,8 @@ class FewShotLearner:
             "checksum_sha256": checksum_hash,
         }
 
-    def _build_preview_signatures_from_embeddings(self, embeddings: np.ndarray) -> list[np.ndarray]:
-        previews: list[np.ndarray] = []
+    def _build_preview_signatures_from_embeddings(self, embeddings: FloatArray) -> list[FloatArray]:
+        previews: list[FloatArray] = []
         for row in embeddings:
             vector = np.asarray(row, dtype=np.float32).reshape(-1)
             preview = np.zeros(48, dtype=np.float32)
@@ -1374,7 +1375,7 @@ class FewShotLearner:
     def _load_state_payload(
         self,
         state: dict[str, Any],
-        embeddings: np.ndarray,
+        embeddings: FloatArray,
         source_path: Path,
         legacy_checkpoint: bool,
     ) -> None:
@@ -1396,7 +1397,7 @@ class FewShotLearner:
     def _validate_and_normalize_state(
         self,
         state: dict[str, Any],
-        embeddings: np.ndarray,
+        embeddings: FloatArray,
     ) -> dict[str, Any]:
         required_keys = ["config", "calibration", "act_thresholds", "buffer"]
         for key in required_keys:
@@ -1440,7 +1441,7 @@ class FewShotLearner:
     def _restore_from_state(
         self,
         state: dict[str, Any],
-        embeddings: np.ndarray,
+        embeddings: FloatArray,
         source_path: Path,
     ) -> None:
         learner = self
@@ -1562,9 +1563,9 @@ class FewShotLearner:
 
     def _append_correction_to_similarity_buffer(
         self,
-        embedding: np.ndarray,
+        embedding: FloatArray,
         label: str | int,
-        preview_signature: np.ndarray,
+        preview_signature: FloatArray,
     ) -> None:
         self._sim_embeddings.append(embedding)
         self._sim_labels.append(label)
@@ -1597,7 +1598,7 @@ class FewShotLearner:
             )
             self.finetuner.update_fisher(fisher_loader)
 
-        emb_list: list[np.ndarray] = []
+        emb_list: list[FloatArray] = []
         label_list: list[int] = []
         weight_list: list[float] = []
 
@@ -1626,10 +1627,10 @@ class FewShotLearner:
 
     def _validate_prune_shapes(
         self,
-        pruned_emb: np.ndarray,
-        pruned_labels: np.ndarray,
-        pruned_unc: np.ndarray,
-        pruned_times: np.ndarray,
+        pruned_emb: FloatArray,
+        pruned_labels: LabelArray,
+        pruned_unc: FloatArray,
+        pruned_times: FloatArray,
     ) -> None:
         lengths: tuple[int, int, int, int] = (
             len(pruned_emb),

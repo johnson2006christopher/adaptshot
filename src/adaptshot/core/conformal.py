@@ -17,6 +17,8 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
+from ..utils.arrays import FloatArray, LabelArray
+
 
 @dataclass
 class ConformalPredictionSet:
@@ -110,8 +112,8 @@ class ConformalEngine:
 
     @staticmethod
     def softmax_nonconformity(
-        distances: np.ndarray,
-        labels: np.ndarray,
+        distances: FloatArray,
+        labels: LabelArray,
         true_label: str | int,
     ) -> float:
         """Compute nonconformity as 1 - softmax(true_label | distances).
@@ -278,8 +280,8 @@ class ConformalEngine:
 
     def predict_set(
         self,
-        distances: np.ndarray,
-        labels: np.ndarray,
+        distances: FloatArray,
+        labels: LabelArray,
         top_prediction: str | int,
         confidence: float,
     ) -> ConformalPredictionSet:
@@ -327,7 +329,7 @@ class ConformalEngine:
                 score = self.softmax_nonconformity(distances, labels, label)
             else:
                 # Distance-based: use a reference threshold
-                ref_threshold = np.median(distances) + np.std(distances)
+                ref_threshold = float(np.median(distances) + np.std(distances))
                 score = self.distance_nonconformity(dist, ref_threshold)
 
             if score <= q_hat:
@@ -342,8 +344,8 @@ class ConformalEngine:
 
     def predict_set_class_conditional(
         self,
-        distances: np.ndarray,
-        labels: np.ndarray,
+        distances: FloatArray,
+        labels: LabelArray,
         top_prediction: str | int,
         confidence: float,
     ) -> ConformalPredictionSet:
@@ -391,7 +393,7 @@ class ConformalEngine:
             if self.score_method == "softmax":
                 score = self.softmax_nonconformity(distances, labels, label)
             else:
-                ref_threshold = np.median(distances) + np.std(distances)
+                ref_threshold = float(np.median(distances) + np.std(distances))
                 score = self.distance_nonconformity(dist, ref_threshold)
 
             if score <= q_class:

@@ -16,7 +16,7 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
-import numpy as np
+from .arrays import FloatArray
 
 if TYPE_CHECKING:  # pragma: no cover - import for annotations only
     import torch
@@ -92,7 +92,7 @@ def load_json(path: str | Path) -> dict[str, Any]:
         return cast(dict[str, Any], json.load(f))
 
 
-def tensor_to_numpy(tensor: torch.Tensor) -> np.ndarray:
+def tensor_to_numpy(tensor: torch.Tensor) -> FloatArray:
     """
     Convert torch.Tensor to numpy array, handling device and gradients safely.
 
@@ -103,10 +103,10 @@ def tensor_to_numpy(tensor: torch.Tensor) -> np.ndarray:
         tensor: Input torch.Tensor (any shape, any device)
 
     Returns:
-        np.ndarray: Equivalent numpy array pinned to CPU memory
+        FloatArray: Equivalent numpy array pinned to CPU memory
     """
     if tensor.requires_grad:
         tensor = tensor.detach()
     if tensor.is_cuda:
         tensor = tensor.cpu()
-    return tensor.numpy()
+    return cast(FloatArray, tensor.numpy())

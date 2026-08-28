@@ -90,7 +90,7 @@ def verify_determinism(
     certain PyTorch scatter/gather operations or uninitialized memory reads).
 
     Args:
-        fn: Callable to test. Should return a torch.Tensor or np.ndarray.
+        fn: Callable to test. Should return a torch.Tensor or FloatArray.
         *args: Positional arguments passed to `fn`.
         runs: Number of independent runs to compare (default: 3).
         seed: Base random seed (incremented internally per run for isolation).

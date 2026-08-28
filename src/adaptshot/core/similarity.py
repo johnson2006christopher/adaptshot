@@ -6,6 +6,8 @@ from typing import cast
 
 import numpy as np
 
+from ..utils.arrays import FloatArray, IntArray, LabelArray
+
 # Attempt to import FAISS-CPU; gracefully degrade to pure NumPy if unavailable.
 try:
     import faiss
@@ -15,7 +17,7 @@ except ImportError:  # pragma: no cover - optional dependency
     FAISS_AVAILABLE = False
 
 
-def _ensure_2d(query: np.ndarray) -> np.ndarray:
+def _ensure_2d(query: FloatArray) -> FloatArray:
     if query.ndim == 1:
         return query[np.newaxis, :]
     if query.ndim != 2:
@@ -23,13 +25,13 @@ def _ensure_2d(query: np.ndarray) -> np.ndarray:
     return query
 
 
-def _l2_normalize_rows(values: np.ndarray) -> np.ndarray:
+def _l2_normalize_rows(values: FloatArray) -> FloatArray:
     norms = np.linalg.norm(values, axis=1, keepdims=True) + 1e-8
-    result: np.ndarray = values / norms
+    result: FloatArray = values / norms
     return result
 
 
-def cosine_similarity_numpy(query: np.ndarray, support: np.ndarray) -> np.ndarray:
+def cosine_similarity_numpy(query: FloatArray, support: FloatArray) -> FloatArray:
     """Compute cosine similarity between query and support embeddings."""
 
     query_2d = _ensure_2d(np.asarray(query, dtype=np.float32))
@@ -41,14 +43,14 @@ def cosine_similarity_numpy(query: np.ndarray, support: np.ndarray) -> np.ndarra
 
     query_norm = _l2_normalize_rows(query_2d)
     support_norm = _l2_normalize_rows(support_2d)
-    return cast(np.ndarray, query_norm @ support_norm.T)
+    return cast(FloatArray, query_norm @ support_norm.T)
 
 
 def euclidean_distance_numpy(
-    query: np.ndarray,
-    support: np.ndarray,
+    query: FloatArray,
+    support: FloatArray,
     normalize: bool = True,
-) -> np.ndarray:
+) -> FloatArray:
     """Compute Euclidean distances between query and support embeddings."""
 
     query_2d = _ensure_2d(np.asarray(query, dtype=np.float32))
@@ -62,10 +64,10 @@ def euclidean_distance_numpy(
     support_eval = _l2_normalize_rows(support_2d) if normalize else support_2d
 
     diffs = query_eval[:, np.newaxis, :] - support_eval[np.newaxis, :, :]
-    return cast(np.ndarray, np.linalg.norm(diffs, axis=2))
+    return cast(FloatArray, np.linalg.norm(diffs, axis=2))
 
 
-def _euclidean_top1_faiss(query: np.ndarray, support: np.ndarray) -> tuple[float, int]:
+def _euclidean_top1_faiss(query: FloatArray, support: FloatArray) -> tuple[float, int]:
     if not FAISS_AVAILABLE:
         raise ImportError(
             "FAISS-CPU is not installed. Install via `pip install faiss-cpu`, "
@@ -94,9 +96,9 @@ def distance_to_confidence(distance: float) -> float:
 
 
 def compute_class_prototypes(
-    support_embeddings: np.ndarray,
-    support_labels: np.ndarray,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    support_embeddings: FloatArray,
+    support_labels: LabelArray,
+) -> tuple[FloatArray, LabelArray, IntArray]:
     """Compute one prototype vector (mean embedding) per class label."""
 
     support = np.asarray(support_embeddings, dtype=np.float32)
@@ -115,7 +117,7 @@ def compute_class_prototypes(
 
     ordered_labels: list[object] = []
     index_by_label: dict[object, int] = {}
-    sums: list[np.ndarray] = []
+    sums: list[FloatArray] = []
     counts: list[int] = []
 
     for idx, raw_label in enumerate(labels):
@@ -141,9 +143,9 @@ def compute_class_prototypes(
 
 
 def find_nearest_neighbor(
-    query: np.ndarray,
-    support_embeddings: np.ndarray,
-    support_labels: np.ndarray,
+    query: FloatArray,
+    support_embeddings: FloatArray,
+    support_labels: LabelArray,
     use_faiss: bool = False,
     metric: str = "cosine",
 ) -> tuple[str, float, int]:
@@ -188,9 +190,9 @@ def find_nearest_neighbor(
 
 
 def find_nearest_prototype(
-    query: np.ndarray,
-    prototypes: np.ndarray,
-    prototype_labels: np.ndarray,
+    query: FloatArray,
+    prototypes: FloatArray,
+    prototype_labels: LabelArray,
     metric: str = "euclidean",
 ) -> tuple[object, float, int, float, float]:
     """Find top-1 nearest class prototype and return prediction diagnostics.

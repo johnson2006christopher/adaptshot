@@ -14,6 +14,8 @@ import time
 
 import numpy as np
 
+from ..utils.arrays import FloatArray, LabelArray
+
 logger = logging.getLogger(__name__)
 
 
@@ -50,11 +52,11 @@ class UPUGFPruner:
 
     def compute_scores(
         self,
-        embeddings: np.ndarray,
-        uncertainties: np.ndarray,
-        last_access_times: np.ndarray,
+        embeddings: FloatArray,
+        uncertainties: FloatArray,
+        last_access_times: FloatArray,
         current_time: float | None = None,
-    ) -> np.ndarray:
+    ) -> FloatArray:
         """
         Compute UP-UGF utility score for each embedding in the buffer.
 
@@ -128,11 +130,11 @@ class UPUGFPruner:
 
     def prune(
         self,
-        embeddings: np.ndarray,
-        labels: np.ndarray,
-        uncertainties: np.ndarray,
-        last_access_times: np.ndarray,
-    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        embeddings: FloatArray,
+        labels: LabelArray,
+        uncertainties: FloatArray,
+        last_access_times: FloatArray,
+    ) -> tuple[FloatArray, LabelArray, FloatArray, FloatArray]:
         """
         Enforce buffer capacity by evicting lowest-scoring examples.
 
