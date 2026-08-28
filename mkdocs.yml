@@ -89,7 +89,7 @@ nav:
     - 09 Benchmarks and Reproducibility: tutorials/09_benchmarks_and_reproducibility.md
     - 10 Module Map: tutorials/10_module_map.md
     - 11 The Interface Moved Out: tutorials/11_ui_pilot_dashboard.md
-    - 12 Studio Guide: tutorials/12_studio_guide.md
+    - 12 Studio Moved Out: tutorials/12_studio_guide.md
     - 13 Tambua Crop Demo: tutorials/13_crop_disease_demo.md
     - 14 Memory Profiling: tutorials/13_profiling_memory.md
     - 15 Conformal Prediction: tutorials/14_conformal_prediction.md
@@ -111,8 +111,8 @@ nav:
     - Algorithm Theory: guides/algorithm-theory.md
     - Best Practices & Optimization: guides/best-practices.md
     - Deployment Guide: guides/deployment-guide.md
-    - Studio Complete Guide: guides/studio-complete-guide.md
-    - Pilot Dashboard Guide: guides/ui-pilot-guide.md
+    - Studio Moved Out: guides/studio-complete-guide.md
+    - Pilot Dashboard Moved Out: guides/ui-pilot-guide.md
     - Real-World Use Cases: guides/real-world-use-cases.md
     - Human-in-the-Loop Deep Dive: guides/human-in-the-loop.md
     - Error Handling & Troubleshooting: guides/troubleshooting.md

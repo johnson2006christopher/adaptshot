@@ -59,7 +59,7 @@ src/adaptshot/
 ├── utils/
 │   ├── exceptions.py        # Custom exception hierarchy
 │   └── migrations.py        # Checkpoint schema migration
-└── studio/                  # Gradio-based UI (Pilot Dashboard, Studio)
+# (studio/ and ui/ were extracted in #21 and #22; the library ships no GUI)
 ```
 
 ---
