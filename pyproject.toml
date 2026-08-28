@@ -67,7 +67,19 @@ where = ["src"]
 # project treats every AdaptShot symbol as `Any` -- the library type-checks itself
 # cleanly while giving its users nothing. Found by building an actual consumer
 # (apps/tambua), which is the only way this kind of gap shows up.
-"adaptshot" = ["py.typed", "data/*.onnx", "data/*.onnx.data"]
+"adaptshot" = [
+    "py.typed",
+    # Named explicitly, not globbed. `scripts/export_backbones.py` writes into the
+    # same directory, and a glob packaged whatever happened to be on disk: a
+    # locally exported resnet18 turned a 4.5 MB wheel into a 44 MB one. What
+    # ships is a decision, and this is where it is made (#36, #28).
+    "data/mobilenet_v3_small.onnx",
+    "data/mobilenet_v3_small.onnx.data",
+    # Nine real photographs (~135 KB) so the quickstart runs offline. Their
+    # licence and provenance are in data/samples/README.md, which ships too.
+    "data/samples/*.jpg",
+    "data/samples/README.md",
+]
 
 [tool.ruff]
 target-version = "py310"
