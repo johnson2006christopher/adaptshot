@@ -225,8 +225,24 @@ result.q_hat            # 0.82
 `ConformalPredictionSet` fields: `prediction_set`, `set_size`, `alpha`, `q_hat`,
 `coverage_estimate`, `prediction`, `confidence`.
 
-Measured on real data (PlantVillage 5-way 5-shot, 100 episodes): 97.5% empirical coverage
-at a 90% target, mean set size 2.05. See the README's results section.
+**The guarantee needs enough calibration scores to mean anything.** At level α the
+conformal quantile is the ⌈(n+1)(1−α)⌉-th smallest score, which does not exist while
+n < (1−α)/α. In that region the only honest set is *every class*, and that is what the
+engine returns — `q_hat` is `inf`. At the default α = 0.05 that is every n below 19; at
+α = 0.10, below 9. `min_informative_size` on the engine is that number, the engine warns
+at construction if `min_calibration_size` is below it, and `get_calibration_summary()`
+reports it. Before #14 the engine returned the largest observed score instead, and
+under-covered — 91.3% against a 95% target at n = 10.
+
+Validated, not asserted: `tests/test_conformal_coverage.py` measures coverage on
+overlapping synthetic classes over α ∈ {0.01, 0.05, 0.1, 0.2} × n ∈ {10, 20, 50, 200},
+with a tolerance derived from the trial-level standard error. Every cell clears its
+target; every cell where a finite quantile exists has a mean set smaller than the label
+set.
+
+Measured on real data (PlantVillage 5-way 5-shot, 100 episodes, α = 0.10 with 25
+calibration scores — above the informative size): 97.5% empirical coverage at a 90%
+target, mean set size 2.05. See the README's results section.
 
 ---
 
