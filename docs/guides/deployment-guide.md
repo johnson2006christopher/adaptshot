@@ -77,7 +77,7 @@ Copy to the laptop's local storage.
 
 #### 3. Configure MziziGuard
 
-Edit `apps/tambua/configs/maize.yaml` to match your crops and local paths.
+Edit `apps/tambua/src/tambua/configs/maize.yaml` to match your crops and local paths.
 
 #### 4. Launch the Application
 
@@ -99,10 +99,10 @@ tambua --port 7860
 #### 6. Save the Trained Model
 
 ```python
-from tambua import MziziGuard
-guard = MziziGuard()
-guard.load_images_from_dir("training_images/")
-guard.save_model("models/field_model.json")
+from tambua import TambuaEngine
+engine = TambuaEngine()
+engine.load_images_from_dir("training_images/")
+engine.save_model("models/field_model.json")
 ```
 
 #### 7. Create a Desktop Launcher (Ubuntu)
@@ -156,30 +156,30 @@ config = AdaptShotConfig(
 #!/usr/bin/env python3
 """MziziGuard field launcher — auto-resumes from last session."""
 from pathlib import Path
-from tambua import MziziGuard
+from tambua import TambuaEngine
 
 MODEL_PATH = "field_model.json"
 
-guard = MziziGuard()
+engine = TambuaEngine()
 
 if Path(MODEL_PATH).exists():
-    count = guard.load_model(MODEL_PATH)
+    count = engine.load_model(MODEL_PATH)
     print(f"Resumed from {MODEL_PATH} ({count} images)")
 else:
     print("No saved model found. Training from samples...")
-    guard.initialize_with_samples(n_support=5)
+    engine.initialize_with_samples(n_support=5)
 
-# Now use guard.diagnose() or launch the app
+# Now use engine.identify() or launch the app
 ```
 
 ### Periodic Sync (When WiFi Available)
 
 ```python
 # Officer A: save their corrections
-guard.save_model("officer_a_corrections.json")
+engine.save_model("officer_a_corrections.json")
 
 # Officer B: load Officer A's corrections
-guard.load_model("officer_a_corrections.json")
+engine.load_model("officer_a_corrections.json")
 # Now both officers benefit from each other's corrections
 ```
 
@@ -219,21 +219,21 @@ tambua --port 7863 &
 Each instance is independent. Share models by saving to a shared directory:
 
 ```python
-guard.save_model("/shared/models/officer_a_latest.json")
+engine.save_model("/shared/models/officer_a_latest.json")
 ```
 
 ### Shared Model Aggregation
 
 ```python
 """Merge corrections from multiple officers into a master model."""
-from tambua import MziziGuard
+from tambua import TambuaEngine
 
-master = MziziGuard()
+master = TambuaEngine()
 master.initialize_with_samples(n_support=5)  # Base training
 
 # Absorb each officer's corrections
 for officer in ["officer_a", "officer_b", "officer_c"]:
-    temp = MziziGuard()
+    temp = TambuaEngine()
     temp.load_model(f"/shared/{officer}_latest.json")
     # Corrections are embedded in the buffer — load them all
     # (Simplified: in practice, merge embeddings/labels)
@@ -413,21 +413,21 @@ git pull origin main
 - [ ] `models/*.json` — Model checkpoints
 - [ ] `models/*.embeddings.npy` — Embedding arrays
 - [ ] `models/*.head.pt` — Fine-tuned head weights
-- [ ] `apps/tambua/configs/maize.yaml` — Custom crop config
+- [ ] `apps/tambua/src/tambua/configs/maize.yaml` — Custom crop config
 - [ ] Training images (if custom)
 - [ ] Correction/feedback logs (if applicable)
 
 ### Recovery from Backup
 
 ```python
-from tambua import MziziGuard
+from tambua import TambuaEngine
 
-guard = MziziGuard()
-guard.load_model("backup/model.json")
+engine = TambuaEngine()
+engine.load_model("backup/model.json")
 
 # Verify
-result = guard.diagnose("test_photo.jpg")
-print(f"Model loaded: {result.swahili} ({result.confidence:.1%})")
+result = engine.identify("test_photo.jpg")
+print(f"Model loaded: {result.local_name} ({result.confidence:.1%})")
 ```
 
 ---

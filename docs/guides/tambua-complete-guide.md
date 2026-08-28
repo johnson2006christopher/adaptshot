@@ -1,50 +1,61 @@
-# MziziGuard Complete Guide — Crop Disease Detection with AdaptShot
+# Tambua Complete Guide — Few-Shot Identification with AdaptShot
 
-**A comprehensive, step-by-step reference for building, deploying, and extending MziziGuard.**
+**A step-by-step reference for running, configuring and extending Tambua.**
 
-MziziGuard is a complete, working application that demonstrates AdaptShot's power: helping smallholder farmers identify crop diseases from just a handful of photos — no internet, no GPU, no expensive hardware. This guide covers everything from first launch to field deployment.
+*Tambua* is Swahili for "identify". It is a complete working application built on AdaptShot: learn a classifier from a handful of photographs per class, run it on a laptop with no internet and no GPU, and correct it when it is wrong.
+
+Tambua has no built-in subject matter. A YAML configuration supplies the domains, the classes, the advice shown for each and the language of the interface. Two configurations ship with it:
+
+| Config | Application | Domain |
+|--------|-------------|--------|
+| `maize.yaml` | **MziziGuard** | maize disease identification, in Swahili |
+| `solar_panel.yaml` | **SolarCheck** | photovoltaic module triage for off-grid technicians |
+
+Swap the file and the same code is a different application. This guide uses MziziGuard, the flagship configuration, for its worked examples.
 
 ---
 
 ## Table of Contents
 
-1. [What Is MziziGuard?](#what-is-mziziguard)
+1. [What Is Tambua?](#what-is-tambua)
 2. [Architecture Overview](#architecture-overview)
 3. [Installation & First Launch](#installation-first-launch)
 4. [The Web Application — Tab-by-Tab Walkthrough](#the-web-application-tab-by-tab-walkthrough)
 5. [Python API — Complete Reference](#python-api-complete-reference)
-6. [Configuration — config.yaml Deep Dive](#configuration-configyaml-deep-dive)
+6. [Configuration — Deep Dive](#configuration-deep-dive)
 7. [Data Management](#data-management)
 8. [Model Persistence — Save, Load, Resume](#model-persistence-save-load-resume)
 9. [Batch Processing & Reporting](#batch-processing-reporting)
-10. [Adapting MziziGuard for New Crops](#adapting-mziziguard-for-new-crops)
+10. [Adapting Tambua to a New Domain](#adapting-tambua-to-a-new-domain)
 11. [The Terminal Demo](#the-terminal-demo)
 12. [Field Deployment Guide](#field-deployment-guide)
-13. [Troubleshooting MziziGuard](#troubleshooting-mziziguard)
+13. [Troubleshooting](#troubleshooting)
 14. [FAQ](#faq)
 
 ---
 
-## What Is MziziGuard?
+## What Is Tambua?
 
-MziziGuard (Swahili: "root guardian") is a crop disease detection system powered by AdaptShot's few-shot vision learning engine. It enables:
+Tambua is a few-shot identification application powered by AdaptShot. Loaded with `maize.yaml` it is **MziziGuard** (Swahili: "root guardian"), a crop-disease tool. The capabilities below belong to the application; the vocabulary belongs to the config.
 
 | Capability | How |
 |------------|-----|
-| **Instant diagnosis** | Upload a photo → get disease name (Swahili + English), confidence score, and treatment advice |
-| **Few-shot learning** | Train on as few as 5 photos per disease — no massive datasets needed |
+| **Instant identification** | Upload a photo → get a label, a confidence score, and the action the config attaches to it |
+| **Few-shot learning** | Train on as few as 5 photos per class — no massive datasets needed |
 | **Human-in-the-loop** | Correct wrong predictions; the model learns immediately, no retraining |
-| **OOD detection** | Knows when it's out of its depth — won't guess on non-crop images |
+| **OOD detection** | Flags images unlike anything it was taught, rather than guessing |
 | **Offline operation** | Works entirely without internet — built for the field |
 | **CPU-only** | Runs on any laptop, no GPU required |
-| **Swahili localization** | Disease names and treatment advice in Swahili |
+| **Localised labels** | Labels and advice in the language the config is written in |
 | **Persistence** | Save/load trained models between sessions |
 
 ### The Problem It Solves
 
 In Tanzania, 65% of the population depends on agriculture. Maize diseases like **Northern Leaf Blight** and **Gray Leaf Spot** destroy 20–60% of harvests every season. Agricultural extension officers can't reach every village. By the time a farmer gets a diagnosis, the crop is already lost.
 
-Almost every farmer has a basic smartphone. MziziGuard turns that phone into a crop doctor — without needing internet in the field.
+Almost every farmer has a basic smartphone. MziziGuard aims that phone at the problem — without needing internet in the field.
+
+The same loop applies wherever a trained eye is scarce and a camera is not, which is why the domain lives in a config file rather than in the code. `solar_panel.yaml` is the second worked example: an off-grid technician triaging photovoltaic modules needs exactly the same thing.
 
 ---
 
@@ -60,7 +71,7 @@ graph TB
     F --> G[Similarity Search<br/>Euclidean / Cosine]
     G --> H[CalibrationEngine<br/>Temperature Scaling]
     H --> I[ACTEngine<br/>Adaptive Threshold]
-    I --> J[DiagnosisResult]
+    I --> J[Identification]
     J --> B
     B --> K[Farmer sees diagnosis<br/>Swahili name + action]
     K --> L{Wrong?}
@@ -77,12 +88,23 @@ graph TB
 
 ```
 apps/tambua/
-├── __init__.py        # Public API: MziziGuard, DiagnosisResult, DiseaseInfo
-├── config.yaml         # Crop and disease definitions
-├── engine.py           # Core engine (543 lines) wrapping FewShotLearner
-├── data.py             # Sample generation + folder-based image loading
-└── app.py              # Gradio web UI — 5-tab interface (562 lines)
+├── pyproject.toml              # its own distribution: `pip install tambua`
+├── README.md
+├── src/tambua/
+│   ├── __init__.py             # Public API: TambuaEngine, Identification, ClassInfo
+│   ├── config.py               # Schema, validation, and the error messages
+│   ├── engine.py               # Core engine wrapping FewShotLearner
+│   ├── data.py                 # Placeholder generation + folder-based image loading
+│   ├── app.py                  # Gradio web UI — 5-tab interface
+│   └── configs/
+│       ├── maize.yaml          # MziziGuard
+│       └── solar_panel.yaml    # SolarCheck
+└── tests/
 ```
+
+The configs sit *inside* the package rather than beside it, because they are not
+examples — they are the application's identity, and `pip install tambua` must
+carry them.
 
 ### Technology Stack
 
@@ -91,8 +113,8 @@ apps/tambua/
 | UI | Gradio 6.x | Web interface with 5 interactive tabs |
 | Engine | Python 3.9+ | Core application logic |
 | ML Backend | AdaptShot (PyTorch) | Few-shot learning, calibration, ACT |
-| Config | YAML (PyYAML) | Crop definitions, engine settings |
-| Images | PIL/Pillow | Synthetic image generation, preprocessing |
+| Config | YAML (PyYAML) | Domain definitions, engine settings |
+| Images | PIL/Pillow | Placeholder generation, preprocessing |
 
 ---
 
@@ -268,13 +290,13 @@ MziziGuard exposes a clean Python API for programmatic use, scripting, and integ
 ### Initialization
 
 ```python
-from tambua import MziziGuard
+from tambua import TambuaEngine
 
-# Load with default config (looks for config.yaml next to engine.py)
-guard = MziziGuard()
+# Load the default bundled config (maize.yaml — MziziGuard)
+engine = TambuaEngine()
 
 # Or specify a custom config path
-guard = MziziGuard("path/to/my_config.yaml")
+engine = TambuaEngine("path/to/my_config.yaml")
 ```
 
 ### Core Methods
@@ -284,7 +306,7 @@ guard = MziziGuard("path/to/my_config.yaml")
 Generate synthetic training images and load them into the model.
 
 ```python
-count = guard.initialize_with_samples(n_support=5, seed=42)
+count = engine.initialize_with_samples(n_support=5, seed=42)
 print(f"Loaded {count} support images")  # 15 = 3 classes × 5 images
 ```
 
@@ -301,26 +323,26 @@ print(f"Loaded {count} support images")  # 15 = 3 classes × 5 images
 Load real images from a folder-per-class directory structure.
 
 ```python
-count = guard.load_images_from_dir("data/crop_photos/", max_per_class=10)
+count = engine.load_images_from_dir("data/crop_photos/", max_per_class=10)
 print(f"Loaded {count} images from directory")
 ```
 
-#### `diagnose(image) -> DiagnosisResult`
+#### `diagnose(image) -> Identification`
 
 Run disease diagnosis on a single image.
 
 ```python
-result = guard.diagnose("photo.jpg")
+result = engine.identify("photo.jpg")
 
 # Human-readable output
-print(f"Diagnosis: {result.swahili}")
+print(f"Diagnosis: {result.local_name}")
 print(f"Confidence: {result.confidence:.1%}")
 print(f"Action: {result.action}")
 print(f"Severity: {result.severity}")
 print(f"OOD: {result.ood_flag}")
 ```
 
-**DiagnosisResult fields:**
+**Identification fields:**
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -341,7 +363,7 @@ print(f"OOD: {result.ood_flag}")
 Correct a wrong prediction — this is the human-in-the-loop magic.
 
 ```python
-result = guard.teach(
+result = engine.teach(
     image_path="photo.jpg",
     true_label="northern_leaf_blight",
     confidence_weight=0.9,
@@ -355,25 +377,25 @@ print(f"Buffer size: {result['buffer_size']}")
 Convenience method for Gradio UI (uses last predicted image automatically).
 
 ```python
-status = guard.teach_from_ui(
+status = engine.teach_from_ui(
     true_label="gray_leaf_spot",
     confidence_weight=0.8,
 )
 # → "✅ Correction recorded! Fine-tuned: False, Buffer: 1"
 ```
 
-#### `batch_diagnose(image_paths) -> List[DiagnosisResult]`
+#### `batch_identify(image_paths) -> List[Identification]`
 
 Process multiple images at once.
 
 ```python
-results = guard.batch_diagnose([
+results = engine.batch_identify([
     "farmer_1.jpg",
     "farmer_2.jpg",
     "farmer_3.jpg",
 ])
 for r in results:
-    print(f"{r.swahili}: {r.confidence:.1%}")
+    print(f"{r.local_name}: {r.confidence:.1%}")
 ```
 
 #### `batch_to_csv(results) -> str`
@@ -381,7 +403,7 @@ for r in results:
 Convert batch results to CSV format.
 
 ```python
-csv = guard.batch_to_csv(results)
+csv = engine.batch_to_csv(results)
 with open("diagnoses.csv", "w") as f:
     f.write(csv)
 ```
@@ -391,7 +413,7 @@ with open("diagnoses.csv", "w") as f:
 Get calibration metrics, session stats, and config summary.
 
 ```python
-health = guard.system_health()
+health = engine.system_health()
 print(health["calibration"]["ece"])          # Expected Calibration Error
 print(health["session"]["accuracy"])          # Session accuracy
 print(health["config"]["eco_mode"])           # Eco mode enabled?
@@ -402,7 +424,7 @@ print(health["config"]["eco_mode"])           # Eco mode enabled?
 Save the trained model to disk (three files: `.json`, `.embeddings.npy`, `.head.pt`).
 
 ```python
-guard.save_model("models/session_2024.json")
+engine.save_model("models/session_2024.json")
 ```
 
 #### `load_model(path) -> int`
@@ -410,17 +432,17 @@ guard.save_model("models/session_2024.json")
 Restore a saved model.
 
 ```python
-count = guard.load_model("models/session_2024.json")
+count = engine.load_model("models/session_2024.json")
 print(f"Restored {count} support images")
 ```
 
-#### `label_to_info(label) -> DiseaseInfo`
+#### `label_to_info(label) -> ClassInfo`
 
 Get structured info for any disease label.
 
 ```python
-info = guard.label_to_info("northern_leaf_blight")
-print(info.swahili)   # "ugonjwa wa mabaka ya kahawia"
+info = engine.label_to_info("northern_leaf_blight")
+print(info.local_name)   # "ugonjwa wa mabaka ya kahawia"
 print(info.action)     # Treatment advice
 print(info.severity)   # "moderate"
 ```
@@ -428,46 +450,65 @@ print(info.severity)   # "moderate"
 ### Complete Workflow Example
 
 ```python
-from tambua import MziziGuard
+from tambua import TambuaEngine
 
 # 1. Initialize
-guard = MziziGuard()
-guard.initialize_with_samples(n_support=5, seed=42)
+engine = TambuaEngine()
+engine.initialize_with_samples(n_support=5, seed=42)
 
 # 2. Diagnose
-result = guard.diagnose("field_photo.jpg")
-print(f"DIAGNOSIS: {result.swahili}")
+result = engine.identify("field_photo.jpg")
+print(f"DIAGNOSIS: {result.local_name}")
 print(f"Confidence: {result.confidence:.1%}")
 print(f"Action: {result.action}")
 
 # 3. Correct if wrong
 if result.label != "northern_leaf_blight":
-    guard.teach("field_photo.jpg", "northern_leaf_blight", confidence_weight=0.9)
+    engine.teach("field_photo.jpg", "northern_leaf_blight", confidence_weight=0.9)
     print("✓ Model corrected — next prediction will be better")
 
 # 4. Check health
-health = guard.system_health()
+health = engine.system_health()
 print(f"ECE: {health['calibration']['ece']}")
 print(f"Session accuracy: {health['session']['accuracy']}")
 
 # 5. Save for next session
-guard.save_model("models/session_2024.json")
+engine.save_model("models/session_2024.json")
 print("✓ Model saved for next session")
 ```
 
 ---
 
-## Configuration — config.yaml Deep Dive
+## Configuration — Deep Dive
 
-The `config.yaml` file is the single source of truth for MziziGuard's behavior. You should edit this file (not code) to add crops, change engine settings, or modify treatment advice.
+The config file is the single source of truth for what the application is. Edit it — not the code — to add domains, change engine settings, or change the advice shown.
+
+Every value is validated on load, and every problem in a file is reported at once, naming the file, the line and the fix:
+
+```
+maize.yaml is not a valid Tambua configuration (2 problems):
+
+maize.yaml, line 34: severity is "hihg"
+  must be one of: low, moderate, high, critical
+
+maize.yaml, line 51: unknown key "sevrity"
+  did you mean "severity"?
+```
+
+A config written against the pre-generalisation schema is told what changed rather than handed a list of keys that does not contain the one it used:
+
+```
+maize.yaml, line 29: unknown key "crops"
+  renamed to "domains" when the schema stopped being crop-specific
+```
 
 ### Application Metadata
 
 ```yaml
 application:
   name: "MziziGuard"
-  version: "0.1.0"
-  description: "Crop disease detection for smallholder farmers"
+  version: "0.2.0"
+  description: "Maize disease identification for smallholder farmers"
 ```
 
 ### Engine Settings
@@ -488,17 +529,17 @@ engine:
 Each crop has one or more diseases with Swahili names, treatment actions, and severity:
 
 ```yaml
-crops:
+domains:
   maize:
-    swahili: "mahindi"
-    diseases:
+    local_name: "mahindi"
+    classes:
       healthy_maize:
-        swahili: "mahindi yenye afya"
+        local_name: "mahindi yenye afya"
         action: "Hakuna matibabu yanayohitajika."
         description: "Healthy maize with no visible disease symptoms."
         severity: "low"
       northern_leaf_blight:
-        swahili: "ugonjwa wa mabaka ya kahawia"
+        local_name: "ugonjwa wa mabaka ya kahawia"
         action: "Ondoa majani yaliyoathirika. Tumia dawa ya kuvu."
         description: "Cigar-shaped lesions caused by Exserohilum turcicum."
         severity: "moderate"
@@ -507,20 +548,20 @@ crops:
 ### Adding a New Crop
 
 ```yaml
-crops:
+domains:
   maize:
     # ... existing maize config ...
 
   coffee:
-    swahili: "kahawa"
-    diseases:
+    local_name: "kahawa"
+    classes:
       coffee_leaf_rust:
-        swahili: "kutu ya majani ya kahawa"
+        local_name: "kutu ya majani ya kahawa"
         action: "Tumia dawa ya kuvu yenye shaba. Punguza kivuli."
         description: "Orange-yellow powdery spots on leaf undersides."
         severity: "high"
       healthy_coffee:
-        swahili: "kahawa yenye afya"
+        local_name: "kahawa yenye afya"
         action: "Endelea na utunzaji wa kawaida."
         severity: "low"
 ```
@@ -563,7 +604,7 @@ data/crop_photos/
 ```
 
 ```python
-guard.load_images_from_dir("data/crop_photos/", max_per_class=10)
+engine.load_images_from_dir("data/crop_photos/", max_per_class=10)
 ```
 
 Supported formats: `.png`, `.jpg`, `.jpeg`, `.bmp`, `.tiff`, `.tif`, `.webp`.
@@ -610,7 +651,7 @@ MziziGuard leverages AdaptShot's built-in checkpointing, which saves everything 
 ### Saving
 
 ```python
-guard.save_model("models/my_session.json")
+engine.save_model("models/my_session.json")
 ```
 
 Creates three files:
@@ -624,8 +665,8 @@ Creates three files:
 ### Loading
 
 ```python
-guard = MziziGuard()
-count = guard.load_model("models/my_session.json")
+engine = TambuaEngine()
+count = engine.load_model("models/my_session.json")
 print(f"Restored {count} support images from previous session")
 ```
 
@@ -634,24 +675,24 @@ print(f"Restored {count} support images from previous session")
 ```python
 from pathlib import Path
 import json
-from tambua import MziziGuard
+from tambua import TambuaEngine
 
 SESSION_FILE = "models/latest.json"
-guard = MziziGuard()
+engine = TambuaEngine()
 
 # Try to resume from last session
 if Path(SESSION_FILE).exists():
-    count = guard.load_model(SESSION_FILE)
+    count = engine.load_model(SESSION_FILE)
     print(f"Resumed session with {count} images")
 else:
     # First time — train fresh
-    guard.initialize_with_samples(n_support=5)
+    engine.initialize_with_samples(n_support=5)
     print("Fresh training complete")
 
 # ... do work ...
 
 # Save progress
-guard.save_model(SESSION_FILE)
+engine.save_model(SESSION_FILE)
 ```
 
 ---
@@ -661,23 +702,23 @@ guard.save_model(SESSION_FILE)
 ### Processing Multiple Images
 
 ```python
-guard = MziziGuard()
-guard.initialize_with_samples(n_support=5)
+engine = TambuaEngine()
+engine.initialize_with_samples(n_support=5)
 
 # Process a folder
 from pathlib import Path
 photos = list(Path("field_photos/").glob("*.jpg"))
-results = guard.batch_diagnose([str(p) for p in photos])
+results = engine.batch_identify([str(p) for p in photos])
 
 # Print summary
 for path, result in zip(photos, results):
-    print(f"{path.name}: {result.swahili} ({result.confidence:.1%})")
+    print(f"{path.name}: {result.local_name} ({result.confidence:.1%})")
 ```
 
 ### CSV Export
 
 ```python
-csv_data = guard.batch_to_csv(results)
+csv_data = engine.batch_to_csv(results)
 with open("diagnoses.csv", "w", encoding="utf-8") as f:
     f.write(csv_data)
 ```
@@ -685,7 +726,7 @@ with open("diagnoses.csv", "w", encoding="utf-8") as f:
 ### Programmatic Report Generation
 
 ```python
-health = guard.system_health()
+health = engine.system_health()
 
 report = f"""
 === MziziGuard System Report ===
@@ -711,28 +752,30 @@ print(report)
 
 ---
 
-## Adapting MziziGuard for New Crops
+## Adapting Tambua to a New Domain
 
-### Step 1: Edit config.yaml
+Adding a crop and building a different application are the same operation: write a config. `solar_panel.yaml` is a worked example of the second.
 
-Add your crop and diseases to `apps/tambua/configs/maize.yaml`:
+### Step 1: Edit a config
+
+Add your crop and diseases to `apps/tambua/src/tambua/configs/maize.yaml`:
 
 ```yaml
-crops:
+domains:
   cassava:
-    swahili: "muhogo"
-    diseases:
+    local_name: "muhogo"
+    classes:
       healthy_cassava:
-        swahili: "muhogo wenye afya"
+        local_name: "muhogo wenye afya"
         action: "Endelea na utunzaji wa kawaida."
         severity: "low"
       cassava_mosaic:
-        swahili: "ugonjwa wa mosai ya muhogo"
+        local_name: "ugonjwa wa mosai ya muhogo"
         action: "Ondoa mimea iliyoathirika. Tumia vipando sugu."
         description: "Yellow-green mosaic patterns on leaves."
         severity: "high"
       cassava_brown_streak:
-        swahili: "ugonjwa wa mistari ya kahawia"
+        local_name: "ugonjwa wa mistari ya kahawia"
         action: "Ondoa mimea yote iliyoathirika. Panda aina sugu."
         severity: "critical"
 ```
@@ -759,8 +802,8 @@ data/cassava/
 ### Step 3: Train
 
 ```python
-guard = MziziGuard()
-guard.load_images_from_dir("data/cassava/", max_per_class=5)
+engine = TambuaEngine()
+engine.load_images_from_dir("data/cassava/", max_per_class=5)
 # Now ready to diagnose cassava diseases
 ```
 
@@ -828,10 +871,10 @@ python examples/crop_disease_demo.py --no-pause
 ### Deployment Checklist
 
 1. **Install AdaptShot** on the target machine
-2. **Copy config.yaml** with custom crop definitions
-3. **Prepare training images** (5–10 per disease class)
+2. **Copy a config** and edit it for your domain
+3. **Prepare training images** (5–10 per class)
 4. **Train the model** via the Setup tab
-5. **Save the model** (`guard.save_model()`) for quick restart
+5. **Save the model** (`engine.save_model()`) for quick restart
 6. **Launch the app** (`tambua`)
 7. **Bookmark** `http://localhost:7860` in the browser
 8. **Test** with known images before field use
@@ -859,7 +902,7 @@ Each instance maintains independent state. Corrections from one don't affect the
 
 ---
 
-## Troubleshooting MziziGuard
+## Troubleshooting
 
 ### Common Issues
 
@@ -885,14 +928,14 @@ python --version  # Should be 3.9+
 python -c "from adaptshot import FewShotLearner; print('OK')"
 
 # Check MziziGuard import
-python -c "from tambua import MziziGuard; print('OK')"
+python -c "from tambua import TambuaEngine; print('OK')"
 
 # Quick smoke test
 python -c "
-from tambua import MziziGuard
-guard = MziziGuard()
-guard.initialize_with_samples(n_support=3)
-print(f'Trained: {guard.is_trained}, Classes: {guard.known_labels}')
+from tambua import TambuaEngine
+engine = TambuaEngine()
+engine.initialize_with_samples(n_support=3)
+print(f'Trained: {engine.is_trained}, Classes: {engine.known_labels}')
 "
 ```
 
@@ -914,7 +957,7 @@ A: Yes. Use the "Load from Folder" option in the Setup tab, or `load_images_from
 
 **Q: Can I add my own diseases?**
 
-A: Yes. Edit `config.yaml` to add disease definitions. No code changes needed.
+A: Yes. Add them to a config file under `domains:`. No code changes needed.
 
 **Q: Does it require internet in the field?**
 

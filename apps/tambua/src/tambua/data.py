@@ -1,124 +1,135 @@
-"""MziziGuard: Data loading and sample generation utilities.
+"""Tambua: sample generation and real-image loading.
 
-Supports two modes:
-  1. **Sample generation** — synthetic leaf images for quick demos (zero dependencies).
-  2. **Real image loading** — load images from a folder-per-class directory tree.
+Two modes:
+
+1. **Placeholder generation** -- deterministic synthetic images, one visually
+   distinct pattern per configured class, so the whole loop can be demonstrated
+   before anyone has collected a dataset.
+2. **Real image loading** -- a folder-per-class directory tree.
+
+The placeholders deliberately look like nothing in particular. An earlier version
+drew maize leaves, which was worse in two ways: it hard-coded one domain's
+vocabulary into the code, and it invited a viewer to believe the model was
+analysing foliage when it was in fact separating drawn shapes. Neutral patterns
+make the demo honest about what it is. Real evaluation is #18.
 """
 
 from __future__ import annotations
 
+import colorsys
+import hashlib
 import os
-import random
-from collections.abc import Callable
+from collections.abc import Sequence
 
 import numpy as np
 from PIL import Image, ImageDraw
 
 # ---------------------------------------------------------------------------
-# Colour palettes for synthetic leaf generation
+# Deterministic placeholder generation
 # ---------------------------------------------------------------------------
 
-LEAF_GREEN = (34, 139, 34)
-LEAF_GREEN_LIGHT = (60, 179, 113)
-BLIGHT_BROWN = (139, 69, 19)
-BLIGHT_TAN = (210, 180, 140)
-SPOT_GRAY = (128, 128, 128)
-SPOT_DARK = (80, 80, 80)
-SOIL_BG = (160, 140, 100)
+#: How many visually distinct pattern families the generator can produce. Two
+#: classes that collide onto the same family are still separable -- they get
+#: different hues and densities -- but distinctness degrades past this many.
+PATTERN_FAMILIES = 4
+
+IMAGE_SIZE = 224
 
 
-def _draw_vein(draw: ImageDraw.ImageDraw, x0: int, y0: int, x1: int, y1: int) -> None:
-    draw.line([(x0, y0), (x1, y1)], fill=(0, 100, 0), width=1)
+def _class_signature(class_key: str) -> tuple[int, float, int, int]:
+    """Derive stable visual parameters from a class name.
+
+    `hashlib`, not the builtin `hash()`: hash randomisation is seeded per process,
+    so the builtin would give a different picture every run and quietly break the
+    determinism the project guarantees.
+
+    Returns:
+        (family, hue, blob_count, seed) -- fixed for a given class name forever.
+    """
+
+    digest = hashlib.blake2b(class_key.encode("utf-8"), digest_size=8).digest()
+    family = digest[0] % PATTERN_FAMILIES
+    hue = digest[1] / 255.0
+    blob_count = 4 + (digest[2] % 9)
+    seed = int.from_bytes(digest[4:8], "big")
+    return family, hue, blob_count, seed
 
 
-# ---------------------------------------------------------------------------
-# Synthetic leaf generators
-# ---------------------------------------------------------------------------
+def _rgb(hue: float, saturation: float, value: float) -> tuple[int, int, int]:
+    r, g, b = colorsys.hsv_to_rgb(hue % 1.0, saturation, value)
+    return int(r * 255), int(g * 255), int(b * 255)
 
 
-def make_healthy_leaf(size: int = 224) -> Image.Image:
-    """Generate a healthy green maize leaf with veins."""
-    img = Image.new("RGB", (size, size), SOIL_BG)
+def make_placeholder(class_key: str, variant: int = 0, size: int = IMAGE_SIZE) -> Image.Image:
+    """Render one placeholder image for a class.
+
+    Args:
+        class_key: The class this image is an example of. Fixes the pattern.
+        variant: Which example. Jitters position and size so the support set has
+            genuine within-class variation rather than N identical copies.
+        size: Output edge length in pixels.
+
+    Returns:
+        A square RGB image, identical on every run for the same arguments.
+    """
+
+    family, hue, blob_count, seed = _class_signature(class_key)
+    rng = np.random.default_rng(seed + variant)
+
+    background = _rgb(hue, 0.25, 0.90)
+    foreground = _rgb(hue + 0.5, 0.65, 0.55)
+    accent = _rgb(hue + 0.5, 0.45, 0.75)
+
+    img = Image.new("RGB", (size, size), background)
     draw = ImageDraw.Draw(img)
-    cx, cy = size // 2, size // 2
-    leaf_w, leaf_h = size // 4, size // 3
-    draw.ellipse(
-        [(cx - leaf_w, cy - leaf_h), (cx + leaf_w, cy + leaf_h)],
-        fill=LEAF_GREEN,
-        outline=LEAF_GREEN_LIGHT,
-        width=2,
-    )
-    midrib_top = (cx, cy - leaf_h + 10)
-    midrib_bot = (cx, cy + leaf_h - 10)
-    draw.line([midrib_top, midrib_bot], fill=(0, 80, 0), width=3)
-    for i in range(-3, 4):
-        if i == 0:
-            continue
-        y = cy + i * (leaf_h // 4)
-        offset = abs(i) * 8
-        _draw_vein(draw, cx, y, cx - leaf_w + 20 + offset, y - 5)
-        _draw_vein(draw, cx, y, cx + leaf_w - 20 - offset, y + 5)
+
+    if family == 0:  # scattered discs
+        for _ in range(blob_count):
+            r = int(rng.integers(size // 14, size // 7))
+            cx = int(rng.integers(r, size - r))
+            cy = int(rng.integers(r, size - r))
+            draw.ellipse([cx - r, cy - r, cx + r, cy + r], fill=foreground, outline=accent, width=2)
+    elif family == 1:  # diagonal bands
+        step = max(6, size // blob_count)
+        for offset in range(-size, size * 2, step):
+            jitter = int(rng.integers(-3, 4))
+            draw.line(
+                [(offset + jitter, 0), (offset - size + jitter, size)],
+                fill=foreground,
+                width=max(3, step // 3),
+            )
+    elif family == 2:  # concentric rings
+        centre = size // 2 + int(rng.integers(-size // 12, size // 12))
+        for ring in range(blob_count):
+            r = int((ring + 1) * size / (2 * blob_count + 1))
+            draw.ellipse(
+                [centre - r, centre - r, centre + r, centre + r],
+                outline=foreground if ring % 2 else accent,
+                width=max(2, size // 40),
+            )
+    else:  # angular blocks
+        for _ in range(blob_count):
+            w = int(rng.integers(size // 10, size // 4))
+            h = int(rng.integers(size // 10, size // 4))
+            x = int(rng.integers(0, size - w))
+            y = int(rng.integers(0, size - h))
+            draw.rectangle([x, y, x + w, y + h], fill=foreground, outline=accent, width=2)
+
     return img
 
 
-def make_blight_leaf(size: int = 224) -> Image.Image:
-    """Generate a maize leaf with Northern Leaf Blight lesions."""
-    img = make_healthy_leaf(size)
-    draw = ImageDraw.Draw(img)
-    cx, cy = size // 2, size // 2
-    leaf_h = size // 3
-    for _ in range(random.randint(3, 6)):
-        lx = cx + random.randint(-size // 5, size // 5)
-        ly = cy + random.randint(-leaf_h + 30, leaf_h - 30)
-        lw = random.randint(8, 18)
-        lh = random.randint(25, 55)
-        draw.ellipse(
-            [(lx - lw, ly - lh), (lx + lw, ly + lh)],
-            fill=BLIGHT_TAN,
-            outline=BLIGHT_BROWN,
-            width=2,
-        )
-        draw.ellipse(
-            [(lx - lw // 2, ly - lh // 3), (lx + lw // 2, ly + lh // 3)],
-            fill=BLIGHT_BROWN,
-        )
-    return img
+def make_unrelated_image(size: int = IMAGE_SIZE, seed: int = 0) -> Image.Image:
+    """Render structureless noise, for demonstrating out-of-distribution flagging.
 
+    It belongs to no configured class by construction, which is exactly the
+    property the OOD check should notice.
+    """
 
-def make_gray_leaf_spot(size: int = 224) -> Image.Image:
-    """Generate a maize leaf with Gray Leaf Spot lesions."""
-    img = make_healthy_leaf(size)
-    draw = ImageDraw.Draw(img)
-    cx, cy = size // 2, size // 2
-    leaf_h = size // 3
-    for _ in range(random.randint(4, 8)):
-        sx = cx + random.randint(-size // 5, size // 5)
-        sy = cy + random.randint(-leaf_h + 30, leaf_h - 30)
-        sw = random.randint(6, 14)
-        sh = random.randint(10, 25)
-        draw.rectangle(
-            [(sx - sw, sy - sh), (sx + sw, sy + sh)],
-            fill=SPOT_GRAY,
-            outline=SPOT_DARK,
-            width=2,
-        )
-    return img
-
-
-def make_non_leaf(size: int = 224) -> Image.Image:
-    """Generate a non-leaf image (soil/noise) for OOD demo."""
-    img = np.random.randint(80, 180, (size, size, 3), dtype=np.uint8)
-    noise = np.random.randint(-20, 20, (size, size, 3), dtype=np.int16)
-    img = np.clip(img.astype(np.int16) + noise, 0, 255).astype(np.uint8)
-    return Image.fromarray(img)
-
-
-# Map disease names to generators (synthetic mode)
-DISEASE_GENERATORS: dict[str, Callable[[], Image.Image]] = {
-    "healthy_maize": make_healthy_leaf,
-    "northern_leaf_blight": make_blight_leaf,
-    "gray_leaf_spot": make_gray_leaf_spot,
-}
+    rng = np.random.default_rng(seed)
+    base = rng.integers(80, 180, (size, size, 3), dtype=np.int16)
+    noise = rng.integers(-20, 20, (size, size, 3), dtype=np.int16)
+    pixels = np.clip(base + noise, 0, 255).astype(np.uint8)
+    return Image.fromarray(pixels)
 
 
 # ---------------------------------------------------------------------------
@@ -128,17 +139,34 @@ DISEASE_GENERATORS: dict[str, Callable[[], Image.Image]] = {
 
 def generate_samples(
     output_dir: str,
+    class_keys: Sequence[str],
     n_support: int = 5,
     n_query: int = 3,
-    seed: int = 42,
 ) -> tuple[list[str], list[str], list[str], list[str]]:
-    """Generate synthetic leaf images for training and testing.
+    """Write a placeholder dataset covering the given classes.
+
+    The classes come from the caller -- in practice, from the loaded config -- so
+    the generated label set always matches what the application was configured to
+    recognise. Nothing here knows what the classes mean.
+
+    Args:
+        output_dir: Directory to write PNGs into. Created if absent.
+        class_keys: The classes to generate examples for.
+        n_support: Images per class for the support set.
+        n_query: Images per class for the query set. 0 to skip.
 
     Returns:
         (support_paths, support_labels, query_paths, query_labels)
+
+    Raises:
+        ValueError: If `class_keys` is empty.
     """
-    random.seed(seed)
-    np.random.seed(seed)
+
+    if not class_keys:
+        raise ValueError(
+            "generate_samples needs at least one class; the loaded config defines none"
+        )
+
     os.makedirs(output_dir, exist_ok=True)
 
     support_paths: list[str] = []
@@ -146,19 +174,19 @@ def generate_samples(
     query_paths: list[str] = []
     query_labels: list[str] = []
 
-    for disease_name, generator in DISEASE_GENERATORS.items():
+    for class_key in class_keys:
         for i in range(n_support):
-            path = os.path.join(output_dir, f"{disease_name}_support_{i:02d}.png")
-            img = generator()
-            img.save(path)
+            path = os.path.join(output_dir, f"{class_key}_support_{i:02d}.png")
+            make_placeholder(class_key, variant=i).save(path)
             support_paths.append(path)
-            support_labels.append(disease_name)
+            support_labels.append(class_key)
         for i in range(n_query):
-            path = os.path.join(output_dir, f"{disease_name}_query_{i:02d}.png")
-            img = generator()
-            img.save(path)
+            # Offset the variant so query images are never byte-identical to a
+            # support image -- otherwise the demo measures memorisation.
+            path = os.path.join(output_dir, f"{class_key}_query_{i:02d}.png")
+            make_placeholder(class_key, variant=1000 + i).save(path)
             query_paths.append(path)
-            query_labels.append(disease_name)
+            query_labels.append(class_key)
 
     return support_paths, support_labels, query_paths, query_labels
 

@@ -3,6 +3,19 @@
 from dataclasses import dataclass
 from typing import Literal
 
+# Named, so that callers can say what AdaptShot accepts instead of restating it.
+# An application validating a config file needs both the runtime tuple (to check
+# a value) and the static type (to pass it on without widening to `str`);
+# `typing.get_args` on these gives the first, annotating with them gives the
+# second, and the two cannot drift apart.
+Backbone = Literal["resnet18", "mobilenet_v3_small"]
+Device = Literal["cpu", "cuda", "mps"]
+SimilarityMetric = Literal["cosine", "euclidean"]
+InferenceMode = Literal["nearest_neighbor", "prototypical", "contrastive"]
+CalibrationMethod = Literal["temperature", "scaling_binning", "conformal", "none"]
+ConformalMode = Literal["split", "cross"]
+UncertaintyMode = Literal["mcdropout", "entropy", "mahalanobis", "ensemble"]
+
 
 @dataclass(frozen=True)
 class AdaptShotConfig:
@@ -14,8 +27,8 @@ class AdaptShotConfig:
     deterministic reproducibility and CI/CD validation.
     """
     # Core execution
-    backbone: Literal["resnet18", "mobilenet_v3_small"] = "resnet18"
-    device: Literal["cpu", "cuda", "mps"] = "cpu"  # CPU-first default
+    backbone: Backbone = "resnet18"
+    device: Device = "cpu"  # CPU-first default
     seed: int = 42
 
     # Few-shot learning parameters
@@ -26,15 +39,15 @@ class AdaptShotConfig:
     # Similarity search
     use_faiss: bool = False # Toggle FAISS-CPU acceleration
     faiss_nprobe: int = 8   # FAISS IVF index probing depth (if used later)
-    similarity_metric: Literal["cosine", "euclidean"] = "euclidean"
-    inference_mode: Literal["nearest_neighbor", "prototypical", "contrastive"] = "prototypical"
+    similarity_metric: SimilarityMetric = "euclidean"
+    inference_mode: InferenceMode = "prototypical"
 
     # Energy-aware inference
     eco_mode: bool = False
     early_exit_threshold: float = 0.95
 
     # Calibration & uncertainty
-    calibration_method: Literal["temperature", "scaling_binning", "conformal", "none"] = "temperature"
+    calibration_method: CalibrationMethod = "temperature"
     ece_n_bins: int = 15    # Number of bins for Expected Calibration Error
     calibration_eval_bins: int = 100
     temperature_init: float = 1.0
@@ -47,10 +60,10 @@ class AdaptShotConfig:
 
     # Conformal prediction (v0.2.0)
     conformal_alpha: float = 0.05
-    conformal_mode: Literal["split", "cross"] = "split"
+    conformal_mode: ConformalMode = "split"
 
     # Advanced uncertainty (v0.2.0)
-    uncertainty_mode: Literal["mcdropout", "entropy", "mahalanobis", "ensemble"] = "ensemble"
+    uncertainty_mode: UncertaintyMode = "ensemble"
 
     # Explainability (v0.2.0)
     explainability_enabled: bool = True

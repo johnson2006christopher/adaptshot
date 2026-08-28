@@ -306,15 +306,15 @@ Farmer takes photo → MziziGuard Web UI → MziziGuard Engine → AdaptShot Few
                                                                     → ResNet-18 Backbone
                                                                     → Similarity Search
                                                                     → Calibration + ACT + OOD
-                                                                    → DiagnosisResult (Swahili + Action)
+                                                                    → Identification (Swahili + Action)
 ```
 
 ### Key Numbers
 
 | Property | Value | Backed by |
 |----------|-------|-----------|
-| Training images needed | 5 per disease class | `apps/tambua/configs/maize.yaml` |
-| Supported crops | Configurable via YAML | `apps/tambua/configs/maize.yaml` |
+| Training images needed | 5 per disease class | `apps/tambua/src/tambua/configs/maize.yaml` |
+| Supported crops | Configurable via YAML | `apps/tambua/src/tambua/configs/maize.yaml` |
 | Languages | English + Swahili | `localization` block in the config |
 | Internet required | No (after install) | no network calls after backbone download |
 
@@ -334,7 +334,7 @@ tambua
 # → http://localhost:7860
 ```
 
-Full guide: [MziziGuard Complete Guide](mziziguard-complete-guide.md)
+Full guide: [Tambua Complete Guide](tambua-complete-guide.md)
 
 ---
 

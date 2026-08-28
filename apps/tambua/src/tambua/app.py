@@ -1,8 +1,8 @@
-"""MziziGuard Web Application — Gradio-powered crop disease detection.
+"""Tambua web application — a Gradio interface over whatever the config describes.
 
 Run::
 
-    python -m examples.mziziguard.app
+    python -m examples.mziziengine.app
 
 Then open http://localhost:7860 in your browser.
 
@@ -50,21 +50,28 @@ except ImportError:
 # ---------------------------------------------------------------------------
 # Local imports
 # ---------------------------------------------------------------------------
-from tambua.engine import MziziGuard
+import adaptshot
+from tambua.config import load_config
+from tambua.engine import (
+    DEFAULT_CONFIG,
+    TambuaEngine,
+    bundled_config,
+    bundled_configs,
+)
 
 # ---------------------------------------------------------------------------
 # Globals (per-process, single-user Gradio app)
 # ---------------------------------------------------------------------------
-_guard: MziziGuard | None = None
+_engine: TambuaEngine | None = None
 _config_path: str | None = None
 
 
-def _get_guard() -> MziziGuard:
-    """Lazy-initialize the MziziGuard singleton."""
-    global _guard
-    if _guard is None:
-        _guard = MziziGuard(config_path=_config_path)
-    return _guard
+def _get_engine() -> TambuaEngine:
+    """Lazy-initialise the engine singleton."""
+    global _engine
+    if _engine is None:
+        _engine = TambuaEngine(config_path=_config_path)
+    return _engine
 
 
 # ===================================================================
@@ -75,9 +82,9 @@ def _get_guard() -> MziziGuard:
 def _setup_with_samples(n_support: int) -> str:
     """Generate synthetic samples and train the model."""
     try:
-        guard = _get_guard()
-        count = guard.initialize_with_samples(n_support=n_support)
-        labels = guard.known_labels
+        engine = _get_engine()
+        count = engine.initialize_with_samples(n_support=n_support)
+        labels = engine.known_labels
         return (
             f"✅ Generated {count} support images across {len(labels)} classes:\n"
             + "\n".join(f"  • {label}" for label in labels)
@@ -93,9 +100,9 @@ def _setup_from_folder(folder_path: str, max_per_class: int) -> str:
     if not folder_path or not os.path.isdir(folder_path):
         return "❌ Please select a valid folder with class subdirectories."
     try:
-        guard = _get_guard()
-        count = guard.load_images_from_dir(folder_path, max_per_class=max_per_class)
-        labels = guard.known_labels
+        engine = _get_engine()
+        count = engine.load_images_from_dir(folder_path, max_per_class=max_per_class)
+        labels = engine.known_labels
         return (
             f"✅ Loaded {count} images from folder.\n"
             + f"Detected {len(labels)} classes:\n"
@@ -109,9 +116,9 @@ def _setup_from_folder(folder_path: str, max_per_class: int) -> str:
 
 def _setup_status() -> str:
     """Return current model status."""
-    guard = _get_guard()
-    if guard.is_trained:
-        labels = guard.known_labels
+    engine = _get_engine()
+    if engine.is_trained:
+        labels = engine.known_labels
         return (
             f"🟢 **Trained** — {len(labels)} classes loaded.\n"
             + "\n".join(f"  • {label}" for label in labels)
@@ -124,17 +131,17 @@ def _setup_status() -> str:
 # ===================================================================
 
 
-def _diagnose(image: str | None) -> tuple[str, str, float, str, str]:
+def _identify(image: str | None) -> tuple[str, str, float, str, str]:
     """Run diagnosis on an uploaded image."""
     if image is None:
         return "", "", 0.0, "", "⚠️ Upload an image first."
 
-    guard = _get_guard()
-    if not guard.is_trained:
+    engine = _get_engine()
+    if not engine.is_trained:
         return "", "", 0.0, "", "❌ Model not trained. Go to Setup tab first."
 
     try:
-        result = guard.diagnose(image)
+        result = engine.identify(image)
 
         # Build markdown summary
         severity_emoji = {"low": "🟢", "moderate": "🟡", "high": "🟠", "critical": "🔴"}.get(
@@ -142,7 +149,7 @@ def _diagnose(image: str | None) -> tuple[str, str, float, str, str]:
         )
 
         summary = (
-            f"## {severity_emoji} Diagnosis: {result.swahili}\n\n"
+            f"## {severity_emoji} Diagnosis: {result.local_name}\n\n"
             f"**English:** {result.label}\n\n"
             f"**Confidence:** {result.confidence:.1%}\n\n"
             f"**Severity:** {result.severity.upper()}\n\n"
@@ -166,7 +173,7 @@ def _diagnose(image: str | None) -> tuple[str, str, float, str, str]:
         return summary, action, confidence_pct, detail, warning
 
     except Exception as exc:
-        logger.exception("diagnose failed")
+        logger.exception("identify failed")
         return "", "", 0.0, "", f"❌ Error: {exc}"
 
 
@@ -176,21 +183,30 @@ def _diagnose(image: str | None) -> tuple[str, str, float, str, str]:
 
 
 def _get_label_choices() -> list[str]:
-    guard = _get_guard()
-    if guard.is_trained:
-        return guard.known_labels
-    return ["healthy_maize", "northern_leaf_blight", "gray_leaf_spot"]
+    """Labels offered in the correction dropdown.
+
+    Before training there are no learned labels, but the config always describes
+    the full set -- so the fallback is the configured vocabulary, not a fixed
+    list. The previous fallback named three maize diseases, which meant a
+    technician running the solar configuration was offered crop diseases to
+    correct a solar panel to.
+    """
+
+    engine = _get_engine()
+    if engine.is_trained:
+        return engine.known_labels
+    return engine.cfg.labels
 
 
 def _teach(true_label: str, confidence_weight: float) -> str:
     """Submit a human correction."""
-    guard = _get_guard()
-    if not guard.is_trained:
+    engine = _get_engine()
+    if not engine.is_trained:
         return "❌ Model not trained yet."
     if not true_label:
         return "❌ Select the correct label."
 
-    return guard.teach_from_ui(
+    return engine.teach_from_ui(
         true_label=true_label,
         confidence_weight=confidence_weight,
     )
@@ -203,11 +219,11 @@ def _teach(true_label: str, confidence_weight: float) -> str:
 
 def _health_report() -> str:
     """Return human-readable health report."""
-    guard = _get_guard()
-    if not guard.is_trained:
+    engine = _get_engine()
+    if not engine.is_trained:
         return "❌ Model not trained yet. No health data available."
 
-    health = guard.system_health()
+    health = engine.system_health()
     calib = health.get("calibration", {})
     session = health.get("session", {})
     config = health.get("config", {})
@@ -250,17 +266,17 @@ def _health_report() -> str:
 # ===================================================================
 
 
-def _batch_diagnose(files: list[str]) -> str:
+def _batch_identify(files: list[str]) -> str:
     """Process a batch of images."""
     if not files:
         return "⚠️ Upload images to process."
 
-    guard = _get_guard()
-    if not guard.is_trained:
+    engine = _get_engine()
+    if not engine.is_trained:
         return "❌ Model not trained yet."
 
     paths = [str(f.name if hasattr(f, "name") else f) for f in files]
-    results = guard.batch_diagnose(paths)
+    results = engine.batch_identify(paths)
 
     # Build markdown table
     lines = [
@@ -273,7 +289,7 @@ def _batch_diagnose(files: list[str]) -> str:
             r.severity, "⚪"
         )
         lines.append(
-            f"| {i} | {fname} | {r.swahili} | {r.confidence:.1%} | {sev} {r.severity} | {r.action[:60]}... |"
+            f"| {i} | {fname} | {r.local_name} | {r.confidence:.1%} | {sev} {r.severity} | {r.action[:60]}... |"
         )
 
     return "\n".join(lines)
@@ -293,18 +309,26 @@ footer { visibility: hidden; }
 
 
 def build_app() -> gr.Blocks:
-    """Construct the full MziziGuard Gradio application."""
+    """Construct the Gradio application for the loaded configuration.
 
-    with gr.Blocks(
-        title="MziziGuard — Crop Disease Detection",
-    ) as app:
+    Every user-visible name comes from the config, so the same code renders
+    MziziGuard or SolarCheck depending only on which file was loaded.
+    """
+
+    cfg = _get_engine().cfg
+    app_name = cfg.application.name
+    adaptshot_version = adaptshot.__version__
+    domains = ", ".join(cfg.domains)
+
+    with gr.Blocks(title=app_name) as app:
         # ── Header ──
         gr.Markdown(
-            """
-            # 🌽 MziziGuard — Crop Disease Detection
-            **Powered by AdaptShot v0.1.1** · CPU-only · Offline · Few-Shot Learning
+            f"""
+            # {app_name}
+            {cfg.application.description}
 
-            *Mlinzi wa mazao kwa wakulima wadogo — Crop guardian for smallholder farmers.*
+            **AdaptShot v{adaptshot_version}** · CPU-only · Offline · Few-shot learning
+            · Recognising: *{domains}*
             """
         )
 
@@ -316,8 +340,8 @@ def build_app() -> gr.Blocks:
                     """
                     ### Train the model with support images
 
-                    **Option A:** Generate synthetic sample images (quick, zero data needed).
-                    **Option B:** Upload your own real crop photos organized in folders.
+                    **Option A:** Generate placeholder images (quick, no data needed).
+                    **Option B:** Point at a folder of your own photos, one folder per class.
                     """
                 )
                 with gr.Row():
@@ -377,16 +401,16 @@ def build_app() -> gr.Blocks:
             with gr.TabItem("🔍 Diagnose"):
                 gr.Markdown(
                     """
-                    ### Upload a crop photo for instant diagnosis
+                    ### Upload a photo to identify it
 
-                    Take a photo of a diseased leaf and let MziziGuard identify it.
-                    Works **without internet** — just like in the field.
+                    Photograph the subject and let the model name it.
+                    Works **without internet** — just as it will in the field.
                     """
                 )
                 with gr.Row():
                     with gr.Column(scale=1):
                         query_image = gr.Image(
-                            type="filepath", label="Crop Photo",
+                            type="filepath", label="Photo",
                             height=300,
                         )
                         predict_btn = gr.Button(
@@ -414,7 +438,7 @@ def build_app() -> gr.Blocks:
 
                 # Wiring
                 predict_btn.click(
-                    fn=_diagnose,
+                    fn=_identify,
                     inputs=[query_image],
                     outputs=[
                         diagnosis_md, action_text, confidence_bar,
@@ -462,9 +486,8 @@ def build_app() -> gr.Blocks:
                         )
                         gr.Markdown(
                             """
-                            💡 **Tip:** The more corrections you provide,
-                            the smarter MziziGuard becomes. Every correction
-                            helps the next farmer get a better diagnosis.
+                            💡 **Tip:** Every correction you make teaches the
+                            model. The next person to use it gets the benefit.
                             """
                         )
 
@@ -487,7 +510,7 @@ def build_app() -> gr.Blocks:
                     """
                     ### System calibration & performance dashboard
 
-                    Monitor how well MziziGuard is performing. Check calibration
+                    Monitor how well the model is performing. Check calibration
                     error, temperature, and session statistics.
                     """
                 )
@@ -506,30 +529,31 @@ def build_app() -> gr.Blocks:
                     """
                     ### Process multiple images at once
 
-                    Upload multiple images and get a summary table of diagnoses.
-                    Useful for extension officers processing photos from many farmers.
+                    Upload multiple images and get one summary table.
+                    Useful when working through a backlog of photographs.
                     """
                 )
                 batch_files = gr.Files(
                     file_count="multiple",
-                    label="Upload Crop Photos",
+                    label="Upload photos",
                     file_types=["image"],
                 )
-                batch_btn = gr.Button("📊 Batch Diagnose", variant="primary")
-                batch_result = gr.Markdown("Upload images and click **Batch Diagnose**.")
+                batch_btn = gr.Button("📊 Identify all", variant="primary")
+                batch_result = gr.Markdown("Upload images and click **Identify all**.")
 
                 batch_btn.click(
-                    fn=_batch_diagnose,
+                    fn=_batch_identify,
                     inputs=[batch_files],
                     outputs=[batch_result],
                 )
 
         # ── Footer ──
         gr.Markdown(
-            """
+            f"""
             ---
-            **MziziGuard** · Powered by [AdaptShot](https://github.com/johnson2006christopher/adaptshot)
-            · MIT License · Runs offline on CPU · Built for Tanzania 🇹🇿
+            **{app_name}** · Powered by
+            [AdaptShot](https://github.com/johnson2006christopher/adaptshot)
+            · MIT License · Runs offline on CPU · Built in Tanzania 🇹🇿
             """
         )
 
@@ -547,7 +571,7 @@ def launch(argv: list[str] | None = None) -> None:
         argv: Command-line arguments. ``None`` reads them from ``sys.argv``.
     """
 
-    global _config_path, _guard
+    global _config_path, _engine
 
     parser = argparse.ArgumentParser(
         prog="tambua",
@@ -555,7 +579,15 @@ def launch(argv: list[str] | None = None) -> None:
     )
     parser.add_argument(
         "--config", type=str, default=None,
-        help="Path to a domain config (e.g. configs/maize.yaml)",
+        help=(
+            "Path to a domain config. Defaults to the bundled "
+            f"{DEFAULT_CONFIG!r} configuration; run with --list-configs to see "
+            "what else ships."
+        ),
+    )
+    parser.add_argument(
+        "--list-configs", action="store_true",
+        help="List the configurations bundled with this installation, and exit.",
     )
     parser.add_argument(
         "--port", type=int, default=7860,
@@ -577,8 +609,14 @@ def launch(argv: list[str] | None = None) -> None:
     )
     args = parser.parse_args(argv)
 
+    if args.list_configs:
+        for name in bundled_configs():
+            cfg = load_config(bundled_config(name))
+            print(f"{name:16} {cfg.application.name} — {', '.join(cfg.domains)}")
+        return
+
     _config_path = args.config
-    _guard = MziziGuard(config_path=_config_path)
+    _engine = TambuaEngine(config_path=_config_path)
 
     demo = build_app()
     demo.launch(
