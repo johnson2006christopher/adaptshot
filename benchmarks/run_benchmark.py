@@ -24,6 +24,65 @@ from adaptshot.core.extractor import extract_embedding
 from adaptshot.core.similarity import find_nearest_neighbor
 from adaptshot.utils.determinism import set_deterministic_seed, verify_determinism
 
+#: Where torchvision caches CIFAR-10, relative to `data_dir`.
+_CIFAR_MARKER = Path("cifar-10-batches-py") / "data_batch_1"
+
+
+def cifar10_is_cached(data_dir: str = "./data") -> bool:
+    """Whether CIFAR-10 is already on disk, so no network is needed."""
+
+    return (Path(data_dir) / _CIFAR_MARKER).is_file()
+
+
+def resolve_dataset(requested: str, data_dir: str, allow_download: bool) -> str:
+    """Decide which dataset to actually use, and say so out loud.
+
+    `auto` is the default because the documented validation gate must work with
+    no network. AdaptShot's whole argument is that connectivity is the resource
+    its users do not have; a pre-PR command that silently requires a 170MB
+    download contradicts that, and on a slow link it does not fail, it hangs.
+
+    Returns:
+        The dataset name to load.
+    """
+
+    if requested != "auto":
+        return requested
+    if cifar10_is_cached(data_dir):
+        return "cifar10"
+    if allow_download:
+        return "cifar10"
+    return "synthetic"
+
+
+def _synthetic_split(
+    n_way: int, k_shot: int, seed: int, n_query: int = 5
+) -> tuple[list[tuple[torch.Tensor, int]], list[tuple[torch.Tensor, int]]]:
+    """A deterministic fixture that needs no network and no disk.
+
+    Each class is a fixed random mean plus per-sample noise, so the classes are
+    separable and the pipeline exercises every stage end to end.
+
+    This measures whether the pipeline still *works* and how fast, which is what
+    a smoke test is for. It does not measure whether the model is any good, and
+    `run_smoke_test` refuses to report an accuracy figure from it -- a number
+    measured on random tensors describes nothing, and publishing one would be
+    the same mistake #17 had to retract.
+    """
+
+    generator = torch.Generator().manual_seed(seed)
+    support: list[tuple[torch.Tensor, int]] = []
+    query: list[tuple[torch.Tensor, int]] = []
+
+    for label in range(n_way):
+        centre = torch.rand(3, 32, 32, generator=generator)
+        for store, count in ((support, k_shot), (query, n_query)):
+            for _ in range(count):
+                noise = torch.randn(3, 32, 32, generator=generator) * 0.08
+                store.append((torch.clamp(centre + noise, 0.0, 1.0), label))
+
+    return support, query
+
 
 def load_few_shot_split(
     dataset_name: str = "cifar10",
@@ -31,6 +90,7 @@ def load_few_shot_split(
     k_shot: int = 10,
     seed: int = 42,
     data_dir: str = "./data",
+    allow_download: bool = False,
 ) -> tuple[list[tuple[torch.Tensor, int]], list[tuple[torch.Tensor, int]]]:
     """
     Load a few-shot split from a torchvision dataset.
@@ -51,11 +111,28 @@ def load_few_shot_split(
     """
     set_deterministic_seed(seed)
 
+    if dataset_name == "synthetic":
+        return _synthetic_split(n_way=n_way, k_shot=k_shot, seed=seed)
+
     if dataset_name == "cifar10":
+        if not cifar10_is_cached(data_dir) and not allow_download:
+            # Fail immediately and say what to run. The previous behaviour was to
+            # start a 170MB download with no warning, which on a constrained link
+            # produced five minutes of silence and then an opaque timeout.
+            raise FileNotFoundError(
+                f"CIFAR-10 is not cached in {data_dir} and downloads are not "
+                "permitted.\n"
+                "  Offline (default):  python -m benchmarks.run_benchmark "
+                "--smoke-test --seed 42\n"
+                "  Fetch it once:      python -m benchmarks.run_benchmark "
+                "--smoke-test --dataset cifar10 --allow-download --seed 42\n"
+                "The download is ~170MB and has taken over 30 minutes from some "
+                "networks."
+            )
         dataset = datasets.CIFAR10(
             root=data_dir,
             train=True,
-            download=True,
+            download=allow_download,
             transform=transforms.ToTensor(),  # Minimal transform for speed
         )
 
@@ -167,16 +244,22 @@ BASELINE_REFERENCES: dict[str, dict[str, Any]] = {
 }
 
 
-def run_smoke_test(config: AdaptShotConfig, dataset: str = "cifar10") -> dict[str, Any]:
+def run_smoke_test(
+    config: AdaptShotConfig, dataset: str = "cifar10", allow_download: bool = False
+) -> dict[str, Any]:
     """
     Run minimal end-to-end pipeline and return metrics.
 
     Args:
         config: AdaptShotConfig with pipeline settings
-        dataset: Dataset name ('cifar10' or 'miniimagenet')
+        dataset: Dataset name ('cifar10', 'miniimagenet' or 'synthetic')
+        allow_download: Whether fetching a missing dataset over the network is
+            permitted. False by default: the documented validation gate must
+            work offline.
 
     Returns:
-        Dictionary containing accuracy, latency, and metadata metrics
+        Dictionary containing accuracy, latency, and metadata metrics. On the
+        synthetic fixture `accuracy` is ``None`` -- see `_synthetic_split`.
     """
     print(f"🧪 Running benchmark on {dataset}...")
 
@@ -186,6 +269,7 @@ def run_smoke_test(config: AdaptShotConfig, dataset: str = "cifar10") -> dict[st
         n_way=config.n_way,
         k_shot=config.k_shot,
         seed=config.seed,
+        allow_download=allow_download,
     )
 
     print(f"   • Support: {len(support_data)} examples")
@@ -241,7 +325,11 @@ def run_smoke_test(config: AdaptShotConfig, dataset: str = "cifar10") -> dict[st
     p95_latency = np.percentile(latencies, 95)
 
     return {
-        "accuracy": float(accuracy),
+        # None on the synthetic fixture, deliberately. The pipeline can be timed
+        # on random tensors; it cannot be evaluated on them, and a figure that
+        # describes nothing is worse than no figure once someone quotes it.
+        "accuracy": None if dataset == "synthetic" else float(accuracy),
+        "data_source": dataset,
         "latency_avg_ms": float(avg_latency),
         "latency_p95_ms": float(p95_latency),
         "embedding_time_s": float(embedding_time),
@@ -268,8 +356,20 @@ def main() -> int:
     parser.add_argument(
         "--dataset",
         type=str,
-        default="cifar10",
-        help="Dataset name (default: cifar10)",
+        default="auto",
+        help=(
+            "Dataset: auto | cifar10 | miniimagenet | synthetic. "
+            "auto (default) uses CIFAR-10 if it is already cached, and the "
+            "offline synthetic fixture otherwise."
+        ),
+    )
+    parser.add_argument(
+        "--allow-download",
+        action="store_true",
+        help=(
+            "Permit fetching a missing dataset over the network. Off by "
+            "default: the validation gate must work without connectivity."
+        ),
     )
     parser.add_argument(
         "--seed",
@@ -309,12 +409,23 @@ def main() -> int:
     )
 
     if args.smoke_test or args.full_benchmark:
-        dataset_name = args.dataset
-        results = run_smoke_test(config, dataset=dataset_name)
+        dataset_name = resolve_dataset(args.dataset, "./data", args.allow_download)
+        if args.dataset == "auto":
+            print(f"   • Dataset resolved to '{dataset_name}' (--dataset auto)")
+        results = run_smoke_test(
+            config, dataset=dataset_name, allow_download=args.allow_download
+        )
 
         # Print human-readable results
         print(f"\n📊 Benchmark Results ({dataset_name}):")
-        print(f"   • Accuracy: {results['accuracy']:.1%}")
+        if results["accuracy"] is None:
+            print("   • Accuracy: not reported")
+            print("     The synthetic fixture is random tensors. An accuracy")
+            print("     measured on it describes nothing, so none is published.")
+            print("     For a measured figure:")
+            print("       --dataset cifar10 --allow-download")
+        else:
+            print(f"   • Accuracy: {results['accuracy']:.1%}")
         print(f"   • Avg Latency: {results['latency_avg_ms']:.1f} ms")
         print(f"   • P95 Latency: {results['latency_p95_ms']:.1f} ms")
         print(f"   • Embedding Time: {results['embedding_time_s']:.3f}s")

@@ -30,6 +30,7 @@ Docs preview: `mkdocs serve` (requires `mkdocs`, `mkdocs-material`, `mkdocstring
 
 - **CPU-only, <250MB RAM** for core functionality. Never assume GPU availability. Any GPU/torch-dependent feature must be behind an optional extra with a CPU fallback.
 - **Deterministic**: use `set_deterministic_seed()` from `src/adaptshot/utils/determinism.py`; benchmarks must reproduce with `--seed 42`.
+- **The validation gate runs offline.** `--smoke-test` uses a synthetic fixture unless CIFAR-10 is already cached, and never downloads without `--allow-download`. A library arguing that connectivity is the scarce resource cannot require a 170MB download to check a PR.
 - **No new dependencies** outside the optional-extra groups already declared in `pyproject.toml`.
 - **Never claim features, metrics, or latency numbers** not backed by code in `src/adaptshot/` or a script in `benchmarks/`. If you cannot verify an API against `src/adaptshot/`, write `[TODO: Verify against src/adaptshot/...]` rather than guessing. See `.openproject.md` for the full protocol.
 

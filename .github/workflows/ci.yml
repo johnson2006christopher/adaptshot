@@ -137,6 +137,60 @@ jobs:
       - name: Test with pytest
         run: pytest tests/ -v --tb=short -rs
 
+  # Proves the claim in #12: the documented validation gate runs with no network
+  # at all. It uses the synthetic fixture, so it reports determinism and latency
+  # and deliberately no accuracy -- a figure measured on random tensors would
+  # describe nothing.
+  #
+  # No pip cache and no dataset cache here on purpose: a cache is a form of
+  # network access that already happened, and this job exists to prove the run
+  # needs neither.
+  benchmark-offline:
+    name: Smoke benchmark (offline)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies (CPU-only torch)
+        run: |
+          python -m pip install --upgrade pip
+          pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+          pip install -e ".[dev]"
+      - name: Assert the CPU-only build is what we are testing
+        # The default PyPI index serves the CUDA build on Linux, which pulled in
+        # ~2-3GB of nvidia-* wheels to run a job named "CPU-only" (#60). CPU-only
+        # is this project's first constraint; it should be verified, not assumed.
+        run: |
+          python - <<'PY'
+          import sys
+          import torch
+          if torch.version.cuda:
+              sys.exit(f"CUDA-enabled torch ({torch.version.cuda}) in a CPU-only job")
+          print(f"confirmed: CPU-only torch {torch.__version__}")
+          PY
+      - name: Run the smoke benchmark with networking disabled
+        # unshare -rn gives the process an empty network namespace: no interface
+        # but loopback. If anything reaches for the network, it fails here rather
+        # than on a contributor's connection.
+        run: |
+          unshare -rn python -m benchmarks.run_benchmark \
+            --smoke-test --seed 42 --output results/offline_smoke.json
+      - name: Assert it really ran offline, on the fixture
+        run: |
+          python - <<'PY'
+          import json
+          import sys
+          with open("results/offline_smoke.json", encoding="utf-8") as handle:
+              results = json.load(handle)
+          if results["data_source"] != "synthetic":
+              sys.exit(f"expected the offline fixture, got {results['data_source']!r}")
+          if results["accuracy"] is not None:
+              sys.exit("an accuracy figure was published from synthetic data")
+          print(f"offline run OK: {results['latency_avg_ms']:.1f} ms average latency")
+          PY
+
   benchmark:
     name: Deterministic smoke benchmark
     runs-on: ubuntu-latest
@@ -146,12 +200,33 @@ jobs:
         with:
           python-version: "3.11"
           cache: "pip"
-      - name: Install dependencies
-        # benchmarks/run_benchmark.py imports torch at module scope (line 19) and
-        # loads ResNet-18 via torchvision. Whether the benchmark should have a
-        # torch-free path is tracked in #12, not resolved here.
+      - name: Cache the CIFAR-10 download
+        # Measured on this runner: the download took 34m48s while the benchmark
+        # itself took 56s -- 97% of the job was waiting for cs.toronto.edu, which
+        # served roughly 80KB/s. The dataset never changes, so fetch it once.
+        uses: actions/cache@v4
+        with:
+          path: ./data
+          key: cifar10-v1
+      - name: Install dependencies (CPU-only torch)
+        # benchmarks/run_benchmark.py imports torch at module scope and loads
+        # ResNet-18 via torchvision. The CPU index is deliberate: see #60.
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[dev,torch]"
+          pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+          pip install -e ".[dev]"
+      - name: Assert the CPU-only build is what we are testing
+        run: |
+          python - <<'PY'
+          import sys
+          import torch
+          if torch.version.cuda:
+              sys.exit(f"CUDA-enabled torch ({torch.version.cuda}) in a CPU-only job")
+          print(f"confirmed: CPU-only torch {torch.__version__}")
+          PY
       - name: Run CPU-only smoke benchmark
-        run: python -m benchmarks.run_benchmark --smoke-test --seed 42
+        # --allow-download so a cold cache still produces the measured CIFAR-10
+        # figure rather than silently falling back to the fixture.
+        run: |
+          python -m benchmarks.run_benchmark \
+            --smoke-test --dataset cifar10 --allow-download --seed 42
