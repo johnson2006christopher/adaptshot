@@ -1,12 +1,25 @@
-"""I/O utilities for path validation, serialization, and safe data conversion."""
+"""I/O utilities for path validation, serialization, and safe data conversion.
+
+torch appears here only in an annotation, so it is imported under TYPE_CHECKING
+rather than at module scope. The eager import made this module -- and therefore
+the whole save/load path -- unreachable on a core install, and contributed
+~479MB to the cost of `import adaptshot` (#13, #35).
+
+`tensor_to_numpy` is duck-typed at runtime: anything with `.detach().cpu()`
+works, which is every torch tensor and nothing else that matters here.
+"""
+
+from __future__ import annotations
 
 import json
 import logging
 from pathlib import Path
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import numpy as np
-import torch
+
+if TYPE_CHECKING:  # pragma: no cover - import for annotations only
+    import torch
 
 # Module logger (configure at app level; defaults to WARNING if unconfigured)
 logger = logging.getLogger(__name__)

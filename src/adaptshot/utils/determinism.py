@@ -1,12 +1,42 @@
-"""Deterministic execution utilities for reproducible few-shot learning."""
+"""Deterministic execution utilities for reproducible few-shot learning.
+
+torch is imported lazily here, not at module scope. This module holds
+`set_deterministic_seed`, which `CLAUDE.md` tells every contributor to call --
+so an eager import made the one function everyone is told to use unreachable on
+a core install, and cost ~479MB of resident memory for anyone who merely
+imported AdaptShot (#13, #35).
+
+Seeding Python and NumPy is useful with or without torch. Doing it only when
+torch happens to be installed was never the intent.
+"""
+
+from __future__ import annotations
 
 import os
 import random
 from collections.abc import Callable
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
-import torch
+
+if TYPE_CHECKING:  # pragma: no cover - import for annotations only
+    import torch
+
+
+def _torch() -> Any | None:
+    """Return the torch module, or None when it cannot be imported.
+
+    `ImportError`, not `ModuleNotFoundError`: a torch that is installed but
+    fails to load -- a broken CUDA build, a partial install -- should degrade
+    to the numpy paths in exactly the same way as one that is absent.
+    `training/finetune.py` guards its own import the same way.
+    """
+
+    try:
+        import torch as torch_module
+    except ImportError:
+        return None
+    return torch_module
 
 
 def set_deterministic_seed(seed: int = 42, device: torch.device | None = None) -> None:
@@ -15,6 +45,10 @@ def set_deterministic_seed(seed: int = 42, device: torch.device | None = None) -
 
     This function is called at the start of every training, evaluation, and benchmarking
     run to guarantee bit-exact reproducibility across hardware and operating systems.
+
+    Python and NumPy are always seeded. torch is seeded when it is installed;
+    without it this function still does its job for the numpy paths rather than
+    raising, which is what an optional dependency means.
 
     Args:
         seed: Random seed to use (default: 42).
@@ -26,13 +60,14 @@ def set_deterministic_seed(seed: int = 42, device: torch.device | None = None) -
     # NumPy
     np.random.seed(seed)
 
-    # PyTorch
-    torch.manual_seed(seed)
+    torch = _torch()
+    if torch is not None:
+        torch.manual_seed(seed)
 
-    # CUDA deterministic settings (only applies if device.type == 'cuda')
-    if device is not None and device.type == "cuda":
-        torch.backends.cudnn.deterministic = True
-        torch.backends.cudnn.benchmark = False
+        # CUDA deterministic settings (only applies if device.type == 'cuda')
+        if device is not None and device.type == "cuda":
+            torch.backends.cudnn.deterministic = True
+            torch.backends.cudnn.benchmark = False
         # Note: Some CUDA operations remain inherently non-deterministic.
         # CPU-first design avoids this, but we support CUDA for flexibility.
 
@@ -72,7 +107,8 @@ def verify_determinism(
         output = fn(*args, **kwargs)
 
         # Normalize to numpy for cross-framework comparison
-        if isinstance(output, torch.Tensor):
+        torch = _torch()
+        if torch is not None and isinstance(output, torch.Tensor):
             output = output.detach().cpu().numpy()
         elif not isinstance(output, np.ndarray):
             output = np.array(output)
