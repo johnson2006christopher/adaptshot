@@ -160,6 +160,8 @@ project makes anyway.
    - Include benchmark diffs if performance/calibration affected
    - Add `[WIP]` prefix if work is incomplete
 
+Releases are tagged, not pushed by hand; see [docs/release-checklist.md](docs/release-checklist.md).
+
 ## 🗣️ Communication
 - **Discussions**: Use GitHub Discussions for questions, ideas, and RFCs
 - **Issues**: Report bugs or request features via GitHub Issues
