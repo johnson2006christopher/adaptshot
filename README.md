@@ -295,7 +295,7 @@ mean over episodes with a 95% confidence interval — never a bare point estimat
 |---|---|
 | **AdaptShot** | **91.4% ± 1.0** |
 | Nearest centroid | 91.4% ± 1.0 |
-| Linear probe (logistic regression) | 91.4% ± 1.2 |
+| Linear probe (logistic regression) | 91.4% ± 1.1 |
 | 1-NN | 89.0% ± 1.3 |
 | 5-NN | 87.7% ± 1.2 |
 

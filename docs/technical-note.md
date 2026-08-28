@@ -30,7 +30,7 @@ All figures: PlantVillage crop-disease photographs (Mohanty et al., 2016), 20 cl
 |---|---|
 | **AdaptShot** | **91.4% ± 1.0** |
 | Nearest centroid, no calibration | 91.4% ± 1.0 |
-| Logistic-regression linear probe | 91.4% ± 1.2 |
+| Logistic-regression linear probe | 91.4% ± 1.1 |
 | 1-NN on raw embeddings | 89.0% ± 1.3 |
 | 5-NN on raw embeddings | 87.7% ± 1.2 |
 

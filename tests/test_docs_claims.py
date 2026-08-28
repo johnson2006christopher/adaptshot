@@ -269,3 +269,39 @@ def test_technical_note_figures_trace_to_the_artifact() -> None:
         "docs/technical-note.md does not quote these figures from "
         "results/plantvillage_5way5shot.json:\n  " + "\n  ".join(missing)
     )
+
+
+def test_readme_results_tables_trace_to_the_artifact() -> None:
+    """The accuracy and conformal tables, under the same guard as the latency table.
+
+    The linear probe's interval was quoted as 1.2 in three places; the artifact
+    says 1.1466, which is 1.1. That was rounded by eye from a two-decimal
+    printout and nothing checked it. Now something does.
+    """
+
+    record = json.loads(PLANTVILLAGE_RESULT_PATH.read_text(encoding="utf-8"))
+    acc = record["accuracy"]
+    conformal = record["conformal"]
+    top1 = record["top1_threshold"]
+
+    def pct(block: dict[str, float]) -> str:
+        return f"{block['mean'] * 100:.1f}% ± {block['ci95_half_width'] * 100:.1f}"
+
+    def num(block: dict[str, float]) -> str:
+        return f"{block['mean']:.2f} ± {block['ci95_half_width']:.2f}"
+
+    expected = {
+        "AdaptShot accuracy": pct(acc["adaptshot"]),
+        "nearest centroid": pct(acc["nearest_centroid"]),
+        "linear probe": pct(acc["linear_probe"]),
+        "1-NN": pct(acc["knn_1"]),
+        "5-NN": pct(acc["knn_5"]),
+        "conformal coverage": pct(conformal["empirical_coverage"]),
+        "conformal set size": num(conformal["mean_set_size"]),
+        "threshold coverage": pct(top1["coverage"]),
+        "threshold set size": num(top1["mean_set_size"]),
+    }
+    readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+    missing = [f"{label}: {text}" for label, text in expected.items() if text not in readme]
+    assert not missing, "README results tables disagree with the artifact:\n  " + "\n  ".join(missing)
+
