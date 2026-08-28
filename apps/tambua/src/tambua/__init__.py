@@ -17,15 +17,17 @@ Usage::
     from tambua import TambuaEngine, bundled_config
 
     engine = TambuaEngine(bundled_config("solar_panel"))
-    engine.initialize_with_samples(n_support=5)
+    engine.load_images_from_dir("my_photos/")   # one folder per class
     result = engine.identify("photo.jpg")
     print(result.local_name, result.confidence, result.action)
 
-.. warning::
+.. note::
 
-   The bundled sample images are generated procedurally by :mod:`tambua.data`.
-   They are drawn patterns, not photographs, and exist so the loop can be
-   demonstrated before a dataset exists. Evaluation on real data is issue #18.
+   Tambua ships no images. It used to generate them -- drawn shapes offered as
+   "sample data" -- and that was removed in #53: a number measured on drawn
+   patterns is not a result. Five real photographs per class is the input.
+   :func:`tambua.data.inspect_folder` reports whether a folder can support
+   training before a run is spent finding out.
 """
 
 from tambua import data
