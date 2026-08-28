@@ -485,8 +485,19 @@ def main() -> int:
         # Verify determinism
         print("\n🔍 Verifying determinism...")
         def run_once() -> np.ndarray:
-            """Helper: run extraction once for determinism check."""
-            img_tensor, _ = load_few_shot_split(seed=config.seed)[1][0]
+            """Helper: run extraction once for determinism check.
+
+            It must load the same dataset the benchmark just ran on. It used to
+            take `load_few_shot_split`'s default, which is CIFAR-10 regardless of
+            what was measured -- harmless while every path downloaded CIFAR
+            anyway, and a hard failure the moment downloads stopped being
+            implicit.
+            """
+            img_tensor, _ = load_few_shot_split(
+                dataset_name=dataset_name,
+                seed=config.seed,
+                allow_download=args.allow_download,
+            )[1][0]
             return extract_embedding(ToPILImage()(img_tensor), config)
         is_deterministic = verify_determinism(run_once, runs=3, seed=config.seed)
         print(f"   • Determinism check: {'✅ PASS' if is_deterministic else '❌ FAIL'}")

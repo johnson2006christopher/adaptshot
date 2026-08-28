@@ -127,6 +127,29 @@ def test_no_accuracy_is_reported_for_synthetic_data(benchmark) -> None:  # type:
     assert results["latency_avg_ms"] > 0, "latency is measurable on any input, and is reported"
 
 
+def test_the_determinism_check_uses_the_dataset_that_was_measured() -> None:
+    """It used to always ask for CIFAR-10, whatever the benchmark actually ran on.
+
+    Harmless while every path downloaded CIFAR anyway; a hard failure the moment
+    downloads stopped being implicit. Caught by the offline CI job on the very
+    PR that added it, which is the argument for having the job.
+
+    Checked by reading the source rather than by running: exercising it needs a
+    full embedding pass, and the property is that one name is threaded through.
+    """
+
+    source = (REPO_ROOT / "benchmarks" / "run_benchmark.py").read_text(encoding="utf-8")
+    marker = "def run_once() -> np.ndarray:"
+    assert marker in source
+    body = source[source.index(marker) : source.index(marker) + 900]
+    assert "dataset_name=dataset_name" in body, (
+        "the determinism check must load the dataset that was benchmarked"
+    )
+    assert "allow_download=args.allow_download" in body, (
+        "and must respect the same download permission"
+    )
+
+
 def test_the_committed_artifact_came_from_real_data() -> None:
     """`results/smoke_test.json` is quoted in the documentation.
 
