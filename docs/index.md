@@ -31,7 +31,7 @@ AdaptShot is a CPU-first few-shot vision library that learns from human correcti
 | 📊 **Uncertainty Quantification** | Epistemic · Aleatoric · Distributional (Mahalanobis) | Three complementary signals with shrinkage covariance |
 | 🔍 **Explainability** | Feature attribution · Confidence decomposition · Counterfactuals | Historical penalty tracking, no magic numbers |
 | 🔄 **Continual Learning** | Head-only CA-EWC fine-tuning · UP-UGF pruning with LSH acceleration | O(N log N) buffer management for >100 examples |
-| ⚡ **CPU-First** | Numpy-based · <250MB RAM is a design target, not yet asserted by a test ([#13](https://github.com/johnson2006christopher/adaptshot/issues/13)) | No GPU required; PyTorch currently required — see below |
+| ⚡ **CPU-First** | Numpy-based · 250MB RAM is a target, **not met**: measured peak is ~775MB ([#13](https://github.com/johnson2006christopher/adaptshot/issues/13)) | No GPU required; PyTorch currently required — see below |
 | 🤝 **Human-in-the-Loop** | ACT adaptive thresholds · Feedback routing · Bootstrap calibration | Symmetric threshold updates with mean-reversion |
 | 🛠️ **Tooling** | ONNX export · Memory profiling · Deterministic seeding · SHA-256 checkpoints | Torch-free inference is **not** implemented yet ([#35](https://github.com/johnson2006christopher/adaptshot/issues/35), [#36](https://github.com/johnson2006christopher/adaptshot/issues/36)) |
 

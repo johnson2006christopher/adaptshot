@@ -189,9 +189,29 @@ real-world data at scale.*
 | ONNX backbone export | **Experimental** |
 | Studio / Pilot GUIs | **Optional extras**, planned to move to a separate project |
 
-Memory: the library targets operation within roughly **250 MB of RAM** for core
-inference. `utils/profiling.py` provides a `MemoryTracker` so you can verify this on
-*your* hardware and workload rather than taking the number on faith.
+Memory: **250 MB is the target, and it is not met today.** Measured peak resident set
+size for a full support-set-to-prediction cycle is around **775 MB**
+(`tests/test_memory_ceiling.py`, which prints the figure on every run):
+
+| stage | peak RSS |
+|---|---|
+| interpreter + numpy + Pillow | 33 MB |
+| `import adaptshot` | 512 MB |
+| `load_support_images` (15 images) | 774 MB |
+| `predict()` | 775 MB |
+
+The 479 MB jump at import is PyTorch, pulled in eagerly by `utils/determinism.py` and
+`utils/io.py`. The 258 MB after that is ResNet-18's weights and activations. Since
+inference currently requires torch ([#35]), no working path stays under 250 MB; the
+target is reachable only through the bundled-ONNX backbone ([#36]).
+
+The test asserts a regression budget against what we actually cost, and carries a
+strict-xfail on the 250 MB figure — so the build fails when it *starts* passing, and this
+section has to be rewritten rather than left stale. `utils/profiling.py` provides a
+`MemoryTracker` for measuring your own workload.
+
+[#35]: https://github.com/johnson2006christopher/adaptshot/issues/35
+[#36]: https://github.com/johnson2006christopher/adaptshot/issues/36
 
 ---
 
