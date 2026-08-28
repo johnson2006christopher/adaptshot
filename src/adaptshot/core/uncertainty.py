@@ -25,6 +25,7 @@ Design: numpy-first with optional torch acceleration planned for MC Dropout.
 
 from __future__ import annotations
 
+import hashlib
 from dataclasses import dataclass
 from typing import Any
 
@@ -70,6 +71,26 @@ class UncertaintyReport:
             "entropy": self.entropy,
             "variance": self.variance,
         }
+
+
+def _seed_from_embedding(embedding: np.ndarray) -> int:
+    """A stable seed derived from an embedding's contents.
+
+    `hashlib`, never the builtin `hash()`: hash randomisation is seeded per
+    process, so the builtin would reintroduce exactly the run-to-run variation
+    this exists to remove.
+
+    Args:
+        embedding: The array to derive a seed from.
+
+    Returns:
+        A non-negative integer, identical for identical contents.
+    """
+
+    digest = hashlib.blake2b(
+        np.ascontiguousarray(embedding, dtype=np.float32).tobytes(), digest_size=8
+    ).digest()
+    return int.from_bytes(digest, "big")
 
 
 class UncertaintyQuantifier:
@@ -337,27 +358,43 @@ class UncertaintyQuantifier:
     ) -> tuple[float, float]:
         """Estimate epistemic uncertainty via stochastic embedding perturbation.
 
-        Adds small Gaussian noise to the query embedding with a non-deterministic
-        seed and measures how much the normalized direction shifts. High sensitivity
-        indicates the embedding lacks robustness — the model has high epistemic
-        uncertainty for this input.
+        Adds small Gaussian noise to the query embedding and measures how much the
+        normalized direction shifts. High sensitivity indicates the embedding
+        lacks robustness — the model has high epistemic uncertainty for this
+        input.
 
-        When seed=None (default), each call produces a different perturbation
-        pattern, capturing genuine stochastic sensitivity. Pass an explicit seed
-        for reproducible diagnostics.
+        When ``seed`` is None the seed is derived from the embedding's own bytes,
+        so the same input always gives the same answer while different inputs
+        still get different perturbation patterns.
+
+        This used to seed from OS entropy, which made the result vary between
+        identical calls — including through `quantify(mode="ensemble")`, the
+        default, and therefore through `PredictionResult.uncertainty_report`. It
+        contradicted the project's determinism guarantee, and the smoke benchmark
+        reported that guarantee as holding because accuracy does not depend on
+        this signal (#58).
+
+        Nothing is lost by fixing it. The stochastic signal is carried by
+        averaging over ``perturbation_samples`` *within* a call; varying the seed
+        *between* calls added run-to-run noise to a reported number without
+        adding information to any single report. Pass an explicit seed to choose
+        a different pattern deliberately.
 
         This is a numpy-based proxy for MC Dropout. Full MC Dropout through the
         backbone requires torch and is planned for a future release.
 
         Args:
             query_embedding: [D] query embedding vector.
-            seed: Optional random seed. None = non-deterministic (default).
+            seed: Optional random seed. None (default) derives one from the
+                embedding, which is reproducible.
 
         Returns:
             (raw_variance, normalized_variance in [0, 1])
         """
-        rng = np.random.default_rng(seed)
         query = np.asarray(query_embedding, dtype=np.float32)
+        rng = np.random.default_rng(
+            _seed_from_embedding(query) if seed is None else seed
+        )
         query_norm = float(np.linalg.norm(query)) + 1e-8
 
         perturbed_embeddings: list[np.ndarray] = []
