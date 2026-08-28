@@ -206,7 +206,7 @@ Include:
 | `ModuleNotFoundError: No module named 'gradio'` | UI dependencies missing | `pip install tambua` (for the app), or `pip install "adaptshot[ui]"` (for the library's own UI) |
 | `ModuleNotFoundError: No module named 'yaml'` | PyYAML missing | `pip install PyYAML` |
 | `Address already in use` | Port 7860 occupied | Use `--port 8080` |
-| `config.yaml not found` | Config file missing | Ensure `apps/tambua/configs/maize.yaml` exists |
+| `config.yaml not found` | Config file missing | Ensure `apps/tambua/src/tambua/configs/maize.yaml` exists |
 
 ### Model Training Issues
 
@@ -239,18 +239,18 @@ Include:
 ```bash
 # MziziGuard-specific health check
 python -c "
-from tambua import MziziGuard
+from tambua import TambuaEngine
 
-guard = MziziGuard()
-print(f'Config loaded: {len(guard.known_labels)} diseases')
+engine = TambuaEngine()
+print(f'Config loaded: {len(engine.known_labels)} diseases')
 
-guard.initialize_with_samples(n_support=3)
-print(f'Trained: {guard.is_trained}')
+engine.initialize_with_samples(n_support=3)
+print(f'Trained: {engine.is_trained}')
 
-result = guard.diagnose(guard._data_dir + '/healthy_maize_support_00.png')
-print(f'Diagnosis works: {result.swahili}')
+result = engine.identify(engine._data_dir + '/healthy_maize_support_00.png')
+print(f'Diagnosis works: {result.local_name}')
 
-health = guard.system_health()
+health = engine.system_health()
 print(f'Health report: ECE={health[\"calibration\"][\"ece\"]}')
 print('✅ MziziGuard is healthy')
 "

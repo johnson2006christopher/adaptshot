@@ -178,19 +178,19 @@ MziziGuard has a clean Python API for programmatic use. Here's the full workflow
 
 ### Configuration (config.yaml)
 
-Edit `apps/tambua/configs/maize.yaml` to add your own crops:
+Edit `apps/tambua/src/tambua/configs/maize.yaml` to add your own crops:
 
 ```yaml
-crops:
+domains:
   maize:
-    swahili: "mahindi"
-    diseases:
+    local_name: "mahindi"
+    classes:
       healthy_maize:
-        swahili: "mahindi yenye afya"
+        local_name: "mahindi yenye afya"
         action: "Hakuna matibabu yanayohitajika."
         severity: "low"
       northern_leaf_blight:
-        swahili: "ugonjwa wa mabaka ya kahawia"
+        local_name: "ugonjwa wa mabaka ya kahawia"
         action: "Ondoa majani yaliyoathirika. Tumia dawa ya kuvu."
         severity: "moderate"
 ```
@@ -198,21 +198,21 @@ crops:
 ### Initialize and Predict
 
 ```python
-from tambua import MziziGuard
+from tambua import TambuaEngine
 
 # Load from config
-guard = MziziGuard("apps/tambua/configs/maize.yaml")
+engine = TambuaEngine("apps/tambua/src/tambua/configs/maize.yaml")
 
 # Option A: Generate synthetic samples for quick start
-guard.initialize_with_samples(n_support=5)
+engine.initialize_with_samples(n_support=5)
 
 # Option B: Load real images from a folder structure
 # (folder/{class_name}/*.png)
-guard.load_images_from_dir("path/to/crop_photos/", max_per_class=10)
+engine.load_images_from_dir("path/to/crop_photos/", max_per_class=10)
 
 # Diagnose
-result = guard.diagnose("photo_of_leaf.jpg")
-print(f"Diagnosis: {result.swahili}")
+result = engine.identify("photo_of_leaf.jpg")
+print(f"Diagnosis: {result.local_name}")
 print(f"Confidence: {result.confidence:.1%}")
 print(f"Action: {result.action}")
 ```
@@ -221,7 +221,7 @@ print(f"Action: {result.action}")
 
 ```python
 # When the prediction is wrong, correct it:
-result = guard.teach(
+result = engine.teach(
     image_path="photo_of_leaf.jpg",
     true_label="northern_leaf_blight",
     confidence_weight=0.9,  # How sure are you?
@@ -234,14 +234,14 @@ result = guard.teach(
 
 ```python
 # Process a whole folder of farmer photos
-results = guard.batch_diagnose([
+results = engine.batch_identify([
     "farmer_1.jpg", "farmer_2.jpg", "farmer_3.jpg",
 ])
 for r in results:
-    print(f"{r.swahili}: {r.confidence:.1%} — {r.action}")
+    print(f"{r.local_name}: {r.confidence:.1%} — {r.action}")
 
 # Export to CSV for record-keeping
-csv_data = guard.batch_to_csv(results)
+csv_data = engine.batch_to_csv(results)
 with open("diagnoses.csv", "w") as f:
     f.write(csv_data)
 ```
@@ -250,17 +250,17 @@ with open("diagnoses.csv", "w") as f:
 
 ```python
 # Save the trained model for next session
-guard.save_model("models/session_2024.json")
+engine.save_model("models/session_2024.json")
 
 # Later, resume from that save
-restored_count = guard.load_model("models/session_2024.json")
+restored_count = engine.load_model("models/session_2024.json")
 print(f"Restored {restored_count} support images")
 ```
 
 ### System Health
 
 ```python
-health = guard.system_health()
+health = engine.system_health()
 print(f"Calibration ECE: {health['calibration']['ece']}")
 print(f"Session accuracy: {health['session']['accuracy']}")
 print(f"Eco mode: {health['config']['eco_mode']}")
@@ -273,17 +273,17 @@ print(f"Eco mode: {health['config']['eco_mode']}")
 Edit `config.yaml` to define new crops:
 
 ```yaml
-crops:
+domains:
   coffee:
-    swahili: "kahawa"
-    diseases:
+    local_name: "kahawa"
+    classes:
       coffee_leaf_rust:
-        swahili: "kutu ya majani ya kahawa"
+        local_name: "kutu ya majani ya kahawa"
         action: "Tumia dawa ya kuvu yenye shaba. Punguza kivuli."
         description: "Orange-yellow powdery spots on leaf undersides."
         severity: "high"
       healthy_coffee:
-        swahili: "kahawa yenye afya"
+        local_name: "kahawa yenye afya"
         action: "Endelea na utunzaji wa kawaida."
         severity: "low"
 ```
@@ -338,7 +338,7 @@ If you're presenting this demo to a non-technical audience:
 
 ```
 apps/tambua/
-├── __init__.py        # Public API (MziziGuard, DiagnosisResult)
+├── __init__.py        # Public API (MziziGuard, Identification)
 ├── config.yaml         # Crop/disease definitions & engine settings
 ├── engine.py           # Core engine wrapping FewShotLearner
 ├── data.py             # Sample generation + real image folder loader
