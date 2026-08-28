@@ -28,42 +28,38 @@ from ..utils.exceptions import BackboneError
 # This keeps the module importable without a hard torch dependency.
 # ---------------------------------------------------------------------------
 
-_TORCH: Any = None
-_TORCH_NN: Any = None
-_TV_MODELS: Any = None
-_TV_TRANSFORMS: Any = None
+# `lru_cache` rather than a module global guarded by `global`: it memoises on the
+# first call exactly as the hand-written version did, but the cache is the
+# function's own rather than a name any other code in the module could rebind.
+# The import still happens once, and still only when first asked for.
 
 
+@lru_cache(maxsize=1)
 def _get_torch() -> Any:
-    global _TORCH
-    if _TORCH is None:
-        import torch as _t
-        _TORCH = _t
-    return _TORCH
+    import torch
+
+    return torch
 
 
+@lru_cache(maxsize=1)
 def _get_torch_nn() -> Any:
-    global _TORCH_NN
-    if _TORCH_NN is None:
-        from torch import nn as _nn
-        _TORCH_NN = _nn
-    return _TORCH_NN
+    from torch import nn
+
+    return nn
 
 
+@lru_cache(maxsize=1)
 def _get_tv_models() -> Any:
-    global _TV_MODELS
-    if _TV_MODELS is None:
-        from torchvision import models as _m
-        _TV_MODELS = _m
-    return _TV_MODELS
+    from torchvision import models
+
+    return models
 
 
+@lru_cache(maxsize=1)
 def _get_tv_transforms() -> Any:
-    global _TV_TRANSFORMS
-    if _TV_TRANSFORMS is None:
-        from torchvision import transforms as _t
-        _TV_TRANSFORMS = _t
-    return _TV_TRANSFORMS
+    from torchvision import transforms
+
+    return transforms
 
 
 # Type alias for flexible image input (lazy reference to torch.Tensor via Any)
@@ -146,7 +142,6 @@ def _build_backbone(backbone_name: str, device: str) -> Any:
 
 
 _DATA_DIR = Path(__file__).resolve().parent.parent / "data"
-_ONNX_BACKEND: Any | None = None
 
 
 def clear_backbone_cache() -> None:
@@ -303,6 +298,7 @@ def _require_a_usable_backend(backbone_name: str, return_numpy: bool) -> None:
     )
 
 
+@lru_cache(maxsize=1)
 def _onnx_backend() -> Any:
     """The process-wide ONNX backend, built on first use.
 
@@ -310,12 +306,9 @@ def _onnx_backend() -> Any:
     reload the graph every time.
     """
 
-    global _ONNX_BACKEND
-    if _ONNX_BACKEND is None:
-        from .backends.onnx_backend import ONNXBackend
+    from .backends.onnx_backend import ONNXBackend
 
-        _ONNX_BACKEND = ONNXBackend()
-    return _ONNX_BACKEND
+    return ONNXBackend()
 
 
 def extract_embedding(

@@ -39,7 +39,7 @@ class CalibrationEngine:
         # settings the default is intentionally small to allow early adaptivity.
         if min_fit_samples is None:
             # default: at least 5 samples or a quarter of the window size
-            self.min_fit_samples = max(5, max(1, int(self.window_size // 4)))
+            self.min_fit_samples = max(5, 1, int(self.window_size // 4))
         else:
             self.min_fit_samples = int(min_fit_samples)
 

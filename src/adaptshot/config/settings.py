@@ -111,6 +111,7 @@ class AdaptShotConfig:
                         "CUDA requested but not available. "
                         "Runtime logic will fall back to CPU.",
                         RuntimeWarning,
+                        stacklevel=2,
                     )
             except ImportError:
                 import warnings
@@ -118,4 +119,5 @@ class AdaptShotConfig:
                     "CUDA requested but PyTorch is not installed. "
                     "Install with: pip install 'adaptshot[torch]'",
                     RuntimeWarning,
+                    stacklevel=2,
                 )

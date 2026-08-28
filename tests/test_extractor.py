@@ -7,6 +7,7 @@ from PIL import Image
 
 from adaptshot.config.settings import AdaptShotConfig
 from adaptshot.core.extractor import BackboneRegistry, extract_embedding
+from adaptshot.utils.determinism import verify_determinism
 
 # `config/settings.py` and `core/extractor.py` resolve torch lazily (see `_get_torch`),
 # so they import fine on a core-only install and sit above this guard. These tests do
@@ -15,12 +16,6 @@ from adaptshot.core.extractor import BackboneRegistry, extract_embedding
 # other 93 tests down with it.
 torch = pytest.importorskip("torch")
 pytest.importorskip("torchvision")
-
-# `utils/determinism.py` imports torch eagerly at module scope (line 8), so unlike the
-# imports above it cannot be reached on a core-only install. It therefore has to sit
-# below the guard. That is a real gap in the torch-free contract, not a property of
-# this test -- tracked separately in #35.
-from adaptshot.utils.determinism import verify_determinism
 
 
 def test_resnet18_embedding_shape() -> None:

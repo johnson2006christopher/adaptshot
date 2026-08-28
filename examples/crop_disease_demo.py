@@ -316,7 +316,9 @@ def run_demo(interactive: bool = True) -> None:
     query_labels = generate_dataset._query_labels  # type: ignore[attr-defined]
 
     blight_queries = [
-        (p, label) for p, label in zip(query_paths, query_labels) if label == "northern_leaf_blight"
+        (p, label)
+        for p, label in zip(query_paths, query_labels, strict=True)
+        if label == "northern_leaf_blight"
     ]
     test_path, true_label = blight_queries[0]
 

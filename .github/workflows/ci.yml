@@ -58,7 +58,7 @@ jobs:
           print(f"gradio stubs generated: {stub}")
           PY
       - name: Lint with ruff
-        run: ruff check src/ tests/ benchmarks/ apps/ examples/
+        run: ruff check src/ tests/ benchmarks/ apps/ examples/ scripts/
       - name: Type check with mypy (strict)
         run: mypy src/adaptshot --strict
       - name: Type check the application (strict)

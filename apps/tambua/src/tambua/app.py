@@ -19,6 +19,7 @@ from __future__ import annotations
 import argparse
 import logging
 import os
+from dataclasses import dataclass
 from typing import cast
 
 # No sys.path manipulation here. This is an installed package that declares
@@ -49,11 +50,16 @@ except ImportError:
 
 # ---------------------------------------------------------------------------
 # Local imports
+#
+# Below the gradio guard, and E402 is silenced per-line rather than repo-wide.
+# The guard has to run first: without it a missing gradio surfaces as a
+# ModuleNotFoundError from somewhere inside this file, rather than as the
+# sentence above telling the user which package to install.
 # ---------------------------------------------------------------------------
-import adaptshot
-from tambua import data
-from tambua.config import load_config
-from tambua.engine import (
+import adaptshot  # noqa: E402
+from tambua import data  # noqa: E402
+from tambua.config import load_config  # noqa: E402
+from tambua.engine import (  # noqa: E402
     DEFAULT_CONFIG,
     Identification,
     TambuaEngine,
@@ -62,18 +68,44 @@ from tambua.engine import (
 )
 
 # ---------------------------------------------------------------------------
-# Globals (per-process, single-user Gradio app)
+# Process state (single-user Gradio app)
+#
+# One object holding the mutable state, rather than two module-level names and
+# a `global` statement in every function that touches them. The binding of
+# `_state` never changes -- only its attributes do -- so there is one place to
+# look to see everything this process remembers between callbacks, and no
+# function can silently rebind it out from under another.
 # ---------------------------------------------------------------------------
-_engine: TambuaEngine | None = None
-_config_path: str | None = None
+
+
+@dataclass
+class _ProcessState:
+    """Engine and its configuration, built on first use."""
+
+    engine: TambuaEngine | None = None
+    config_path: str | None = None
+
+    def get_engine(self) -> TambuaEngine:
+        """The engine, constructed lazily so import does not load a model."""
+
+        if self.engine is None:
+            self.engine = TambuaEngine(config_path=self.config_path)
+        return self.engine
+
+    def configure(self, config_path: str | None) -> TambuaEngine:
+        """Point at a config and rebuild. Called once, from `launch`."""
+
+        self.config_path = config_path
+        self.engine = TambuaEngine(config_path=config_path)
+        return self.engine
+
+
+_state = _ProcessState()
 
 
 def _get_engine() -> TambuaEngine:
     """Lazy-initialise the engine singleton."""
-    global _engine
-    if _engine is None:
-        _engine = TambuaEngine(config_path=_config_path)
-    return _engine
+    return _state.get_engine()
 
 
 # ===================================================================
@@ -339,7 +371,7 @@ def _batch_identify(files: list[str]) -> str:
         "| # | Image | Diagnosis (Swahili) | Confidence | Severity | Action |",
         "|---|-------|---------------------|------------|----------|--------|",
     ]
-    for i, (path, r) in enumerate(zip(paths, results), 1):
+    for i, (path, r) in enumerate(zip(paths, results, strict=True), 1):
         fname = os.path.basename(path)[:30]
         sev = {"low": "🟢", "moderate": "🟡", "high": "🟠", "critical": "🔴", "unknown": "⚪"}.get(
             r.severity, "⚪"
@@ -631,8 +663,6 @@ def launch(argv: list[str] | None = None) -> None:
         argv: Command-line arguments. ``None`` reads them from ``sys.argv``.
     """
 
-    global _config_path, _engine
-
     parser = argparse.ArgumentParser(
         prog="tambua",
         description="Tambua — few-shot image classification, powered by AdaptShot",
@@ -675,8 +705,7 @@ def launch(argv: list[str] | None = None) -> None:
             print(f"{name:16} {cfg.application.name} — {', '.join(cfg.domains)}")
         return
 
-    _config_path = args.config
-    _engine = TambuaEngine(config_path=_config_path)
+    _state.configure(args.config)
 
     demo = build_app()
     demo.launch(

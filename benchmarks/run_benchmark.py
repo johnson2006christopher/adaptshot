@@ -178,7 +178,7 @@ def load_few_shot_split(
 
         # Read train.csv to get file-to-label mapping
         label_to_images: dict[str, list[str]] = {}
-        with open(csv_path, "r") as f:
+        with open(csv_path) as f:
             reader = csv.reader(f)
             next(reader)  # skip the header row
             for row in reader:
@@ -207,11 +207,11 @@ def load_few_shot_split(
             if len(images) < k_shot + 5:
                 continue
             selected = rng.choice(len(images), size=k_shot + 5, replace=False)
-            for j, img_idx in enumerate(selected[:k_shot]):
+            for img_idx in selected[:k_shot]:
                 img_path = images_dir / images[img_idx]
                 img = datasets.folder.default_loader(str(img_path))
                 support_data.append((img_transform(img), cls_idx))
-            for j, img_idx in enumerate(selected[k_shot:k_shot + 5]):
+            for img_idx in selected[k_shot:k_shot + 5]:
                 img_path = images_dir / images[img_idx]
                 img = datasets.folder.default_loader(str(img_path))
                 query_data.append((img_transform(img), cls_idx))
@@ -319,13 +319,13 @@ def run_smoke_test(
         latency_ms = (time.perf_counter() - start) * 1000
         latencies.append(latency_ms)
 
-        # Normalize types for comparison: both to int
-        if isinstance(pred_label, str) and pred_label.isdigit():
-            pred_label = int(pred_label)
-        if isinstance(true_label, (np.integer, int)):
-            true_label = int(true_label)
+        # Normalize types for comparison: both to int. Written to new names
+        # rather than over the loop variables, so a reader further down the body
+        # can still tell which value came from the dataset.
+        predicted = int(pred_label) if isinstance(pred_label, str) and pred_label.isdigit() else pred_label
+        expected = int(true_label) if isinstance(true_label, (np.integer, int)) else true_label
 
-        if pred_label == true_label:
+        if predicted == expected:
             correct += 1
 
     accuracy = correct / len(query_data)

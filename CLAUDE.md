@@ -17,7 +17,7 @@ pip install -e ".[dev]"
 Full validation gate (all four must pass before a PR):
 
 ```bash
-ruff check src/ tests/
+ruff check src/ tests/ benchmarks/ apps/ examples/ scripts/
 mypy src/adaptshot --strict
 pytest tests/ -v
 python -m benchmarks.run_benchmark --smoke-test --seed 42
@@ -39,7 +39,7 @@ Docs preview: `mkdocs serve` (requires `mkdocs`, `mkdocs-material`, `mkdocstring
 
 - **Always import the installed package, never the source tree**: `from adaptshot.core.learner import FewShotLearner`, never `from src.adaptshot...`. The two load as separate modules, so `isinstance` and `except` fail across them. Enforced by `tests/test_import_convention.py`.
 - Line length ≤ 100 (ruff, configured in `pyproject.toml`). Format with `ruff check --fix`.
-- Syntax must stay Python 3.9-compatible (`requires-python = ">=3.9"`, ruff `target-version = "py39"`) even though mypy runs under `python_version = "3.10"`.
+- Syntax must stay Python 3.10-compatible (`requires-python = ">=3.10"`, ruff `target-version = "py310"`) even though mypy runs under `python_version = "3.12"`. `zip(..., strict=)`, `match`, and PEP 604 unions are all available; 3.11+ syntax such as `tomllib` is not.
 - `mypy --strict` is enforced: type hints required on all public functions and classes.
 - Google-style docstrings on public APIs.
 - Use `logging.getLogger(__name__)` in library code, never `print()`.

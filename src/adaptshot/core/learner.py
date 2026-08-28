@@ -17,6 +17,7 @@ import time
 import warnings
 from collections.abc import Sequence
 from dataclasses import asdict, dataclass
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, cast
 
@@ -59,18 +60,15 @@ from .uncertainty import UncertaintyQuantifier
 # This keeps the module importable without a hard torch dependency.
 # ---------------------------------------------------------------------------
 
-_TORCH: Any = None
-_TORCH_NN: Any = None
-_TORCH_UTILS_DATA: Any = None
+# `lru_cache` rather than module globals guarded by `global` -- see the same
+# note in core/extractor.py. Memoised on first call, no rebindable module state.
 
 
+@lru_cache(maxsize=1)
 def _get_torch() -> Any:
-    global _TORCH
-    if _TORCH is None:
-        import torch as _t
+    import torch
 
-        _TORCH = _t
-    return _TORCH
+    return torch
 
 
 def _torch_is_available() -> bool:
@@ -83,23 +81,18 @@ def _torch_is_available() -> bool:
     return True
 
 
+@lru_cache(maxsize=1)
 def _get_torch_nn() -> Any:
-    global _TORCH_NN
-    if _TORCH_NN is None:
-        from torch import nn as _nn
+    from torch import nn
 
-        _TORCH_NN = _nn
-    return _TORCH_NN
+    return nn
 
 
+@lru_cache(maxsize=1)
 def _get_data_loader() -> Any:
-    global _TORCH_UTILS_DATA
-    if _TORCH_UTILS_DATA is None:
-        from torch.utils.data import DataLoader as _DL
-        from torch.utils.data import TensorDataset as _TD
+    from torch.utils.data import DataLoader, TensorDataset
 
-        _TORCH_UTILS_DATA = (_DL, _TD)
-    return _TORCH_UTILS_DATA
+    return (DataLoader, TensorDataset)
 
 logger = logging.getLogger(__name__)
 SCHEMA_VERSION = "0.2.0"
@@ -240,7 +233,7 @@ class FewShotLearner:
         current_time = time.time()
         expected_dim: int | None = None
 
-        for path, label in zip(image_paths, labels):
+        for path, label in zip(image_paths, labels, strict=True):
             self._validate_label(label)
             image = self._load_rgb_image_from_path(path)
             preview_signature = compute_preview_signature(image)
@@ -752,6 +745,9 @@ class FewShotLearner:
             warnings.warn(
                 f"Checkpoint schema {schema_version} loaded; migrating to {SCHEMA_VERSION}.",
                 RuntimeWarning,
+                # 2 points at whoever called FewShotLearner.load(), which is the
+                # line that has to decide whether to re-save the checkpoint.
+                stacklevel=2,
             )
             if schema_version == "0.1.0":
                 state = migrate_v0_1_0_to_v0_1_1(state)
@@ -1132,7 +1128,9 @@ class FewShotLearner:
             return
 
         distances: list[float] = []
-        for embedding, label in zip(self._sim_embeddings, self._sim_labels):
+        for embedding, label in zip(
+            self._sim_embeddings, self._sim_labels, strict=True
+        ):
             proto_idx = self._prototype_index_for_label(label)
             if proto_idx is None:
                 continue
@@ -1208,7 +1206,7 @@ class FewShotLearner:
             loo_prototypes: list[np.ndarray] = []
             loo_labels: list[object] = []
 
-            for key, indices in label_to_indices.items():
+            for indices in label_to_indices.values():
                 loo_indices = [j for j in indices if j != i]
                 if not loo_indices:
                     continue
@@ -1309,7 +1307,7 @@ class FewShotLearner:
         best_ece = float("inf")
         for temp_candidate in np.linspace(0.5, 3.0, 26):
             ece_sum = 0.0
-            for raw, correct in zip(raw_confs, correctness):
+            for raw, correct in zip(raw_confs, correctness, strict=True):
                 calibrated = float(np.clip(raw ** (1.0 / max(temp_candidate, 0.1)), 0.0, 1.0))
                 ece_sum += abs(calibrated - float(correct))
             avg_ece = ece_sum / len(raw_confs)
@@ -1318,7 +1316,7 @@ class FewShotLearner:
                 best_temp = temp_candidate
 
         # Seed the calibration window with these bootstrapped observations
-        for raw, correct in zip(raw_confs, correctness):
+        for raw, correct in zip(raw_confs, correctness, strict=True):
             self.calibrator._window_confidences.append(float(raw))
             self.calibrator._window_correct.append(bool(correct))
         self.calibrator.temperature = float(best_temp)

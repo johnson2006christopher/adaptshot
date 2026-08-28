@@ -125,7 +125,8 @@ class ACTEngine:
         action = "ACCEPT" if accept else "REQUEST_FEEDBACK"
 
         logger.debug(
-            f"ACT | Class {class_idx} | Conf: {confidence:.3f} | τ: {threshold_updated:.3f} | Action: {action}"
+            "ACT | Class %s | Conf: %.3f | τ: %.3f | Action: %s",
+            class_idx, confidence, threshold_updated, action,
         )
 
         return accept, action
