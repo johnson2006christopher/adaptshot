@@ -21,6 +21,7 @@ import numpy as np
 from PIL import Image
 
 from ..config.settings import AdaptShotConfig
+from ..utils.exceptions import BackboneError
 
 # ---------------------------------------------------------------------------
 # Lazy import helpers – torch/torchvision are resolved only when first needed.
@@ -262,6 +263,46 @@ def _should_use_onnx(backbone_name: str, return_numpy: bool) -> bool:
     return True
 
 
+def bundled_onnx_backbones() -> list[str]:
+    """Backbone names whose ONNX weights ship inside the installed package."""
+
+    return sorted(
+        path.stem for path in _DATA_DIR.glob("*.onnx") if path.stem in BackboneRegistry
+    )
+
+
+def _require_a_usable_backend(backbone_name: str, return_numpy: bool) -> None:
+    """Fail with an actionable message instead of a bare ``ImportError``.
+
+    Before #36 every backbone needed torch, so a core install failed uniformly
+    and obviously. Now the answer varies by backbone, and the fall-through path
+    raised ``ImportError: No module named 'torch'`` from four frames inside
+    ``_get_torch_nn`` -- true, but it named neither the backbone that caused it
+    nor either of the two ways out.
+    """
+
+    if _torch_is_available():
+        return
+
+    if not return_numpy:
+        raise BackboneError(
+            "return_numpy=False asks for a torch.Tensor, which requires torch: "
+            "pip install 'adaptshot[training]'"
+        )
+
+    bundled = bundled_onnx_backbones()
+    suggestion = (
+        f"use one of the bundled backbones ({', '.join(bundled)})"
+        if bundled
+        else "reinstall adaptshot -- no bundled ONNX weights were found"
+    )
+    raise BackboneError(
+        f"Backbone {backbone_name!r} needs PyTorch on this install: its ONNX "
+        f"weights are not bundled. Either {suggestion}, or install torch with "
+        "pip install 'adaptshot[training]'."
+    )
+
+
 def _onnx_backend() -> Any:
     """The process-wide ONNX backend, built on first use.
 
@@ -327,6 +368,8 @@ def extract_embedding(
         # without torch at all -- and it is not a compromise: embeddings agree with
         # torch to ~4e-06 (cosine 0.99999994), and it is faster on CPU.
         return _onnx_backend().extract(pil_image, config.backbone)
+
+    _require_a_usable_backend(config.backbone, return_numpy)
 
     backbone = _build_backbone(config.backbone, config.device)
 
