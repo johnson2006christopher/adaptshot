@@ -15,6 +15,7 @@ import os
 import tempfile
 import time
 import warnings
+from collections.abc import Sequence
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, cast
@@ -199,11 +200,18 @@ class FewShotLearner:
             ")"
         )
 
-    def load_support_images(self, image_paths: list[str], labels: list[str | int]) -> None:
+    def load_support_images(
+        self, image_paths: Sequence[str], labels: Sequence[str | int]
+    ) -> None:
         """Ingest support set and initialize similarity index and CA-EWC head.
 
+        `Sequence`, not `list`, because `list` is invariant: a caller holding a
+        plain `list[str]` of labels could not pass it to a `list[str | int]`
+        parameter without an annotation contortion. Nobody noticed because the
+        library had no type-checked consumers until `apps/tambua`.
+
         Args:
-            image_paths: List of file paths to support images.
+            image_paths: File paths to support images.
             labels: Corresponding class labels.
 
         Raises:
@@ -813,8 +821,8 @@ class FewShotLearner:
 
     def _validate_support_inputs(
         self,
-        image_paths: list[str],
-        labels: list[str | int],
+        image_paths: Sequence[str],
+        labels: Sequence[str | int],
     ) -> None:
         if not image_paths:
             raise ConfigValidationError(

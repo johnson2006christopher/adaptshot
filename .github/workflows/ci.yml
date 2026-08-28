@@ -31,10 +31,40 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev,torch]"
+          pip install -e "apps/tambua[dev]"
+      - name: Materialise gradio's event-listener stubs
+        # gradio attaches .click()/.change() to components dynamically, in a
+        # metaclass, and writes the matching .pyi files into site-packages the
+        # first time it is imported. Those files are NOT in the wheel. mypy reads
+        # files, not metaclasses, so on a fresh install it reports
+        # `"Button" has no attribute "click"` -- and whether it does depends on
+        # whether anything happened to import gradio earlier in the job, which
+        # made this check silently non-hermetic.
+        #
+        # Import once, deliberately, then assert a stub actually landed, so a
+        # change in gradio's behaviour fails here with a clear message instead of
+        # surfacing as confusing attr-defined errors in our own code.
+        run: |
+          python - <<'PY'
+          import pathlib
+          import gradio
+          stub = pathlib.Path(gradio.__file__).parent / "components" / "button.pyi"
+          if not stub.is_file():
+              raise SystemExit(
+                  f"gradio no longer generates {stub} on import. The strict type "
+                  "check below will report spurious attr-defined errors on every "
+                  "event handler until this is re-solved."
+              )
+          print(f"gradio stubs generated: {stub}")
+          PY
       - name: Lint with ruff
-        run: ruff check src/ tests/ benchmarks/
+        run: ruff check src/ tests/ benchmarks/ apps/ examples/
       - name: Type check with mypy (strict)
         run: mypy src/adaptshot --strict
+      - name: Type check the application (strict)
+        # A separate invocation: the app is its own distribution, and mypy should
+        # resolve `adaptshot` through the install rather than the source tree.
+        run: mypy apps/tambua/src/tambua --strict
 
   # The full suite. Needs the torch extra: two test modules and the benchmark
   # exercise torch-backed paths directly. See #33.
@@ -59,6 +89,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev,torch]"
+          # The application is a separate distribution. Installing it here is what
+          # makes apps/tambua/tests meaningful -- they assert that `tambua` resolves
+          # by installation, not by happening to sit under the working directory.
+          pip install -e "apps/tambua[dev]"
       - name: Test with pytest
         run: pytest tests/ -v --tb=short --cov=src/adaptshot --cov-report=xml --cov-report=term-missing
       - name: Upload coverage artifact

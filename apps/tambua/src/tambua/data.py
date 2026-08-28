@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import os
 import random
-from typing import Dict, List, Tuple
+from collections.abc import Callable
 
 import numpy as np
 from PIL import Image, ImageDraw
@@ -27,7 +27,7 @@ SPOT_DARK = (80, 80, 80)
 SOIL_BG = (160, 140, 100)
 
 
-def _draw_vein(draw: ImageDraw.Draw, x0: int, y0: int, x1: int, y1: int) -> None:
+def _draw_vein(draw: ImageDraw.ImageDraw, x0: int, y0: int, x1: int, y1: int) -> None:
     draw.line([(x0, y0), (x1, y1)], fill=(0, 100, 0), width=1)
 
 
@@ -114,7 +114,7 @@ def make_non_leaf(size: int = 224) -> Image.Image:
 
 
 # Map disease names to generators (synthetic mode)
-DISEASE_GENERATORS: Dict[str, callable] = {  # type: ignore[type-arg]
+DISEASE_GENERATORS: dict[str, Callable[[], Image.Image]] = {
     "healthy_maize": make_healthy_leaf,
     "northern_leaf_blight": make_blight_leaf,
     "gray_leaf_spot": make_gray_leaf_spot,
@@ -131,7 +131,7 @@ def generate_samples(
     n_support: int = 5,
     n_query: int = 3,
     seed: int = 42,
-) -> Tuple[List[str], List[str], List[str], List[str]]:
+) -> tuple[list[str], list[str], list[str], list[str]]:
     """Generate synthetic leaf images for training and testing.
 
     Returns:
@@ -141,10 +141,10 @@ def generate_samples(
     np.random.seed(seed)
     os.makedirs(output_dir, exist_ok=True)
 
-    support_paths: List[str] = []
-    support_labels: List[str] = []
-    query_paths: List[str] = []
-    query_labels: List[str] = []
+    support_paths: list[str] = []
+    support_labels: list[str] = []
+    query_paths: list[str] = []
+    query_labels: list[str] = []
 
     for disease_name, generator in DISEASE_GENERATORS.items():
         for i in range(n_support):
@@ -168,7 +168,7 @@ def generate_samples(
 # ---------------------------------------------------------------------------
 
 
-def list_classes_from_dir(root_dir: str) -> List[str]:
+def list_classes_from_dir(root_dir: str) -> list[str]:
     """Discover class names from subdirectory names."""
     if not os.path.isdir(root_dir):
         raise FileNotFoundError(f"Directory not found: {root_dir}")
@@ -182,7 +182,7 @@ def list_classes_from_dir(root_dir: str) -> List[str]:
     return classes
 
 
-def scan_image_extensions() -> List[str]:
+def scan_image_extensions() -> list[str]:
     """Return supported image file extensions."""
     return [".png", ".jpg", ".jpeg", ".bmp", ".tiff", ".tif", ".webp"]
 
@@ -190,7 +190,7 @@ def scan_image_extensions() -> List[str]:
 def load_from_folders(
     root_dir: str,
     max_per_class: int = 0,
-) -> Tuple[List[str], List[str]]:
+) -> tuple[list[str], list[str]]:
     """Load images organized in subdirectories (one folder per class).
 
     Args:
@@ -200,8 +200,8 @@ def load_from_folders(
     Returns:
         (image_paths, labels) suitable for FewShotLearner.load_support_images().
     """
-    paths: List[str] = []
-    labels: List[str] = []
+    paths: list[str] = []
+    labels: list[str] = []
     extensions = {ext.lower() for ext in scan_image_extensions()}
 
     for class_name in list_classes_from_dir(root_dir):

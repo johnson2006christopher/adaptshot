@@ -47,11 +47,13 @@ Docs preview: `mkdocs serve` (requires `mkdocs`, `mkdocs-material`, `mkdocstring
 
 - **Version lives in two places** that must agree: `pyproject.toml` and `src/adaptshot/__init__.py`. `tests/test_release_metadata.py` derives the expected value from `pyproject.toml`, so bumping only one of the two fails the suite.
 - MkDocs output is **never committed**. `.github/workflows/docs.yml` builds and deploys to the `gh-pages` branch on every push to `main`; `site/` is gitignored. Edit `docs/`, never generated HTML.
+- **Import gradio once before type-checking anything that uses it.** gradio attaches `.click()`/`.change()` to components in a metaclass and writes the matching `.pyi` files into site-packages on first import; they are not in the wheel. On a fresh install `mypy` reports `"Button" has no attribute "click"` against our code, which is a lie. CI does this explicitly in the lint job.
 - Dev tooling is not installed in the ambient environment — run `pip install -e ".[dev]"` before any lint/type/test command.
 
 ## Repo etiquette
 
-- **Never run `git commit`, `git push`, or `git branch`.** The maintainer performs every git operation himself. Make the edits, report what changed, and suggest a commit message if useful.
+- **Git operations are delegated.** Create branches, commit in small scoped units, push, open PRs, and merge into the version branch. Two operations stay with the maintainer: merging the version branch into `main`, and tagging a release. `main` is only ever what the maintainer personally shipped.
+- **Commits carry no AI co-author trailer.** Every commit is reviewed by the maintainer and published under his name; the history records the project, not the tooling.
 - **Branching**: a version branch (e.g. `v0.3.0`) is the integration target; short-lived `feat/...` and `fix/...` branches merge into it. The version branch merges to `main` at release, then gets tagged. `main` always represents a shipped release.
 - Commits: Conventional Commits (`feat:`, `fix:`, `test:`, `docs:`, `build:`, `release:`)
 - Every PR must pass all four validation stages and the constraint checklist in `.github/PULL_REQUEST_TEMPLATE.md`.

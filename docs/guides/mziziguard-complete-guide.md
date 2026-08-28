@@ -53,7 +53,7 @@ Almost every farmer has a basic smartphone. MziziGuard turns that phone into a c
 ```mermaid
 graph TB
     A[Farmer takes photo] --> B[MziziGuard Web UI<br/>Gradio 5-tab interface]
-    B --> C[MziziGuard Engine<br/>examples/mziziguard/engine.py]
+    B --> C[MziziGuard Engine<br/>apps/tambua/engine.py]
     C --> D[AdaptShot FewShotLearner<br/>src/adaptshot/core/learner.py]
     D --> E[ResNet-18 Backbone<br/>Frozen feature extractor]
     E --> F[Embedding Vector]
@@ -76,7 +76,7 @@ graph TB
 ### Project Structure
 
 ```
-examples/mziziguard/
+apps/tambua/
 ├── __init__.py        # Public API: MziziGuard, DiagnosisResult, DiseaseInfo
 ├── config.yaml         # Crop and disease definitions
 ├── engine.py           # Core engine (543 lines) wrapping FewShotLearner
@@ -125,13 +125,13 @@ What `[ui]` installs:
 
 ```bash
 # Default: http://localhost:7860
-python -m examples.mziziguard.app
+tambua
 
 # Custom port
-python -m examples.mziziguard.app --port 8080
+tambua --port 8080
 
 # Public shareable link (for demos)
-python -m examples.mziziguard.app --share
+tambua --share
 ```
 
 ### Step 3: Verify
@@ -268,7 +268,7 @@ MziziGuard exposes a clean Python API for programmatic use, scripting, and integ
 ### Initialization
 
 ```python
-from examples.mziziguard import MziziGuard
+from tambua import MziziGuard
 
 # Load with default config (looks for config.yaml next to engine.py)
 guard = MziziGuard()
@@ -428,7 +428,7 @@ print(info.severity)   # "moderate"
 ### Complete Workflow Example
 
 ```python
-from examples.mziziguard import MziziGuard
+from tambua import MziziGuard
 
 # 1. Initialize
 guard = MziziGuard()
@@ -573,7 +573,7 @@ Supported formats: `.png`, `.jpg`, `.jpeg`, `.bmp`, `.tiff`, `.tif`, `.webp`.
 For quick testing without real images:
 
 ```python
-from examples.mziziguard.data import generate_samples
+from tambua.data import generate_samples
 
 support_paths, support_labels, query_paths, query_labels = generate_samples(
     output_dir="/tmp/samples",
@@ -591,7 +591,7 @@ The synthetic generators create:
 ### Programmatic Image Loading
 
 ```python
-from examples.mziziguard.data import load_from_folders, list_classes_from_dir
+from tambua.data import load_from_folders, list_classes_from_dir
 
 # List available classes
 classes = list_classes_from_dir("data/photos/")
@@ -634,7 +634,7 @@ print(f"Restored {count} support images from previous session")
 ```python
 from pathlib import Path
 import json
-from examples.mziziguard import MziziGuard
+from tambua import MziziGuard
 
 SESSION_FILE = "models/latest.json"
 guard = MziziGuard()
@@ -715,7 +715,7 @@ print(report)
 
 ### Step 1: Edit config.yaml
 
-Add your crop and diseases to `examples/mziziguard/config.yaml`:
+Add your crop and diseases to `apps/tambua/configs/maize.yaml`:
 
 ```yaml
 crops:
@@ -767,7 +767,7 @@ guard.load_images_from_dir("data/cassava/", max_per_class=5)
 ### Step 4: Launch the App
 
 ```bash
-python -m examples.mziziguard.app
+tambua
 ```
 
 The new diseases will automatically appear in the dropdown and UI.
@@ -832,7 +832,7 @@ python examples/crop_disease_demo.py --no-pause
 3. **Prepare training images** (5–10 per disease class)
 4. **Train the model** via the Setup tab
 5. **Save the model** (`guard.save_model()`) for quick restart
-6. **Launch the app** (`python -m examples.mziziguard.app`)
+6. **Launch the app** (`tambua`)
 7. **Bookmark** `http://localhost:7860` in the browser
 8. **Test** with known images before field use
 
@@ -851,8 +851,8 @@ For an extension office with multiple officers:
 
 ```bash
 # Each officer gets their own port
-python -m examples.mziziguard.app --port 7861  # Officer A
-python -m examples.mziziguard.app --port 7862  # Officer B
+tambua --port 7861  # Officer A
+tambua --port 7862  # Officer B
 ```
 
 Each instance maintains independent state. Corrections from one don't affect the other unless you share model checkpoints.
@@ -865,7 +865,7 @@ Each instance maintains independent state. Corrections from one don't affect the
 
 | Issue | Cause | Fix |
 |-------|-------|-----|
-| `ModuleNotFoundError: No module named 'gradio'` | Gradio not installed | `pip install "adaptshot[ui]"` |
+| `ModuleNotFoundError: No module named 'gradio'` | Gradio not installed | `pip install tambua` |
 | `ModuleNotFoundError: No module named 'yaml'` | PyYAML not installed | `pip install PyYAML` |
 | App starts but shows "Not trained" | No support images loaded | Go to Setup tab → Generate Samples |
 | All predictions are "healthy_maize" | Too few support images | Increase n_support to 5–10 per class |
@@ -885,11 +885,11 @@ python --version  # Should be 3.9+
 python -c "from adaptshot import FewShotLearner; print('OK')"
 
 # Check MziziGuard import
-python -c "from examples.mziziguard import MziziGuard; print('OK')"
+python -c "from tambua import MziziGuard; print('OK')"
 
 # Quick smoke test
 python -c "
-from examples.mziziguard import MziziGuard
+from tambua import MziziGuard
 guard = MziziGuard()
 guard.initialize_with_samples(n_support=3)
 print(f'Trained: {guard.is_trained}, Classes: {guard.known_labels}')
@@ -902,7 +902,7 @@ print(f'Trained: {guard.is_trained}, Classes: {guard.known_labels}')
 
 **Q: Can I use MziziGuard without any coding?**
 
-A: Yes! Launch `python -m examples.mziziguard.app` and use the web interface. No coding required after installation.
+A: Yes! Launch `tambua` and use the web interface. No coding required after installation.
 
 **Q: How many photos per disease do I need?**
 
@@ -938,7 +938,7 @@ A: Yes. Use the Batch tab to process multiple images and copy the table. Or use 
 
 **Q: How do I update from the terminal demo to the full app?**
 
-A: The terminal demo (`crop_disease_demo.py`) is for presentations. The full app (`python -m examples.mziziguard.app`) is for real use. Both use the same engine.
+A: The terminal demo (`crop_disease_demo.py`) is for presentations. The full app (`tambua`) is for real use. Both use the same engine.
 
 ---
 

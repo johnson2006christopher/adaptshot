@@ -9,7 +9,7 @@
     than measurements.
 
     MziziGuard's sample images are generated procedurally
-    (`ImageDraw.ellipse()` in `examples/mziziguard/data.py`), and it is being rebuilt as
+    (`ImageDraw.ellipse()` in `apps/tambua/src/tambua/data.py`), and it is being rebuilt as
     [Tambua](https://github.com/johnson2006christopher/adaptshot/issues/45). Hardware
     validation on ARM and phone-class devices is
     [#31](https://github.com/johnson2006christopher/adaptshot/issues/31); measured
@@ -77,13 +77,13 @@ Copy to the laptop's local storage.
 
 #### 3. Configure MziziGuard
 
-Edit `examples/mziziguard/config.yaml` to match your crops and local paths.
+Edit `apps/tambua/configs/maize.yaml` to match your crops and local paths.
 
 #### 4. Launch the Application
 
 ```bash
 # Start the web server
-python -m examples.mziziguard.app --port 7860
+tambua --port 7860
 
 # Open browser: http://localhost:7860
 ```
@@ -99,7 +99,7 @@ python -m examples.mziziguard.app --port 7860
 #### 6. Save the Trained Model
 
 ```python
-from examples.mziziguard import MziziGuard
+from tambua import MziziGuard
 guard = MziziGuard()
 guard.load_images_from_dir("training_images/")
 guard.save_model("models/field_model.json")
@@ -112,7 +112,7 @@ cat > ~/Desktop/mziziguard.desktop << 'EOF'
 [Desktop Entry]
 Name=MziziGuard
 Comment=Crop Disease Detection
-Exec=bash -c "cd /path/to/adaptshot && source adaptshot_env/bin/activate && python -m examples.mziziguard.app"
+Exec=bash -c "cd /path/to/adaptshot && source adaptshot_env/bin/activate && tambua"
 Type=Application
 Terminal=true
 EOF
@@ -156,7 +156,7 @@ config = AdaptShotConfig(
 #!/usr/bin/env python3
 """MziziGuard field launcher — auto-resumes from last session."""
 from pathlib import Path
-from examples.mziziguard import MziziGuard
+from tambua import MziziGuard
 
 MODEL_PATH = "field_model.json"
 
@@ -207,13 +207,13 @@ guard.load_model("officer_a_corrections.json")
 
 ```bash
 # Officer A — port 7861
-python -m examples.mziziguard.app --port 7861 &
+tambua --port 7861 &
 
 # Officer B — port 7862
-python -m examples.mziziguard.app --port 7862 &
+tambua --port 7862 &
 
 # Officer C — port 7863
-python -m examples.mziziguard.app --port 7863 &
+tambua --port 7863 &
 ```
 
 Each instance is independent. Share models by saving to a shared directory:
@@ -226,7 +226,7 @@ guard.save_model("/shared/models/officer_a_latest.json")
 
 ```python
 """Merge corrections from multiple officers into a master model."""
-from examples.mziziguard import MziziGuard
+from tambua import MziziGuard
 
 master = MziziGuard()
 master.initialize_with_samples(n_support=5)  # Base training
@@ -253,7 +253,7 @@ After=network.target
 Type=simple
 User=extension
 WorkingDirectory=/opt/adaptshot
-ExecStart=/opt/adaptshot_env/bin/python -m examples.mziziguard.app --port 7860
+ExecStart=/opt/adaptshot_env/bin/tambua --port 7860
 Restart=on-failure
 
 [Install]
@@ -319,7 +319,7 @@ config = AdaptShotConfig(
 # ~/.config/autostart/mziziguard.desktop
 [Desktop Entry]
 Name=MziziGuard
-Exec=bash -c "cd /home/pi/adaptshot && source adaptshot_env/bin/activate && python -m examples.mziziguard.app"
+Exec=bash -c "cd /home/pi/adaptshot && source adaptshot_env/bin/activate && tambua"
 Type=Application
 ```
 
@@ -341,8 +341,8 @@ Type=Application
 ### Quick Launch
 
 ```bash
-pip install "adaptshot[ui]"
-python -m examples.mziziguard.app --share
+pip install tambua
+tambua --share
 ```
 
 The `--share` flag creates a public Gradio link (valid for 72 hours). Share the URL with your audience.
@@ -368,7 +368,7 @@ WORKDIR /app
 
 RUN pip install "adaptshot[ui]"
 
-COPY examples/mziziguard/ /app/examples/mziziguard/
+COPY apps/tambua/ /app/apps/tambua/
 
 # Pre-download backbone weights
 RUN python -c "from adaptshot import FewShotLearner; \
@@ -377,7 +377,7 @@ RUN python -c "from adaptshot import FewShotLearner; \
 
 EXPOSE 7860
 
-CMD ["python", "-m", "examples.mziziguard.app", "--port", "7860"]
+CMD ["python", "-m", "tambua.app", "--port", "7860"]
 ```
 
 ### Build and Run
@@ -413,14 +413,14 @@ git pull origin main
 - [ ] `models/*.json` — Model checkpoints
 - [ ] `models/*.embeddings.npy` — Embedding arrays
 - [ ] `models/*.head.pt` — Fine-tuned head weights
-- [ ] `examples/mziziguard/config.yaml` — Custom crop config
+- [ ] `apps/tambua/configs/maize.yaml` — Custom crop config
 - [ ] Training images (if custom)
 - [ ] Correction/feedback logs (if applicable)
 
 ### Recovery from Backup
 
 ```python
-from examples.mziziguard import MziziGuard
+from tambua import MziziGuard
 
 guard = MziziGuard()
 guard.load_model("backup/model.json")
