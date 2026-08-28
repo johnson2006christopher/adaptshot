@@ -47,6 +47,7 @@ Docs preview: `mkdocs serve` (requires `mkdocs`, `mkdocs-material`, `mkdocstring
 
 - **Version lives in two places** that must agree: `pyproject.toml` and `src/adaptshot/__init__.py`. `tests/test_release_metadata.py` derives the expected value from `pyproject.toml`, so bumping only one of the two fails the suite.
 - MkDocs output is **never committed**. `.github/workflows/docs.yml` builds and deploys to the `gh-pages` branch on every push to `main`; `site/` is gitignored. Edit `docs/`, never generated HTML.
+- **Import gradio once before type-checking anything that uses it.** gradio attaches `.click()`/`.change()` to components in a metaclass and writes the matching `.pyi` files into site-packages on first import; they are not in the wheel. On a fresh install `mypy` reports `"Button" has no attribute "click"` against our code, which is a lie. CI does this explicitly in the lint job.
 - Dev tooling is not installed in the ambient environment — run `pip install -e ".[dev]"` before any lint/type/test command.
 
 ## Repo etiquette
