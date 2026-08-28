@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- **`adaptshot.studio`** (1,822 lines, 23% of the library, four tests) — extracted to
+  its own project. It was a Gradio desktop application, not few-shot learning and not a
+  library, and it dragged `gradio`, `pandas`, `onnx` and `onnxruntime` into the
+  project's identity and its type checking. A GUI also has a different release cadence
+  from a library; coupling them made every interface tweak a library release.
+  Tracked in [#21](https://github.com/johnson2006christopher/adaptshot/issues/21).
+
+  **Nothing was lost.** The full commit history was extracted before anything was
+  deleted and lives on the
+  [`studio-extract`](https://github.com/johnson2006christopher/adaptshot/tree/studio-extract)
+  branch — thirteen commits, ready to become a repository of its own.
+
+- **`adaptshot.ui.app`** (151 lines) — the library shipped *two* Gradio interfaces at
+  once. All four of its capabilities exist in Tambua, in more complete form. Tracked in
+  [#22](https://github.com/johnson2006christopher/adaptshot/issues/22).
+
+- **The `gui` and `ui` extras** and the `adaptshot-studio` console script, which existed
+  only for the above.
+
+The maintained application is [Tambua](apps/tambua/README.md), a separate distribution
+built on AdaptShot — `pip install tambua`. `tests/test_library_ships_no_gui.py` fails if
+a GUI reappears anywhere under `src/adaptshot/`, if either extra returns, or if a live
+document points at a removed entrypoint.
+
 ### Corrected
 
 Documentation claims that were not true when written, retracted here rather than

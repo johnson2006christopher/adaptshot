@@ -171,7 +171,7 @@ See [tutorials/11_ui_pilot_dashboard.md](tutorials/11_ui_pilot_dashboard.md) for
 
 ## Tutorial 12: Studio Guide
 
-See [tutorials/12_studio_guide.md](tutorials/12_studio_guide.md) for the Gradio Studio Dashboard with full configuration, monitoring, and export features.
+The Gradio Studio dashboard has been extracted to its own project (#21); the library ships no GUI. See [tutorials/12_studio_guide.md](tutorials/12_studio_guide.md) for where it went, and [Tambua](guides/tambua-complete-guide.md) for the maintained application.
 
 ---
 

@@ -205,7 +205,7 @@ real-world data at scale.*
 | Contrastive prototypes (InfoNCE) | **Experimental** — requires torch |
 | Explainability (embedding-space attribution) | **Experimental** |
 | ONNX backbone export | **Experimental** |
-| Studio / Pilot GUIs | **Optional extras**, planned to move to a separate project |
+| Graphical interfaces | **Removed** — the library ships none. See [Tambua](apps/tambua/README.md) |
 
 Memory: **the 250 MB target is met on a core install.** Measured peak resident set size
 for a full support-set-to-prediction cycle, by `tests/test_memory_ceiling.py`, which
