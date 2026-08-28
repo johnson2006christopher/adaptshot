@@ -88,7 +88,7 @@ def load_json(path: str | Path) -> dict[str, Any]:
     """
     path_obj = validate_path(path, must_exist=True)
 
-    with open(path_obj, "r", encoding="utf-8") as f:
+    with open(path_obj, encoding="utf-8") as f:
         return cast(dict[str, Any], json.load(f))
 
 

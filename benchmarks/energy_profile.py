@@ -53,7 +53,7 @@ def _cpu_frequency_mhz() -> float:
 
     cpu_mhz_values: list[float] = []
     try:
-        with open("/proc/cpuinfo", "r", encoding="utf-8") as handle:
+        with open("/proc/cpuinfo", encoding="utf-8") as handle:
             for line in handle:
                 if line.lower().startswith("cpu mhz"):
                     _, value = line.split(":", 1)

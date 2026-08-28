@@ -108,8 +108,9 @@ class CAEWCFinetuner:
                 fisher[name] = torch.zeros_like(param)
 
         # Compute gradients squared
-        for inputs, targets in data_loader:
-            inputs, targets = inputs.to(self.device), targets.to(self.device)
+        for batch_inputs, batch_targets in data_loader:
+            inputs = batch_inputs.to(self.device)
+            targets = batch_targets.to(self.device)
             self.model.zero_grad()
             
             output = self.model(inputs)
@@ -125,7 +126,7 @@ class CAEWCFinetuner:
         # Snapshot current parameters
         self._old_params = {name: param.detach().clone() for name, param in self.model.named_parameters() if param.requires_grad}
         
-        logger.debug(f"Fisher information updated for {len(fisher)} parameters.")
+        logger.debug("Fisher information updated for %d parameters.", len(fisher))
         return fisher
 
     def finetune(
@@ -186,8 +187,16 @@ class CAEWCFinetuner:
                 optimizer.step()
                 epoch_loss += total_loss.item()
 
+            # Reported rather than discarded. This was accumulated and dropped,
+            # which B007 found by way of `epoch` being unused -- the loop body
+            # was incomplete, not the variable badly named. Per-epoch loss is the
+            # only visibility there is into whether CA-EWC is converging.
+            logger.debug(
+                "CA-EWC epoch %d/%d: loss %.4f", epoch + 1, self.epochs, epoch_loss
+            )
+
         self.model.eval()
-        logger.info(f"CA-EWC Finetuning complete after {self.epochs} epochs.")
+        logger.info("CA-EWC fine-tuning complete after %d epochs.", self.epochs)
 
     def _standard_finetune(self, new_embeddings: torch.Tensor, new_labels: torch.Tensor) -> None:
         """Standard fine-tuning without EWC."""
@@ -201,8 +210,9 @@ class CAEWCFinetuner:
         loader = DataLoader(dataset, batch_size=self.batch_size, shuffle=True)
         
         for _ in range(self.epochs):
-            for inputs, targets in loader:
-                inputs, targets = inputs.to(self.device), targets.to(self.device)
+            for batch_inputs, batch_targets in loader:
+                inputs = batch_inputs.to(self.device)
+                targets = batch_targets.to(self.device)
                 optimizer.zero_grad()
                 output = self.model(inputs)
                 loss = F.cross_entropy(output, targets)

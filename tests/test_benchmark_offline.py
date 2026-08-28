@@ -92,7 +92,7 @@ def test_the_fixture_is_deterministic(benchmark) -> None:  # type: ignore[no-unt
     second, _ = benchmark._synthetic_split(n_way=3, k_shot=4, seed=42)
 
     assert len(first) == len(second) == 12
-    for (a_img, a_label), (b_img, b_label) in zip(first, second):
+    for (a_img, a_label), (b_img, b_label) in zip(first, second, strict=True):
         assert a_label == b_label
         assert a_img.equal(b_img)
 

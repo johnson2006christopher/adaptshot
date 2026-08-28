@@ -563,10 +563,9 @@ class ExplainabilityEngine:
         # Compute feature importance as the absolute difference between
         # query and class prototype, normalized
         same_mask = support_labels == predicted_label
-        if same_mask.any():
-            prototype = support[same_mask].mean(axis=0)
-        else:
-            prototype = support.mean(axis=0)
+        prototype = (
+            support[same_mask].mean(axis=0) if same_mask.any() else support.mean(axis=0)
+        )
 
         feature_importance = np.abs(query - prototype)
         feature_importance = feature_importance / (feature_importance.sum() + 1e-8)

@@ -28,10 +28,7 @@ def support_images(tmp_path: Path) -> list[str]:
 @pytest.fixture
 def patched_embeddings(monkeypatch: pytest.MonkeyPatch) -> None:
     def fake_extract(image: Any, config: AdaptShotConfig, return_numpy: bool = True, cache: Any = None) -> np.ndarray:
-        if isinstance(image, Image.Image):
-            color = image.getpixel((0, 0))
-        else:
-            color = (0, 0, 0)
+        color = image.getpixel((0, 0)) if isinstance(image, Image.Image) else (0, 0, 0)
         base = float(sum(color)) / 255.0
         embedding = np.full(8, base, dtype=np.float32)
         if return_numpy:

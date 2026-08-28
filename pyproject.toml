@@ -100,22 +100,10 @@ ignore = [
     # not documentation.
     "RUF001", "RUF002", "RUF003",
 
-    # Deferred, not dismissed: each of these is a real finding that needs a code
-    # change rather than a mechanical fix (module-level `global`, zip strict=,
-    # loop-variable rebinding, warning stacklevels). 38 occurrences, tracked in
-    # #41. Remove entries from this list as they are cleared.
-    "PLW0603",  # global statement
-    "PLW2901",  # loop variable overwritten by assignment
-    "PLW3301",  # nested min/max
-    "PLW0108",  # unnecessary lambda
-    "B905",     # zip() without an explicit strict=
-    "B007",     # unused loop control variable
-    "B028",     # no explicit stacklevel in warnings.warn
-    "G004",     # logging statement uses f-string
-    "UP015",    # redundant open() mode parameter
-    "SIM108",   # use ternary instead of if-else block
-    "C416",     # unnecessary comprehension
-    "E402",     # module import not at top of file
+    # The deferred-findings queue that lived here is empty (#41). Every rule it
+    # held is enforced again; the two places that genuinely need an exception
+    # carry a per-line `# noqa: E402` with the reason next to it, which is
+    # reviewable in a way a repo-wide ignore is not.
 ]
 
 [tool.ruff.lint.per-file-ignores]

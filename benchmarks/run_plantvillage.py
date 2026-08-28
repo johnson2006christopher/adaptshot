@@ -105,7 +105,7 @@ def adaptshot_episode(
     set_sizes: list[int] = []
     flagged = 0
 
-    for index, true_label in zip(episode.query, query_labels):
+    for index, true_label in zip(episode.query, query_labels, strict=True):
         result = learner.predict(str(paths[index]))
         correct += int(result.prediction == true_label)
         predicted_set = result.conformal_set or [result.prediction]
@@ -185,7 +185,9 @@ def top1_episode(
     )
     query_labels = labels[episode.query]
     accuracy = float(np.mean(predictions == query_labels))
-    covered = float(np.mean([str(t) in s for s, t in zip(sets, query_labels)]))
+    covered = float(
+        np.mean([str(t) in s for s, t in zip(sets, query_labels, strict=True)])
+    )
     mean_size = float(np.mean([len(s) for s in sets]))
     return accuracy, covered, mean_size, threshold
 

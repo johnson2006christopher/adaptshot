@@ -126,7 +126,7 @@ class FeedbackRouter:
             return True
         except Exception as e:  # noqa: BLE001 - finetune_fn is user-supplied; a
             # failure there must not propagate into the correction path.
-            logger.error(f"CA-EWC fine-tuning failed: {e}")
+            logger.error("CA-EWC fine-tuning failed: %s", e)
             return False
 
     def get_buffer(self) -> list[Correction]:
