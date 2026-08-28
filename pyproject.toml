@@ -28,7 +28,6 @@ dependencies = [
 [project.optional-dependencies]
 torch = ["torch>=2.0.0", "torchvision>=0.15.0"]
 faiss = ["faiss-cpu>=1.7.4"]
-gui = ["gradio>=3.50.0", "pandas>=2.0.0", "onnx>=1.16.0", "onnxscript>=0.3.0", "onnxruntime>=1.14.0"]
 # Upper bounds are deliberate. Linters and type checkers add rules in minor
 # releases, so an unbounded pin means a tool release can turn CI red without any
 # code change -- which is exactly what happened (see #15). Dependabot proposes
@@ -40,10 +39,14 @@ dev = [
     "ruff>=0.16.0,<0.17",
     "pre-commit>=3.4.0,<5",
 ]
-all = ["adaptshot[torch,faiss,gui,dev]"]
+# onnx/onnxruntime used to arrive incidentally via the `gui` extra, which is gone
+# with the studio (#21). They are needed on their own terms: scripts/export_backbones.py
+# produces the bundled backbones, and the torch-free inference path (#36) will consume
+# them. Same pins as before, declared for the reason they are actually wanted.
+onnx = ["onnx>=1.16.0", "onnxscript>=0.3.0", "onnxruntime>=1.14.0"]
+all = ["adaptshot[torch,faiss,onnx,dev]"]
 
 [project.scripts]
-adaptshot-studio = "adaptshot.studio.app:launch"
 
 [project.urls]
 Homepage = "https://github.com/johnson2006christopher/adaptshot"
@@ -142,7 +145,6 @@ warn_unused_configs = true
 module = [
     "onnxruntime",
     "torchvision.*",
-    "gradio.*",
     "faiss",
     "psutil",
 ]
@@ -159,7 +161,7 @@ filterwarnings = ["error::DeprecationWarning:adaptshot.*"]
 [tool.coverage.run]
 source = ["src/adaptshot"]
 branch = true
-omit = ["*/ui/*", "*/studio/*"]
+omit = []
 
 [tool.coverage.report]
 show_missing = true

@@ -102,7 +102,6 @@ multi-gigabyte download. PyTorch is optional and needed only for training:
 ```bash
 pip install "adaptshot[torch]"   # CA-EWC fine-tuning and custom backbones
 pip install "adaptshot[faiss]"   # faster search for support sets >100 images
-pip install "adaptshot[gui]"     # the optional Studio workspace
 pip install "adaptshot[dev]"     # contributors: tests, linting, benchmarks
 ```
 
@@ -187,7 +186,7 @@ real-world data at scale.*
 | Contrastive prototypes (InfoNCE) | **Experimental** — requires torch |
 | Explainability (embedding-space attribution) | **Experimental** |
 | ONNX backbone export | **Experimental** |
-| Studio / Pilot GUIs | **Optional extras**, planned to move to a separate project |
+| Graphical interfaces | **Removed** — the library ships none. See [Tambua](apps/tambua/README.md) |
 
 Memory: **250 MB is the target, and it is not met today.** Measured peak resident set
 size for a full support-set-to-prediction cycle is around **775 MB**

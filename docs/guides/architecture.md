@@ -18,15 +18,27 @@ This guide maps every module in AdaptShot, explains how components interact, and
 │               │  similarity.py│ up_ugf.py     │             │
 │               │  calibration  │               │             │
 │               │  act.py       │               │             │
-├───────────────┴───────────────┴───────────────┴─────────────┤
-│                        Applications                          │
-├───────────────────┬────────────────────┬────────────────────┤
-│   ui/app.py       │  studio/app.py     │  mziziguard/       │  <- three GUIs; being replaced by one (#45).
-│                   │                    │  (worked example,  │     mziziguard's sample data is synthetic.
-│                   │                    │   synthetic data)  │
-│   (Gradio pilot)  │  (Offline studio)  │  (Crop diagnosis)  │
-└───────────────────┴────────────────────┴────────────────────┘
+└───────────────┴───────────────┴───────────────┴─────────────┘
+                              ▲
+                              │  depends on
+                 ┌────────────┴────────────┐
+                 │      apps/tambua/       │   a separate distribution
+                 │  config.py  engine.py   │   `pip install tambua`
+                 │  data.py    app.py      │
+                 │  configs/*.yaml         │   the domain lives here,
+                 └─────────────────────────┘   not in the code
 ```
+
+The library ships **no** graphical interface. It used to ship two —
+`adaptshot.ui.app` and `adaptshot.studio` — removed in
+[#22](https://github.com/johnson2006christopher/adaptshot/issues/22) and
+[#21](https://github.com/johnson2006christopher/adaptshot/issues/21)
+respectively. `tests/test_library_ships_no_gui.py` fails if either returns.
+
+Tambua is an application *built on* AdaptShot rather than shipped inside it,
+which is what keeps the library a library: a web framework in the dependency
+graph of a project whose premise is "runs on a CPU in a field with no internet"
+is a contradiction someone will eventually notice.
 
 ## Module Map
 
@@ -352,7 +364,7 @@ tests/
 ├── test_persistence.py    # Save/load roundtrip
 ├── test_release_metadata.py # Version, metadata consistency
 ├── test_similarity.py     # NN and prototype search
-└── test_studio_utils.py   # Studio utility functions
+└── test_library_ships_no_gui.py   # no GUI may return (#21, #22)
 ```
 
 All tests are CPU-only and self-contained. Run with:

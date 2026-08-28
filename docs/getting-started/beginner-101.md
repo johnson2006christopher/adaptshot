@@ -229,7 +229,7 @@ tambua
 **AdaptShot Studio** (full-featured):
 ```bash
 pip install "adaptshot[gui]"
-adaptshot-studio
+tambua
 ```
 
 Both run in your browser at `http://127.0.0.1:7860`. The underlying logic is the same `FewShotLearner` you just used.

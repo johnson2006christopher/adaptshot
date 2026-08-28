@@ -39,8 +39,8 @@ pip install "adaptshot[faiss]"
 # Gradio UI dependencies for the Pilot Dashboard
 pip install tambua
 
-# Offline Studio GUI (includes ONNX Runtime for torch-free inference)
-pip install "adaptshot[gui]"
+# ONNX tooling (backbone export; the torch-free inference path is #36)
+pip install "adaptshot[onnx]"
 
 # Development tools (testing, linting, benchmarking)
 pip install "adaptshot[dev]"
@@ -66,10 +66,18 @@ AdaptShot v0.2.0 supports ONNX Runtime as a lightweight backend when PyTorch is 
 python scripts/export_backbones.py
 
 # Install with ONNX Runtime support
-pip install "adaptshot[gui]"  # Includes onnxruntime
+pip install "adaptshot[onnx]"
 ```
 
-The ONNX backend automatically activates when torch is unavailable and ONNX models are present in `src/adaptshot/data/`.
+!!! warning "The torch-free path is not finished"
+
+    The ONNX backend is designed to activate when torch is unavailable and ONNX
+    models are present in `src/adaptshot/data/` — but **no models are bundled
+    yet**: that directory contains only `__init__.py`. Inference requires torch
+    today. Measured: `load_support_images()` is the one operation that needs it;
+    everything downstream is already numpy. See
+    [#35](https://github.com/johnson2006christopher/adaptshot/issues/35) and
+    [#36](https://github.com/johnson2006christopher/adaptshot/issues/36).
 
 ## Verify The Install
 
