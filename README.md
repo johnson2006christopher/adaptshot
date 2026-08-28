@@ -96,8 +96,10 @@ or no connectivity, and a confident wrong answer is expensive.
 pip install adaptshot
 ```
 
-Core dependencies are **numpy and Pillow only** — no CUDA, no GPU drivers, no
-multi-gigabyte download. PyTorch is optional and needed only for training:
+Core dependencies are **numpy, Pillow and onnxruntime** — no CUDA, no GPU
+drivers, no multi-gigabyte download. That install can load a support set,
+predict, and save and reload a model. **PyTorch is needed only for fine-tuning**
+and for backbones other than the bundled one.
 
 ```bash
 pip install "adaptshot[torch]"   # CA-EWC fine-tuning and custom backbones
@@ -105,8 +107,25 @@ pip install "adaptshot[faiss]"   # faster search for support sets >100 images
 pip install "adaptshot[dev]"     # contributors: tests, linting, benchmarks
 ```
 
-> The torch-free core install is enforced by CI on every push
-> (`tests/test_torch_optional.py`), not merely documented.
+Measured, on a full support-set-to-prediction cycle:
+
+| | core install | with torch |
+|---|---|---|
+| peak RSS | **119 MB** | 775 MB |
+| install size for the inference component | ~23 MB | ~1.2 GB |
+
+The default backbone is `mobilenet_v3_small`, whose ONNX weights (4.0 MB) ship in
+the wheel. Embeddings agree with the torch path to `4e-06` (cosine 0.99999994),
+and the smoke benchmark returns the same accuracy through either. `resnet18` is
+44.8 MB and is not bundled; `scripts/export_backbones.py` generates it.
+
+**The limit, stated plainly:** bundled ONNX backbones are frozen. Fine-tuning
+(`correct()` with CA-EWC) still requires `adaptshot[torch]`.
+
+> This is enforced by CI on every push, not merely documented:
+> `tests/test_torch_optional.py` blocks torch at the import system and then
+> *calls* the API. `TORCH_REQUIRED_OPERATIONS` is empty, and the test fails if
+> anything is added to it.
 
 ---
 
@@ -188,28 +207,24 @@ real-world data at scale.*
 | ONNX backbone export | **Experimental** |
 | Graphical interfaces | **Removed** — the library ships none. See [Tambua](apps/tambua/README.md) |
 
-Memory: **250 MB is the target, and it is not met today.** Measured peak resident set
-size for a full support-set-to-prediction cycle is around **775 MB**
-(`tests/test_memory_ceiling.py`, which prints the figure on every run):
+Memory: **the 250 MB target is met on a core install.** Measured peak resident set size
+for a full support-set-to-prediction cycle, by `tests/test_memory_ceiling.py`, which
+prints the figure on every run:
 
-| stage | peak RSS |
-|---|---|
-| interpreter + numpy + Pillow | 33 MB |
-| `import adaptshot` | 512 MB |
-| `load_support_images` (15 images) | 774 MB |
-| `predict()` | 775 MB |
+| stage | core install | with torch |
+|---|---|---|
+| interpreter + numpy + Pillow | 33 MB | 33 MB |
+| `import adaptshot` | 38 MB | ~512 MB |
+| `load_support_images` (15 images) | 120 MB | ~590 MB |
+| `predict()` | **120 MB** | 592 MB |
 
-The 479 MB jump at import is PyTorch, pulled in eagerly by `utils/determinism.py` and
-`utils/io.py`. The 258 MB after that is ResNet-18's weights and activations. Since
-inference currently requires torch ([#35]), no working path stays under 250 MB; the
-target is reachable only through the bundled-ONNX backbone ([#36]).
+Installing torch alongside costs about 500 MB at import, because
+`training/finetune.py` guards its torch import at module scope — it does not crash
+without torch, but it does pay for it whenever torch is present. That is tracked in
+[#36] and does not affect the core install.
 
-The test asserts a regression budget against what we actually cost, and carries a
-strict-xfail on the 250 MB figure — so the build fails when it *starts* passing, and this
-section has to be rewritten rather than left stale. `utils/profiling.py` provides a
-`MemoryTracker` for measuring your own workload.
+`utils/profiling.py` provides a `MemoryTracker` for measuring your own workload.
 
-[#35]: https://github.com/johnson2006christopher/adaptshot/issues/35
 [#36]: https://github.com/johnson2006christopher/adaptshot/issues/36
 
 ---

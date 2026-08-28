@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import warnings
 from pathlib import Path
@@ -72,7 +73,15 @@ def test_save_load_roundtrip(
     assert restored._sim_labels == learner._sim_labels
     assert restored._sim_uncertainties == learner._sim_uncertainties
     assert restored._sim_access_times == learner._sim_access_times
-    assert restored._model_head is not None
+
+    # Since #36 the fine-tuning head is torch-only and legitimately absent on a
+    # core install, where inference runs on the bundled ONNX backbone. What must
+    # survive the round trip either way is the state above; the head is rebuilt
+    # from it, so assert it only where it can exist at all.
+    if importlib.util.find_spec("torch") is not None:
+        assert restored._model_head is not None
+    else:
+        assert restored._model_head is None
 
 
 def test_corrupted_file_handling(tmp_path: Path, support_images: list[str], patched_embeddings: None) -> None:

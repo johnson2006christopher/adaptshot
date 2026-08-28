@@ -110,10 +110,14 @@ jobs:
   # `continue-on-error` is here so the failure stays VISIBLE while #35 is decided,
   # rather than being hidden by narrowing what this job runs.
   # REMOVE `continue-on-error` when #35 is resolved. It is a marker, not a soft-fail.
+  # Enforcing since #36. It was advisory while inference still needed torch, so
+  # a core install could not complete a prediction and the job could only ever
+  # report how far short it fell. The bundled ONNX backbone closed that, the
+  # whole suite passes here, and an advisory job that cannot fail protects
+  # nothing -- so this is the job that holds the core-install promise now.
   test-core:
     name: Tests (core install, no torch)
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

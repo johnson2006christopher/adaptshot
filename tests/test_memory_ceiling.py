@@ -6,23 +6,25 @@ AdaptShot from every other few-shot library, and it is the one most likely to
 break silently: a backbone swap or a cached array crosses the line with no
 visible symptom on a laptop with 16GB.
 
-**Measured, it is not met.** A full support-set-to-prediction cycle peaks around
-775MB, roughly three times the documented figure. The breakdown is what matters:
+**It is met on the install the claim is about, and not otherwise.** #36 made
+inference torch-free, so for the first time there is a working configuration to
+measure:
+
+    core install (numpy, Pillow, onnxruntime)     120 MB   under the ceiling
+    with torch also installed                     592 MB   over it
+
+The breakdown on a core install:
 
     interpreter + numpy + PIL              33 MB
-    import adaptshot                      512 MB   (+479)
-    FewShotLearner()                      516 MB
-    load_support_images (15 images)       774 MB   (+258)
-    predict()                             775 MB
+    import adaptshot                       38 MB
+    FewShotLearner()                       42 MB
+    load_support_images (15 images)       120 MB
+    predict()                             120 MB
 
-The +479MB at import is torch, pulled in eagerly by `utils/determinism.py` and
-`utils/io.py`, which import it at module scope. `core/extractor.py` is careful to
-load torch lazily; those two undo it. The +258MB is ResNet-18's weights and
-activations.
-
-So no path that currently *works* stays under 250MB, because inference requires
-torch (#35) and torch alone costs twice the budget. The target is reachable only
-through the bundled-ONNX path (#36).
+With torch installed, `import adaptshot` alone costs ~500MB, because
+`training/finetune.py` guards its torch import with try/except at module scope --
+so it does not crash without torch, but it does pay for it whenever torch is
+present. Making that lazy would bring the torch install down too.
 
 What this module does about it:
 
@@ -54,14 +56,29 @@ import pytest
 #: The documented promise. Not met today; see the module docstring.
 DOCUMENTED_CEILING_MB = 250
 
-#: What a full cycle actually costs, plus headroom for runner variance and
-#: version drift. This is a regression guard, not an endorsement.
-MEASURED_BUDGET_MB = 1100
+#: What a full cycle costs with torch installed, plus headroom for runner
+#: variance and version drift. A regression guard, not an endorsement.
+MEASURED_BUDGET_MB = 900
+
+#: Blocks torch at the import system, so the core-install path can be measured
+#: without a second environment. Matches the harness in test_torch_optional.py.
+_BLOCK_TORCH = textwrap.dedent(
+    """
+    import sys
+
+    class _TorchBlocker:
+        def find_spec(self, fullname, path=None, target=None):
+            if fullname == "torch" or fullname.startswith("torch."):
+                raise ImportError("torch is blocked: simulating a core-only install")
+            return None
+
+    sys.meta_path.insert(0, _TorchBlocker())
+    """
+)
 
 _MEASURE = textwrap.dedent(
     """
     import os
-    import resource
     import tempfile
 
     import numpy as np
@@ -82,12 +99,23 @@ _MEASURE = textwrap.dedent(
             labels.append(f"c{class_index}")
 
     learner = FewShotLearner(
-        config=AdaptShotConfig(backbone="resnet18", device="cpu", seed=42)
+        config=AdaptShotConfig(backbone="mobilenet_v3_small", device="cpu", seed=42)
     )
     learner.load_support_images(paths, labels)
     learner.predict(paths[0])
 
-    peak_kb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    # VmHWM from /proc, not resource.getrusage(RUSAGE_SELF).ru_maxrss.
+    #
+    # subprocess uses posix_spawn, which on Linux is implemented with vfork: the
+    # child shares the parent's address space until exec, and inherits its peak
+    # RSS watermark. Run standalone this reported 119MB; run from inside pytest,
+    # whose interpreter already holds torch, the same script reported 514MB --
+    # measuring the harness, not the library. VmHWM is per-process and is not
+    # affected.
+    with open("/proc/self/status", encoding="utf-8") as status:
+        peak_kb = next(
+            int(line.split()[1]) for line in status if line.startswith("VmHWM:")
+        )
     print(peak_kb / 1024)
     """
 )
@@ -114,7 +142,9 @@ def _peak_rss_mb() -> float:
 
 @pytest.fixture(scope="module")
 def peak_rss_mb() -> float:
-    pytest.importorskip("torch", reason="inference requires the torch extra (#35)")
+    pytest.importorskip(
+        "torch", reason="this fixture measures the with-torch install specifically"
+    )
     measured = _peak_rss_mb()
     print(f"\npeak RSS for a full support-to-prediction cycle: {measured:.0f} MB")
     print(f"  documented ceiling: {DOCUMENTED_CEILING_MB} MB")
@@ -141,15 +171,46 @@ def test_memory_does_not_regress(peak_rss_mb: float) -> None:
 @pytest.mark.xfail(
     strict=True,
     reason=(
-        "The documented <250MB ceiling is not met: inference requires torch "
-        "(#35), and torch alone costs about twice the budget at import. Only "
-        "the bundled-ONNX path (#36) can reach it. strict=True so that this "
-        "fails the build when it starts passing, forcing the documentation to "
-        "be corrected rather than left stale."
+        "Not met when torch is installed: importing AdaptShot pulls torch in "
+        "via training/finetune.py, which guards its import but still pays for "
+        "it, costing ~479MB before anything is asked of the library. The core "
+        "install does meet the ceiling -- see "
+        "test_the_ceiling_is_met_on_the_core_install. Making finetune.py lazy "
+        "would close this too (#36)."
     ),
 )
-def test_the_documented_ceiling_is_met(peak_rss_mb: float) -> None:
+def test_the_documented_ceiling_is_met_with_torch_installed(peak_rss_mb: float) -> None:
     assert peak_rss_mb < DOCUMENTED_CEILING_MB
+
+
+def test_the_ceiling_is_met_on_the_core_install() -> None:
+    """The install the claim is about: numpy, Pillow, onnxruntime. No torch.
+
+    This is what #13 was really asking, and until #36 no answer existed --
+    inference required torch, so there was no working configuration to measure.
+    Now there is, and it comes in at roughly 119MB against the 250MB target.
+
+    Torch is blocked at the import system rather than uninstalled, so the
+    measurement runs in the same environment as the rest of the suite.
+    """
+
+    completed = subprocess.run(
+        [sys.executable, "-c", _BLOCK_TORCH + _MEASURE],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if completed.returncode != 0:
+        pytest.skip(f"could not run a core-install cycle here:\n{completed.stderr[-800:]}")
+
+    measured = float(completed.stdout.strip().splitlines()[-1])
+    print(f"\npeak RSS on a core install (no torch): {measured:.0f} MB")
+    assert measured < DOCUMENTED_CEILING_MB, (
+        f"the core install now peaks at {measured:.0f} MB, over the documented "
+        f"{DOCUMENTED_CEILING_MB} MB. This is the claim the README makes; either "
+        "something started holding memory it does not need, or the README has "
+        "to change."
+    )
 
 
 def test_importing_the_library_pulls_in_torch(peak_rss_mb: float) -> None:

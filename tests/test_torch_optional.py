@@ -20,6 +20,8 @@ import sys
 import textwrap
 from pathlib import Path
 
+import pytest
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 # Installs a meta-path hook that makes any `import torch` raise ImportError,
@@ -123,13 +125,25 @@ TORCH_FREE_OPERATIONS = (
     "ConformalEngine()",
     "UncertaintyQuantifier.quantify()",
     "calibration_report()",
+    "load_support_images()",
 )
 
-#: What a core install cannot do. One entry, and it is the one that matters:
-#: turning an image into an embedding. Everything downstream of an embedding
-#: already works without torch, which is what makes the bundled-ONNX path (#36)
-#: the whole of the remaining distance rather than a first step.
-TORCH_REQUIRED_OPERATIONS = ("load_support_images()",)
+#: Empty since #36. `load_support_images()` was the last entry -- the one
+#: operation that needed torch, because it turned an image into an embedding.
+#: The bundled ONNX backbone does that now, so a core install can complete the
+#: whole loop: load, predict, save, load again.
+#:
+#: Kept as an empty tuple rather than deleted, so that anything which starts
+#: requiring torch again has an obvious place to be recorded and an obvious
+#: test to fail.
+#:
+#: The list above is measured against a *bundled* backbone, which is the honest
+#: scope of the claim: what a core install can do is now a property of the
+#: backbone, not of the library. `resnet18` is 44.8MB of ONNX weights against
+#: `mobilenet_v3_small`'s 4.0MB, so only the smaller one ships, and asking for
+#: the other one on a core install still needs torch. That asymmetry is the
+#: subject of `test_a_non_bundled_backbone_fails_with_an_actionable_error`.
+TORCH_REQUIRED_OPERATIONS: tuple[str, ...] = ()
 
 _PROBE = '''
 import os
@@ -154,11 +168,16 @@ def probe(name, fn):
 
 from adaptshot import AdaptShotConfig, FewShotLearner
 from adaptshot.core.conformal import ConformalEngine
+from adaptshot.core.extractor import bundled_onnx_backbones
 from adaptshot.core.uncertainty import UncertaintyQuantifier
 from adaptshot.utils.determinism import set_deterministic_seed
 
-probe("AdaptShotConfig()", lambda: AdaptShotConfig(backbone="resnet18", device="cpu"))
-config = AdaptShotConfig(backbone="resnet18", device="cpu", seed=42)
+bundled = bundled_onnx_backbones()
+assert bundled, "no ONNX weights are bundled, so no backbone can run torch-free"
+backbone = bundled[0]
+
+probe("AdaptShotConfig()", lambda: AdaptShotConfig(backbone=backbone, device="cpu"))
+config = AdaptShotConfig(backbone=backbone, device="cpu", seed=42)
 probe("FewShotLearner()", lambda: FewShotLearner(config=config))
 probe("set_deterministic_seed()", lambda: set_deterministic_seed(42))
 probe("ConformalEngine()", ConformalEngine)
@@ -218,12 +237,15 @@ def test_the_torch_free_operations_still_work() -> None:
 
 
 def test_the_torch_required_operations_still_require_torch() -> None:
-    """Asserted in this direction on purpose.
+    """Asserted in this direction on purpose, and it did its job.
 
-    When #36 lands and embeddings come from a bundled ONNX backbone, this test
-    fails -- which is correct. `README.md:100` says "PyTorch is optional and
-    needed only for training", and that sentence becomes true at the same
-    moment. Whoever makes it true has to come here and say so.
+    It failed the moment #36 landed, because `load_support_images()` started
+    working without torch -- which is exactly what it was built to catch.
+    `README.md:100` ("PyTorch is optional and needed only for training") became
+    true at the same moment, and was corrected in the same change.
+
+    The list is empty now. The test stays, so that anything which starts
+    requiring torch again fails here rather than in a user's install.
     """
 
     outcomes = _probe_boundary()
@@ -258,3 +280,78 @@ def test_seeding_works_without_torch() -> None:
     )
     assert completed.returncode == 0, completed.stderr[-2000:]
     assert "ok" in completed.stdout
+
+
+def test_a_non_bundled_backbone_fails_with_an_actionable_error() -> None:
+    """The other half of #36: what a core install still cannot do, and how it says so.
+
+    Only `mobilenet_v3_small` ships its ONNX weights -- `resnet18` is 44.8MB
+    against its 4.0MB -- so on a core install `resnet18` has no backend at all.
+    It used to say so with ``ImportError: No module named 'torch'`` raised four
+    frames deep inside ``_get_torch_nn``: accurate, and useless, because it
+    named neither the backbone that caused it nor either of the two ways out.
+
+    The backbone under test is chosen at runtime rather than hardcoded, because
+    `scripts/export_backbones.py` writes into the same directory the bundled
+    weights live in. A developer who has run it has no non-bundled backbone left
+    to test, and should see a skip rather than a failure.
+
+    Asserting on the message rather than just the type is deliberate. The type
+    alone would still pass if the message went back to being unactionable, and
+    the message is the entire point of the change.
+    """
+
+    from adaptshot.core.extractor import BackboneRegistry, bundled_onnx_backbones
+
+    bundled = bundled_onnx_backbones()
+    candidates = sorted(set(BackboneRegistry) - set(bundled))
+    if not candidates:
+        pytest.skip(
+            f"every registered backbone has ONNX weights present here ({bundled}), "
+            "so there is no torch-only backbone to test"
+        )
+    unbundled, fallback = candidates[0], bundled[0]
+
+    completed = _run_without_torch(
+        f"""
+        import os
+        import tempfile
+
+        import numpy as np
+        from PIL import Image
+
+        from adaptshot import AdaptShotConfig, BackboneError, FewShotLearner
+
+        directory = tempfile.mkdtemp()
+        rng = np.random.default_rng(42)
+        paths = []
+        for index in range(2):
+            path = os.path.join(directory, f"{{index}}.png")
+            Image.fromarray(
+                rng.integers(0, 255, (224, 224, 3), dtype=np.uint8)
+            ).save(path)
+            paths.append(path)
+
+        learner = FewShotLearner(
+            config=AdaptShotConfig(backbone="{unbundled}", device="cpu", seed=42)
+        )
+        try:
+            learner.load_support_images(paths, ["a", "b"])
+        except BackboneError as error:
+            print("MESSAGE", str(error))
+        else:
+            raise AssertionError(
+                "{unbundled} worked without torch or bundled weights"
+            )
+        """
+    )
+    assert completed.returncode == 0, completed.stderr[-2000:]
+
+    message = completed.stdout.split("MESSAGE", 1)[1].strip()
+    assert unbundled in message, f"the error does not name the backbone: {message}"
+    assert fallback in message, (
+        f"the error does not name a backbone that would work: {message}"
+    )
+    assert "adaptshot[training]" in message, (
+        f"the error does not name the extra that installs torch: {message}"
+    )

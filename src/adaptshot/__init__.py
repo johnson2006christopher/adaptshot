@@ -23,6 +23,7 @@ from .training.feedback_router import FeedbackRouter
 from .training.up_ugf import UPUGFPruner
 from .utils.exceptions import (
     AdaptShotError,
+    BackboneError,
     BufferCapacityError,
     CalibrationNotReadyError,
     ConfigValidationError,
@@ -34,6 +35,7 @@ __all__ = [
     "AdaptShotConfig",
     "AdaptShotError",
     "Backbone",
+    "BackboneError",
     "BufferCapacityError",
     "CalibrationEngine",
     "CalibrationMethod",

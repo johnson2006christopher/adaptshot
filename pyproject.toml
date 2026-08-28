@@ -23,6 +23,11 @@ classifiers = [
 dependencies = [
     "numpy>=1.24.0",
     "Pillow>=9.0.0",
+    # Core, not an extra, since #36: it is what makes inference work without
+    # torch. ~23MB against torch's ~1.2GB, which on a metered or intermittent
+    # connection is the difference between installable and not -- the constraint
+    # this project exists to address.
+    "onnxruntime>=1.14.0",
 ]
 
 [project.optional-dependencies]
@@ -39,11 +44,10 @@ dev = [
     "ruff>=0.16.0,<0.17",
     "pre-commit>=3.4.0,<5",
 ]
-# onnx/onnxruntime used to arrive incidentally via the `gui` extra, which is gone
-# with the studio (#21). They are needed on their own terms: scripts/export_backbones.py
-# produces the bundled backbones, and the torch-free inference path (#36) will consume
-# them. Same pins as before, declared for the reason they are actually wanted.
-onnx = ["onnx>=1.16.0", "onnxscript>=0.3.0", "onnxruntime>=1.14.0"]
+# Export tooling only. onnxruntime is a *core* dependency since #36 -- it is what
+# runs inference without torch. These two are needed solely to produce the ONNX
+# graphs, which is a maintainer task (scripts/export_backbones.py), not a user one.
+onnx = ["onnx>=1.16.0", "onnxscript>=0.3.0"]
 all = ["adaptshot[torch,faiss,onnx,dev]"]
 
 [project.scripts]

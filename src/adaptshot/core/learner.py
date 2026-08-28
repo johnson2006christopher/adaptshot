@@ -73,6 +73,16 @@ def _get_torch() -> Any:
     return _TORCH
 
 
+def _torch_is_available() -> bool:
+    """Whether torch can be imported, not merely whether it is declared."""
+
+    try:
+        import torch  # noqa: F401
+    except ImportError:
+        return False
+    return True
+
+
 def _get_torch_nn() -> Any:
     global _TORCH_NN
     if _TORCH_NN is None:
@@ -1493,6 +1503,25 @@ class FewShotLearner:
         learner._is_initialized = bool(state.get("is_initialized", bool(learner._sim_embeddings)))
 
     def _init_or_rebuild_model_head(self, embedding_dim: int) -> None:
+        """Build the fine-tuning head, when there is something to build it with.
+
+        The head is a `torch.nn.Linear` used only by `CAEWCFinetuner` and by
+        save/load. Inference never touches it -- predictions come from prototype
+        distances in numpy. But it was constructed unconditionally by
+        `load_support_images`, so loading a support set required torch even
+        though nothing about predicting does. That single line was the whole of
+        what made the core install unusable (#35).
+
+        Without torch it stays None, and every existing call site already guards
+        for that. `correct()` raises with an explanation when fine-tuning is then
+        asked for, rather than failing somewhere deeper.
+        """
+
+        if not _torch_is_available():
+            self._model_head = None
+            self.finetuner = None
+            return
+
         num_classes = max(1, len(self._label_to_idx))
         self._model_head = _get_torch_nn().Linear(embedding_dim, num_classes)
         self._model_head.eval()
@@ -1509,6 +1538,7 @@ class FewShotLearner:
         if self._model_head is None:
             embedding_dim = self._embedding_dim()
             self._init_or_rebuild_model_head(embedding_dim=embedding_dim)
+            # Still None means torch is absent, so there is no head to expand.
             return
 
         if new_num_classes <= self._model_head.out_features:
