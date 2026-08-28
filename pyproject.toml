@@ -78,6 +78,7 @@ where = ["src"]
     # Nine real photographs (~135 KB) so the quickstart runs offline. Their
     # licence and provenance are in data/samples/README.md, which ships too.
     "data/samples/*.jpg",
+    "data/samples/demo/*.jpg",
     "data/samples/README.md",
 ]
 
