@@ -142,6 +142,10 @@ Computes Expected Calibration Error. Lower values indicate better alignment betw
 
 ## `ACTEngine`
 
+> **Experimental.** May change in a minor release without a deprecation cycle. See [`adaptshot.api`](reference.md#stable-and-experimental) and the deprecation policy in CONTRIBUTING.md.
+
+No test names this class; it is exercised only through `FewShotLearner`. That is the whole reason it is experimental.
+
 Adaptive Confidence Thresholding with symmetric updates and mean-reversion (v0.2.0). Prevents monotonic drift toward extreme thresholds.
 
 ### Initialization

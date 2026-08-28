@@ -20,12 +20,17 @@ logger = logging.getLogger(__name__)
 
 
 class UPUGFPruner:
-    """
+    """**Experimental.** May change in a minor release without a deprecation cycle; see ``adaptshot.api``.
+
     Uncertainty-Guided Forgetting (UP-UGF) buffer manager.
 
     Scores each stored embedding using a multiplicative utility function.
     When buffer capacity is exceeded, the lowest-scoring examples are evicted
     to maintain bounded memory while preserving model plasticity.
+
+    Experimental for one reason: it is constructed inside ``FewShotLearner`` and
+    exercised only through it -- no test names this class. It becomes stable when
+    it has tests of its own, not before (#23).
     """
 
     def __init__(
@@ -154,7 +159,7 @@ class UPUGFPruner:
         scores = self.compute_scores(embeddings, uncertainties, last_access_times)
         # Keep top-K by score
         keep_idx = np.argsort(scores)[-self.capacity:]
-        
+
         return (
             np.asarray(embeddings[keep_idx]),
             np.asarray(labels[keep_idx]),
