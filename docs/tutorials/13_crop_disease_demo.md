@@ -12,7 +12,7 @@ It comes in two modes:
 | Mode | Command | Best for |
 |------|---------|----------|
 | **Terminal demo** | `python examples/crop_disease_demo.py` | Presentations, quick test |
-| **Full web app** | `python -m examples.mziziguard.app` | Real usage, training, field deployment |
+| **Full web app** | `tambua` | Real usage, training, field deployment |
 
 **You will learn:**
 - How to run the full Gradio web application with 5-tab interface
@@ -43,10 +43,10 @@ Install dependencies and start the Gradio web server:
 pip install -e ".[ui]"
 
 # Launch the web application
-python -m examples.mziziguard.app
+tambua
 
 # Or with a custom port and public link
-python -m examples.mziziguard.app --port 8080 --share
+tambua --port 8080 --share
 ```
 
 Then open **http://localhost:7860** in your browser. You'll see 5 tabs:
@@ -178,7 +178,7 @@ MziziGuard has a clean Python API for programmatic use. Here's the full workflow
 
 ### Configuration (config.yaml)
 
-Edit `examples/mziziguard/config.yaml` to add your own crops:
+Edit `apps/tambua/configs/maize.yaml` to add your own crops:
 
 ```yaml
 crops:
@@ -198,10 +198,10 @@ crops:
 ### Initialize and Predict
 
 ```python
-from examples.mziziguard import MziziGuard
+from tambua import MziziGuard
 
 # Load from config
-guard = MziziGuard("examples/mziziguard/config.yaml")
+guard = MziziGuard("apps/tambua/configs/maize.yaml")
 
 # Option A: Generate synthetic samples for quick start
 guard.initialize_with_samples(n_support=5)
@@ -337,7 +337,7 @@ If you're presenting this demo to a non-technical audience:
 ## Project Structure
 
 ```
-examples/mziziguard/
+apps/tambua/
 ├── __init__.py        # Public API (MziziGuard, DiagnosisResult)
 ├── config.yaml         # Crop/disease definitions & engine settings
 ├── engine.py           # Core engine wrapping FewShotLearner
@@ -366,7 +366,7 @@ examples/mziziguard/
 
 ## Next Steps
 
-- Launch the full app: `python -m examples.mziziguard.app`
+- Launch the full app: `tambua`
 - Edit `config.yaml` to add your own crops and diseases
 - Try loading real images with `load_images_from_dir()` instead of synthetic
 - Present the terminal demo to non-technical audiences using `--no-pause`

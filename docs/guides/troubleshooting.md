@@ -4,7 +4,7 @@ This guide covers every exception AdaptShot can raise, what each one means, and 
 
 !!! warning "MziziGuard is a worked example, not a deployed system"
     MziziGuard has never been deployed and its sample images are generated
-    procedurally (`ImageDraw.ellipse()` in `examples/mziziguard/data.py`). It is being
+    procedurally (`ImageDraw.ellipse()` in `apps/tambua/src/tambua/data.py`). It is being
     rebuilt as [Tambua](https://github.com/johnson2006christopher/adaptshot/issues/45)
     and evaluated on real photographs
     ([#18](https://github.com/johnson2006christopher/adaptshot/issues/18)).
@@ -203,10 +203,10 @@ Include:
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| `ModuleNotFoundError: No module named 'gradio'` | UI dependencies missing | `pip install "adaptshot[ui]"` |
+| `ModuleNotFoundError: No module named 'gradio'` | UI dependencies missing | `pip install tambua` (for the app), or `pip install "adaptshot[ui]"` (for the library's own UI) |
 | `ModuleNotFoundError: No module named 'yaml'` | PyYAML missing | `pip install PyYAML` |
 | `Address already in use` | Port 7860 occupied | Use `--port 8080` |
-| `config.yaml not found` | Config file missing | Ensure `examples/mziziguard/config.yaml` exists |
+| `config.yaml not found` | Config file missing | Ensure `apps/tambua/configs/maize.yaml` exists |
 
 ### Model Training Issues
 
@@ -239,7 +239,7 @@ Include:
 ```bash
 # MziziGuard-specific health check
 python -c "
-from examples.mziziguard import MziziGuard
+from tambua import MziziGuard
 
 guard = MziziGuard()
 print(f'Config loaded: {len(guard.known_labels)} diseases')

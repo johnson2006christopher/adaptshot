@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """MziziGuard: Crop Disease Detection Demo.
 
 A self-contained demonstration of AdaptShot applied to a real problem:
@@ -20,7 +19,6 @@ import os
 import random
 import sys
 import tempfile
-from typing import List, Tuple
 
 import numpy as np
 from PIL import Image, ImageDraw
@@ -28,7 +26,7 @@ from PIL import Image, ImageDraw
 # Ensure we're importing from the local source tree
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from adaptshot import AdaptShotConfig, FewShotLearner  # noqa: E402
+from adaptshot import AdaptShotConfig, FewShotLearner
 
 # ---------------------------------------------------------------------------
 # Synthetic leaf image generator — no external dataset required
@@ -189,7 +187,7 @@ def generate_dataset(
     n_support: int = 5,
     n_query: int = 3,
     seed: int = 42,
-) -> Tuple[List[str], List[str]]:
+) -> tuple[list[str], list[str]]:
     """Generate synthetic leaf images for the demo.
 
     Args:
@@ -204,10 +202,10 @@ def generate_dataset(
     random.seed(seed)
     np.random.seed(seed)
 
-    support_paths: List[str] = []
-    support_labels: List[str] = []
-    query_paths: List[str] = []
-    query_labels: List[str] = []
+    support_paths: list[str] = []
+    support_labels: list[str] = []
+    query_paths: list[str] = []
+    query_labels: list[str] = []
 
     for disease_name, generator in DISEASE_GENERATORS.items():
         # Support images
@@ -452,7 +450,7 @@ def run_demo(interactive: bool = True) -> None:
     # ------------------------------------------------------------------
     print()
     print(f"  📁 Demo images saved to: {tmpdir}")
-    print("  🔬 Try the full web app: `python -m examples.mziziguard.app`")
+    print("  🔬 Try the full web app: `pip install tambua && tambua`")
     print("  📖 Docs: https://johnson2006christopher.github.io/adaptshot/")
     print()
 
