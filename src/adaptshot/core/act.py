@@ -13,7 +13,8 @@ logger = logging.getLogger(__name__)
 
 
 class ACTEngine:
-    """
+    """**Experimental.** May change in a minor release without a deprecation cycle; see ``adaptshot.api``.
+
     Adaptive Confidence Thresholding engine.
 
     Maintains a dynamic threshold τ_k for each class k that adapts based on:
@@ -23,6 +24,10 @@ class ACTEngine:
 
     The engine implements an exponential moving average update rule to
     prevent oscillation while remaining responsive to distribution shift.
+
+    Experimental for one reason: it is constructed inside ``FewShotLearner`` and
+    exercised only through it -- no test names this class. It becomes stable when
+    it has tests of its own, not before (#23).
     """
 
     def __init__(

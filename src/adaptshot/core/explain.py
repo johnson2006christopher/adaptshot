@@ -35,7 +35,9 @@ from ..utils.arrays import FloatArray, LabelArray
 
 @dataclass
 class FeatureAttribution:
-    """Weighted contribution of a support example to the prediction.
+    """**Experimental.** May change in a minor release without a deprecation cycle; see ``adaptshot.api``.
+
+    Weighted contribution of a support example to the prediction.
 
     Attributes:
         index: Position in the support set.
@@ -54,7 +56,9 @@ class FeatureAttribution:
 
 @dataclass
 class ConfidenceDecomposition:
-    """Decomposed confidence showing each component's contribution.
+    """**Experimental.** May change in a minor release without a deprecation cycle; see ``adaptshot.api``.
+
+    Decomposed confidence showing each component's contribution.
 
     Attributes:
         raw_similarity: Base confidence from nearest-neighbor similarity.
@@ -83,7 +87,9 @@ class ConfidenceDecomposition:
 
 @dataclass
 class Counterfactual:
-    """Counterfactual explanation for a prediction.
+    """**Experimental.** May change in a minor release without a deprecation cycle; see ``adaptshot.api``.
+
+    Counterfactual explanation for a prediction.
 
     Attributes:
         current_prediction: The model's actual prediction.
@@ -107,7 +113,9 @@ class Counterfactual:
 
 @dataclass
 class ExplanationResult:
-    """Complete explanation for a single prediction.
+    """**Experimental.** May change in a minor release without a deprecation cycle; see ``adaptshot.api``.
+
+    Complete explanation for a single prediction.
 
     Combines feature attributions, confidence decomposition, and
     counterfactual analysis into a single structured result.
@@ -157,7 +165,9 @@ class ExplanationResult:
 
 
 class ExplainabilityEngine:
-    """Generate multi-faceted explanations for AdaptShot predictions.
+    """**Experimental.** May change in a minor release without a deprecation cycle; see ``adaptshot.api``.
+
+    Generate multi-faceted explanations for AdaptShot predictions.
 
     All methods are model-agnostic and operate on embeddings and
     similarity scores, making them applicable to any backbone and

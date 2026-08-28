@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
+import warnings
 from dataclasses import dataclass
 from typing import Any
 
@@ -555,7 +556,7 @@ class UncertaintyQuantifier:
     def compute_perturbation_variance(
         perturbed_embeddings: list[FloatArray],
     ) -> tuple[float, float]:
-        """Compute variance across a set of perturbed or sampled embeddings.
+        """Deprecated since 0.3.0, removed in 0.4.0. Compute variance across a set of perturbed or sampled embeddings.
 
         The sample variance of L2-normalized embeddings indicates model uncertainty:
         if the embedding direction is stable under perturbation, uncertainty is low.
@@ -566,6 +567,13 @@ class UncertaintyQuantifier:
         Returns:
             (variance_raw, normalized_variance in [0, 1])
         """
+        warnings.warn(
+            "UncertaintyQuantifier.compute_perturbation_variance() is deprecated as of 0.3.0 and will be "
+            "removed in 0.4.0: nothing in the library, its tests or its applications "
+            "calls it (#23).",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         if len(perturbed_embeddings) < 2:
             return 0.0, 0.0
 
@@ -716,7 +724,14 @@ class UncertaintyQuantifier:
     # ------------------------------------------------------------------
 
     def get_ood_summary(self) -> dict[str, Any]:
-        """Return diagnostic summary of OOD detection state."""
+        """Deprecated since 0.3.0, removed in 0.4.0. Return diagnostic summary of OOD detection state."""
+        warnings.warn(
+            "UncertaintyQuantifier.get_ood_summary() is deprecated as of 0.3.0 and will be "
+            "removed in 0.4.0: nothing in the library, its tests or its applications "
+            "calls it (#23).",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return {
             "ood_threshold": self._ood_threshold,
             "n_calibration_samples": len(self._calibration_distances),
@@ -732,7 +747,14 @@ class UncertaintyQuantifier:
         }
 
     def get_class_statistics(self) -> dict[str, dict[str, Any]]:
-        """Return per-class distribution statistics."""
+        """Deprecated since 0.3.0, removed in 0.4.0. Return per-class distribution statistics."""
+        warnings.warn(
+            "UncertaintyQuantifier.get_class_statistics() is deprecated as of 0.3.0 and will be "
+            "removed in 0.4.0: nothing in the library, its tests or its applications "
+            "calls it (#23).",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         stats: dict[str, dict[str, Any]] = {}
         for label in self._class_means:
             mean = self._class_means[label]

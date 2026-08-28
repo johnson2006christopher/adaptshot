@@ -25,6 +25,7 @@ import numpy as np
 from PIL import Image, UnidentifiedImageError
 
 from ..config.settings import AdaptShotConfig
+from ..training.contrastive import ContrastivePrototypeLearner
 from ..training.feedback_router import Correction, FeedbackRouter
 from ..training.finetune import CAEWCFinetuner
 from ..training.up_ugf import UPUGFPruner
@@ -40,7 +41,6 @@ from ..utils.migrations import migrate_v0_1_0_to_v0_1_1
 from .act import ACTEngine
 from .calibration import CalibrationEngine
 from .conformal import ConformalEngine
-from .contrastive import ContrastivePrototypeLearner
 from .explain import ExplainabilityEngine, ExplanationResult
 from .extractor import (
     BACKBONE_OUTPUT_DIM,
@@ -437,6 +437,11 @@ class FewShotLearner:
 
     def explain(self, image: str | Image.Image | FloatArray) -> ExplanationResult:
         """Generate a multi-faceted explanation for a prediction.
+
+        Returns an experimental type. ``ExplanationResult`` and the dataclasses it
+        holds may change in a minor release without a deprecation cycle; see
+        ``adaptshot.api``. This method itself is stable -- it is the shape of
+        what it returns that is not yet settled.
 
         Combines feature attribution (which support examples influenced the
         prediction), confidence decomposition (how each component contributed),
