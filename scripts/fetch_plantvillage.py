@@ -78,6 +78,52 @@ CLASS_MAP = {
     "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot": "gray_leaf_spot",
 }
 
+#: A wider pool for the 5-way benchmark (#18), which needs more than five
+#: classes to draw from: with exactly five, every episode is the same episode
+#: and only the image sampling varies. Twenty gives C(20,5) = 15,504 possible
+#: class combinations, so 100 episodes are genuinely different problems.
+#:
+#: Chosen to span crops rather than to flatter the result. Several sets are
+#: deliberately hard -- six tomato diseases that look alike under the same lab
+#: conditions, and a "healthy" class for six different crops, so the frozen
+#: backbone cannot separate episodes on plant species alone.
+#:
+#: The class names are kept verbatim from PlantVillage rather than renamed. The
+#: maize mapping above exists because Tambua's config uses its own keys; the
+#: benchmark has no such constraint, and renaming would only obscure which
+#: directory a number came from.
+BENCHMARK_CLASSES = (
+    "Apple___Apple_scab",
+    "Apple___Black_rot",
+    "Apple___healthy",
+    "Cherry_(including_sour)___Powdery_mildew",
+    "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot",
+    "Corn_(maize)___Common_rust_",
+    "Corn_(maize)___Northern_Leaf_Blight",
+    "Corn_(maize)___healthy",
+    "Grape___Black_rot",
+    "Grape___Esca_(Black_Measles)",
+    "Peach___Bacterial_spot",
+    "Pepper,_bell___Bacterial_spot",
+    "Potato___Early_blight",
+    "Potato___Late_blight",
+    "Strawberry___Leaf_scorch",
+    "Tomato___Bacterial_spot",
+    "Tomato___Early_blight",
+    "Tomato___Leaf_Mold",
+    "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+    "Tomato___healthy",
+)
+
+
+def _slug(source_dir: str) -> str:
+    """A filesystem-safe directory name for a PlantVillage class."""
+
+    return "".join(
+        character if character.isalnum() or character in "_-" else "_"
+        for character in source_dir
+    )
+
 API = "https://api.github.com/repos/{repo}/contents/{path}?ref={ref}"
 RAW = "https://raw.githubusercontent.com/{repo}/{ref}/{path}"
 
@@ -103,11 +149,13 @@ def _sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def fetch(out_dir: Path, per_class: int) -> dict[str, str]:
+def fetch(
+    out_dir: Path, per_class: int, classes: dict[str, str] | None = None
+) -> dict[str, str]:
     """Download `per_class` images for each mapped class. Returns path -> sha256."""
 
     manifest: dict[str, str] = {}
-    for source_dir, class_key in CLASS_MAP.items():
+    for source_dir, class_key in (classes or CLASS_MAP).items():
         names = _listing(source_dir)[:per_class]
         if len(names) < per_class:
             print(f"  ! only {len(names)} images available for {class_key}", file=sys.stderr)
@@ -168,7 +216,21 @@ def main(argv: list[str] | None = None) -> int:
         "--verify", action="store_true",
         help="Re-check an existing download against its manifest, and exit",
     )
+    parser.add_argument(
+        "--preset", choices=("maize", "benchmark"), default="maize",
+        help=(
+            "Which classes to fetch. 'maize' is the three classes Tambua's "
+            "config names; 'benchmark' is the 20-class pool the 5-way benchmark "
+            "samples episodes from (#18)."
+        ),
+    )
     args = parser.parse_args(argv)
+
+    classes = (
+        CLASS_MAP
+        if args.preset == "maize"
+        else {source: _slug(source) for source in BENCHMARK_CLASSES}
+    )
 
     if args.verify:
         return verify(args.out)
@@ -180,7 +242,7 @@ def main(argv: list[str] | None = None) -> int:
 
     args.out.mkdir(parents=True, exist_ok=True)
     try:
-        files = fetch(args.out, args.per_class)
+        files = fetch(args.out, args.per_class, classes)
     except urllib.error.URLError as exc:
         print(f"download failed: {exc}", file=sys.stderr)
         print("This script needs network access. Nothing else in the project does.", file=sys.stderr)
@@ -189,7 +251,7 @@ def main(argv: list[str] | None = None) -> int:
     (args.out / "manifest.json").write_text(
         json.dumps(
             {"repo": REPO, "commit": COMMIT, "licence": LICENCE,
-             "citation": CITATION, "files": files},
+             "citation": CITATION, "preset": args.preset, "files": files},
             indent=2, sort_keys=True,
         ),
         encoding="utf-8",
