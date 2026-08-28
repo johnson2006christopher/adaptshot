@@ -1,8 +1,15 @@
 # Bundled sample photographs
 
-Nine real maize-leaf photographs, three per class, so that the README quickstart
+Twelve real maize-leaf photographs, four per class, so that the README quickstart
 runs offline with no dataset download. They are here for that purpose and for
 `examples/demo/`; they are not a benchmark.
+
+`demo/` holds four more: three held-out maize leaves chosen because, against the
+twelve above, they show a singleton set, a two-class set, and a wrong top-1 whose set still
+contains the true class -- the progression the conference demo walks through; the
+exact outcomes are sensitive to the support set and the demo assumes none of them --
+and one healthy **tomato** leaf from the same dataset, as a query from a crop the
+model was never shown.
 
 **These images are not ours.** They are from the PlantVillage dataset, pinned to
 commit `7f7ecc7e1eaca78107e3affe7cb5abd9427e139a` of `spMohanty/PlantVillage-Dataset`, and are redistributed under
@@ -26,3 +33,10 @@ of the originals; the filenames are ours.
 | `northern_leaf_blight_1.jpg` | `005318c8-a5fa-4420-843b-23bdda7322c2___RS_NLB 3853 copy.jpg` | `314ccd5ea9e83c15…` |
 | `northern_leaf_blight_2.jpg` | `0079c731-80f5-4fea-b6a2-4ff23a7ce139___RS_NLB 4121.JPG` | `83603f7ebab40769…` |
 | `northern_leaf_blight_3.jpg` | `008d9af0-7568-4a67-bb1a-0e915836ddc0___RS_NLB 4165 copy 2.jpg` | `79b76ef168c0355b…` |
+| `gray_leaf_spot_4.jpg` | `0157de0c-5b81-44a1-abe8-eecaa6f1261a___RS_GLSp 4287.JPG` | `ea72e988e679d402…` |
+| `healthy_maize_4.jpg` | `026bd735-b9f4-4eab-86f3-23df15dbec95___R.S_HL 7938 copy.jpg` | `2e13237e65d9bb1d…` |
+| `northern_leaf_blight_4.jpg` | `00a14441-7a62-4034-bc40-b196aeab2785___RS_NLB 3932.JPG` | `aa69fca37d03be78…` |
+| `demo/query_3_gray_leaf_spot.jpg` | `05f92471-3cd4-441b-af21-1a02304d0b6c___RS_GLSp 7315.JPG` | `bec5ce16e2d03b8b…` |
+| `demo/query_2_gray_leaf_spot.jpg` | `0ce6543f-9694-4b3a-b767-9bc909f54f73___RS_GLSp 4663 copy.jpg` | `442146dc8f73c14e…` |
+| `demo/query_1_healthy_maize.jpg` | `06ec8081-1520-43e3-bda7-d74467f55992___R.S_HL 7935 copy.jpg` | `f7dc3db7128eb847…` |
+| `demo/query_4_tomato_healthy.jpg` | `000146ff-92a4-4db6-90ad-8fce2ae4fddd___GH_HL Leaf 259.1.JPG` | `a294299b0518a50e…` |
