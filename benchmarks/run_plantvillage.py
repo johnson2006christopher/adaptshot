@@ -26,6 +26,7 @@ Writes results/plantvillage_5way5shot.json.
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import platform
 import sys
@@ -75,7 +76,7 @@ def adaptshot_episode(
     labels: np.ndarray,
     episode: Episode,
     config: AdaptShotConfig,
-) -> tuple[float, float, float, float]:
+) -> tuple[float, float, float, float, dict[str, Any]]:
     """Run one episode through the real `FewShotLearner`.
 
     This calls the shipped library on image paths rather than reimplementing the
@@ -90,23 +91,30 @@ def adaptshot_episode(
     split. The baselines are; see `top1_episode` for why that asymmetry is the
     safe direction.
 
-    Returns (accuracy, coverage, mean set size, OOD flag rate).
+    Returns (accuracy, coverage, mean set size, OOD flag rate, stage timings),
+    where the timings are the wall clock of `load_support_images` for this
+    episode and of each `predict` call -- the full path, ONNX forward included.
     """
 
     learner = FewShotLearner(config=config)
+    clock = time.perf_counter()
     learner.load_support_images(
         [str(paths[index]) for index in episode.support],
         [str(label) for label in labels[episode.support]],
     )
+    fit_ms = (time.perf_counter() - clock) * 1000.0
 
     query_labels = labels[episode.query]
     correct = 0
     covered = 0
     set_sizes: list[int] = []
     flagged = 0
+    predict_ms: list[float] = []
 
     for index, true_label in zip(episode.query, query_labels, strict=True):
+        clock = time.perf_counter()
         result = learner.predict(str(paths[index]))
+        predict_ms.append((time.perf_counter() - clock) * 1000.0)
         correct += int(result.prediction == true_label)
         predicted_set = result.conformal_set or [result.prediction]
         covered += int(true_label in predicted_set)
@@ -114,7 +122,13 @@ def adaptshot_episode(
         flagged += int(result.ood_flag)
 
     n = len(query_labels)
-    return correct / n, covered / n, float(np.mean(set_sizes)), flagged / n
+    return (
+        correct / n,
+        covered / n,
+        float(np.mean(set_sizes)),
+        flagged / n,
+        {"fit_ms": fit_ms, "predict_ms": predict_ms},
+    )
 
 
 def baseline_episode(
@@ -215,12 +229,102 @@ def _confidence_in_true_class(
     )
 
 
+def _cpu_model() -> str | None:
+    try:
+        with open("/proc/cpuinfo", encoding="utf-8") as handle:
+            for line in handle:
+                if line.startswith("model name"):
+                    return line.split(":", 1)[1].strip()
+    except OSError:
+        pass
+    return platform.processor() or None
+
+
+def peak_rss_mb() -> float | None:
+    """This process's high-water RSS, from /proc. Linux only; None elsewhere.
+
+    VmHWM rather than getrusage: the latter is inherited across vfork and
+    reports the parent's watermark when run under a harness (see
+    tests/test_memory_ceiling.py for the 119MB-vs-514MB measurement).
+    """
+
+    try:
+        with open("/proc/self/status", encoding="utf-8") as status:
+            for line in status:
+                if line.startswith("VmHWM:"):
+                    return int(line.split()[1]) / 1024.0
+    except OSError:
+        return None
+    return None
+
+
+def median_p95(samples: list[float]) -> dict[str, float | int]:
+    """Median and p95, not mean. Tail latency is what makes a tool feel broken."""
+
+    array = np.asarray(samples, dtype=np.float64)
+    return {
+        "median": float(np.median(array)),
+        "p95": float(np.percentile(array, 95)),
+        "n": int(array.size),
+    }
+
+
+_COLD_START = """
+import time
+started = time.perf_counter()
+import json, sys
+from adaptshot import AdaptShotConfig, FewShotLearner
+support, labels, query = json.loads(sys.argv[1])
+learner = FewShotLearner(config=AdaptShotConfig(backbone=sys.argv[2], device="cpu", seed=42))
+learner.load_support_images(support, labels)
+learner.predict(query)
+elapsed = time.perf_counter() - started
+peak = None
+try:
+    with open("/proc/self/status", encoding="utf-8") as status:
+        for line in status:
+            if line.startswith("VmHWM:"):
+                peak = int(line.split()[1]) / 1024.0
+except OSError:
+    pass
+print(json.dumps({"seconds": elapsed, "peak_rss_mb": peak}))
+"""
+
+
+def cold_start(
+    support: list[str], labels: list[str], query: str, backbone: str
+) -> dict[str, float | None] | None:
+    """Import, build the learner, learn one support set, answer one query -- in a
+    fresh interpreter, timed from before the first import, with that process's
+    peak RSS. This is what a field user experiences, and the memory figure that
+    describes the library rather than the benchmark harness around it."""
+
+    import json
+    import subprocess
+    import sys
+
+    completed = subprocess.run(
+        [sys.executable, "-c", _COLD_START, json.dumps([support, labels, query]), backbone],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if completed.returncode != 0:
+        return None
+    record: dict[str, float | None] = json.loads(completed.stdout.strip().splitlines()[-1])
+    return record
+
+
 def hardware() -> dict[str, Any]:
     """Recorded so a number can be compared against another machine honestly."""
 
     record: dict[str, Any] = {
         "platform": platform.platform(),
         "processor": platform.processor() or platform.machine(),
+        # The line a reader can compare their own machine against. platform's
+        # answer is "x86_64", which describes every laptop sold this decade.
+        "cpu_model": _cpu_model(),
+        "install": "torch" if importlib.util.find_spec("torch") else "core",
         "python": platform.python_version(),
         "numpy": np.__version__,
         "adaptshot": adaptshot.__version__,
@@ -296,14 +400,18 @@ def main(argv: list[str] | None = None) -> int:
     baseline_accuracy: dict[str, list[float]] = {name: [] for name in baseline_names}
 
     latencies: list[float] = []
+    fit_ms: list[float] = []
+    predict_ms: list[float] = []
     for episode in episodes:
         clock = time.perf_counter()
-        accuracy, episode_coverage, episode_size, episode_ood = adaptshot_episode(
+        accuracy, episode_coverage, episode_size, episode_ood, stage = adaptshot_episode(
             paths, labels, episode, config
         )
         latencies.append(
             (time.perf_counter() - clock) / len(episode.query) * 1000.0
         )
+        fit_ms.append(stage["fit_ms"])
+        predict_ms.extend(stage["predict_ms"])
         adaptshot_accuracy.append(accuracy)
         coverage.append(episode_coverage)
         set_size.append(episode_size)
@@ -358,8 +466,58 @@ def main(argv: list[str] | None = None) -> int:
     }
 
     mean_latency, latency_half = mean_and_ci(latencies)
-    print(f"\nLatency per query (post-embedding): {mean_latency:.3f} +/- "
-          f"{latency_half:.3f} ms")
+
+    # Per-image embedding, timed on its own: the ONNX forward for 100 pool
+    # images, cache bypassed. predict() above includes this; here it is alone.
+    from adaptshot.core.extractor import extract_embedding
+
+    embed_ms: list[float] = []
+    for path in paths[:100]:
+        clock = time.perf_counter()
+        extract_embedding(str(path), config)
+        embed_ms.append((time.perf_counter() - clock) * 1000.0)
+
+    first = episodes[0]
+    cold = cold_start(
+        [str(paths[i]) for i in first.support],
+        [str(labels[i]) for i in first.support],
+        str(paths[first.query[0]]),
+        args.backbone,
+    )
+    rss = peak_rss_mb()
+
+    timing = {
+        "embedding_ms": median_p95(embed_ms),
+        "support_fit_ms": median_p95(fit_ms),
+        "predict_ms": median_p95(predict_ms),
+        # Two memory numbers, deliberately named so they cannot be confused.
+        # The first describes the library: one fresh process, one support set,
+        # one answer. The second describes this harness: 400 cached embeddings,
+        # 100 episodes and four baselines held at once. Only the first is a
+        # claim about AdaptShot.
+        "cold_start": cold,
+        "benchmark_process_peak_rss_mb": rss,
+        "note": (
+            "predict_ms is the full path per query, ONNX forward included; "
+            "support_fit_ms is load_support_images per episode (embed the support, "
+            "leave-one-out calibration, OOD fit); cold_start is a fresh interpreter "
+            "from before the first import to the first answer, with that process's "
+            "peak RSS -- the single-cycle memory figure; benchmark_process_peak_rss_mb "
+            "is this whole run's VmHWM and describes the harness, not the library. "
+            "Both depend on which install ran them: see hardware.install"
+        ),
+    }
+    print("\nLatency, median / p95 (ms), and memory -- see hardware for the machine:")
+    print(f"  embedding, per image          {timing['embedding_ms']['median']:7.1f} / {timing['embedding_ms']['p95']:7.1f}   n={timing['embedding_ms']['n']}")
+    print(f"  support fit, per episode      {timing['support_fit_ms']['median']:7.1f} / {timing['support_fit_ms']['p95']:7.1f}   n={timing['support_fit_ms']['n']}")
+    print(f"  predict, per query (full)     {timing['predict_ms']['median']:7.1f} / {timing['predict_ms']['p95']:7.1f}   n={timing['predict_ms']['n']}")
+    if cold is not None and cold.get("seconds") is not None:
+        rss_line = f"  peak RSS {cold['peak_rss_mb']:.0f} MB" if cold.get("peak_rss_mb") else ""
+        print(f"  cold start, fresh process     {cold['seconds']:7.2f} s  (one support set, one answer){rss_line}")
+    else:
+        print("  cold start: could not be measured")
+    if rss is not None:
+        print(f"  this benchmark process        {rss:7.0f} MB peak  (harness, not library)")
 
     results.update(
         protocol={
@@ -374,6 +532,7 @@ def main(argv: list[str] | None = None) -> int:
         dataset=dataset_provenance(args.data),
         hardware=hardware(),
         latency_ms_per_query={"mean": mean_latency, "ci95_half_width": latency_half},
+        timing=timing,
     )
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
