@@ -343,7 +343,7 @@ jobs:
           assert "site-packages" in str(p), f"testing the tree, not the wheel: {p}"
           print("package under test:", p.parent)
           PYY
-          "$PY" -m pytest tests/test_quickstart.py tests/test_demo.py tests/test_conformal_coverage.py tests/test_calibration.py -q
+          "$PY" -m pytest tests/test_quickstart.py tests/test_demo.py tests/test_conformal*.py tests/test_calibration.py -q
           "$PY" -m benchmarks.run_benchmark --smoke-test --seed 42 --backbone mobilenet_v3_small
           SH
           chmod +x "$RUNNER_TEMP/inside.sh"
