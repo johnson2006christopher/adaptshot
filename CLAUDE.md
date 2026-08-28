@@ -51,7 +51,8 @@ Docs preview: `mkdocs serve` (requires `mkdocs`, `mkdocs-material`, `mkdocstring
 
 ## Repo etiquette
 
-- **Never run `git commit`, `git push`, or `git branch`.** The maintainer performs every git operation himself. Make the edits, report what changed, and suggest a commit message if useful.
+- **Git operations are delegated.** Create branches, commit in small scoped units, push, open PRs, and merge into the version branch. Two operations stay with the maintainer: merging the version branch into `main`, and tagging a release. `main` is only ever what the maintainer personally shipped.
+- **Commits carry no AI co-author trailer.** Every commit is reviewed by the maintainer and published under his name; the history records the project, not the tooling.
 - **Branching**: a version branch (e.g. `v0.3.0`) is the integration target; short-lived `feat/...` and `fix/...` branches merge into it. The version branch merges to `main` at release, then gets tagged. `main` always represents a shipped release.
 - Commits: Conventional Commits (`feat:`, `fix:`, `test:`, `docs:`, `build:`, `release:`)
 - Every PR must pass all four validation stages and the constraint checklist in `.github/PULL_REQUEST_TEMPLATE.md`.
