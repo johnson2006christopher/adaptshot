@@ -276,6 +276,34 @@ applications calls them. Each warns.
 
 ---
 
+### `ACTEngine`
+
+Adaptive Confidence Thresholding: a per-class acceptance threshold that moves with
+feedback and reverts slowly toward its base. Tested directly since #74.
+
+```python
+from adaptshot import ACTEngine
+
+act = ACTEngine(base_threshold=0.65, learning_rate=0.01, min_threshold=0.50, max_threshold=0.95)
+accepted, action = act.should_accept(confidence, class_idx)
+```
+
+---
+### `UPUGFPruner`
+
+Scores every buffered example by uncertainty, recency and redundancy, and keeps the
+`capacity` highest. Exact cosine redundancy up to 100 examples, LSH-approximate beyond.
+Tested directly since #74, which found and fixed two inverted terms: it had been keeping
+the *confident* examples and, above 100 rows, rewarding duplicates.
+
+```python
+from adaptshot import UPUGFPruner
+
+pruner = UPUGFPruner(capacity=100)
+embeddings, labels, uncertainties, times = pruner.prune(embeddings, labels, uncertainties, times)
+```
+
+---
 ### Exceptions
 
 Everything raised on purpose derives from `AdaptShotError`, so `except AdaptShotError`
@@ -372,38 +400,7 @@ prediction, confidence, index = learner.nearest_prototype(query, prototypes, lab
 
 ---
 
-### `ACTEngine`
 
-Adaptive Confidence Thresholding: a per-class acceptance threshold that moves with
-feedback and reverts slowly toward its base.
-
-**No test names this class.** It is constructed inside `FewShotLearner` and exercised only
-through it, which is the whole reason it is experimental.
-
-```python
-from adaptshot import ACTEngine
-
-act = ACTEngine(base_threshold=0.65, learning_rate=0.01, min_threshold=0.50, max_threshold=0.95)
-accepted, action = act.should_accept(confidence, class_idx)
-```
-
----
-
-### `UPUGFPruner`
-
-Scores every buffered example by uncertainty, recency and redundancy, and keeps the
-`capacity` highest. Exact cosine redundancy up to 100 examples, LSH-approximate beyond.
-
-**No test names this class.** Same reason as `ACTEngine`.
-
-```python
-from adaptshot import UPUGFPruner
-
-pruner = UPUGFPruner(capacity=100)
-embeddings, labels, uncertainties, times = pruner.prune(embeddings, labels, uncertainties, times)
-```
-
----
 
 ## Outside the API surface
 

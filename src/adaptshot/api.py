@@ -14,10 +14,11 @@ The rule for placing a name, in the maintainer's words from #23:
     Internal      Never intended for users.                  Remove from __all__.
 
 "Tested" is load-bearing. Two engines the library's narrative leans on --
-``ACTEngine`` and ``UPUGFPruner`` -- are constructed inside ``FewShotLearner``
-and exercised only through it: no test names either class. They are
-experimental for that reason alone, and will become stable when they have
-tests of their own, not before.
+``ACTEngine`` and ``UPUGFPruner`` -- were experimental in 0.3.0's first cut for
+one reason: they were constructed inside ``FewShotLearner`` and no test named
+either. Writing those tests (#74) found two inverted terms in the pruner that
+had shipped in every release; both are stable now because the tests exist,
+which is the order this rule is meant to enforce.
 
 Nothing was found to be internal at the name level. What the audit found
 instead was the opposite gap: ``PredictionResult`` is what ``predict()``
@@ -56,10 +57,12 @@ STABLE: tuple[str, ...] = (
     "ConfigValidationError",
     "InvalidImageError",
     # Engines with their own tests and their own consumers.
+    "ACTEngine",
     "CalibrationEngine",
     "ConformalEngine",
     "ConformalPredictionSet",
     "FeedbackRouter",
+    "UPUGFPruner",
     "UncertaintyQuantifier",
     "UncertaintyReport",
 )
@@ -72,7 +75,6 @@ STABLE: tuple[str, ...] = (
 #:   benchmarks/. The result's shape is the part most likely to change.
 #: - Contrastive: one test file, no consumer. Moved to `training/` in 0.3.0,
 #:   because it trains a projection head; the old path warns until 0.4.0.
-#: - ACTEngine, UPUGFPruner: no direct tests at all. See the module docstring.
 EXPERIMENTAL: tuple[str, ...] = (
     "ConfidenceDecomposition",
     "Counterfactual",
@@ -81,8 +83,6 @@ EXPERIMENTAL: tuple[str, ...] = (
     "FeatureAttribution",
     "ContrastiveConfig",
     "ContrastivePrototypeLearner",
-    "ACTEngine",
-    "UPUGFPruner",
 )
 
 __all__ = ["EXPERIMENTAL", "STABLE"]
