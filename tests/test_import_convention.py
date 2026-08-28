@@ -16,7 +16,10 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SCANNED_DIRS = ("tests", "benchmarks", "src")
+# `apps` holds applications built on the library. They are the most likely place
+# for a path-based import to creep back in, because an app run from the repo root
+# appears to work while being broken for everyone who installs it.
+SCANNED_DIRS = ("tests", "benchmarks", "src", "apps", "examples")
 
 # Matches `import src.adaptshot` / `from src.adaptshot...`, and the dotted form
 # used in monkeypatch and mock.patch targets, e.g. "src.adaptshot.core.learner.x".

@@ -31,8 +31,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev,torch]"
+          pip install -e "apps/tambua[dev]"
       - name: Lint with ruff
-        run: ruff check src/ tests/ benchmarks/ apps/
+        run: ruff check src/ tests/ benchmarks/ apps/ examples/
       - name: Type check with mypy (strict)
         run: mypy src/adaptshot --strict
       - name: Type check the application (strict)
@@ -63,6 +64,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev,torch]"
+          # The application is a separate distribution. Installing it here is what
+          # makes apps/tambua/tests meaningful -- they assert that `tambua` resolves
+          # by installation, not by happening to sit under the working directory.
+          pip install -e "apps/tambua[dev]"
       - name: Test with pytest
         run: pytest tests/ -v --tb=short --cov=src/adaptshot --cov-report=xml --cov-report=term-missing
       - name: Upload coverage artifact
