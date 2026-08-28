@@ -20,9 +20,17 @@ from torchvision import datasets, transforms
 from torchvision.transforms import ToPILImage
 
 from adaptshot.config.settings import AdaptShotConfig
-from adaptshot.core.extractor import extract_embedding
+from adaptshot.core.extractor import BackboneRegistry, extract_embedding
 from adaptshot.core.similarity import find_nearest_neighbor
 from adaptshot.utils.determinism import set_deterministic_seed, verify_determinism
+
+#: The backbone every published figure was measured on. Kept as the benchmark
+#: default even though the library default moved to mobilenet_v3_small in #36,
+#: so that results stay comparable across the project's history.
+DEFAULT_BENCHMARK_BACKBONE = "resnet18"
+
+#: The canonical artifact tests/test_docs_claims.py verifies the README against.
+DEFAULT_OUTPUT = "results/smoke_test.json"
 
 #: Where torchvision caches CIFAR-10, relative to `data_dir`.
 _CIFAR_MARKER = Path("cifar-10-batches-py") / "data_batch_1"
@@ -380,7 +388,7 @@ def main() -> int:
     parser.add_argument(
         "--output",
         type=str,
-        default="results/smoke_test.json",
+        default=DEFAULT_OUTPUT,
         help="Output JSON path for results (default: results/smoke_test.json)",
     )
     parser.add_argument(
@@ -393,18 +401,29 @@ def main() -> int:
         action="store_true",
         help="Enable memory profiling via tracemalloc",
     )
+    parser.add_argument(
+        "--backbone",
+        default=DEFAULT_BENCHMARK_BACKBONE,
+        choices=sorted(BackboneRegistry),
+        help=(
+            "Backbone to measure. Defaults to resnet18 for comparability with "
+            "every number this project has published; pass "
+            "mobilenet_v3_small to measure what a core install actually runs."
+        ),
+    )
     args = parser.parse_args()
 
     # Set deterministic seed globally
     set_deterministic_seed(args.seed)
 
-    # resnet18 is pinned here deliberately, not inherited from AdaptShotConfig's
-    # default. The default became mobilenet_v3_small in #36 -- the backbone whose
-    # ONNX weights ship in the wheel -- but this benchmark's whole value is
-    # comparability with every number the project has published, and changing the
-    # backbone would silently break that. Pass --backbone to measure another.
+    # resnet18 is the default here deliberately, not inherited from
+    # AdaptShotConfig's default. The library default became mobilenet_v3_small in
+    # #36 -- the backbone whose ONNX weights ship in the wheel -- but this
+    # benchmark's whole value is comparability with every number the project has
+    # published, and silently changing the backbone would break that. --backbone
+    # measures another one explicitly.
     config = AdaptShotConfig(
-        backbone="resnet18",
+        backbone=args.backbone,
         device="cpu",
         seed=args.seed,
         n_way=5,
@@ -435,7 +454,15 @@ def main() -> int:
         print(f"   • Embedding Time: {results['embedding_time_s']:.3f}s")
 
         # Save to JSON
+        # results/smoke_test.json is the artifact tests/test_docs_claims.py checks
+        # every quoted figure in the README against. A run on another backbone
+        # measures a different thing, so writing it there would silently replace
+        # the numbers the docs are verified against -- which is exactly what
+        # happened the first time --backbone was used. Non-default backbones get
+        # their own file unless --output says otherwise.
         output_path = Path(args.output)
+        if args.backbone != DEFAULT_BENCHMARK_BACKBONE and args.output == DEFAULT_OUTPUT:
+            output_path = output_path.with_suffix(f".{args.backbone}.json")
         output_path.parent.mkdir(parents=True, exist_ok=True)
         with open(output_path, "w", encoding="utf-8") as f:
             json.dump(results, f, indent=2, ensure_ascii=False)
