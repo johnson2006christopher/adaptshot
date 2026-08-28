@@ -56,6 +56,8 @@
   "hardware": {
     "adaptshot": "0.2.0",
     "cpu_count": 16,
+    "cpu_model": "11th Gen Intel(R) Core(TM) i7-11800H @ 2.30GHz",
+    "install": "core",
     "numpy": "2.5.2",
     "onnxruntime": "1.29.0",
     "platform": "Linux-7.1.10-200.fc44.x86_64-x86_64-with-glibc2.43",
@@ -64,8 +66,8 @@
     "ram_gb": 31.0
   },
   "latency_ms_per_query": {
-    "ci95_half_width": 2.0146468359789806,
-    "mean": 22.15303100860001
+    "ci95_half_width": 2.404309600208518,
+    "mean": 28.23598383400131
   },
   "protocol": {
     "alpha": 0.1,
@@ -75,6 +77,29 @@
     "n_query_per_class": 10,
     "seed": 42,
     "task": "5-way 5-shot"
+  },
+  "timing": {
+    "benchmark_process_peak_rss_mb": 523.3203125,
+    "cold_start": {
+      "peak_rss_mb": 119.88671875,
+      "seconds": 1.3351109960003669
+    },
+    "embedding_ms": {
+      "median": 4.005406000032963,
+      "n": 100,
+      "p95": 4.869945250356977
+    },
+    "note": "predict_ms is the full path per query, ONNX forward included; support_fit_ms is load_support_images per episode (embed the support, leave-one-out calibration, OOD fit); cold_start is a fresh interpreter from before the first import to the first answer, with that process's peak RSS -- the single-cycle memory figure; benchmark_process_peak_rss_mb is this whole run's VmHWM and describes the harness, not the library. Both depend on which install ran them: see hardware.install",
+    "predict_ms": {
+      "median": 8.051877499383409,
+      "n": 5000,
+      "p95": 16.337300649320245
+    },
+    "support_fit_ms": {
+      "median": 776.8456609992427,
+      "n": 100,
+      "p95": 2016.383865050193
+    }
   },
   "top1_threshold": {
     "accuracy": {

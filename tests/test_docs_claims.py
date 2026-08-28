@@ -183,3 +183,49 @@ def test_torch_free_inference_is_backed_by_bundled_weights() -> None:
         "graph alone is 0.3MB and loads without error, then produces nothing."
     )
 
+
+PLANTVILLAGE_RESULT_PATH = REPO_ROOT / "results" / "plantvillage_5way5shot.json"
+
+
+@pytest.mark.parametrize(
+    ("label", "path", "fmt"),
+    [
+        ("embedding, per image", ("embedding_ms", "median"), "{:.1f} ms"),
+        ("support fit, per episode", ("support_fit_ms", "median"), "{:.0f} ms"),
+        ("predict, per query", ("predict_ms", "median"), "{:.1f} ms"),
+        ("cold start", ("cold_start", "seconds"), "{:.2f} s"),
+    ],
+)
+def test_readme_latency_table_matches_the_plantvillage_artifact(
+    label: str, path: tuple[str, str], fmt: str
+) -> None:
+    """Every performance figure in the README traces to the run that produced it (#20).
+
+    The README's table is written *from* the artifact, so this is not a check
+    that two hand-typed numbers agree; it is a check that nobody edits one and
+    forgets the other, in either direction.
+    """
+
+    record = json.loads(PLANTVILLAGE_RESULT_PATH.read_text(encoding="utf-8"))["timing"]
+    expected = fmt.format(record[path[0]][path[1]])
+    readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+    row = next((line for line in readme.splitlines() if line.startswith(f"| {label} |")), None)
+    assert row is not None, f"README has no latency row for {label!r}"
+    assert f"**{expected}**" in row, (
+        f"README row for {label!r} does not quote {expected} from the artifact:\n  {row}"
+    )
+
+
+def test_readme_memory_figure_is_the_single_cycle_not_the_harness() -> None:
+    """The 120 MB claim is one process, one support set, one answer -- and it must be
+    that number, not the benchmark process's, which holds far more."""
+
+    record = json.loads(PLANTVILLAGE_RESULT_PATH.read_text(encoding="utf-8"))["timing"]
+    cycle = record["cold_start"]["peak_rss_mb"]
+    harness = record["benchmark_process_peak_rss_mb"]
+    assert harness > cycle * 2, "the harness should cost far more than one cycle; if not, the split is wrong"
+
+    readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+    assert f"**Peak memory for that cold-start cycle: {cycle:.0f} MB**" in readme
+    assert f"harness itself peaks at {harness:.0f} MB" in readme
+

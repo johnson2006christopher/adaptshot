@@ -331,6 +331,32 @@ python scripts/fetch_plantvillage.py --out data/pv_bench --per-class 20 --preset
 python -m benchmarks.run_plantvillage --seed 42
 ```
 
+### Latency and memory, measured on the same runs
+
+Median and p95, not mean — tail latency is what makes a tool feel broken. All from
+`results/plantvillage_5way5shot.json`, and a test fails if this table drifts from it.
+
+| stage | median | p95 | what it includes |
+|---|---|---|---|
+| embedding, per image | **4.0 ms** | 4.9 ms | the ONNX forward pass, cache bypassed |
+| support fit, per episode | **777 ms** | 2016 ms | embed 11 photos, leave-one-out calibration, OOD fit |
+| predict, per query | **8.1 ms** | 16.3 ms | the full path, embedding included |
+| cold start | **1.34 s** | — | a fresh interpreter, from before `import adaptshot` to the first answer |
+
+**Peak memory for that cold-start cycle: 120 MB**, in-process, on the core install.
+The benchmark harness itself peaks at 523 MB with 400 cached embeddings and four
+baselines in memory; that number describes the harness, not the library, and the artifact
+names them separately so they cannot be confused.
+
+Measured on: **11th Gen Intel(R) Core(TM) i7-11800H @ 2.30GHz**, 16 cores, 31 GB RAM,
+Linux-7.1.10-200.fc44.x86_64-x86_64, Python 3.14.7, numpy 2.5.2, onnxruntime 1.29.0, `core` install.
+
+Two honest caveats. The p95 of the support fit varied 2.7× between two runs on this
+machine (1.5 s and 4.0 s) while its median held within 2%; the tail is this laptop's,
+and the median is the number to plan around. And this laptop is faster than the hardware
+the project is built for. These figures are what the library costs *here*; a measurement
+on ARM or phone-class hardware is its own open item.
+
 Full output including hardware, dataset commit and licence is written to
 `results/plantvillage_5way5shot.json`. The download is manual and pinned to a
 content-addressed commit; nothing in this repository fetches data silently.
