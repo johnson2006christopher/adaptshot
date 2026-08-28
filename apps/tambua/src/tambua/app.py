@@ -55,6 +55,7 @@ from tambua import data
 from tambua.config import load_config
 from tambua.engine import (
     DEFAULT_CONFIG,
+    Identification,
     TambuaEngine,
     bundled_config,
     bundled_configs,
@@ -133,6 +134,63 @@ def _setup_status() -> str:
 # ===================================================================
 
 
+def _render_prediction_set(
+    engine: TambuaEngine, result: Identification, severity_emoji: str
+) -> str:
+    """Present the conformal prediction set as a set, not a ranked list.
+
+    A single label with a percentage is a claim about one answer. A conformal set
+    is a claim about a set, and unlike the percentage it is a claim that can be
+    checked -- which is the entire reason to build on AdaptShot rather than on a
+    plain classifier.
+
+    So the set leads. When it holds more than one class the interface says "one
+    of these", never a winner with the alternatives in small print: a person
+    reading a top-1 has already stopped reading by the time the caveat arrives.
+    """
+
+    if result.is_abstention:
+        return (
+            "## 🤷 Not confident enough to name it\n\n"
+            "Nothing was plausible enough to include. This needs someone who "
+            "can look at it directly."
+        )
+
+    members = engine.set_members(result)
+
+    if len(members) == 1:
+        head = f"## {severity_emoji} {members[0].local_name}\n\n"
+        head += f"**Label:** {members[0].key}\n\n"
+    else:
+        names = " **or** ".join(member.local_name for member in members)
+        head = f"## 🤔 One of these {len(members)}: {names}\n\n"
+        head += "\n".join(
+            f"- **{member.local_name}** (`{member.key}`) — {member.severity}"
+            for member in members
+        )
+        head += "\n\n"
+
+    if result.coverage_is_measured:
+        head += (
+            f"The right answer falls inside this set about "
+            f"**{result.empirical_coverage:.0%}** of the time, measured over "
+            f"{result.calibration_size} calibration scores "
+            f"(target {1 - result.alpha:.0%}).\n\n"
+        )
+    else:
+        # Reporting `1 - alpha` here would be quoting the target as if it were a
+        # measurement, which is the mistake #17 existed to correct.
+        head += (
+            f"⚠️ **Not yet calibrated.** Only {result.calibration_size} "
+            "calibration scores so far, so this is the model's top guess rather "
+            "than a set with a coverage guarantee. Correct a few predictions in "
+            "the **Teach** tab and the guarantee becomes measurable.\n\n"
+        )
+
+    head += f"**Top-1 confidence:** {result.confidence:.1%}\n\n"
+    return head
+
+
 def _identify(image: str | None) -> tuple[str, str, float, str, str]:
     """Run diagnosis on an uploaded image."""
     if image is None:
@@ -150,19 +208,15 @@ def _identify(image: str | None) -> tuple[str, str, float, str, str]:
             result.severity, "⚪"
         )
 
-        summary = (
-            f"## {severity_emoji} Diagnosis: {result.local_name}\n\n"
-            f"**English:** {result.label}\n\n"
-            f"**Confidence:** {result.confidence:.1%}\n\n"
-            f"**Severity:** {result.severity.upper()}\n\n"
-        )
-
-        action = result.action
+        summary = _render_prediction_set(engine, result, severity_emoji)
+        action = engine.advice_for(result)
         confidence_pct = result.confidence
         detail = (
             f"ACT Decision: {result.act_action}\n"
             f"OOD Flag: {result.ood_flag}\n"
-            f"Distance: {result.distance_to_prototype:.4f}"
+            f"Distance: {result.distance_to_prototype:.4f}\n"
+            f"Set size: {len(result.prediction_set)} at alpha={result.alpha:.2f}\n"
+            f"Calibration scores: {result.calibration_size}"
         )
 
         if result.ood_flag:
