@@ -32,7 +32,13 @@ Usage::
 
 from tambua import data
 from tambua.config import ClassInfo, TambuaConfig, load_config
-from tambua.engine import DEFAULT_CONFIG, Identification, TambuaEngine, bundled_config
+from tambua.engine import (
+    DEFAULT_CONFIG,
+    Identification,
+    TambuaEngine,
+    bundled_config,
+    combined_action,
+)
 
 __all__ = [
     "DEFAULT_CONFIG",
@@ -41,6 +47,7 @@ __all__ = [
     "TambuaConfig",
     "TambuaEngine",
     "bundled_config",
+    "combined_action",
     "data",
     "load_config",
 ]

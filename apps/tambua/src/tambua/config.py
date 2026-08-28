@@ -27,6 +27,7 @@ import yaml
 
 from adaptshot import (
     Backbone,
+    ConformalMode,
     Device,
     InferenceMode,
     SimilarityMetric,
@@ -49,6 +50,14 @@ BACKBONES: tuple[Backbone, ...] = get_args(Backbone)
 DEVICES: tuple[Device, ...] = get_args(Device)
 INFERENCE_MODES: tuple[InferenceMode, ...] = get_args(InferenceMode)
 SIMILARITY_METRICS: tuple[SimilarityMetric, ...] = get_args(SimilarityMetric)
+CONFORMAL_MODES: tuple[ConformalMode, ...] = get_args(ConformalMode)
+
+#: 0.1, not AdaptShot's own 0.05. With three or four configured classes, a 95%
+#: target routinely returns every class -- a "prediction set" containing the
+#: whole label space tells the person holding the phone nothing. 90% coverage
+#: keeps the set small enough to act on, and the trade is stated in the config
+#: rather than buried.
+DEFAULT_ALPHA = 0.1
 
 # A domain with one class cannot be classified into -- there is nothing to tell
 # it apart from. Two is the smallest config that means anything.
@@ -67,6 +76,8 @@ _ENGINE_KEYS = {
     "similarity_metric",
     "eco_mode",
     "enable_ood_detection",
+    "conformal_alpha",
+    "conformal_mode",
 }
 _LOCALIZATION_KEYS = {"language", "fallback"}
 _PATHS_KEYS = {"model_dir", "sample_data"}
@@ -132,6 +143,8 @@ class EngineSettings:
     similarity_metric: SimilarityMetric
     eco_mode: bool
     enable_ood_detection: bool
+    conformal_alpha: float
+    conformal_mode: ConformalMode
 
 
 @dataclass(frozen=True)
@@ -332,6 +345,35 @@ class _Validator:
             )
             return default
         return value
+
+    def fraction(
+        self, found: Mapping[str, Any], key: str, where: _Path, default: float
+    ) -> float:
+        """A number strictly between 0 and 1.
+
+        Both endpoints are excluded deliberately: alpha=0 asks for a set that
+        contains the truth every time, which means every class; alpha=1 asks for
+        no guarantee at all. Neither is a setting, they are ways of switching the
+        feature off while appearing to configure it.
+        """
+
+        value = found.get(key, default)
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            self.fail(
+                (*where, key),
+                f"{key} is {type(value).__name__}, not a number",
+                f"write {key}: {default}",
+            )
+            return default
+        if not 0.0 < float(value) < 1.0:
+            self.fail(
+                (*where, key),
+                f"{key} is {value}",
+                f"must be between 0 and 1, exclusive -- {default} means "
+                f"{(1 - default) * 100:.0f}% target coverage",
+            )
+            return default
+        return float(value)
 
     def whole_number(self, found: Mapping[str, Any], key: str, where: _Path, default: int) -> int:
         value = found.get(key, default)
@@ -568,6 +610,8 @@ def load_config(path: str) -> TambuaConfig:
         similarity_metric=v.choice(eng_raw, "similarity_metric", SIMILARITY_METRICS, eng_at),
         eco_mode=v.flag(eng_raw, "eco_mode", eng_at, True),
         enable_ood_detection=v.flag(eng_raw, "enable_ood_detection", eng_at, True),
+        conformal_alpha=v.fraction(eng_raw, "conformal_alpha", eng_at, DEFAULT_ALPHA),
+        conformal_mode=v.choice(eng_raw, "conformal_mode", CONFORMAL_MODES, eng_at),
     )
 
     classes = _validate_domains(v, raw)

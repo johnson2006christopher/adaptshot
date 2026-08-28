@@ -40,7 +40,8 @@ Tambua is a few-shot identification application powered by AdaptShot. Loaded wit
 
 | Capability | How |
 |------------|-----|
-| **Instant identification** | Upload a photo → get a label, a confidence score, and the action the config attaches to it |
+| **Instant identification** | Upload a photo → get a *set* of labels carrying a coverage guarantee, and the action the config attaches to them |
+| **Conformal prediction** | "One of these two, right 9 times in 10" — a claim that can be measured, unlike a confidence percentage |
 | **Few-shot learning** | Train on as few as 5 photos per class — no massive datasets needed |
 | **Human-in-the-loop** | Correct wrong predictions; the model learns immediately, no retraining |
 | **OOD detection** | Flags images unlike anything it was taught, rather than guessing |
@@ -130,15 +131,15 @@ carry them.
 
 ```bash
 # From PyPI
-pip install "adaptshot[ui]"
+pip install tambua
 
 # Or from source (recommended for development)
 git clone https://github.com/johnson2006christopher/adaptshot.git
 cd adaptshot
-pip install -e ".[ui]"
+pip install -e apps/tambua
 ```
 
-What `[ui]` installs:
+What `tambua` pulls in:
 - `adaptshot` — core few-shot learning engine
 - `gradio>=3.50.0` — web UI framework
 - `PyYAML>=6.0` — configuration parsing
@@ -510,6 +511,25 @@ application:
   version: "0.2.0"
   description: "Maize disease identification for smallholder farmers"
 ```
+
+### Conformal Prediction
+
+The interface leads with a *set*, not a winner:
+
+```
+🤔 One of these 2: ugonjwa wa mabaka ya kijivu or ugonjwa wa mabaka ya kahawia
+
+The right answer falls inside this set about 91% of the time, measured over
+40 calibration scores (target 90%).
+
+All 2 possibilities call for the same thing: Tumia dawa ya kuvu mapema.
+```
+
+When the members' advice conflicts, both are shown rather than one being chosen. Picking would invent a recommendation nobody wrote, and the reader could not tell.
+
+Until enough calibration scores accumulate, conformal returns the top label as a singleton, and the interface says so rather than quoting `1 - alpha` as though it were measured. That distinction is the difference between this and the claims #17 had to retract.
+
+`conformal_alpha` defaults to `0.1` — 90% target coverage. Not 0.05: with a handful of classes a 95% target routinely returns all of them, and a set containing the whole label space tells the user nothing.
 
 ### Engine Settings
 

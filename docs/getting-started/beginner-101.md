@@ -222,8 +222,8 @@ If you prefer clicking instead of coding, AdaptShot has two browser-based interf
 
 **Gradio Dashboard** (simpler):
 ```bash
-pip install "adaptshot[ui]"
-python -m adaptshot.ui.app
+pip install tambua
+tambua
 ```
 
 **AdaptShot Studio** (full-featured):

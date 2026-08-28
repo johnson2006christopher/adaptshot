@@ -23,6 +23,14 @@ engine:
   eco_mode: true
   enable_ood_detection: true
 
+  # Conformal prediction: return a *set* of labels carrying a coverage
+  # guarantee, rather than one label and a confidence number nobody checked.
+  # alpha 0.1 targets 90% coverage. Not 0.05: with only a handful of classes a
+  # 95% target routinely returns all of them, and a set containing the whole
+  # label space tells the person holding the phone nothing.
+  conformal_alpha: 0.1
+  conformal_mode: "split"
+
 domains:
   photovoltaic_module:
     local_name: "paneli ya jua"

@@ -170,10 +170,31 @@ jobs:
               sys.exit(f"CUDA-enabled torch ({torch.version.cuda}) in a CPU-only job")
           print(f"confirmed: CPU-only torch {torch.__version__}")
           PY
+      - name: Verify the namespace really has no network
+        # Ubuntu 24.04 restricts unprivileged user namespaces through AppArmor,
+        # so a plain `unshare -rn` fails with
+        # "write failed /proc/self/uid_map: Operation not permitted".
+        # Lifting the restriction is the documented workaround on these runners.
+        #
+        # Then prove the isolation before relying on it. A namespace that
+        # silently failed to isolate would make the step below pass while
+        # demonstrating nothing, which is worse than not having the job.
+        run: |
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          unshare -rn python - <<'PY'
+          import socket
+          import sys
+          try:
+              socket.create_connection(("1.1.1.1", 443), timeout=5)
+          except OSError as exc:
+              print(f"confirmed: no network inside the namespace ({type(exc).__name__})")
+          else:
+              sys.exit("the namespace did not isolate; the offline proof would be vacuous")
+          PY
       - name: Run the smoke benchmark with networking disabled
-        # unshare -rn gives the process an empty network namespace: no interface
-        # but loopback. If anything reaches for the network, it fails here rather
-        # than on a contributor's connection.
+        # An empty network namespace: no interface but loopback. If anything
+        # reaches for the network, it fails here rather than on a contributor's
+        # connection.
         run: |
           unshare -rn python -m benchmarks.run_benchmark \
             --smoke-test --seed 42 --output results/offline_smoke.json

@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import logging
 import time
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from importlib import resources
 from typing import Any
@@ -91,6 +92,35 @@ class ImageFolderError(AdaptShotError):
     """
 
 
+def combined_action(members: Sequence[ClassInfo]) -> str:
+    """The advice to give for a prediction set with more than one member.
+
+    If every member calls for the same thing, that is the answer, and the
+    ambiguity does not matter -- which is the most useful case conformal
+    prediction produces: "it is one of these two, and either way, do this."
+
+    When the actions differ, they are shown side by side rather than resolved.
+    Picking one would be inventing a recommendation nobody wrote, and the person
+    reading it cannot tell that is what happened.
+    """
+
+    if not members:
+        return "No class was plausible enough to name. Ask someone who can look at it."
+    if len(members) == 1:
+        return members[0].action
+
+    actions = {member.action for member in members}
+    if len(actions) == 1:
+        return f"All {len(members)} possibilities call for the same thing: {members[0].action}"
+
+    lines = [
+        f"These {len(members)} possibilities call for different things, "
+        "so this needs a decision rather than an instruction:"
+    ]
+    lines.extend(f"  - {member.local_name}: {member.action}" for member in members)
+    return "\n".join(lines)
+
+
 def _undescribed(label: str) -> ClassInfo:
     """A placeholder for a label with no entry in the loaded config."""
 
@@ -118,7 +148,37 @@ class Identification:
     act_action: str
     distance_to_prototype: float
     calibrated_ece: float
+
+    #: Conformal prediction set: the labels that, together, carry the coverage
+    #: guarantee. A single label with a confidence number is a claim about one
+    #: answer; this is a claim about a set, and it is the claim that can actually
+    #: be checked. Empty when the model has abstained.
+    prediction_set: tuple[str, ...] = ()
+
+    #: The miscoverage rate the set was built at. 0.1 means the target is that
+    #: the truth falls inside the set nine times in ten.
+    alpha: float = 0.0
+
+    #: Whether `empirical_coverage` was measured, or is merely the target
+    #: restated. Until enough corrections have accumulated, conformal has nothing
+    #: to calibrate against and returns the top label as a singleton; presenting
+    #: `1 - alpha` then would be quoting an aspiration as a measurement.
+    coverage_is_measured: bool = False
+    empirical_coverage: float = 0.0
+    calibration_size: int = 0
+
     timestamp: float = field(default_factory=time.time)
+
+    @property
+    def is_abstention(self) -> bool:
+        """True when the set says nothing useful and a human should decide.
+
+        Two ways that happens: an empty set (nothing was plausible enough) and a
+        set containing every class the model knows (everything was). Both mean
+        the same thing to the person holding the phone.
+        """
+
+        return len(self.prediction_set) == 0
 
 
 @dataclass
@@ -236,6 +296,8 @@ class TambuaEngine:
             similarity_metric=eng.similarity_metric,
             eco_mode=eng.eco_mode,
             enable_ood_detection=eng.enable_ood_detection,
+            conformal_alpha=eng.conformal_alpha,
+            conformal_mode=eng.conformal_mode,
         )
 
     @property
@@ -342,7 +404,20 @@ class TambuaEngine:
         label = str(result.prediction)
         info = self.classes.get(label) or _undescribed(label)
 
+        conformal = self.learner.conformal
+        # The set is only meaningful once conformal has calibration scores to
+        # work from. Before that it returns the top label as a singleton and a
+        # coverage figure equal to `1 - alpha` -- the target restated, not
+        # measured. Saying so is the difference between this and #17.
+        measured = conformal.calibration_size >= conformal.min_calibration_size
+        raw_set = result.conformal_set or []
+
         identification = Identification(
+            prediction_set=tuple(sorted(str(member) for member in raw_set)),
+            alpha=float(conformal.alpha),
+            coverage_is_measured=measured,
+            empirical_coverage=float(conformal.empirical_coverage) if measured else 0.0,
+            calibration_size=int(conformal.calibration_size),
             label=label,
             local_name=info.local_name,
             confidence=float(result.calibrated_confidence),
@@ -456,6 +531,7 @@ class TambuaEngine:
             except Exception:
                 logger.exception("batch item failed: %s", path)
                 results.append(Identification(
+                    prediction_set=(),
                     label="error",
                     local_name="error",
                     confidence=0.0,
@@ -472,12 +548,18 @@ class TambuaEngine:
 
     def batch_to_csv(self, results: list[Identification]) -> str:
         """Convert batch results to a CSV string."""
-        lines = ["image_path,label,local_name,confidence,severity,action,ood_flag"]
+        lines = [
+            "image_path,label,local_name,confidence,severity,action,ood_flag,"
+            "prediction_set,set_size,alpha,coverage_measured"
+        ]
         for r in results:
+            members = " ".join(r.prediction_set)
             lines.append(
                 f"{getattr(r, 'image_path', 'unknown')},"
                 f"{r.label},{r.local_name},{r.confidence:.3f},"
-                f"{r.severity},\"{r.action}\",{r.ood_flag}"
+                f"{r.severity},\"{r.action}\",{r.ood_flag},"
+                f"\"{members}\",{len(r.prediction_set)},{r.alpha:.2f},"
+                f"{r.coverage_is_measured}"
             )
         return "\n".join(lines)
 
@@ -492,9 +574,25 @@ class TambuaEngine:
 
         calib = self.learner.calibration_report()
         session = self.history.summary()
+        conformal = self.learner.conformal
+        measured = conformal.calibration_size >= conformal.min_calibration_size
         return {
             "status": "healthy",
             "calibration": calib,
+            "conformal": {
+                "alpha": float(conformal.alpha),
+                "target_coverage": 1.0 - float(conformal.alpha),
+                "calibration_scores": int(conformal.calibration_size),
+                # Absent rather than zero when unmeasured: a reader scanning a
+                # dashboard reads 0.0 as "no coverage", which is a different and
+                # equally wrong claim to "not measured yet".
+                "empirical_coverage": (
+                    float(conformal.empirical_coverage) if measured else None
+                ),
+                "scores_needed": max(
+                    0, int(conformal.min_calibration_size - conformal.calibration_size)
+                ),
+            },
             "session": session,
             "config": {
                 "backbone": self.engine_cfg.backbone,
@@ -533,6 +631,16 @@ class TambuaEngine:
     # ------------------------------------------------------------------
     # Re-export key info for UI display
     # ------------------------------------------------------------------
+
+    def set_members(self, identification: Identification) -> list[ClassInfo]:
+        """The configured description of every label in a prediction set."""
+
+        return [self.label_to_info(label) for label in identification.prediction_set]
+
+    def advice_for(self, identification: Identification) -> str:
+        """The advice covering every member of the set, or the stated conflict."""
+
+        return combined_action(self.set_members(identification))
 
     def label_to_info(self, label: str) -> ClassInfo:
         """The configured description of a label, or an undescribed placeholder."""

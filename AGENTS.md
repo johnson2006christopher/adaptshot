@@ -12,7 +12,7 @@
 - Benchmark smoke test (CPU-only): `python -m benchmarks.run_benchmark --smoke-test --seed 42`
 
 ## Optional/UI
-- Gradio UI entrypoint: `src/adaptshot/ui/app.py` (requires `pip install -e ".[ui]"`).
+- The library ships no GUI (#22). The application is `apps/tambua/` — `pip install -e apps/tambua`, then `tambua`.
 
 ## Repo-specific constraints from .openproject.md
 - Do not add dependencies outside `pyproject.toml` optional groups; never claim features/metrics not backed by code or benchmarks.
