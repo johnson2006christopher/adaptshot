@@ -11,6 +11,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import math
 import os
 import tempfile
 import time
@@ -142,9 +143,18 @@ class FewShotLearner:
         self.act = ACTEngine(n_classes=max(10, self.config.n_way))
 
         # v0.2.0: Advanced engines
+        # The engine cannot produce an informative set until it holds
+        # ceil((1 - alpha) / alpha) calibration scores -- 19 at the default
+        # alpha = 0.05 (#14). Below that, the cold-start path returns the top-1
+        # alone, which is the documented behaviour for "not enough calibration";
+        # not enough for this alpha is the same condition. Direct users of
+        # ConformalEngine who set a lower floor get the full label set, and a
+        # warning saying so, once.
+        alpha = self.config.conformal_alpha
         self.conformal = ConformalEngine(
-            alpha=self.config.conformal_alpha,
+            alpha=alpha,
             mode=self.config.conformal_mode,
+            min_calibration_size=max(10, math.ceil((1.0 - alpha) / alpha)),
         )
         self.contrastive = ContrastivePrototypeLearner()
         self.uncertainty_q = UncertaintyQuantifier(
