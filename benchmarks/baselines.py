@@ -150,6 +150,6 @@ def top1_with_threshold(
 
     sets = [
         {str(label)} if score >= threshold else set()
-        for label, score in zip(predictions, confidence)
+        for label, score in zip(predictions, confidence, strict=True)
     ]
     return predictions, sets

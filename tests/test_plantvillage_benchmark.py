@@ -96,14 +96,14 @@ def test_the_seed_reproduces_the_episodes(pool_labels: np.ndarray) -> None:
     again = _episodes(pool_labels, seed=42)
     different = _episodes(pool_labels, seed=43)
 
-    for left, right in zip(first, again):
+    for left, right in zip(first, again, strict=True):
         assert left.classes == right.classes
         assert np.array_equal(left.support, right.support)
         assert np.array_equal(left.query, right.query)
 
     assert any(
         left.classes != right.classes or not np.array_equal(left.support, right.support)
-        for left, right in zip(first, different)
+        for left, right in zip(first, different, strict=True)
     ), "a different seed produced identical episodes"
 
 
@@ -257,7 +257,9 @@ def test_the_calibrated_threshold_is_reachable() -> None:
         "A baseline that always abstains is not participating in the comparison."
     )
 
-    covered = sum(str(t) in s for s, t in zip(sets, query_labels)) / len(sets)
+    covered = sum(
+        str(t) in s for s, t in zip(sets, query_labels, strict=True)
+    ) / len(sets)
     assert covered > 0.5, (
         f"coverage of {covered:.0%} at a threshold calibrated for 90%. The "
         "threshold is not measuring what it claims to."
