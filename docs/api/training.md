@@ -71,6 +71,8 @@ Processes a correction, updates internal state, and returns routing metadata.
 
 ## `CAEWCFinetuner`
 
+> Not exported from `adaptshot`. Reached through `FeedbackRouter`; import from `adaptshot.training.finetune` at your own risk. Requires the `torch` extra.
+
 Implements **head-only** Correction-Aware Fine-Tuning via Fisher Information regularization.
 
 !!! important "v0.2.0 Scope Clarification"
@@ -116,6 +118,10 @@ finetuner.finetune(
 ---
 
 ## `UPUGFPruner`
+
+> **Experimental.** May change in a minor release without a deprecation cycle. See [`adaptshot.api`](reference.md#stable-and-experimental) and the deprecation policy in CONTRIBUTING.md.
+
+No test names this class; it is exercised only through `FewShotLearner`. That is the whole reason it is experimental.
 
 Uncertainty-Guided Forgetting with LSH-accelerated redundancy scoring (v0.2.0).
 
@@ -167,3 +173,20 @@ Enforces capacity by returning the top-K highest-scoring examples.
 - [Configuration & Utils API](config.md) → `AdaptShotConfig`, determinism, I/O helpers
 - [Architecture Deep-Dive](../guides/architecture-deep-dive.md) → Module map and data flow
 - [Migration Guide](../guides/migration-v0.1-to-v0.2.md) → Upgrade from v0.1.x
+
+---
+
+## `ContrastivePrototypeLearner` and `ContrastiveConfig`
+
+> **Experimental.** May change in a minor release without a deprecation cycle. See [`adaptshot.api`](reference.md#stable-and-experimental) and the deprecation policy in CONTRIBUTING.md.
+
+Moved here from `adaptshot.core` in 0.3.0, because training a projection head by
+InfoNCE gradient descent is training. The old import path
+`adaptshot.core.contrastive` still works, warns, and is removed in 0.4.0. Import
+from the top level:
+
+```python
+from adaptshot import ContrastiveConfig, ContrastivePrototypeLearner
+```
+
+Full method table in the [API reference](reference.md#contrastiveprototypelearner).

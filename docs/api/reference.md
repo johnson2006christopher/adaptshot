@@ -1,10 +1,24 @@
-# AdaptShot v0.2.0 API Reference
+# AdaptShot v0.3.0 API Reference
 
-> Complete reference for all public classes, methods, and data structures
+> Every name here is exported from `adaptshot` and classified in `adaptshot.api`.
+> `tests/test_api_surface.py` fails if this page, the classification and the
+> docstrings disagree.
+
+## Stable and experimental
+
+| Tier | Meaning | What a change costs |
+|---|---|---|
+| **Stable** | Supported, semver-protected, tested | A deprecation cycle: warn for one minor release, then remove |
+| **Experimental** | Works; may change in a minor release | Nothing beyond a changelog line. The docstring says **Experimental** |
+
+The policy is in `CONTRIBUTING.md` under *API Stability and Deprecation*. Two things
+were found to be neither: three `UncertaintyQuantifier` methods with no caller anywhere
+are deprecated (removed in 0.4.0), and `MemoryTracker` was documented here as an engine
+while never having been exported — it is listed at the end, outside the surface.
 
 ---
 
-## Core Classes
+## Stable
 
 ### `FewShotLearner`
 
@@ -16,17 +30,19 @@ from adaptshot import FewShotLearner, AdaptShotConfig
 learner = FewShotLearner(config=AdaptShotConfig(device="cpu"))
 ```
 
-**Constructor** — `__init__(config: Optional[AdaptShotConfig] = None, **kwargs)`:
+**Constructor** — `__init__(config: AdaptShotConfig | None = None, **kwargs)`
+
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `config` | `AdaptShotConfig` | `None` | Central configuration object |
-| `**kwargs` | — | — | Passed to `AdaptShotConfig(**kwargs)` if no config given |
-
----
+| `**kwargs` | — | — | Passed to `AdaptShotConfig(**kwargs)` if no config is given |
 
 #### `load_support_images(image_paths, labels)`
 
-Ingest a support set and initialize all internal indices. In v0.2.0, this also triggers true leave-one-out conformal calibration and bootstrap temperature estimation for autonomous operation.
+Ingest a support set and initialise every internal index. Also runs leave-one-out
+conformal calibration and bootstrap temperature estimation on the support set, fits the
+OOD class distributions, and — when `inference_mode="contrastive"` — trains the
+projection head.
 
 ```python
 learner.load_support_images(
@@ -37,265 +53,255 @@ learner.load_support_images(
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `image_paths` | `List[str]` | Absolute or relative paths to RGB images |
-| `labels` | `List[Union[str, int]]` | Class labels, one per image |
+| `image_paths` | `Sequence[str]` | Paths to RGB images |
+| `labels` | `Sequence[str \| int]` | One class label per image |
 
-**Raises**:
-- `ConfigValidationError` — mismatched lengths or empty inputs
-- `InvalidImageError` — missing file, unreadable, or non-RGB
-- `AdaptShotError` — embedding extraction failure
-
-**v0.2.0 Side Effects**:
-- True leave-one-out conformal calibration: prototypes recomputed per example
-- Bootstrap temperature estimation via LOO cross-validation
-- Contrastive projection head initialization (if inference_mode="contrastive")
-- Uncertainty class distributions fitted with shrinkage covariance
-
----
+**Raises** `ConfigValidationError` (mismatched lengths or empty inputs),
+`InvalidImageError` (missing, unreadable or non-RGB), `BackboneError` (no usable backend
+for the configured backbone on this install), `AdaptShotError` (embedding failure).
 
 #### `predict(image) -> PredictionResult`
 
-Run inference on a single image with full v0.2.0 pipeline: embedding → inference → calibration → ACT gating → conformal set → uncertainty report.
+Embedding → inference → calibration → ACT gating → conformal set → uncertainty report.
 
 ```python
 result = learner.predict("query.jpg")
-print(result.prediction)              # "cat"
-print(result.calibrated_confidence)   # 0.87
-print(result.conformal_set)           # {"cat", "dog"}
-print(result.uncertainty_report)      # {epistemic: 0.04, aleatoric: 0.12, ...}
+result.prediction              # "cat"
+result.calibrated_confidence   # 0.87
+result.conformal_set           # ["cat", "dog"]
+result.ood_flag                # False
 ```
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `image` | `Union[str, Image.Image, np.ndarray]` | File path, PIL image, or HWC array |
-
-**Returns** — `PredictionResult` with fields:
-| Field | Type | Description |
-|-------|------|-------------|
-| `prediction` | `Union[str, int]` | Predicted class label |
-| `raw_confidence` | `float` | Similarity score [0, 1] |
-| `calibrated_confidence` | `float` | Temperature-scaled confidence [0, 1] (v0.2.0: bootstrap temp on cold start) |
-| `neighbor_idx` | `int` | Index of nearest support example |
-| `uncertainty_flag` | `bool` | High uncertainty flag |
-| `act_action` | `str` | `ACCEPT`, `REQUEST_FEEDBACK`, or `REQUEST_FEEDBACK_OOD` |
-| `distance_to_prototype` | `float` | Distance to predicted class prototype |
-| `prototype_margin` | `float` | Gap between best and second-best prototype |
-| `ood_flag` | `bool` | Out-of-distribution detection (v0.2.0: shrinkage-regularized Mahalanobis) |
-| `debiased_ece` | `float` | Current debiased ECE |
-| `conformal_set` | `List[Union[str, int]]` | v0.2.0: Conformal prediction set (true LOO calibration) |
-| `uncertainty_report` | `Dict[str, float]` | v0.2.0: Multi-signal uncertainty (shrinkage-regularized) |
-| `nearest_neighbors` | `List[Dict]` | v0.2.0: Top-5 nearest support examples |
-
----
+| `image` | `str \| PIL.Image.Image \| np.ndarray` | File path, PIL image, or HWC array |
 
 #### `explain(image) -> ExplanationResult`
 
-Generate a multi-faceted explanation for a prediction (v0.2.0). Uses historical penalty tracking for confidence decomposition — no magic numbers.
+Feature attribution, confidence decomposition and a counterfactual, in one object.
+
+The method is stable. **What it returns is experimental**: `ExplanationResult` and the
+dataclasses it holds may change in a minor release. See the Experimental section.
+
+#### `correct(image_path, true_label, confidence_weight=1.0) -> dict[str, Any]`
+
+Route a human correction into the continual-learning pipeline and feed the ground-truth
+nonconformity score into the conformal engine.
 
 ```python
-explanation = learner.explain("query.jpg")
-print(explanation.summary)
-# "Predicted 'cat' with confidence 0.870. Most influenced by support example #3..."
-```
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `image` | `Union[str, Image.Image, np.ndarray]` | Query image |
-
-**Returns** — `ExplanationResult`:
-| Field | Type | Description |
-|-------|------|-------------|
-| `prediction` | `Union[str, int]` | Predicted class |
-| `attributions` | `List[FeatureAttribution]` | Top-k influential support examples |
-| `confidence_decomposition` | `ConfidenceDecomposition` | Raw→calibrated→ACT→OOD breakdown (historical penalty tracking) |
-| `counterfactual` | `Counterfactual` | Nearest alternative class |
-| `summary` | `str` | Human-readable explanation text |
-
----
-
-#### `correct(image_path, true_label, confidence_weight=1.0) -> Dict`
-
-Route a human correction into the continual learning pipeline. v0.2.0: feeds ground-truth nonconformity scores into the conformal engine.
-
-```python
-summary = learner.correct(
-    image_path="cat_01.jpg",
-    true_label="dog",
-    confidence_weight=0.9,
-)
-print(summary["buffer_size"])         # 102
-print(summary["calibration_updated"]) # True
+summary = learner.correct("cat_01.jpg", true_label="dog", confidence_weight=0.9)
+summary["buffer_size"], summary["calibration_updated"], summary["fine_tuned"]
 ```
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `image_path` | `str` | — | Path to corrected image |
-| `true_label` | `Union[str, int]` | — | Human-provided ground truth |
-| `confidence_weight` | `float` | `1.0` | [0.0, 1.0] confidence in correction |
+| `image_path` | `str` | — | Path to the corrected image |
+| `true_label` | `str \| int` | — | Human-provided ground truth |
+| `confidence_weight` | `float` | `1.0` | Confidence in the correction, `[0, 1]` |
 
-**Returns** dict with keys: `buffer_size`, `calibration_updated`, `fine_tuned`, `total_corrections`
+Fine-tuning with CA-EWC needs the `torch` extra; without it `correct()` still updates the
+buffer and calibration and reports `fine_tuned: False`.
 
----
+#### `save(path)` / `FewShotLearner.load(path)`
 
-#### `save(path)` / `load(path)`
-
-Persist and restore learner state. v0.2.0: SHA-256 integrity verification, schema version migration from v0.1.x, atomic writes.
+Persist and restore. SHA-256 integrity check, schema migration from 0.1.x with a
+`RuntimeWarning`, atomic writes.
 
 ```python
 learner.save("checkpoint.json")
 restored = FewShotLearner.load("checkpoint.json")
-assert restored._is_initialized is True
+restored.predict("query.jpg")
 ```
 
-#### `clear_backbone_cache()`
+---
 
-Clear the `@lru_cache` on the backbone factory. Call when switching backbones at runtime (v0.2.0).
+### `PredictionResult`
 
-```python
-learner.clear_backbone_cache()
-```
+What `predict()` returns. A frozen dataclass.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `prediction` | `str \| int` | Predicted class label |
+| `raw_confidence` | `float` | Similarity score `[0, 1]` |
+| `calibrated_confidence` | `float` | Temperature-scaled confidence `[0, 1]` |
+| `neighbor_idx` | `int` | Index of the nearest support example |
+| `uncertainty_flag` | `bool` | High-uncertainty flag |
+| `act_action` | `str` | `ACCEPT`, `REQUEST_FEEDBACK`, or `REQUEST_FEEDBACK_OOD` |
+| `distance_to_prototype` | `float` | Distance to the predicted class prototype |
+| `prototype_margin` | `float` | Gap between best and second-best prototype |
+| `ood_flag` | `bool` | Out-of-distribution flag (leave-one-out-calibrated Mahalanobis, #54) |
+| `debiased_ece` | `float` | Current debiased ECE |
+| `conformal_set` | `list[str \| int] \| None` | Conformal prediction set |
+| `uncertainty_report` | `dict[str, float] \| None` | Multi-signal uncertainty |
+| `nearest_neighbors` | `list[dict] \| None` | Top-5 nearest support examples |
 
 ---
 
 ### `AdaptShotConfig`
 
-Immutable configuration dataclass with 27 fields. See [Config Reference](../reference/config-reference.md) for all fields.
+Immutable configuration dataclass, 27 fields. Every field is documented in the
+[Config Reference](../reference/config-reference.md). The most-used:
 
 ```python
 from adaptshot import AdaptShotConfig
 
-config = AdaptShotConfig(
-    backbone="resnet18",
-    device="cpu",
-    inference_mode="prototypical",
-    conformal_alpha=0.05,
-    explainability_enabled=True,
-    uncertainty_mode="ensemble",
-)
+config = AdaptShotConfig(backbone="mobilenet_v3_small", device="cpu", conformal_alpha=0.1)
 ```
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `backbone` | `Literal["resnet18", "mobilenet_v3_small"]` | `"resnet18"` | Backbone architecture |
-| `device` | `Literal["cpu", "cuda", "mps"]` | `"cpu"` | Compute device |
-| `seed` | `int` | `42` | Random seed for reproducibility |
+| `backbone` | `Backbone` | `"mobilenet_v3_small"` | The backbone whose ONNX weights ship in the wheel; `resnet18` needs the `torch` extra |
+| `device` | `Device` | `"cpu"` | Compute device |
+| `seed` | `int` | `42` | Seed for every source of randomness |
 | `n_way` | `int` | `5` | Classes per episode |
 | `k_shot` | `int` | `10` | Support examples per class |
-| `inference_mode` | `Literal["nearest_neighbor", "prototypical", "contrastive"]` | `"prototypical"` | Inference strategy |
-| `calibration_method` | `Literal["temperature", "scaling_binning", "conformal", "none"]` | `"temperature"` | Calibration method |
-| `conformal_alpha` | `float` | `0.05` | v0.2.0: Miscoverage rate (0.01–0.50) |
-| `conformal_mode` | `Literal["split", "cross"]` | `"split"` | v0.2.0: Conformal mode |
-| `uncertainty_mode` | `Literal["mcdropout", "entropy", "mahalanobis", "ensemble"]` | `"ensemble"` | v0.2.0: Uncertainty mode |
-| `explainability_enabled` | `bool` | `True` | v0.2.0: Enable XAI with historical penalty tracking |
+| `inference_mode` | `InferenceMode` | `"prototypical"` | Inference strategy |
+| `calibration_method` | `CalibrationMethod` | `"temperature"` | Calibration method |
+| `conformal_alpha` | `float` | `0.05` | Target miscoverage, `[0.01, 0.50]` |
+| `conformal_mode` | `ConformalMode` | `"split"` | Split or cross conformal |
+| `uncertainty_mode` | `UncertaintyMode` | `"ensemble"` | Which uncertainty signals to fuse |
+| `explainability_enabled` | `bool` | `True` | Enable `explain()` |
 | `max_buffer_size` | `int` | `100` | Support buffer capacity |
+
+#### Configuration types
+
+The `Literal` aliases that type the fields above are exported, so code that annotates
+against them can name them. They are exactly as stable as the fields they type.
+
+| Alias | Values |
+|---|---|
+| `Backbone` | `"resnet18"`, `"mobilenet_v3_small"` |
+| `Device` | `"cpu"`, `"cuda"`, `"mps"` |
+| `SimilarityMetric` | `"cosine"`, `"euclidean"` |
+| `InferenceMode` | `"nearest_neighbor"`, `"prototypical"`, `"contrastive"` |
+| `CalibrationMethod` | `"temperature"`, `"scaling_binning"`, `"conformal"`, `"none"` |
+| `ConformalMode` | `"split"`, `"cross"` |
+| `UncertaintyMode` | `"mcdropout"`, `"entropy"`, `"mahalanobis"`, `"ensemble"` |
 
 ---
 
-## Advanced Engines (v0.2.0)
+### `CalibrationEngine`
 
-### `ConformalEngine`
+Temperature scaling over a sliding window of observed confidences, with debiased ECE.
 
-True leave-one-out calibration for valid finite-sample coverage guarantees.
+```python
+from adaptshot import CalibrationEngine
+
+engine = CalibrationEngine(window_size=100)
+engine.update(raw_confidence=0.9, predicted_label="cat", true_label="cat")
+engine.calibrate(0.9)
+```
+
+| Method | Description |
+|--------|-------------|
+| `update(raw_confidence, predicted_label, true_label)` | Record one observation |
+| `calibrate(raw_confidence) -> float` | Apply the fitted temperature |
+| `compute_ece(confidences, labels_correct) -> float` | Expected calibration error, equal-width bins |
+| `compute_debiased_ece(confidences, labels_correct) -> float` | Debiased squared-CE estimate |
+
+---
+
+### `ConformalEngine` and `ConformalPredictionSet`
+
+Split or cross conformal prediction over a rolling calibration buffer.
 
 ```python
 from adaptshot import ConformalEngine
 
-engine = ConformalEngine(alpha=0.05, mode="split")
+engine = ConformalEngine(alpha=0.1, mode="split")
 result = engine.predict_set(distances, labels, top_prediction, confidence)
-# result.prediction_set → {"cat", "dog"}
-# result.q_hat → 0.82
+result.prediction_set   # {"cat", "dog"}
+result.q_hat            # 0.82
 ```
 
 | Method | Description |
 |--------|-------------|
-| `predict_set(distances, labels, top_pred, conf)` | Generate conformal prediction set |
+| `predict_set(distances, labels, top_prediction, confidence)` | Build the prediction set |
 | `predict_set_class_conditional(...)` | Class-conditional variant |
-| `update_calibration(score, true_label)` | Add calibration score |
+| `update_calibration(score, true_label)` | Add a nonconformity score |
 | `get_calibration_summary()` | Diagnostic summary |
-| `reset()` | Clear calibration buffer |
+| `reset()` | Clear the calibration buffer |
 
-### `ConformalPredictionSet`
-| Field | Type | Description |
-|-------|------|-------------|
-| `prediction_set` | `Set` | Classes in the prediction set |
-| `set_size` | `int` | Number of included classes |
-| `alpha` | `float` | Significance level |
-| `q_hat` | `float` | Quantile threshold |
-| `coverage_estimate` | `float` | Empirical coverage rate |
+`ConformalPredictionSet` fields: `prediction_set`, `set_size`, `alpha`, `q_hat`,
+`coverage_estimate`, `prediction`, `confidence`.
 
-**v0.2.0 Production Hardening**: True leave-one-out prototype recomputation. Each support example is held out and prototypes are recomputed, providing valid finite-sample coverage guarantees under exchangeability.
+Measured on real data (PlantVillage 5-way 5-shot, 100 episodes): 97.5% empirical coverage
+at a 90% target, mean set size 2.05. See the README's results section.
 
 ---
 
-### `ContrastivePrototypeLearner`
+### `FeedbackRouter`
 
-Gradient-trained projection head (v0.2.0). The 2-layer MLP (W1, b1, W2, b2) is now trained via **full InfoNCE gradient descent** with momentum SGD, not just initialized.
-
-```python
-from adaptshot import ContrastivePrototypeLearner, ContrastiveConfig
-
-learner = ContrastivePrototypeLearner()
-prototypes, labels = learner.refine_prototypes(embeddings, labels, seed=42)
-pred, conf, idx = learner.nearest_prototype(query, prototypes, labels)
-```
+Routes a correction to the buffer, the calibration engine, the conformal engine and —
+when torch is installed — CA-EWC fine-tuning. `FewShotLearner.correct()` is the usual way
+in; use this directly to drive the pipeline from your own feedback loop.
 
 | Method | Description |
 |--------|-------------|
-| `refine_prototypes(embeddings, labels, seed)` | Train projection head via InfoNCE, then refine prototypes |
-| `_train_projection_head(embeddings, labels, label_indices, seed)` | InfoNCE gradient descent through W1/b1/W2/b2 |
-| `nearest_prototype(query, prototypes, labels)` | Find nearest refined prototype |
-| `class_separation_score(embeddings, labels)` | Measure class separability |
-| `project_query(embedding)` | Project through trained head |
-
-### `ContrastiveConfig`
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `projection_dim` | `int` | `128` | Projection head output dim |
-| `temperature` | `float` | `0.07` | InfoNCE temperature |
-| `learning_rate` | `float` | `0.01` | SGD learning rate for head training (v0.2.0) |
-| `momentum` | `float` | `0.9` | SGD momentum for head training (v0.2.0) |
-| `n_epochs` | `int` | `50` | Training epochs for projection head |
+| `route_feedback(correction) -> dict[str, Any]` | Apply one correction end to end |
 
 ---
 
-### `UncertaintyQuantifier`
+### `UncertaintyQuantifier` and `UncertaintyReport`
 
-Shrinkage-regularized Mahalanobis OOD detection (v0.2.0). Covariance estimation uses adaptive alpha = d/(d+n_k) to prevent singular matrices in high-dimensional few-shot settings.
+Epistemic (perturbation sensitivity), aleatoric (k-NN entropy) and distributional
+(Mahalanobis OOD) uncertainty, fused into a composite score.
 
 ```python
 from adaptshot import UncertaintyQuantifier
 
 uq = UncertaintyQuantifier(ood_percentile=95.0)
-uq.fit_class_distributions(embeddings, labels)
-report = uq.quantify(query_emb, support_embs, support_labels)
-# report.epistemic → 0.12
-# report.aleatoric → 0.08
-# report.is_ood → False
+uq.fit_class_distributions(support_embeddings, support_labels)
+report = uq.quantify(query_embedding, support_embeddings, support_labels)
+report.epistemic, report.aleatoric, report.is_ood
 ```
 
 | Method | Description |
 |--------|-------------|
-| `fit_class_distributions(embeddings, labels)` | Fit class-conditional Gaussians with shrinkage covariance |
-| `quantify(query, support_embs, support_labels)` | Full uncertainty report |
-| `mahalanobis_distance(embedding, class_label)` | Distance to class distribution (shrinkage-regularized) |
-| `is_ood(embedding)` | OOD check |
-| `compute_knn_entropy(query, support_embs, support_labels)` | Aleatoric entropy |
-| `estimate_epistemic(embedding, seed=None)` | Stochastic embedding perturbation sensitivity (v0.2.0) |
+| `fit_class_distributions(embeddings, labels)` | Fit shrinkage-regularised class Gaussians and calibrate the OOD threshold by leave-one-out (#54) |
+| `quantify(query, support_embeddings, support_labels)` | Full `UncertaintyReport` |
+| `mahalanobis_distance(embedding, class_label)` | Distance to one class |
+| `min_mahalanobis_distance(embedding)` | Nearest class and margin |
+| `is_ood(embedding)` | `(flag, normalised score)` |
+| `compute_knn_entropy(query, support_embeddings, support_labels)` | Aleatoric term |
+| `estimate_epistemic(embedding, seed=None)` | Epistemic term |
+| `reset()` | Clear fitted state |
 
-### `UncertaintyReport`
-| Field | Type | Description |
-|-------|------|-------------|
-| `epistemic` | `float` | Perturbation sensitivity [0, 1] |
-| `aleatoric` | `float` | k-NN entropy [0, 1] |
-| `distributional` | `float` | Shrinkage-regularized Mahalanobis OOD score [0, 1] |
-| `composite` | `float` | Weighted fusion [0, 1] |
-| `is_ood` | `bool` | OOD flag |
+**Deprecated in 0.3.0, removed in 0.4.0**: `compute_perturbation_variance()`,
+`get_ood_summary()`, `get_class_statistics()`. Nothing in the library, its tests or its
+applications calls them. Each warns.
+
+`UncertaintyReport` fields: `epistemic`, `aleatoric`, `distributional`, `composite`,
+`is_ood`, `ood_score`.
 
 ---
 
+### Exceptions
+
+Everything raised on purpose derives from `AdaptShotError`, so `except AdaptShotError`
+catches the library and nothing else.
+
+| Exception | Raised when |
+|-----------|-------------|
+| `AdaptShotError` | Base class |
+| `InvalidImageError` | An image is missing, unreadable, or not RGB |
+| `ConfigValidationError` | A configuration value is outside its supported range, or inputs are malformed |
+| `BackboneError` | No usable backend for the requested backbone on this install (#36) — the message names the backbones that would work and the extra that installs torch |
+| `CalibrationNotReadyError` | Calibration needs more observations |
+| `BufferCapacityError` | Buffer pruning failed to enforce capacity |
+
+---
+
+## Experimental
+
+Each of these opens its docstring with **Experimental**. Why each is here is recorded once,
+in `adaptshot.api`.
+
 ### `ExplainabilityEngine`
 
-Historical penalty tracking for confidence decomposition (v0.2.0). No magic numbers — ACT and OOD penalties are tracked in 20-window sliding averages.
+Feature attribution, confidence decomposition with historical penalty tracking, and
+counterfactuals. One test file, no consumer outside the library; the shape of the result
+is the part most likely to change.
 
 ```python
 from adaptshot import ExplainabilityEngine
@@ -306,82 +312,115 @@ result = engine.explain(
     predicted_label="cat", raw_confidence=0.9,
     calibrated_confidence=0.87, act_action="ACCEPT", is_ood=False,
 )
-print(result.summary)
+result.summary
 ```
 
 | Method | Description |
 |--------|-------------|
-| `explain(query_emb, support_embs, support_labels, ...)` | Full explanation with historical penalty tracking |
-| `attribute(query_emb, support_embs, support_labels, pred_label)` | Feature attribution |
-| `decompose_confidence(raw, cal, act_action, is_ood)` | Confidence decomposition (historical averages) |
-| `counterfactual(query_emb, support_embs, support_labels, pred_label)` | Counterfactual only |
+| `explain(...)` | Everything below, in one `ExplanationResult` |
+| `attribute(query, support_embeddings, support_labels, predicted_label)` | Feature attribution |
+| `decompose_confidence(raw, calibrated, act_action, is_ood)` | Confidence decomposition |
+| `counterfactual(query, support_embeddings, support_labels, predicted_label)` | Nearest alternative class |
+
+#### `ExplanationResult`, `FeatureAttribution`, `ConfidenceDecomposition`, `Counterfactual`
+
+The result and the three dataclasses it holds. All four are exported so that a caller can
+name the type of what they receive.
+
+| `ExplanationResult` field | Type |
+|-------|------|
+| `prediction` | `str \| int` |
+| `attributions` | `list[FeatureAttribution]` |
+| `confidence_decomposition` | `ConfidenceDecomposition \| None` |
+| `counterfactual` | `Counterfactual \| None` |
+| `summary` | `str` |
 
 ---
 
-### `MemoryTracker` (v0.2.0)
+### `ContrastivePrototypeLearner`
 
-Lightweight memory profiling context manager. Uses tracemalloc with optional psutil enhancement.
+A two-layer projection head trained by InfoNCE gradient descent, then prototypes refined
+in the projected space. Used when `inference_mode="contrastive"`.
+
+Lives in `adaptshot.training` as of 0.3.0, because training a head is training. The old
+path `adaptshot.core.contrastive` warns and is removed in 0.4.0.
 
 ```python
-from adaptshot.utils.profiling import MemoryTracker, estimate_model_memory_mb
+from adaptshot import ContrastivePrototypeLearner, ContrastiveConfig
 
-# Pre-flight estimate
-est = estimate_model_memory_mb("resnet18", n_classes=5)
-
-# Runtime profiling
-with MemoryTracker("predict") as tracker:
-    result = learner.predict("query.jpg")
-print(f"Peak: {tracker.peak_mb:.1f} MB")
+learner = ContrastivePrototypeLearner(ContrastiveConfig(projection_dim=128))
+prototypes, labels = learner.refine_prototypes(embeddings, labels, seed=42)
+prediction, confidence, index = learner.nearest_prototype(query, prototypes, labels)
 ```
+
+| Method | Description |
+|--------|-------------|
+| `refine_prototypes(embeddings, labels, seed)` | Train the head, then refine prototypes |
+| `nearest_prototype(query, prototypes, labels)` | Nearest refined prototype |
+| `class_separation_score(embeddings, labels)` | Inter/intra-class similarity ratio |
+| `project_query(embedding)` | Project through the trained head |
+
+#### `ContrastiveConfig`
+
+| Field | Type | Default |
+|-------|------|---------|
+| `projection_dim` | `int` | `128` |
+| `temperature` | `float` | `0.07` |
+| `learning_rate` | `float` | `0.01` |
+| `momentum` | `float` | `0.9` |
+| `n_epochs` | `int` | `50` |
 
 ---
 
 ### `ACTEngine`
 
-Symmetric threshold updates with mean-reversion (v0.2.0). Prevents monotonic drift toward extreme thresholds.
+Adaptive Confidence Thresholding: a per-class acceptance threshold that moves with
+feedback and reverts slowly toward its base.
+
+**No test names this class.** It is constructed inside `FewShotLearner` and exercised only
+through it, which is the whole reason it is experimental.
 
 ```python
-from adaptshot.core.act import ACTEngine
+from adaptshot import ACTEngine
 
-act = ACTEngine(
-    base_threshold=0.65,
-    eta=0.01,
-    min_threshold=0.50,
-    max_threshold=0.95,
-)
+act = ACTEngine(base_threshold=0.65, learning_rate=0.01, min_threshold=0.50, max_threshold=0.95)
+accepted, action = act.should_accept(confidence, class_idx)
 ```
-
-**v0.2.0 Update Formula**: `delta = η * (incorrect_rate − correct_rate) + mean_reversion_strength * (base − threshold)`
 
 ---
 
 ### `UPUGFPruner`
 
-LSH-accelerated redundancy scoring (v0.2.0). Exact cosine similarity for N≤100, random projection LSH for O(N log N) approximate mode at N>100.
+Scores every buffered example by uncertainty, recency and redundancy, and keeps the
+`capacity` highest. Exact cosine redundancy up to 100 examples, LSH-approximate beyond.
+
+**No test names this class.** Same reason as `ACTEngine`.
 
 ```python
-from adaptshot.training.up_ugf import UPUGFPruner
+from adaptshot import UPUGFPruner
 
 pruner = UPUGFPruner(capacity=100)
+embeddings, labels, uncertainties, times = pruner.prune(embeddings, labels, uncertainties, times)
 ```
 
 ---
 
-## Exception Hierarchy
+## Outside the API surface
 
-| Exception | Parent | Raised When |
-|-----------|--------|-------------|
-| `AdaptShotError` | `Exception` | General AdaptShot errors |
-| `InvalidImageError` | `AdaptShotError` | Non-RGB, missing, or corrupt images |
-| `ConfigValidationError` | `AdaptShotError` | Invalid configuration parameters |
-| `CalibrationNotReadyError` | `AdaptShotError` | (v0.2.0: rarely raised; graceful fallback used instead) |
-| `BufferCapacityError` | `AdaptShotError` | UP-UGF pruning failure |
+Useful, importable, and deliberately not part of the promise above. They can change or go
+in any release.
+
+| Name | Where | Note |
+|---|---|---|
+| `set_deterministic_seed(seed)` | `adaptshot.utils.determinism` | What CLAUDE.md tells every contributor to call. Torch-free since #35 |
+| `clear_backbone_cache()` | `adaptshot.core.extractor` | A module-level function, not a learner method — an earlier version of this page said otherwise |
+| `MemoryTracker` | `adaptshot.utils.profiling` | No tests, no consumers. See the [profiling tutorial](../tutorials/13_profiling_memory.md) |
+| `CAEWCFinetuner` | `adaptshot.training.finetune` | Reached through `FeedbackRouter`; needs the `torch` extra |
 
 ---
 
-## Next Steps
+## Next steps
 
 - [Architecture Deep-Dive](../guides/architecture-deep-dive.md)
 - [Algorithm Theory](../guides/algorithm-theory.md)
 - [Configuration Reference](../reference/config-reference.md)
-- [Memory Profiling Tutorial](../tutorials/13_profiling_memory.md)

@@ -105,6 +105,40 @@ def test_new_component_basic():
 - **Line length**: ≤100 characters
 - **Logging**: Use `logging.getLogger(__name__)` instead of `print()` for library code
 
+## 🔒 API Stability and Deprecation
+
+Every name in `adaptshot.__all__` is classified in `adaptshot.api` as **stable** or
+**experimental**. `tests/test_api_surface.py` keeps that classification, the
+docstrings, and `docs/api/reference.md` in agreement, so the tiers are something
+the suite checks rather than a comment that drifts.
+
+**Stable** names are semver-protected. Removing one, or changing it in a way that
+breaks a caller, follows a deprecation cycle:
+
+1. The old behaviour keeps working and emits a `DeprecationWarning` -- with
+   `stacklevel` set so it points at the caller's line, not ours -- naming the
+   release it was deprecated in, the release it will be removed in, and what to
+   use instead.
+2. It stays for at least one minor release.
+3. It is removed in the next minor release, and the removal is listed in the
+   changelog.
+
+**Experimental** names may change in a minor release without that cycle. Their
+docstrings open with **Experimental** so the status is visible at the point of
+use. An experimental name becomes stable when it has tests of its own and has
+shipped in at least one release; it never becomes stable by default.
+
+Adding a name to `__all__` means choosing a tier in `adaptshot.api` and, for an
+experimental one, saying so in the docstring. The test fails otherwise.
+
+The first uses of this policy, both in 0.3.0: `adaptshot.core.contrastive` moved
+to `adaptshot.training.contrastive` (the old path warns and is removed in 0.4.0),
+and three `UncertaintyQuantifier` methods that nothing in the library, its tests
+or its applications called were deprecated rather than deleted (removed in 0.4.0).
+
+Pre-1.0, semver permits a minor release to break. This policy is the promise the
+project makes anyway.
+
 ## 🔄 Contribution Workflow
 1. **Create a feature branch**: `git checkout -b feat/your-feature-name`
 2. **Make changes**: Follow testing and style guidelines above
