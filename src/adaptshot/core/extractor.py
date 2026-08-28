@@ -21,6 +21,7 @@ import numpy as np
 from PIL import Image
 
 from ..config.settings import AdaptShotConfig
+from ..utils.arrays import FloatArray
 from ..utils.exceptions import BackboneError
 
 # ---------------------------------------------------------------------------
@@ -63,7 +64,7 @@ def _get_tv_transforms() -> Any:
 
 
 # Type alias for flexible image input (lazy reference to torch.Tensor via Any)
-ImageInput = Any  # str | np.ndarray | PIL.Image | torch.Tensor
+ImageInput = Any  # str | FloatArray | PIL.Image | torch.Tensor
 
 # ---------------------------------------------------------------------------
 # Backbone registry – lazy factories with ImageNet pretrained weights.
@@ -97,13 +98,13 @@ class EmbeddingCache:
     cross-instance interference that occurred with module-level globals.
     """
 
-    embedding: np.ndarray | None = field(default=None, repr=False)
-    preview: np.ndarray | None = field(default=None, repr=False)
+    embedding: FloatArray | None = field(default=None, repr=False)
+    preview: FloatArray | None = field(default=None, repr=False)
 
     def set(
         self,
-        embedding: np.ndarray | None,
-        preview_signature: np.ndarray | None = None,
+        embedding: FloatArray | None,
+        preview_signature: FloatArray | None = None,
     ) -> None:
         """Register a support embedding and its preview for eco-mode checks."""
         if embedding is None:
@@ -152,11 +153,11 @@ def clear_backbone_cache() -> None:
     _build_backbone.cache_clear()
 
 
-def compute_preview_signature(image: ImageInput, size: int = 32) -> np.ndarray:
+def compute_preview_signature(image: ImageInput, size: int = 32) -> FloatArray:
     """Compute a low-cost preview signature for early-exit similarity checks."""
     pil_image = _normalize_to_pil(image).resize((size, size), _RESAMPLE_BILINEAR)
     preview = np.asarray(pil_image, dtype=np.float32) / 255.0
-    return cast(np.ndarray, preview.reshape(-1))
+    return cast(FloatArray, preview.reshape(-1))
 
 
 # Module-level default cache for backward compatibility (benchmarks, scripts).
@@ -165,8 +166,8 @@ _DEFAULT_CACHE = EmbeddingCache()
 
 
 def set_support_embedding_cache(
-    embedding: np.ndarray | None,
-    preview_signature: np.ndarray | None = None,
+    embedding: FloatArray | None,
+    preview_signature: FloatArray | None = None,
 ) -> None:
     """Register the top-1 support embedding and preview for eco-mode early exit.
 
@@ -177,14 +178,14 @@ def set_support_embedding_cache(
     _DEFAULT_CACHE.set(embedding, preview_signature)
 
 
-def get_support_embedding_cache() -> np.ndarray | None:
+def get_support_embedding_cache() -> FloatArray | None:
     """Return a copy of the cached support embedding used by eco mode."""
     if _DEFAULT_CACHE.embedding is None:
         return None
     return _DEFAULT_CACHE.embedding.copy()
 
 
-def get_support_preview_cache() -> np.ndarray | None:
+def get_support_preview_cache() -> FloatArray | None:
     """Return a copy of the cached support preview signature used by eco mode."""
     if _DEFAULT_CACHE.preview is None:
         return None
@@ -316,13 +317,13 @@ def extract_embedding(
     config: AdaptShotConfig,
     return_numpy: bool = True,
     cache: EmbeddingCache | None = None,
-) -> Any | np.ndarray:
+) -> Any | FloatArray:
     """Extract feature embedding from input image using a frozen backbone.
 
     Args:
         image: Input image (path, PIL, NumPy, or Tensor).
         config: AdaptShotConfig with backbone and device settings.
-        return_numpy: If True, return np.ndarray; otherwise return torch.Tensor
+        return_numpy: If True, return FloatArray; otherwise return torch.Tensor
             (requires torch to be installed).
         cache: Optional EmbeddingCache for eco-mode early exit. If None,
             falls back to the module-level default cache for backward compat.

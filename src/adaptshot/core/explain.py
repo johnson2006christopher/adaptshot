@@ -26,9 +26,11 @@ saliency; torch-optional for future gradient-based saliency.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
+
+from ..utils.arrays import FloatArray, LabelArray
 
 
 @dataclass
@@ -186,9 +188,9 @@ class ExplainabilityEngine:
 
     def attribute(
         self,
-        query_embedding: np.ndarray,
-        support_embeddings: np.ndarray,
-        support_labels: np.ndarray,
+        query_embedding: FloatArray,
+        support_embeddings: FloatArray,
+        support_labels: LabelArray,
         predicted_label: str | int,
     ) -> list[FeatureAttribution]:
         """Identify which support examples most influenced the prediction.
@@ -326,9 +328,9 @@ class ExplainabilityEngine:
 
     def counterfactual(
         self,
-        query_embedding: np.ndarray,
-        support_embeddings: np.ndarray,
-        support_labels: np.ndarray,
+        query_embedding: FloatArray,
+        support_embeddings: FloatArray,
+        support_labels: LabelArray,
         predicted_label: str | int,
     ) -> Counterfactual:
         """Determine the minimum change needed for a different prediction.
@@ -411,9 +413,9 @@ class ExplainabilityEngine:
 
     def explain(
         self,
-        query_embedding: np.ndarray,
-        support_embeddings: np.ndarray,
-        support_labels: np.ndarray,
+        query_embedding: FloatArray,
+        support_embeddings: FloatArray,
+        support_labels: LabelArray,
         predicted_label: str | int,
         raw_confidence: float,
         calibrated_confidence: float,
@@ -505,9 +507,9 @@ class ExplainabilityEngine:
 
     @staticmethod
     def compute_saliency_numpy(
-        query_embedding: np.ndarray,
-        support_embedding: np.ndarray,
-    ) -> np.ndarray:
+        query_embedding: FloatArray,
+        support_embedding: FloatArray,
+    ) -> FloatArray:
         """Compute embedding-space feature importance via |query - support|.
 
         Returns per-dimension importance scores [D] showing which embedding
@@ -533,13 +535,13 @@ class ExplainabilityEngine:
         max_val = float(importance.max())
         if max_val > 1e-8:
             importance = importance / max_val
-        return importance.astype(np.float32)
+        return cast(FloatArray, importance.astype(np.float32))
 
     @staticmethod
     def compute_saliency(
-        query_embedding: np.ndarray,
-        support_embeddings: np.ndarray,
-        support_labels: np.ndarray,
+        query_embedding: FloatArray,
+        support_embeddings: FloatArray,
+        support_labels: LabelArray,
         predicted_label: str | int,
     ) -> dict[str, Any]:
         """Generate a saliency-like explanation without requiring torch.

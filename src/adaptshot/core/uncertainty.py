@@ -32,6 +32,8 @@ from typing import Any
 
 import numpy as np
 
+from ..utils.arrays import FloatArray, IntArray, LabelArray
+
 logger = logging.getLogger(__name__)
 
 
@@ -76,7 +78,7 @@ class UncertaintyReport:
         }
 
 
-def _seed_from_embedding(embedding: np.ndarray) -> int:
+def _seed_from_embedding(embedding: FloatArray) -> int:
     """A stable seed derived from an embedding's contents.
 
     `hashlib`, never the builtin `hash()`: hash randomisation is seeded per
@@ -160,10 +162,10 @@ class UncertaintyQuantifier:
         self.ood_calibration_seed = ood_calibration_seed
 
         # Class-conditional Gaussian parameters for Mahalanobis
-        self._class_means: dict[str | int, np.ndarray] = {}
-        self._class_covs: dict[str | int, np.ndarray] = {}
-        self._class_cov_invs: dict[str | int, np.ndarray] = {}
-        self._global_mean: np.ndarray | None = None
+        self._class_means: dict[str | int, FloatArray] = {}
+        self._class_covs: dict[str | int, FloatArray] = {}
+        self._class_cov_invs: dict[str | int, FloatArray] = {}
+        self._global_mean: FloatArray | None = None
 
         # OOD threshold (computed from calibration data)
         self._ood_threshold: float = float("inf")
@@ -175,8 +177,8 @@ class UncertaintyQuantifier:
 
     def _fit_one_class(
         self,
-        class_embs: np.ndarray,
-    ) -> tuple[np.ndarray, np.ndarray, np.ndarray] | None:
+        class_embs: FloatArray,
+    ) -> tuple[FloatArray, FloatArray, FloatArray] | None:
         """Fit one class-conditional Gaussian. Returns (mean, cov, cov_inv).
 
         Extracted so that leave-one-out calibration can re-fit a single class
@@ -229,8 +231,8 @@ class UncertaintyQuantifier:
 
     def fit_class_distributions(
         self,
-        embeddings: np.ndarray,
-        labels: np.ndarray,
+        embeddings: FloatArray,
+        labels: LabelArray,
     ) -> None:
         """Fit class-conditional Gaussian distributions with shrinkage.
 
@@ -273,7 +275,7 @@ class UncertaintyQuantifier:
 
     def mahalanobis_distance(
         self,
-        embedding: np.ndarray,
+        embedding: FloatArray,
         class_label: str | int,
     ) -> float:
         """Compute Mahalanobis distance to a class-conditional distribution.
@@ -294,11 +296,11 @@ class UncertaintyQuantifier:
 
         diff = embedding - self._class_means[class_label]
         maha_sq = diff @ self._class_cov_invs[class_label] @ diff
-        return float(np.sqrt(max(0.0, maha_sq)))
+        return float(np.sqrt(max(0.0, float(maha_sq))))
 
     def min_mahalanobis_distance(
         self,
-        embedding: np.ndarray,
+        embedding: FloatArray,
     ) -> tuple[float, str | int, float]:
         """Find the minimum Mahalanobis distance across all known classes.
 
@@ -325,9 +327,9 @@ class UncertaintyQuantifier:
     def _leave_one_out_distance(
         self,
         index: int,
-        embeddings: np.ndarray,
-        labels: np.ndarray,
-        indices_by_label: dict[Any, np.ndarray],
+        embeddings: FloatArray,
+        labels: LabelArray,
+        indices_by_label: dict[Any, IntArray],
     ) -> float | None:
         """Distance from one support point to a fit that excludes it.
 
@@ -367,8 +369,8 @@ class UncertaintyQuantifier:
 
     def _compute_ood_threshold(
         self,
-        embeddings: np.ndarray,
-        labels: np.ndarray,
+        embeddings: FloatArray,
+        labels: LabelArray,
     ) -> None:
         """Compute the OOD threshold by leave-one-out over the support set.
 
@@ -406,7 +408,7 @@ class UncertaintyQuantifier:
         if len(embeddings) < self.min_ood_samples:
             return
 
-        indices_by_label: dict[Any, np.ndarray] = {
+        indices_by_label: dict[Any, IntArray] = {
             label: np.flatnonzero(labels == label) for label in np.unique(labels)
         }
 
@@ -432,7 +434,7 @@ class UncertaintyQuantifier:
         self._calibration_distances = distances
         self._ood_threshold = float(np.percentile(distances, self.ood_percentile))
 
-    def _calibration_indices(self, n_samples: int) -> np.ndarray:
+    def _calibration_indices(self, n_samples: int) -> IntArray:
         """Which support points to hold out, capped so load time stays bounded.
 
         Leave-one-out costs a covariance inversion per point -- about 20ms at
@@ -449,7 +451,7 @@ class UncertaintyQuantifier:
         )
 
     def is_ood(
-        self, embedding: np.ndarray, *, min_dist: float | None = None
+        self, embedding: FloatArray, *, min_dist: float | None = None
     ) -> tuple[bool, float]:
         """Check if an embedding is out-of-distribution.
 
@@ -484,7 +486,7 @@ class UncertaintyQuantifier:
 
     def estimate_epistemic(
         self,
-        query_embedding: np.ndarray,
+        query_embedding: FloatArray,
         seed: int | None = None,
     ) -> tuple[float, float]:
         """Estimate epistemic uncertainty via stochastic embedding perturbation.
@@ -528,8 +530,8 @@ class UncertaintyQuantifier:
         )
         query_norm = float(np.linalg.norm(query)) + 1e-8
 
-        perturbed_embeddings: list[np.ndarray] = []
-        # `query.shape` is Any because the parameter is a bare np.ndarray, and with an
+        perturbed_embeddings: list[FloatArray] = []
+        # `query.shape` is Any because the parameter is a bare FloatArray, and with an
         # Any size numpy's overloads resolve to the scalar (size=None) signature, which
         # returns a float. Naming the type picks the array overload instead. Runtime
         # behaviour is unchanged -- this is a typing fix, not a logic fix.
@@ -551,7 +553,7 @@ class UncertaintyQuantifier:
 
     @staticmethod
     def compute_perturbation_variance(
-        perturbed_embeddings: list[np.ndarray],
+        perturbed_embeddings: list[FloatArray],
     ) -> tuple[float, float]:
         """Compute variance across a set of perturbed or sampled embeddings.
 
@@ -579,9 +581,9 @@ class UncertaintyQuantifier:
 
     def compute_knn_entropy(
         self,
-        query_embedding: np.ndarray,
-        support_embeddings: np.ndarray,
-        support_labels: np.ndarray,
+        query_embedding: FloatArray,
+        support_embeddings: FloatArray,
+        support_labels: LabelArray,
     ) -> tuple[float, float]:
         """Compute entropy of softmax over k nearest neighbors.
 
@@ -640,9 +642,9 @@ class UncertaintyQuantifier:
 
     def quantify(
         self,
-        query_embedding: np.ndarray,
-        support_embeddings: np.ndarray,
-        support_labels: np.ndarray,
+        query_embedding: FloatArray,
+        support_embeddings: FloatArray,
+        support_labels: LabelArray,
         mode: str = "ensemble",
     ) -> UncertaintyReport:
         """Compute the multi-signal uncertainty decomposition.
