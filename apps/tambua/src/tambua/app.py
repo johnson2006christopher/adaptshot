@@ -17,6 +17,7 @@ Tabs:
 from __future__ import annotations
 
 import argparse
+import logging
 import os
 from typing import cast
 
@@ -26,14 +27,24 @@ from typing import cast
 # into sys.path, which only worked when launched from one specific directory --
 # the same defect #11 removed from the library itself.
 
+# Gradio callbacks are a UI boundary: an exception escaping one takes down the tab
+# instead of telling the user anything, so they catch broadly on purpose. What they
+# must not do is swallow the traceback -- a user reporting "Setup failed" then leaves
+# the maintainer nothing to work with. Every broad handler here logs before it
+# returns its friendly message.
+logger = logging.getLogger(__name__)
+
 # ---------------------------------------------------------------------------
-# Lazy Gradio import (only installed with [ui] extras)
+# Gradio is a hard dependency of this application (see pyproject.toml), not an
+# optional extra of the library. Reaching this branch means the install is broken
+# or was made with --no-deps, so name the package that actually provides it.
 # ---------------------------------------------------------------------------
 try:
-    import gradio as gr  # type: ignore[import-not-found]
+    import gradio as gr
 except ImportError:
     raise ImportError(
-        "Gradio is not installed. Run: pip install adaptshot[ui]"
+        "Gradio is not installed, but Tambua requires it. Reinstall the "
+        "application with: pip install tambua"
     ) from None
 
 # ---------------------------------------------------------------------------
@@ -73,6 +84,7 @@ def _setup_with_samples(n_support: int) -> str:
             + "\n\n🧠 Model ready. Switch to the **Diagnose** tab to test."
         )
     except Exception as exc:
+        logger.exception("sample setup failed")
         return f"❌ Setup failed: {exc}"
 
 
@@ -91,6 +103,7 @@ def _setup_from_folder(folder_path: str, max_per_class: int) -> str:
             + "\n\n🧠 Model ready. Switch to the **Diagnose** tab."
         )
     except Exception as exc:
+        logger.exception("folder load failed")
         return f"❌ Loading failed: {exc}"
 
 
@@ -153,6 +166,7 @@ def _diagnose(image: str | None) -> tuple[str, str, float, str, str]:
         return summary, action, confidence_pct, detail, warning
 
     except Exception as exc:
+        logger.exception("diagnose failed")
         return "", "", 0.0, "", f"❌ Error: {exc}"
 
 

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import os
 import random
+from collections.abc import Callable
 
 import numpy as np
 from PIL import Image, ImageDraw
@@ -26,7 +27,7 @@ SPOT_DARK = (80, 80, 80)
 SOIL_BG = (160, 140, 100)
 
 
-def _draw_vein(draw: ImageDraw.Draw, x0: int, y0: int, x1: int, y1: int) -> None:
+def _draw_vein(draw: ImageDraw.ImageDraw, x0: int, y0: int, x1: int, y1: int) -> None:
     draw.line([(x0, y0), (x1, y1)], fill=(0, 100, 0), width=1)
 
 
@@ -113,7 +114,7 @@ def make_non_leaf(size: int = 224) -> Image.Image:
 
 
 # Map disease names to generators (synthetic mode)
-DISEASE_GENERATORS: dict[str, callable] = {  # type: ignore[type-arg]
+DISEASE_GENERATORS: dict[str, Callable[[], Image.Image]] = {
     "healthy_maize": make_healthy_leaf,
     "northern_leaf_blight": make_blight_leaf,
     "gray_leaf_spot": make_gray_leaf_spot,

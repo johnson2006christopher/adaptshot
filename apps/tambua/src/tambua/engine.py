@@ -11,6 +11,7 @@ Wraps FewShotLearner with:
 
 from __future__ import annotations
 
+import logging
 import os
 import time
 from dataclasses import dataclass, field
@@ -19,8 +20,12 @@ from typing import Any
 import numpy as np
 import yaml
 
-# Import from the local AdaptShot source tree
 from adaptshot import AdaptShotConfig, FewShotLearner
+from adaptshot.utils.exceptions import ConfigValidationError
+
+# Broad handlers below are boundaries too -- one bad image must not abort a batch,
+# and a failed correction must not lose the session. They log before returning.
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Data types
@@ -168,8 +173,26 @@ class MziziGuard:
 
     @staticmethod
     def _load_config(path: str) -> dict[str, Any]:
+        """Load and shape-check a domain config.
+
+        `yaml.safe_load` returns whatever the document contains -- ``None`` for an
+        empty file, a list for a top-level sequence. Returning that unchecked
+        turns a one-character typo in the config into an `AttributeError` several
+        frames away, which is the failure mode #47 exists to prevent. Fail here,
+        naming the file.
+        """
+
         with open(path, encoding="utf-8") as f:
-            return yaml.safe_load(f)
+            loaded = yaml.safe_load(f)
+
+        if loaded is None:
+            raise ConfigValidationError(f"{path} is empty; a domain config is required")
+        if not isinstance(loaded, dict):
+            raise ConfigValidationError(
+                f"{path} must contain a mapping at the top level, "
+                f"found {type(loaded).__name__}"
+            )
+        return loaded
 
     def _build_engine_config(self) -> AdaptShotConfig:
         eng = self.cfg.get("engine", {})
@@ -298,7 +321,7 @@ class MziziGuard:
 
     def diagnose(
         self,
-        image: str | np.ndarray, Any,
+        image: str | np.ndarray | Any,
     ) -> DiagnosisResult:
         """Run disease diagnosis on an image.
 
@@ -418,6 +441,7 @@ class MziziGuard:
                 f"Fine-tuned: {fine_tuned}, Buffer: {buffer_size}"
             )
         except Exception as exc:
+            logger.exception("correction failed")
             return f"❌ Correction failed: {exc}"
 
     # ------------------------------------------------------------------
@@ -442,6 +466,7 @@ class MziziGuard:
                 result = self.diagnose(path)
                 results.append(result)
             except Exception:
+                logger.exception("batch item failed: %s", path)
                 results.append(DiagnosisResult(
                     label="error",
                     swahili="hitilafu",
