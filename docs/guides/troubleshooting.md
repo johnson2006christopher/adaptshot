@@ -203,7 +203,7 @@ Include:
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| `ModuleNotFoundError: No module named 'gradio'` | UI dependencies missing | `pip install tambua` (for the app), or `pip install "adaptshot[ui]"` (for the library's own UI) |
+| `ModuleNotFoundError: No module named 'gradio'` | The application is not installed | `pip install tambua`. The library itself ships no GUI (#22). |
 | `ModuleNotFoundError: No module named 'yaml'` | PyYAML missing | `pip install PyYAML` |
 | `Address already in use` | Port 7860 occupied | Use `--port 8080` |
 | `config.yaml not found` | Config file missing | Ensure `apps/tambua/src/tambua/configs/maize.yaml` exists |

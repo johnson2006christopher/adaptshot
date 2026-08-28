@@ -37,7 +37,7 @@ pip install "adaptshot[torch]"
 pip install "adaptshot[faiss]"
 
 # Gradio UI dependencies for the Pilot Dashboard
-pip install "adaptshot[ui]"
+pip install tambua
 
 # Offline Studio GUI (includes ONNX Runtime for torch-free inference)
 pip install "adaptshot[gui]"

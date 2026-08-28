@@ -130,15 +130,15 @@ carry them.
 
 ```bash
 # From PyPI
-pip install "adaptshot[ui]"
+pip install tambua
 
 # Or from source (recommended for development)
 git clone https://github.com/johnson2006christopher/adaptshot.git
 cd adaptshot
-pip install -e ".[ui]"
+pip install -e apps/tambua
 ```
 
-What `[ui]` installs:
+What `tambua` pulls in:
 - `adaptshot` — core few-shot learning engine
 - `gradio>=3.50.0` — web UI framework
 - `PyYAML>=6.0` — configuration parsing

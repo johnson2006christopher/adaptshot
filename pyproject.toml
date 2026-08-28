@@ -28,7 +28,6 @@ dependencies = [
 [project.optional-dependencies]
 torch = ["torch>=2.0.0", "torchvision>=0.15.0"]
 faiss = ["faiss-cpu>=1.7.4"]
-ui = ["gradio>=3.50.0"]
 gui = ["gradio>=3.50.0", "pandas>=2.0.0", "onnx>=1.16.0", "onnxscript>=0.3.0", "onnxruntime>=1.14.0"]
 # Upper bounds are deliberate. Linters and type checkers add rules in minor
 # releases, so an unbounded pin means a tool release can turn CI red without any

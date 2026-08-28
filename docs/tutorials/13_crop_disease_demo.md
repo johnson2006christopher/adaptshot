@@ -40,7 +40,7 @@ Install dependencies and start the Gradio web server:
 
 ```bash
 # Install AdaptShot with Gradio UI support
-pip install -e ".[ui]"
+pip install -e apps/tambua
 
 # Launch the web application
 tambua

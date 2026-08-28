@@ -88,7 +88,7 @@ nav:
     - 08 Configuration, Determinism, and Safe I/O: tutorials/08_configuration_determinism_io.md
     - 09 Benchmarks and Reproducibility: tutorials/09_benchmarks_and_reproducibility.md
     - 10 Module Map: tutorials/10_module_map.md
-    - 11 UI Pilot Dashboard: tutorials/11_ui_pilot_dashboard.md
+    - 11 The Interface Moved Out: tutorials/11_ui_pilot_dashboard.md
     - 12 Studio Guide: tutorials/12_studio_guide.md
     - 13 Tambua Crop Demo: tutorials/13_crop_disease_demo.md
     - 14 Memory Profiling: tutorials/13_profiling_memory.md

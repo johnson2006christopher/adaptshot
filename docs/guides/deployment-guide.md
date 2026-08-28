@@ -53,7 +53,7 @@ sudo apt update
 sudo apt install python3 python3-pip python3-venv
 python3 -m venv adaptshot_env
 source adaptshot_env/bin/activate
-pip install "adaptshot[ui]"
+pip install tambua
 ```
 
 #### 2. Prepare Training Images
@@ -295,7 +295,7 @@ source adaptshot_env/bin/activate
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
 
 # AdaptShot
-pip install "adaptshot[ui]"
+pip install tambua
 ```
 
 ### Optimized Config for Pi
@@ -366,7 +366,7 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-RUN pip install "adaptshot[ui]"
+RUN pip install tambua
 
 COPY apps/tambua/ /app/apps/tambua/
 
