@@ -20,7 +20,7 @@ import pytest
 
 from benchmarks.baselines import knn, linear_probe, nearest_centroid, top1_with_threshold
 from benchmarks.plantvillage import DatasetMissing, load_pool, sample_episodes
-from benchmarks.run_plantvillage import mean_and_ci
+from benchmarks.run_plantvillage import _confidence_in_true_class, mean_and_ci
 
 CLASSES = [f"class_{index:02d}" for index in range(20)]
 PER_CLASS = 20
@@ -226,6 +226,42 @@ def test_top1_threshold_abstains_and_reports_it() -> None:
 
     _, never = top1_with_threshold(support, support_labels, query, threshold=1.01)
     assert all(len(s) == 0 for s in never), "threshold above 1 should always abstain"
+
+
+def test_the_calibrated_threshold_is_reachable() -> None:
+    """The bug the two extremes above did not catch.
+
+    The first version of this benchmark hard-coded a 0.5 abstention threshold.
+    A 5-way softmax over cosine similarities cannot reach it -- chance is 0.2
+    and the similarities are close -- so the baseline abstained on every query
+    and reported 0.00% coverage against conformal's 95%. That is not conformal
+    winning, it is the alternative never having been in the comparison.
+
+    Testing threshold 0.0 and 1.01 passed happily throughout, because both
+    extremes behave correctly. What was never asserted is that the threshold the
+    benchmark actually uses lands somewhere a real confidence can reach.
+    """
+
+    support, support_labels, query, query_labels = _separable()
+    calibration, calibration_labels = query[::2], query_labels[::2]
+
+    confidence = _confidence_in_true_class(
+        support, support_labels, calibration, calibration_labels
+    )
+    threshold = float(np.percentile(confidence, 10.0))
+
+    _, sets = top1_with_threshold(support, support_labels, query, threshold)
+    fired = sum(1 for s in sets if s)
+    assert fired > 0, (
+        f"the calibrated threshold {threshold:.3f} produced no non-empty sets. "
+        "A baseline that always abstains is not participating in the comparison."
+    )
+
+    covered = sum(str(t) in s for s, t in zip(sets, query_labels)) / len(sets)
+    assert covered > 0.5, (
+        f"coverage of {covered:.0%} at a threshold calibrated for 90%. The "
+        "threshold is not measuring what it claims to."
+    )
 
 
 # ---------------------------------------------------------------------------

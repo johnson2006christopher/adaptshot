@@ -37,7 +37,7 @@ import numpy as np
 
 import adaptshot
 from adaptshot.config.settings import AdaptShotConfig
-from adaptshot.core.conformal import ConformalEngine
+from adaptshot.core.learner import FewShotLearner
 from adaptshot.utils.determinism import set_deterministic_seed
 from benchmarks.baselines import knn, linear_probe, nearest_centroid, top1_with_threshold
 from benchmarks.plantvillage import (
@@ -55,13 +55,6 @@ from benchmarks.plantvillage import (
 #: queries within an episode share a support set and are not independent.
 Z_95 = 1.96
 
-#: The abstention threshold for the top-1 baseline. Deliberately *not* tuned:
-#: picking it to make conformal look good, or bad, would answer a question
-#: nobody asked. 0.5 is the natural "more likely than not" point on a 5-way
-#: softmax, where chance is 0.2.
-TOP1_THRESHOLD = 0.5
-
-
 def _normalise(matrix: np.ndarray) -> np.ndarray:
     norms = np.linalg.norm(matrix, axis=1, keepdims=True)
     return matrix / np.maximum(norms, 1e-8)
@@ -78,58 +71,50 @@ def mean_and_ci(values: list[float]) -> tuple[float, float]:
 
 
 def adaptshot_episode(
-    embeddings: np.ndarray,
+    paths: list[Path],
     labels: np.ndarray,
     episode: Episode,
-    alpha: float,
-) -> tuple[float, float, float]:
-    """Run one episode through the prototype + conformal path.
+    config: AdaptShotConfig,
+) -> tuple[float, float, float, float]:
+    """Run one episode through the real `FewShotLearner`.
 
-    Returns (accuracy, coverage, mean set size).
+    This calls the shipped library on image paths rather than reimplementing the
+    prototype path over cached embeddings. The first version of this benchmark
+    did the latter, and produced an AdaptShot accuracy identical to the
+    nearest-centroid baseline to four significant figures -- because that is
+    exactly what the twenty lines I had written were. It was comparing a
+    reimplementation to itself and reporting the tie as a finding.
 
-    Conformal is calibrated on the episode's calibration split and evaluated on
-    its query split. Those are disjoint by construction in `sample_episodes`,
-    because a coverage number measured on the same points that set the quantile
-    is not a coverage number.
+    The learner self-calibrates its conformal engine by leave-one-out over the
+    support set (`_self_calibrate_conformal`), so it is given no calibration
+    split. The baselines are; see `top1_episode` for why that asymmetry is the
+    safe direction.
+
+    Returns (accuracy, coverage, mean set size, OOD flag rate).
     """
 
-    support = embeddings[episode.support]
-    support_labels = labels[episode.support]
-    classes = np.unique(support_labels)
-    centroids = _normalise(
-        np.stack([support[support_labels == name].mean(axis=0) for name in classes])
+    learner = FewShotLearner(config=config)
+    learner.load_support_images(
+        [str(paths[index]) for index in episode.support],
+        [str(label) for label in labels[episode.support]],
     )
 
-    def distances_to_centroids(points: np.ndarray) -> np.ndarray:
-        # Cosine distance, matching the library's default similarity metric.
-        return 1.0 - (_normalise(points) @ centroids.T)
-
-    engine = ConformalEngine(alpha=alpha, min_calibration_size=10)
-
-    calibration_distances = distances_to_centroids(embeddings[episode.calibration])
-    for row, true_label in zip(calibration_distances, labels[episode.calibration]):
-        engine.update_calibration(
-            engine.softmax_nonconformity(row, classes, true_label), true_label
-        )
-
-    query_distances = distances_to_centroids(embeddings[episode.query])
     query_labels = labels[episode.query]
-
     correct = 0
     covered = 0
     set_sizes: list[int] = []
-    for row, true_label in zip(query_distances, query_labels):
-        order = np.argsort(row)
-        top = classes[order[0]]
-        confidence = float(1.0 - row[order[0]])
-        result = engine.predict_set(row, classes, top, confidence)
+    flagged = 0
 
-        correct += int(top == true_label)
-        covered += int(true_label in result.prediction_set)
-        set_sizes.append(len(result.prediction_set))
+    for index, true_label in zip(episode.query, query_labels):
+        result = learner.predict(str(paths[index]))
+        correct += int(result.prediction == true_label)
+        predicted_set = result.conformal_set or [result.prediction]
+        covered += int(true_label in predicted_set)
+        set_sizes.append(len(predicted_set))
+        flagged += int(result.ood_flag)
 
     n = len(query_labels)
-    return correct / n, covered / n, float(np.mean(set_sizes))
+    return correct / n, covered / n, float(np.mean(set_sizes)), flagged / n
 
 
 def baseline_episode(
@@ -161,20 +146,71 @@ def top1_episode(
     embeddings: np.ndarray,
     labels: np.ndarray,
     episode: Episode,
-) -> tuple[float, float, float]:
-    """Top-1 with an abstention threshold: the honest alternative to conformal."""
+    alpha: float,
+) -> tuple[float, float, float, float]:
+    """Top-1 with an abstention threshold *calibrated to the same target*.
+
+    This is the comparison #19 calls the important one, and getting it fair took
+    two attempts. The first fixed the threshold at 0.5, which a 5-way softmax
+    over cosine similarities can never reach -- chance is 0.2 and the
+    similarities are close -- so the baseline abstained on every query and
+    reported 0.00% coverage. A baseline that cannot fire does not lose the
+    comparison, it voids it.
+
+    The threshold is now chosen on the episode's calibration split as the
+    (alpha * 100)th percentile of the true class's confidence, which is the
+    threshold that would have achieved the target coverage there. That is the
+    same construction split-conformal uses, so the two are answering the same
+    question on the same data, and the honest one to ask: at equal coverage,
+    which produces smaller sets?
+
+    Note the asymmetry -- this baseline gets a held-out calibration split and
+    AdaptShot does not, since the learner self-calibrates from support alone. It
+    is the safe direction: if conformal still wins while the alternative is
+    handed extra data, the conclusion survives the doubt.
+
+    Returns (accuracy, coverage, mean set size, threshold used).
+    """
+
+    support = embeddings[episode.support]
+    support_labels = labels[episode.support]
+
+    calibration_confidence = _confidence_in_true_class(
+        support, support_labels, embeddings[episode.calibration], labels[episode.calibration]
+    )
+    threshold = float(np.percentile(calibration_confidence, alpha * 100.0))
 
     predictions, sets = top1_with_threshold(
-        embeddings[episode.support],
-        labels[episode.support],
-        embeddings[episode.query],
-        TOP1_THRESHOLD,
+        support, support_labels, embeddings[episode.query], threshold
     )
     query_labels = labels[episode.query]
     accuracy = float(np.mean(predictions == query_labels))
     covered = float(np.mean([str(t) in s for s, t in zip(sets, query_labels)]))
     mean_size = float(np.mean([len(s) for s in sets]))
-    return accuracy, covered, mean_size
+    return accuracy, covered, mean_size, threshold
+
+
+def _confidence_in_true_class(
+    support: np.ndarray,
+    support_labels: np.ndarray,
+    points: np.ndarray,
+    point_labels: np.ndarray,
+) -> np.ndarray:
+    """Softmax probability the centroid classifier puts on the correct class."""
+
+    classes = np.unique(support_labels)
+    centroids = _normalise(
+        np.stack([support[support_labels == name].mean(axis=0) for name in classes])
+    )
+    similarity = _normalise(points) @ centroids.T
+    logits = similarity - similarity.max(axis=1, keepdims=True)
+    probabilities = np.exp(logits)
+    probabilities /= probabilities.sum(axis=1, keepdims=True)
+
+    lookup = {name: index for index, name in enumerate(classes)}
+    return np.array(
+        [probabilities[row, lookup[label]] for row, label in enumerate(point_labels)]
+    )
 
 
 def hardware() -> dict[str, Any]:
@@ -252,16 +288,16 @@ def main(argv: list[str] | None = None) -> int:
     )
     print(f"{len(episodes)} episodes, {args.n_way}-way {args.k_shot}-shot\n")
 
-    adaptshot_accuracy, coverage, set_size = [], [], []
-    top1_accuracy, top1_coverage, top1_size = [], [], []
+    adaptshot_accuracy, coverage, set_size, ood_rate = [], [], [], []
+    top1_accuracy, top1_coverage, top1_size, thresholds = [], [], [], []
     baseline_names = ("nearest_centroid", "knn_1", "knn_5", "linear_probe")
     baseline_accuracy: dict[str, list[float]] = {name: [] for name in baseline_names}
 
     latencies: list[float] = []
     for episode in episodes:
         clock = time.perf_counter()
-        accuracy, episode_coverage, episode_size = adaptshot_episode(
-            embeddings, labels, episode, args.alpha
+        accuracy, episode_coverage, episode_size, episode_ood = adaptshot_episode(
+            paths, labels, episode, config
         )
         latencies.append(
             (time.perf_counter() - clock) / len(episode.query) * 1000.0
@@ -269,11 +305,15 @@ def main(argv: list[str] | None = None) -> int:
         adaptshot_accuracy.append(accuracy)
         coverage.append(episode_coverage)
         set_size.append(episode_size)
+        ood_rate.append(episode_ood)
 
-        t_accuracy, t_coverage, t_size = top1_episode(embeddings, labels, episode)
+        t_accuracy, t_coverage, t_size, threshold = top1_episode(
+            embeddings, labels, episode, args.alpha
+        )
         top1_accuracy.append(t_accuracy)
         top1_coverage.append(t_coverage)
         top1_size.append(t_size)
+        thresholds.append(threshold)
 
         for name in baseline_names:
             baseline_accuracy[name].append(
@@ -303,14 +343,16 @@ def main(argv: list[str] | None = None) -> int:
         "target_coverage": 1 - args.alpha,
         "empirical_coverage": report("empirical coverage", coverage),
         "mean_set_size": report("mean prediction-set size", set_size, unit=""),
+        "ood_flag_rate": report("OOD flagged (all in-distribution)", ood_rate),
     }
 
-    print(f"\nTop-1 with a {TOP1_THRESHOLD} confidence threshold, the alternative:")
+    print(f"\nTop-1 with a threshold calibrated to the same {(1 - args.alpha) * 100:.0f}% "
+          "target, the alternative:")
     results["top1_threshold"] = {
-        "threshold": TOP1_THRESHOLD,
         "accuracy": report("accuracy", top1_accuracy),
         "coverage": report("coverage (true label in set)", top1_coverage),
         "mean_set_size": report("mean set size", top1_size, unit=""),
+        "threshold": report("threshold chosen per episode", thresholds, unit=""),
     }
 
     mean_latency, latency_half = mean_and_ci(latencies)
@@ -326,7 +368,6 @@ def main(argv: list[str] | None = None) -> int:
             "seed": args.seed,
             "backbone": args.backbone,
             "alpha": args.alpha,
-            "top1_threshold": TOP1_THRESHOLD,
         },
         dataset=dataset_provenance(args.data),
         hardware=hardware(),
