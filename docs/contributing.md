@@ -45,6 +45,19 @@ ruff check src/adaptshot tests/
 # Run smoke benchmark
 python -m benchmarks.run_benchmark --smoke-test
 ```
+
+The smoke benchmark runs **offline by default**. With no CIFAR-10 cache it uses a
+deterministic synthetic fixture and reports determinism and latency but no
+accuracy — a figure measured on random tensors describes nothing. For a measured
+accuracy, fetch the dataset once:
+
+```bash
+python -m benchmarks.run_benchmark --smoke-test --dataset cifar10 --allow-download --seed 42
+```
+
+That download is ~170MB and has taken over 30 minutes from some networks (#12).
+Afterwards the default command finds the cache and uses the real data.
+
 All commands should pass before submitting a pull request.
 
 ## 📦 Project Structure
