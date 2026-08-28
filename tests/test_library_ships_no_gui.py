@@ -16,9 +16,8 @@ exemption below is written to expire.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
-
-import tomllib
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PACKAGE_ROOT = REPO_ROOT / "src" / "adaptshot"
@@ -56,11 +55,15 @@ def test_no_module_imports_gradio() -> None:
 
 
 def test_the_ui_extra_is_gone() -> None:
-    """It duplicated part of `gui` and existed only for the deleted module."""
+    """It duplicated part of `gui` and existed only for the deleted module.
 
-    pyproject = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
-    extras = pyproject["project"]["optional-dependencies"]
-    assert "ui" not in extras, (
+    Read with a regex rather than `tomllib`, which is 3.11+ while this project
+    supports 3.10. `test_release_metadata.py` reads pyproject the same way for
+    the same reason.
+    """
+
+    pyproject = (REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    assert not re.search(r"^ui\s*=\s*\[", pyproject, flags=re.MULTILINE), (
         "the `ui` extra is back; `gui` already covers the studio, and the "
         "application is a separate distribution"
     )
