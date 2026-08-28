@@ -398,7 +398,11 @@ def main() -> int:
     # Set deterministic seed globally
     set_deterministic_seed(args.seed)
 
-    # Default config for smoke test: CPU-only, no FAISS, ResNet-18
+    # resnet18 is pinned here deliberately, not inherited from AdaptShotConfig's
+    # default. The default became mobilenet_v3_small in #36 -- the backbone whose
+    # ONNX weights ship in the wheel -- but this benchmark's whole value is
+    # comparability with every number the project has published, and changing the
+    # backbone would silently break that. Pass --backbone to measure another.
     config = AdaptShotConfig(
         backbone="resnet18",
         device="cpu",

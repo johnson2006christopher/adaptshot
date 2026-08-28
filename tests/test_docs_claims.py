@@ -151,30 +151,35 @@ def test_quoted_benchmark_figures_match_the_artifact(
     assert not mismatched, "docs disagree with the benchmark artifact:\n  " + "\n  ".join(mismatched)
 
 
-def test_torch_free_inference_is_not_advertised_as_working() -> None:
-    """`src/adaptshot/data/` ships no backbones, so nothing may claim torch-free inference.
+def test_torch_free_inference_is_backed_by_bundled_weights() -> None:
+    """The claim is now true, so this guards it from becoming false again.
 
-    When #36 lands and real ONNX weights are bundled, this test starts failing and
-    should be deleted -- that failure is the signal the claim became true.
+    It used to assert the opposite: `src/adaptshot/data/` was empty, so nothing
+    was allowed to advertise torch-free inference, and the test was written to
+    retire when #36 landed. #36 has landed. Rather than deleting it, it is
+    inverted -- the failure mode has flipped from "claiming something untrue" to
+    "the weights that make it true went missing", and that is worth catching.
+
+    A wheel built without the ONNX graph would install cleanly and then fail on
+    the first `predict()` of anyone who did not also install torch.
     """
 
-    bundled = list((REPO_ROOT / "src" / "adaptshot" / "data").glob("*.onnx"))
-    if bundled:
-        pytest.skip(f"{len(bundled)} bundled backbone(s) present; see #36 and remove this test")
-
-    claim = re.compile(r"torch-free[^.\n]*\b(via|using|through)\b[^.\n]*bundled", re.IGNORECASE)
-    offenders = []
-    for path in _live_docs():
-        for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
-            match = claim.search(line)
-            if match is None:
-                continue
-            # A phrase inside quotation marks is being cited, not asserted. The
-            # changelog quotes this claim in order to retract it.
-            if re.search(r'["\u201c\u201d]', line[: match.start()]):
-                continue
-            offenders.append(f"{path.relative_to(REPO_ROOT)}:{n}")
-    assert not offenders, (
-        "torch-free inference via bundled backbones is advertised, but "
-        "src/adaptshot/data/ contains no .onnx files:\n  " + "\n  ".join(offenders)
+    bundled = sorted((REPO_ROOT / "src" / "adaptshot" / "data").glob("*.onnx"))
+    assert bundled, (
+        "no ONNX backbone is bundled, but the documentation says inference "
+        "works without torch. Either run scripts/export_backbones.py, or the "
+        "claim has to come back out of the docs (#36)."
     )
+
+    default = REPO_ROOT / "src" / "adaptshot" / "data" / "mobilenet_v3_small.onnx"
+    assert default.is_file(), (
+        "the default backbone's ONNX graph is missing; a core install would "
+        "fail on its first prediction"
+    )
+
+    weights = default.with_suffix(".onnx.data")
+    assert weights.is_file(), (
+        "the ONNX graph is present but its external weights file is not. The "
+        "graph alone is 0.3MB and loads without error, then produces nothing."
+    )
+

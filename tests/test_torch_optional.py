@@ -123,13 +123,18 @@ TORCH_FREE_OPERATIONS = (
     "ConformalEngine()",
     "UncertaintyQuantifier.quantify()",
     "calibration_report()",
+    "load_support_images()",
 )
 
-#: What a core install cannot do. One entry, and it is the one that matters:
-#: turning an image into an embedding. Everything downstream of an embedding
-#: already works without torch, which is what makes the bundled-ONNX path (#36)
-#: the whole of the remaining distance rather than a first step.
-TORCH_REQUIRED_OPERATIONS = ("load_support_images()",)
+#: Empty since #36. `load_support_images()` was the last entry -- the one
+#: operation that needed torch, because it turned an image into an embedding.
+#: The bundled ONNX backbone does that now, so a core install can complete the
+#: whole loop: load, predict, save, load again.
+#:
+#: Kept as an empty tuple rather than deleted, so that anything which starts
+#: requiring torch again has an obvious place to be recorded and an obvious
+#: test to fail.
+TORCH_REQUIRED_OPERATIONS: tuple[str, ...] = ()
 
 _PROBE = '''
 import os
@@ -218,12 +223,15 @@ def test_the_torch_free_operations_still_work() -> None:
 
 
 def test_the_torch_required_operations_still_require_torch() -> None:
-    """Asserted in this direction on purpose.
+    """Asserted in this direction on purpose, and it did its job.
 
-    When #36 lands and embeddings come from a bundled ONNX backbone, this test
-    fails -- which is correct. `README.md:100` says "PyTorch is optional and
-    needed only for training", and that sentence becomes true at the same
-    moment. Whoever makes it true has to come here and say so.
+    It failed the moment #36 landed, because `load_support_images()` started
+    working without torch -- which is exactly what it was built to catch.
+    `README.md:100` ("PyTorch is optional and needed only for training") became
+    true at the same moment, and was corrected in the same change.
+
+    The list is empty now. The test stays, so that anything which starts
+    requiring torch again fails here rather than in a user's install.
     """
 
     outcomes = _probe_boundary()

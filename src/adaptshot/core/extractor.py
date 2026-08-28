@@ -14,6 +14,7 @@ is available and the preview similarity already exceeds the configured bound.
 
 from dataclasses import dataclass, field
 from functools import lru_cache
+from pathlib import Path
 from typing import Any, cast
 
 import numpy as np
@@ -143,6 +144,10 @@ def _build_backbone(backbone_name: str, device: str) -> Any:
     return backbone
 
 
+_DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+_ONNX_BACKEND: Any | None = None
+
+
 def clear_backbone_cache() -> None:
     """Clear the LRU backbone cache to release GPU/CPU memory.
 
@@ -214,6 +219,64 @@ def _get_preprocess_transform(img_size: int = 224) -> Any:
     ])
 
 
+def _torch_is_available() -> bool:
+    """Whether torch can actually be imported, not merely whether it is listed."""
+
+    try:
+        import torch  # noqa: F401
+    except ImportError:
+        return False
+    return True
+
+
+def onnx_weights_available(backbone_name: str) -> bool:
+    """Whether a bundled ONNX graph exists for this backbone.
+
+    `resnet18` is 44.8MB of weights and `mobilenet_v3_small` is 4.0MB, so which
+    ones ship is a packaging decision (#36). This asks what is actually present
+    rather than what ought to be.
+    """
+
+    return (_DATA_DIR / f"{backbone_name}.onnx").is_file()
+
+
+def _should_use_onnx(backbone_name: str, return_numpy: bool) -> bool:
+    """Decide between the ONNX and torch paths.
+
+    ONNX wins when its weights are bundled and the caller wants numpy back.
+    Without torch that is the only option; with torch it is still the better one,
+    since the embeddings agree and ONNX is faster on CPU.
+
+    `return_numpy=False` asks for a torch tensor by name, so it always takes the
+    torch path -- an ONNX session cannot produce one.
+    """
+
+    if not return_numpy:
+        return False
+    if not onnx_weights_available(backbone_name):
+        return False
+    try:
+        import onnxruntime  # noqa: F401
+    except ImportError:
+        return False
+    return True
+
+
+def _onnx_backend() -> Any:
+    """The process-wide ONNX backend, built on first use.
+
+    It caches its own sessions per backbone; constructing one per call would
+    reload the graph every time.
+    """
+
+    global _ONNX_BACKEND
+    if _ONNX_BACKEND is None:
+        from .backends.onnx_backend import ONNXBackend
+
+        _ONNX_BACKEND = ONNXBackend()
+    return _ONNX_BACKEND
+
+
 def extract_embedding(
     image: ImageInput,
     config: AdaptShotConfig,
@@ -256,6 +319,14 @@ def extract_embedding(
             if return_numpy:
                 return support_embedding.copy()
             return _get_torch().from_numpy(support_embedding.copy())
+
+    if _should_use_onnx(config.backbone, return_numpy):
+        # The backend priority `backends/__init__.py` has documented since v0.2.0,
+        # finally wired up (#36). ONNX is preferred when its weights are bundled
+        # and the caller wants numpy back, because it is what makes inference work
+        # without torch at all -- and it is not a compromise: embeddings agree with
+        # torch to ~4e-06 (cosine 0.99999994), and it is faster on CPU.
+        return _onnx_backend().extract(pil_image, config.backbone)
 
     backbone = _build_backbone(config.backbone, config.device)
 

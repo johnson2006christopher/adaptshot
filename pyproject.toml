@@ -23,6 +23,11 @@ classifiers = [
 dependencies = [
     "numpy>=1.24.0",
     "Pillow>=9.0.0",
+    # Core, not an extra, since #36: it is what makes inference work without
+    # torch. ~23MB against torch's ~1.2GB, which on a metered or intermittent
+    # connection is the difference between installable and not -- the constraint
+    # this project exists to address.
+    "onnxruntime>=1.14.0",
 ]
 
 [project.optional-dependencies]

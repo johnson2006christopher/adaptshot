@@ -1,9 +1,9 @@
 {
   "accuracy": 0.68,
   "data_source": "cifar10",
-  "latency_avg_ms": 14.044692839961499,
-  "latency_p95_ms": 15.03256659962062,
-  "embedding_time_s": 0.8173244290010189,
+  "latency_avg_ms": 7.366597919608466,
+  "latency_p95_ms": 7.98384800000349,
+  "embedding_time_s": 0.4639663419984572,
   "support_size": 50,
   "query_size": 25,
   "config": {
