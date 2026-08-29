@@ -373,6 +373,50 @@ and the median is the number to plan around. And this laptop is faster than the 
 the project is built for. These figures are what the library costs *here*; a measurement
 on ARM or phone-class hardware is its own open item.
 
+### Under distribution shift — where the guarantee stops holding
+
+The conformal guarantee assumes the queries come from the same distribution as the
+calibration set. In the field they do not. This is what happens when the **queries
+shift and the support does not** — real PlantVillage photographs, blurred, darkened,
+re-compressed or downscaled with Pillow, 40 episodes, α = 0.1 (target
+90%). Right-hand columns: the same queries after **10 shifted, labelled
+photographs** are fed through `correct()`, the library's human-in-the-loop path.
+
+| shift | top-1 | coverage | set size | OOD flagged | coverage after 10 corrections | set size |
+|---|---|---|---|---|---|---|
+| clean | 93% | **97.0% ± 1.1** | 1.52 | 1.8% | **96.7% ± 1.1** | 1.23 |
+| blur 1 | 90% | **95.6% ± 1.3** | 1.53 | 1.7% | **96.0% ± 1.3** | 1.24 |
+| blur 2 | 81% | **88.6% ± 2.8** | 1.54 | 2.6% | **92.3% ± 1.6** | 1.24 |
+| blur 4 | 67% | **77.3% ± 4.2** | 1.58 | 10.0% | **84.8% ± 2.8** | 1.29 |
+| brightness 0.6 | 92% | **97.0% ± 1.2** | 1.53 | 1.4% | **96.6% ± 1.3** | 1.23 |
+| brightness 0.3 | 89% | **94.7% ± 1.7** | 1.54 | 0.8% | **95.6% ± 1.5** | 1.26 |
+| brightness 1.6 | 93% | **97.0% ± 1.0** | 1.52 | 2.5% | **96.8% ± 1.1** | 1.22 |
+| jpeg 40 | 92% | **96.8% ± 1.1** | 1.51 | 2.2% | **96.9% ± 1.1** | 1.22 |
+| jpeg 15 | 88% | **94.3% ± 1.6** | 1.53 | 4.0% | **95.1% ± 1.2** | 1.23 |
+| jpeg 5 | 72% | **79.7% ± 4.2** | 1.56 | 10.5% | **86.4% ± 2.3** | 1.39 |
+| downscale 0.5 | 91% | **96.1% ± 1.2** | 1.54 | 1.5% | **96.2% ± 1.2** | 1.24 |
+| downscale 0.25 | 82% | **89.9% ± 2.5** | 1.55 | 3.0% | **92.9% ± 1.5** | 1.24 |
+| downscale 0.125 | 68% | **78.1% ± 4.2** | 1.58 | 13.7% | **85.2% ± 2.7** | 1.26 |
+
+**The guarantee fails silently.** Under strong blur, JPEG or downscale, coverage falls to
+**77.3% ± 4.2** (blur 4) against a 90% target while the mean set size
+barely moves from 1.52. The sets do not widen to say "less sure"; the top-1
+is simply wrong more often and the set is wrong with it. Mechanism: the nonconformity
+score is nearly constant for everything (#86), so nothing in it can express "far from
+every class".
+
+**The OOD flag is a partial early warning.** Across the shifted cells its rate correlates
+0.96 with the coverage lost — it rises as the guarantee fails, but it fires on a
+minority of the affected queries at the worst levels.
+
+**A handful of in-situ corrections helps, and is not a fix.** 10 labelled photographs
+of the shifted condition per episode, through `correct()`, move the worst cell from
+77.3% ± 4.2 to 84.8% ± 2.8.
+
+Every cell traces to `results/plantvillage_shift.json`; reproduce with
+`python -m benchmarks.run_shift --seed 42`.
+
+
 Full output including hardware, dataset commit and licence is written to
 `results/plantvillage_5way5shot.json`. The download is manual and pinned to a
 content-addressed commit; nothing in this repository fetches data silently.
