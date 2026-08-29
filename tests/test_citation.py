@@ -135,3 +135,23 @@ def test_no_unvalidated_guarantee_in_the_citation(citation: dict[str, object]) -
         "the citation title claims a guarantee that has not been empirically "
         "validated; see #14"
     )
+
+
+def test_the_dois_are_real_and_agree(citation: dict[str, object]) -> None:
+    """The version DOI in CITATION.cff is the one in the README's BibTeX; the concept
+    DOI in the badge is the one CITATION.cff lists as an identifier (#24)."""
+
+    readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+    version_doi = str(citation["doi"])
+    assert re.fullmatch(r"10\.5281/zenodo\.\d+", version_doi), f"not a Zenodo DOI: {version_doi}"
+    assert f"doi     = {{{version_doi}}}" in readme, "README BibTeX does not carry the version DOI"
+
+    identifiers = citation.get("identifiers")
+    assert isinstance(identifiers, list) and identifiers, "CITATION.cff lists no concept DOI"
+    concept = [i for i in identifiers if isinstance(i, dict) and i.get("type") == "doi"]
+    assert concept, "no DOI-typed identifier for the concept DOI"
+    concept_doi = str(concept[0]["value"])
+    assert concept_doi != version_doi, "concept DOI must differ from the version DOI"
+    badge = f"[![DOI](https://zenodo.org/badge/DOI/{concept_doi}.svg)](https://doi.org/{concept_doi})"
+    assert badge in readme, "README badge does not carry the concept DOI"
+    assert "0000-0000" not in version_doi + concept_doi
