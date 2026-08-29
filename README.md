@@ -333,18 +333,19 @@ What those layers do change is what you are told alongside the prediction:
 
 | At α = 0.1 (90% target coverage) | Conformal sets | Top-1 + threshold |
 |---|---|---|
-| Empirical coverage | **97.5% ± 0.7** | 83.9% ± 1.4 |
-| Mean set size | 2.05 ± 0.18 | 0.89 ± 0.02 |
+| Empirical coverage | **98.1% ± 0.6** | 83.9% ± 1.4 |
+| Mean set size | 1.66 ± 0.14 | 0.89 ± 0.02 |
 
 The threshold baseline is calibrated on the same held-out split, to the same
 target, and it *misses* it — 83.9% against a promised 90%. Conformal clears it
-with room to spare, and the price is roughly 2.3× the set size. That is the
+with room to spare, and the price is roughly 1.9× the set size. That is the
 trade, stated plainly: the guarantee is real, it is not free, and if you do not
 need it the cheaper thing is genuinely cheaper.
 
-Conformal over-covers here (97.5% against a 90% target), which costs set size
-it did not have to spend. That is a known consequence of self-calibrating by
-leave-one-out on 25 support points and is not yet tuned.
+Conformal over-covers here (98.1% against a 90% target), which costs set size
+it did not have to spend. That is a consequence of self-calibrating by
+leave-one-out on 25 support points. The score behind these sets is the distance ratio
+`d_true / d_min` (#86); the max-scaled softmax it replaced produced sets of 2.05 at 97.5%.
 
 OOD flagged 1.5% ± 0.5 of this pool, which is entirely in-distribution.
 
@@ -362,13 +363,13 @@ Median and p95, not mean — tail latency is what makes a tool feel broken. All 
 
 | stage | median | p95 | what it includes |
 |---|---|---|---|
-| embedding, per image | **4.0 ms** | 4.9 ms | the ONNX forward pass, cache bypassed |
-| support fit, per episode | **777 ms** | 2016 ms | embed 11 photos, leave-one-out calibration, OOD fit |
-| predict, per query | **8.1 ms** | 16.3 ms | the full path, embedding included |
-| cold start | **1.34 s** | — | a fresh interpreter, from before `import adaptshot` to the first answer |
+| embedding, per image | **3.2 ms** | 3.8 ms | the ONNX forward pass, cache bypassed |
+| support fit, per episode | **641 ms** | 861 ms | embed 11 photos, leave-one-out calibration, OOD fit |
+| predict, per query | **6.4 ms** | 12.7 ms | the full path, embedding included |
+| cold start | **0.85 s** | — | a fresh interpreter, from before `import adaptshot` to the first answer |
 
-**Peak memory for that cold-start cycle: 120 MB**, in-process, on the core install.
-The benchmark harness itself peaks at 523 MB with 400 cached embeddings and four
+**Peak memory for that cold-start cycle: 123 MB**, in-process, on the core install.
+The benchmark harness itself peaks at 541 MB with 400 cached embeddings and four
 baselines in memory; that number describes the harness, not the library, and the artifact
 names them separately so they cannot be confused.
 
@@ -392,33 +393,34 @@ photographs** are fed through `correct()`, the library's human-in-the-loop path.
 
 | shift | top-1 | coverage | set size | OOD flagged | coverage after 10 corrections | set size |
 |---|---|---|---|---|---|---|
-| clean | 93% | **97.0% ± 1.1** | 1.52 | 1.8% | **96.7% ± 1.1** | 1.23 |
-| blur 1 | 90% | **95.6% ± 1.3** | 1.53 | 1.7% | **96.0% ± 1.3** | 1.24 |
-| blur 2 | 81% | **88.6% ± 2.8** | 1.54 | 2.6% | **92.3% ± 1.6** | 1.24 |
-| blur 4 | 67% | **77.3% ± 4.2** | 1.58 | 10.0% | **84.8% ± 2.8** | 1.29 |
-| brightness 0.6 | 92% | **97.0% ± 1.2** | 1.53 | 1.4% | **96.6% ± 1.3** | 1.23 |
-| brightness 0.3 | 89% | **94.7% ± 1.7** | 1.54 | 0.8% | **95.6% ± 1.5** | 1.26 |
-| brightness 1.6 | 93% | **97.0% ± 1.0** | 1.52 | 2.5% | **96.8% ± 1.1** | 1.22 |
-| jpeg 40 | 92% | **96.8% ± 1.1** | 1.51 | 2.2% | **96.9% ± 1.1** | 1.22 |
-| jpeg 15 | 88% | **94.3% ± 1.6** | 1.53 | 4.0% | **95.1% ± 1.2** | 1.23 |
-| jpeg 5 | 72% | **79.7% ± 4.2** | 1.56 | 10.5% | **86.4% ± 2.3** | 1.39 |
-| downscale 0.5 | 91% | **96.1% ± 1.2** | 1.54 | 1.5% | **96.2% ± 1.2** | 1.24 |
-| downscale 0.25 | 82% | **89.9% ± 2.5** | 1.55 | 3.0% | **92.9% ± 1.5** | 1.24 |
-| downscale 0.125 | 68% | **78.1% ± 4.2** | 1.58 | 13.7% | **85.2% ± 2.7** | 1.26 |
+| clean | 93% | **96.9% ± 1.0** | 1.34 | 1.8% | **96.7% ± 1.2** | 1.11 |
+| blur 1 | 90% | **95.2% ± 1.6** | 1.44 | 1.7% | **95.7% ± 1.3** | 1.16 |
+| blur 2 | 81% | **91.6% ± 2.4** | 1.77 | 2.6% | **93.5% ± 1.6** | 1.28 |
+| blur 4 | 67% | **85.8% ± 3.4** | 2.13 | 10.0% | **89.0% ± 2.3** | 1.56 |
+| brightness 0.6 | 92% | **96.0% ± 1.5** | 1.36 | 1.4% | **96.6% ± 1.2** | 1.12 |
+| brightness 0.3 | 89% | **94.3% ± 2.0** | 1.49 | 0.8% | **94.5% ± 1.8** | 1.15 |
+| brightness 1.6 | 93% | **96.9% ± 1.1** | 1.38 | 2.5% | **96.5% ± 1.2** | 1.12 |
+| jpeg 40 | 92% | **96.8% ± 1.0** | 1.38 | 2.2% | **96.5% ± 1.2** | 1.12 |
+| jpeg 15 | 88% | **94.4% ± 1.6** | 1.53 | 4.0% | **94.7% ± 1.5** | 1.18 |
+| jpeg 5 | 72% | **85.5% ± 3.6** | 2.01 | 10.5% | **87.8% ± 2.4** | 1.48 |
+| downscale 0.5 | 91% | **95.4% ± 1.6** | 1.45 | 1.5% | **95.9% ± 1.3** | 1.15 |
+| downscale 0.25 | 82% | **92.8% ± 2.3** | 1.77 | 3.0% | **94.0% ± 1.4** | 1.26 |
+| downscale 0.125 | 68% | **86.9% ± 3.6** | 2.12 | 13.7% | **90.2% ± 2.3** | 1.48 |
 
-**The guarantee fails silently.** Under strong blur, JPEG or downscale, coverage falls to
-**77.3% ± 4.2** (blur 4) against a 90% target while the mean set size
-barely moves from 1.52. The sets do not widen to say "less sure"; the top-1
-is simply wrong more often and the set is wrong with it. Mechanism: the nonconformity
-score is nearly constant for everything (#86), so nothing in it can express "far from
-every class".
+**Under shift the sets widen, and the guarantee still bends.** Under strong blur, JPEG or
+downscale, coverage falls to **85.5% ± 3.6** (jpeg 5) against a
+90% target, while the mean set size grows from 1.34 to
+2.01. The set does say "less sure" — that is the nonconformity score doing its
+job (#86) — but not by enough: the calibration quantile was set on clean photographs and cannot
+know the queries have moved. That is exchangeability breaking, and no score fixes it.
 
-**The OOD flag is a partial early warning.** Across the shifted cells its rate correlates 0.96 with the coverage lost — it rises as the guarantee fails, but it fires on a
+**The OOD flag is a partial early warning.** Across the shifted cells its rate correlates 0.92 with the coverage lost — it rises as the guarantee bends — but fires on a
 minority of the affected queries at the worst levels.
 
-**A handful of in-situ corrections helps, and is not a fix.** 10 labelled photographs
-of the shifted condition per episode, through `correct()`, move the worst cell from
-77.3% ± 4.2 to 84.8% ± 2.8.
+**A handful of in-situ corrections closes most of the gap.** 10 labelled photographs of the
+shifted condition per episode, through `correct()`, move the worst cell from
+85.5% ± 3.6 to 87.8% ± 2.4, with the sets back down to
+1.48. Real help; the right move in the field.
 
 Every cell traces to `results/plantvillage_shift.json`; reproduce with
 `python -m benchmarks.run_shift --seed 42`.

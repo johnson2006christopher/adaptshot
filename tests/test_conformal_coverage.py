@@ -87,7 +87,7 @@ def measure(
         labels, d_cal, y_cal, d_test, y_test = _episode(rng, n_calibration, TEST_POINTS)
         engine = ConformalEngine(alpha=alpha, mode=mode, min_calibration_size=1)
         for row, truth in zip(d_cal, y_cal, strict=True):
-            engine.update_calibration(engine.softmax_nonconformity(row, labels, truth), truth)
+            engine.update_calibration(engine.nonconformity(row, labels, truth), truth)
 
         covered = 0
         total_size = 0
@@ -202,7 +202,7 @@ def test_calibrated_sets_say_so() -> None:
     labels, d_cal, y_cal, d_test, _ = _episode(rng, 50, 20)
     engine = ConformalEngine(alpha=0.10, min_calibration_size=1)
     for row, truth in zip(d_cal, y_cal, strict=True):
-        engine.update_calibration(engine.softmax_nonconformity(row, labels, truth), truth)
+        engine.update_calibration(engine.nonconformity(row, labels, truth), truth)
     result = engine.predict_set(d_test[0], labels, labels[int(np.argmin(d_test[0]))], 0.5)
     assert result.calibrated is True and not math.isnan(result.q_hat)
 

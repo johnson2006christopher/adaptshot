@@ -589,18 +589,7 @@ class FewShotLearner:
         if self._prototype_embeddings.size > 0:
             query_distances = self._compute_all_prototype_distances(query_emb)
             proto_labels = self._prototype_labels
-            if self.conformal.score_method == "softmax":
-                score = self.conformal.softmax_nonconformity(
-                    query_distances, proto_labels, true_label
-                )
-            else:
-                true_proto_idx = self._prototype_index_for_label(true_label)
-                if true_proto_idx is not None:
-                    dist_to_true = float(query_distances[true_proto_idx])
-                    ref_threshold = float(np.median(query_distances)) + float(np.std(query_distances))
-                    score = self.conformal.distance_nonconformity(dist_to_true, ref_threshold)
-                else:
-                    score = 1.0
+            score = self.conformal.nonconformity(query_distances, proto_labels, true_label)
             self.conformal.update_calibration(score, true_label)
 
         return result
@@ -1220,7 +1209,6 @@ class FewShotLearner:
         for i in range(n):
             emb_i = np.asarray(support_embeddings[i], dtype=np.float32)
             label_i = support_labels[i]
-            key_i = self._label_key(label_i)
 
             # Leave-one-out: exclude example i from prototypes
             loo_prototypes: list[FloatArray] = []
@@ -1245,19 +1233,7 @@ class FewShotLearner:
             diffs = emb_i.reshape(1, -1) - loo_proto_arr
             distances_i = np.sqrt(np.sum(diffs ** 2, axis=1))
 
-            if self.conformal.score_method == "softmax":
-                score = self.conformal.softmax_nonconformity(
-                    distances_i, loo_labels_arr, label_i
-                )
-            else:
-                own_indices = [j for j, lbl in enumerate(loo_labels) if self._label_key(lbl) == key_i]
-                if own_indices:
-                    dist_to_own = float(distances_i[own_indices[0]])
-                    ref_threshold = float(np.median(distances_i)) + float(np.std(distances_i))
-                    score = self.conformal.distance_nonconformity(dist_to_own, ref_threshold)
-                else:
-                    score = 1.0
-
+            score = self.conformal.nonconformity(distances_i, loo_labels_arr, label_i)
             self.conformal.update_calibration(score, label_i)
 
     def _bootstrap_temperature_calibration(
