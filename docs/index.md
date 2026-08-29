@@ -39,4 +39,4 @@ result = learner.predict(paths[-1])
 print(result.prediction, f"{result.calibrated_confidence:.0%}", result.conformal_set)
 ```
 
-`pip install adaptshot` first. Under five seconds from install to that answer, measured; nothing downloaded after the install.
+`pip install adaptshot` first (or `uv add adaptshot`, or `poetry add adaptshot` — it is one package on PyPI, and any of them fetches it). Under five seconds from install to that answer, measured; nothing downloaded after the install.

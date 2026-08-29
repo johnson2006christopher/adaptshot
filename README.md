@@ -97,6 +97,14 @@ or no connectivity, and a confident wrong answer is expensive.
 pip install adaptshot
 ```
 
+The same package from the same place, whichever tool you use — there is nothing
+pip-specific about it:
+
+```bash
+uv add adaptshot          # uv, inside a project    (uv pip install adaptshot for a bare environment)
+poetry add adaptshot      # Poetry
+```
+
 Core dependencies are **numpy, Pillow and onnxruntime** — no CUDA, no GPU
 drivers, no multi-gigabyte download. That install can load a support set,
 predict, and save and reload a model. **PyTorch is needed only for fine-tuning**
@@ -107,6 +115,8 @@ pip install "adaptshot[torch]"   # CA-EWC fine-tuning and custom backbones
 pip install "adaptshot[faiss]"   # faster search for support sets >100 images
 pip install "adaptshot[dev]"     # contributors: tests, linting, benchmarks
 ```
+
+Extras spell the same way everywhere: `uv add "adaptshot[torch]"`, `poetry add "adaptshot[torch]"`.
 
 Measured, on a full support-set-to-prediction cycle:
 

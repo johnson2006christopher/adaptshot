@@ -13,6 +13,8 @@ pip install -e "apps/tambua[dev]"                      # the application, as its
 pip install mkdocs mkdocs-material "mkdocstrings[python]"   # for the docs gate
 ```
 
+With [uv](https://docs.astral.sh/uv/) the same three lines are `uv venv .venv`, `uv pip install -e ".[dev]" -e "apps/tambua[dev]"` and `uv pip install mkdocs mkdocs-material "mkdocstrings[python]"`, and they take seconds rather than minutes. The gate commands below are unchanged; they do not care which tool populated the environment.
+
 That is the *core* install — numpy, Pillow, onnxruntime — and it is enough for every test that matters to a user. Add the torch extra only if you are working on fine-tuning or a non-bundled backbone, and prefer the CPU build:
 
 ```bash
