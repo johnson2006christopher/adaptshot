@@ -1,158 +1,42 @@
-# AdaptShot Documentation
+# AdaptShot
 
-![AdaptShot logo](images/adaptshot-logo.png)
+**A few-shot image classifier that knows when it doesn't know.** Teach it a new class from a handful of photographs, on an ordinary laptop, with the network switched off. Get back not just a label but a prediction set with a coverage guarantee — and a refusal when it should refuse. Version 0.3.0.
 
-**Human-Aligned Few-Shot Vision Learning for Resource-Constrained Environments**
+Every page here says, in its first line, who it is for. Pick the door that matches you.
 
-AdaptShot is a CPU-first few-shot vision library that learns from human corrections, reports calibrated uncertainty, and runs deterministically. Built in Tanzania by [Johnson Christopher Hassan](https://github.com/johnson2006christopher).
+## I have never written code
 
-!!! success "Current quality gates"
-    109 tests passing · `mypy --strict` across all 32 modules · 0 ruff findings ·
-    68% accuracy on the CIFAR-10 smoke benchmark. [Full changelog →](changelog.md)
+Start at [**what AdaptShot is, in plain words**](tutorials/00-what-is-this.md) — no installing, ten minutes of reading — and follow the six tutorials in order. They install it, make a prediction on photographs that come with it, teach it your own, read every part of its answer, and correct it. Every command in them is executed by the project's tests on every change; if one does not work for you, that is a bug in the documentation, not in you.
 
-!!! warning "What is measured, and what is not"
-    The 68% above comes from `benchmarks/run_benchmark.py --smoke-test --seed 42`:
-    5-way 10-shot, **25 query images**. That is a smoke test — enough to catch a
-    regression, far too small to be a result. It carries no confidence interval and
-    says nothing about performance on real data.
+## I have a task
 
-    The first real benchmark is
-    [in progress](https://github.com/johnson2006christopher/adaptshot/issues/18).
-    Until it lands, treat every number on this site as provisional.
+The [**how-to guides**](how-to/run-the-offline-demo.md) are one page per task and assume the tutorials: run the demo offline, check what a machine can do, choose the promise level, save and load, fine-tune, use another backbone, export to ONNX, run the benchmarks, use the Tambua web app, deploy offline, troubleshoot.
 
----
+## I want to understand why
 
-## Feature Overview
+[**How it works**](understand/how-it-works.md) in one page. [**The guarantee**](understand/the-guarantee.md) — exactly what the prediction set promises, when it holds, and where it stops, with measurements. [**Why CPU-only and offline**](understand/why-cpu-only-and-offline.md). The [algorithm theory](understand/algorithm-theory.md), the [human-in-the-loop design](understand/human-in-the-loop.md), and the [two-page technical note](understand/technical-note.md) with every number traceable.
 
-| Category | Capability | Detail |
-|----------|-----------|--------|
-| 🧠 **Few-Shot Learning** | Prototypical, nearest-neighbor, and contrastive inference | 68% on the 5-way 10-shot CIFAR-10 smoke test (seed 42, 25 queries) |
-| 🔒 **Conformal Prediction** | True leave-one-out calibration | Targets distribution-free coverage; not yet measured empirically ([#14](https://github.com/johnson2006christopher/adaptshot/issues/14)) |
-| 📊 **Uncertainty Quantification** | Epistemic · Aleatoric · Distributional (Mahalanobis) | Three complementary signals with shrinkage covariance |
-| 🔍 **Explainability** | Feature attribution · Confidence decomposition · Counterfactuals | Historical penalty tracking, no magic numbers |
-| 🔄 **Continual Learning** | Head-only CA-EWC fine-tuning · UP-UGF pruning with LSH acceleration | O(N log N) buffer management for >100 examples |
-| ⚡ **CPU-First** | Numpy-based · **119MB** peak on a core install, within the 250MB target ([#13](https://github.com/johnson2006christopher/adaptshot/issues/13)); ~775MB when torch is installed | No GPU required; PyTorch needed only for fine-tuning |
-| 🤝 **Human-in-the-Loop** | ACT adaptive thresholds · Feedback routing · Bootstrap calibration | Symmetric threshold updates with mean-reversion |
-| 🛠️ **Tooling** | ONNX export · Memory profiling · Deterministic seeding · SHA-256 checkpoints | Torch-free inference works: the default backbone's ONNX weights ship in the wheel ([#36](https://github.com/johnson2006christopher/adaptshot/issues/36)). Fine-tuning still needs `adaptshot[torch]` |
+## I need the exact details
+
+The [**API reference**](reference/api.md), with every public name classified stable or experimental; the [configuration reference](reference/config-reference.md); [errors and warnings](reference/errors.md); [results and artifacts](reference/results-and-artifacts.md) — where every published number comes from; the [Tambua command line](reference/tambua-cli.md); the [changelog](reference/changelog.md).
+
+## I want to contribute
+
+[**Contributing**](contributing/contributing.md) and the [development setup](contributing/development-setup.md) with the five-stage gate; [API stability](contributing/api-stability.md); [how these docs are tested](contributing/how-the-docs-are-tested.md); the [release checklist](contributing/release-checklist.md); the [code of conduct](contributing/code_of_conduct.md).
 
 ---
 
-## How AdaptShot Works
+Seven lines, if you would rather just see it:
 
-```mermaid
-graph TB
-    A[User Image] --> B[FewShotLearner.predict]
-    B --> C[Extractor<br/>Frozen ResNet/MobileNet]
-    C --> D[Embedding Vector]
-    D --> E{Inference Mode}
-    E -->|nearest_neighbor| F[Cosine/Euclidean<br/>Similarity Search]
-    E -->|prototypical| G[Class Prototype<br/>Distance]
-    F --> H[CalibrationEngine<br/>Temperature Scaling + Bootstrap]
-    G --> H
-    E -->|contrastive| G2[Gradient-Trained<br/>Contrastive Prototypes]
-    G2 --> H
-    H --> I[ACTEngine<br/>Adaptive Threshold + Mean-Reversion]
-    I -->|Accept| J[PredictionResult]
-    I -->|Request Feedback| K[Human Review]
-    K --> L[FewShotLearner.correct]
-    L --> M[FeedbackRouter]
-    M --> N[CA-EWC Head Fine-Tune]
-    M --> O[UP-UGF Buffer Prune]
-    N --> B
-    O --> B
-    J --> P{Uncertainty?}
-    P -->|Yes| K
-    P -->|No| Q[Return Result<br/>+ Conformal Set<br/>+ Uncertainty Report<br/>+ Explanation]
+```python
+from adaptshot import FewShotLearner
+from adaptshot.data import sample_images
+
+paths, labels = sample_images()                      # twelve real maize-leaf photographs, bundled
+learner = FewShotLearner()
+learner.load_support_images(paths[:-1], labels[:-1])
+result = learner.predict(paths[-1])
+print(result.prediction, f"{result.calibrated_confidence:.0%}", result.conformal_set)
 ```
 
-The pipeline is a closed loop: every human correction feeds back into the learner, improving calibration, adjusting confidence thresholds, and fine-tuning the classification head while preserving prior knowledge.
-
----
-
-## Quick Links
-
-### 🚀 Start Here
-- [Installation](getting-started/installation.md) — Install in under 60 seconds
-- [Quick Start](getting-started/quickstart.md) — First prediction in 5 minutes
-- [Beginner 101](getting-started/beginner-101.md) — No AI experience required
-- [Benchmarks](getting-started/benchmarks.md) — Run the smoke test on your machine
-
-### 📚 Tutorial-Style Guides
-- [Tutorial Index](tutorials.md) — 18 hands-on tutorials from basic to advanced
-- [Conformal Prediction](tutorials/14_conformal_prediction.md) — Guaranteed coverage sets
-- [Advanced Uncertainty](tutorials/15_advanced_uncertainty.md) — Multi-signal confidence
-- [Explainability & XAI](tutorials/16_explainability.md) — Understand every prediction
-- [Contrastive Learning](tutorials/17_contrastive_learning.md) — Gradient-trained prototypes
-- [End-to-End Workflow](tutorials/18_end_to_end_workflow.md) — Full production pipeline
-- [Memory Profiling](tutorials/13_profiling_memory.md) — Monitor RAM and latency
-- [ONNX Deployment](tutorials/19_onnx_deployment.md) — Torch-free inference
-
-### 📖 API Reference
-- [Full API Reference (v0.2.0)](api/reference.md) — Every class, method, and data structure
-- [Core Engine](api/core.md) — FewShotLearner, calibration, ACT, conformal
-- [Training & Continual Learning](api/training.md) — CA-EWC, UP-UGF, FeedbackRouter
-- [Configuration & Utilities](api/config.md) — AdaptShotConfig (27 fields), determinism, I/O
-
-### 🧭 Advanced Guides
-- [Architecture Deep-Dive](guides/architecture-deep-dive.md) — Module map and data flow
-- [Algorithm Theory](guides/algorithm-theory.md) — Mathematical foundations
-- [Real-World Use Cases](guides/real-world-use-cases.md) — Agriculture, healthcare, conservation
-- [Human-in-the-Loop Deep Dive](guides/human-in-the-loop.md) — Feedback loop mechanics
-- [Error Handling & Troubleshooting](guides/troubleshooting.md) — Common problems solved
-- [Migration Guide (v0.1 → v0.2)](guides/migration-v0.1-to-v0.2.md) — Upgrade safely
-
-### 🔧 Reference
-- [Config Reference (All 27 Fields)](reference/config-reference.md) — Every parameter explained
-- [Changelog](changelog.md) — Full release history
-- [Contributing](contributing.md) — How to contribute
-- [Code of Conduct](code_of_conduct.md)
-
----
-
-## 🌍 Community & Support
-
-<div class="grid cards" markdown>
-
--   :fontawesome-brands-github:{ .lg .middle } **Star & Fork on GitHub**
-
-    ---
-
-    [:star: Star the project](https://github.com/johnson2006christopher/adaptshot) to show your support and stay updated with new releases. Every star helps AdaptShot reach more people who need CPU-first AI.
-
--   :fontawesome-brands-whatsapp:{ .lg .middle } **Join the WhatsApp Community**
-
-    ---
-
-    [Join our WhatsApp group](https://chat.whatsapp.com/J6AbrvbjmBc5XXX2fnN6RK) for real-time discussion, help, and collaboration with fellow AdaptShot users and contributors worldwide.
-
--   :fontawesome-brands-github:{ .lg .middle } **Discussions & Ideas**
-
-    ---
-
-    [Start a GitHub Discussion](https://github.com/johnson2006christopher/adaptshot/discussions) to ask questions, propose features, or share how you're using AdaptShot in your community.
-
--   :material-hand-heart:{ .lg .middle } **Contribute**
-
-    ---
-
-    [Open a Pull Request](https://github.com/johnson2006christopher/adaptshot/pulls) or look for [good first issues](https://github.com/johnson2006christopher/adaptshot/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22). Whether you write code, improve docs, or share your experience — every contribution matters.
-
-</div>
-
----
-
-!!! warning "Use The Source As Truth"
-    If documentation and behavior differ, verify against `src/adaptshot/` and [open an issue](https://github.com/johnson2006christopher/adaptshot/issues) with the mismatch.
-
-## Verification Checklist
-
-- [ ] You can install `adaptshot`.
-- [ ] You can run the quickstart script.
-- [ ] You can run `python -m benchmarks.run_benchmark --smoke-test --seed 42` from a source checkout.
-- [ ] You can trace each documented API to `src/adaptshot/`.
-
----
-
-*Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
-*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
-*Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*
+`pip install adaptshot` first. Under five seconds from install to that answer, measured; nothing downloaded after the install.
