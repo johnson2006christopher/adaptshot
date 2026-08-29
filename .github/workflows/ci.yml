@@ -189,16 +189,13 @@ jobs:
         # A documented exception, fetched here deliberately so the boundary is
         # visible rather than accidental.
         #
-        # core/extractor.py loads `resnet18(weights="IMAGENET1K_V1")`, which
-        # torchvision fetches from download.pytorch.org on first use and caches
-        # under TORCH_HOME. So AdaptShot cannot currently run from a genuinely
-        # cold install with no network -- that is #35/#36, not #12, and the
-        # README must not claim otherwise until they land.
-        #
-        # What the isolated step below therefore proves is narrower but still
-        # worth having: once the weights are present, the inference path needs
-        # no dataset download and makes no other network call. Any new one added
-        # by a dependency fails the build.
+        # benchmarks/run_benchmark.py pins resnet18 for comparability with every
+        # number the project has published, and resnet18's 44.8 MB of weights are
+        # not bundled (#36 ships mobilenet_v3_small, 4.0 MB). torchvision fetches
+        # them on first use. So this job proves that the *benchmark* makes no
+        # network call once its backbone is present. The job below,
+        # offline-wheel, proves the stronger claim -- a cold wheel install with
+        # the bundled backbone, nothing warmed, no interfaces at all (#30).
         run: |
           python -c "from torchvision.models import resnet18; resnet18(weights='IMAGENET1K_V1')"
       - name: Verify the namespace really has no network
@@ -283,6 +280,74 @@ jobs:
         run: |
           python -m benchmarks.run_benchmark \
             --smoke-test --dataset cifar10 --allow-download --seed 42
+
+  # The claim the project is named for, as a test rather than a promise (#30):
+  # the wheel a user installs runs the inference path with no network at all.
+  #
+  # Everything that needs the network happens first -- building the wheel,
+  # installing it and its dependencies. Then a network namespace with no
+  # interfaces is entered, its isolation is proven by a canary that must fail,
+  # and inside it: the package is asserted to come from site-packages and not
+  # the tree; the README quickstart and the conference demo run; the conformal
+  # and calibration suites run; and the offline smoke benchmark runs on the
+  # bundled backbone. A dependency that adds a download, a telemetry call or a
+  # version check in a patch release fails this job.
+  offline-wheel:
+    name: Offline, from the wheel (no network namespace)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - name: Build the wheel (network on)
+        run: |
+          python -m pip install --upgrade pip build
+          python -m build --wheel
+      - name: The wheel carries its backbone and photographs -- nothing to fetch later
+        run: |
+          python - <<'PY'
+          import glob, sys, zipfile
+          names = zipfile.ZipFile(glob.glob("dist/*.whl")[0]).namelist()
+          need = ["adaptshot/data/mobilenet_v3_small.onnx", "adaptshot/data/mobilenet_v3_small.onnx.data"]
+          samples = [n for n in names if n.startswith("adaptshot/data/samples/") and n.endswith(".jpg")]
+          missing = [n for n in need if n not in names]
+          if missing or len(samples) < 12:
+              sys.exit(f"wheel is missing {missing}; sample images: {len(samples)}")
+          print(f"ok: backbone bundled, {len(samples)} sample images bundled")
+          PY
+      - name: Install the wheel into a clean venv (network on)
+        # CPU torch only because benchmarks/run_benchmark.py imports torch at
+        # module scope. The inference path under test does not touch it.
+        run: |
+          python -m venv "$RUNNER_TEMP/wheelenv"
+          "$RUNNER_TEMP/wheelenv/bin/pip" install --upgrade pip
+          "$RUNNER_TEMP/wheelenv/bin/pip" install dist/*.whl pytest
+          "$RUNNER_TEMP/wheelenv/bin/pip" install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+      - name: Enter a namespace with no network and run the inference path
+        run: |
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          cat > "$RUNNER_TEMP/inside.sh" <<'SH'
+          set -eu
+          PY="$RUNNER_TEMP/wheelenv/bin/python"
+          up=$(ip -o link show | grep -c 'state UP' || true)
+          test "$up" = "0" || { echo "namespace has $up interface(s) up; not isolated"; exit 1; }
+          if "$PY" -c "import urllib.request; urllib.request.urlopen('https://pypi.org', timeout=5)" 2>/dev/null; then
+            echo "CANARY REACHED THE NETWORK: the sandbox is not sealed"; exit 1
+          fi
+          echo "confirmed: no interfaces, canary refused"
+          "$PY" - <<'PYY'
+          import adaptshot, pathlib
+          p = pathlib.Path(adaptshot.__file__)
+          assert "site-packages" in str(p), f"testing the tree, not the wheel: {p}"
+          print("package under test:", p.parent)
+          PYY
+          "$PY" -m pytest tests/test_quickstart.py tests/test_demo.py tests/test_conformal*.py tests/test_calibration.py -q
+          "$PY" -m benchmarks.run_benchmark --smoke-test --seed 42 --backbone mobilenet_v3_small
+          SH
+          chmod +x "$RUNNER_TEMP/inside.sh"
+          unshare -rn bash "$RUNNER_TEMP/inside.sh"
 
   # A broken link or an orphaned page fails here, on the pull request, rather
   # than on the deploy that only happens after merge to main (#25).

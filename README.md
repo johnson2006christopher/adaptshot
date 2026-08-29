@@ -68,7 +68,7 @@ stays in charge.
 | | |
 | :--- | :--- |
 | ✅ **Is** | A Python library for few-shot image classification with calibrated, guaranteed uncertainty |
-| ✅ **Is** | CPU-first and offline-capable — no GPU, no cloud, no telemetry |
+| ✅ **Is** | CPU-first and offline — no GPU, no cloud, no telemetry, and CI proves it: the test suite fails if the library touches the network |
 | ✅ **Is** | Deterministic — same seed, same hardware, same answer |
 | ❌ **Is not** | A framework — it never calls your code |
 | ❌ **Is not** | A training platform — the backbone stays frozen; only a small head adapts |
@@ -282,6 +282,22 @@ versions, and each change is documented in the [changelog](CHANGELOG.md).
 
 Quality gates on every change: `ruff`, `mypy --strict`, 232 tests, and a
 deterministic smoke benchmark. See [ROADMAP.md](ROADMAP.md) for what's planned.
+
+---
+
+## Offline, proven
+
+"Works offline" is tested, not promised. On every push, a CI job builds the wheel,
+installs it into a clean environment, then enters a Linux network namespace with **no
+interfaces at all** — proven by a canary connection that must fail — and inside it runs
+the README quickstart, the conference demo, the conformal and calibration suites, and
+the smoke benchmark, against the installed wheel rather than the source tree. Nothing
+is pre-fetched: the backbone and the sample photographs ship in the wheel.
+
+Any dependency that adds a download, a telemetry call, or a version check in a patch
+release fails that job. The job is `offline-wheel` in
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml); its runs are under
+[Actions](https://github.com/johnson2006christopher/adaptshot/actions/workflows/ci.yml).
 
 ---
 
