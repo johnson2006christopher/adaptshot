@@ -109,7 +109,7 @@ def test_new_component_basic():
 
 Every name in `adaptshot.__all__` is classified in `adaptshot.api` as **stable** or
 **experimental**. `tests/test_api_surface.py` keeps that classification, the
-docstrings, and `docs/api/reference.md` in agreement, so the tiers are something
+docstrings, and `docs/reference/api.md` in agreement, so the tiers are something
 the suite checks rather than a comment that drifts.
 
 **Stable** names are semver-protected. Removing one, or changing it in a way that
@@ -160,7 +160,7 @@ project makes anyway.
    - Include benchmark diffs if performance/calibration affected
    - Add `[WIP]` prefix if work is incomplete
 
-Releases are tagged, not pushed by hand; see [docs/release-checklist.md](docs/release-checklist.md).
+Releases are tagged, not pushed by hand; see [docs/contributing/release-checklist.md](docs/contributing/release-checklist.md).
 
 ## 🗣️ Communication
 - **Discussions**: Use GitHub Discussions for questions, ideas, and RFCs
