@@ -405,8 +405,7 @@ is simply wrong more often and the set is wrong with it. Mechanism: the nonconfo
 score is nearly constant for everything (#86), so nothing in it can express "far from
 every class".
 
-**The OOD flag is a partial early warning.** Across the shifted cells its rate correlates
-0.96 with the coverage lost — it rises as the guarantee fails, but it fires on a
+**The OOD flag is a partial early warning.** Across the shifted cells its rate correlates 0.96 with the coverage lost — it rises as the guarantee fails, but it fires on a
 minority of the affected queries at the worst levels.
 
 **A handful of in-situ corrections helps, and is not a fix.** 10 labelled photographs
