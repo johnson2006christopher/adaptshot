@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+- Citable: the 0.3.0 release is archived on Zenodo. Version DOI
+  [10.5281/zenodo.22161336](https://doi.org/10.5281/zenodo.22161336); concept DOI
+  [10.5281/zenodo.22161335](https://doi.org/10.5281/zenodo.22161335) on the README badge and in
+  `CITATION.cff`. (#24)
 
 ## [0.3.0] - 2026-08-29
 
