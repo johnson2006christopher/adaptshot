@@ -2256,6 +2256,10 @@
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>pip<span class="w"> </span>install<span class="w"> </span>adaptshot
 </span></code></pre></div>
 <p>This downloads AdaptShot and the three libraries it needs — numpy, Pillow and onnxruntime — about 200 MB in total. It takes between ten seconds and a few minutes depending on your connection. When the prompt comes back without red text, it is installed. The model it uses to look at pictures is inside the download; nothing else is fetched later.</p>
+<div class="admonition note">
+<p class="admonition-title">Already using uv or Poetry?</p>
+<p>Then you already have a private Python and do not need Step 3. Inside your project, <code>uv add adaptshot</code> or <code>poetry add adaptshot</code> installs the same package from the same place; <code>uv pip install adaptshot</code> works for a plain environment. Everything from Step 5 on is identical.</p>
+</div>
 <h2 id="step-5-ask-your-computer-what-it-can-do">Step 5 — Ask your computer what it can do<a class="headerlink" href="#step-5-ask-your-computer-what-it-can-do" title="Permanent link">&para;</a></h2>
 <p>Type <code>python3</code> and press Enter. The prompt changes to <code>&gt;&gt;&gt;</code>: you are now talking to Python directly. Type these two lines, pressing Enter after each:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">adaptshot</span>
