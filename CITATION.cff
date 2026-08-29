@@ -33,5 +33,10 @@ keywords:
   - edge computing
   - CPU inference
 license: MIT
+doi: 10.5281/zenodo.22161336
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.22161335
+    description: "Concept DOI; resolves to the latest version"
 version: 0.3.0
 date-released: "2026-08-29"
