@@ -104,9 +104,6 @@ nav:
     - About the project: about.md
   - Reference:
     - API reference: reference/api.md
-    - Core engine: reference/core.md
-    - Training and continual learning: reference/training.md
-    - Configuration and utilities: reference/config.md
     - Config reference (all fields): reference/config-reference.md
     - Errors and warnings: reference/errors.md
     - Results and artifacts: reference/results-and-artifacts.md
