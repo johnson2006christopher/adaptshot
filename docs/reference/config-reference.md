@@ -2,7 +2,7 @@
 
 `AdaptShotConfig` is a frozen (immutable) dataclass that controls every aspect of the AdaptShot pipeline. Once created, its values cannot be changed -- guaranteeing deterministic, reproducible behavior across runs. Create a new instance with `dataclasses.replace()` if you need different settings.
 
-Source: [src/adaptshot/config/settings.py](src/adaptshot/config/settings.py)
+Source: [src/adaptshot/config/settings.py](https://github.com/johnson2006christopher/adaptshot/blob/v0.3.0/src/adaptshot/config/settings.py)
 
 ---
 
