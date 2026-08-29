@@ -119,6 +119,14 @@ the wheel. Embeddings agree with the torch path to `4e-06` (cosine 0.99999994),
 and the smoke benchmark returns the same accuracy through either. `resnet18` is
 44.8 MB and is not bundled; `scripts/export_backbones.py` generates it.
 
+Not sure what your machine can do? Ask it — every figure below is measured on the
+machine running the check, none quoted from here:
+
+```python
+import adaptshot
+print(adaptshot.check_environment())
+```
+
 **The limit, stated plainly:** bundled ONNX backbones are frozen. Fine-tuning
 (`correct()` with CA-EWC) still requires `adaptshot[torch]`.
 

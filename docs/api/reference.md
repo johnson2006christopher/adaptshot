@@ -381,6 +381,24 @@ name the type of what they receive.
 
 ---
 
+### `check_environment()`, `EnvironmentReport`, `Capability`
+
+What this install can do on this machine, with every figure measured *here*: a real
+inference on the bundled photographs for latency, this process's own high-water mark
+for memory, the installed optional dependencies, and for each missing capability the
+exact install command. A GPU, if present, is named and not selected.
+
+```python
+import adaptshot
+print(adaptshot.check_environment())
+```
+
+`check_environment(measure=False)` reports availability only, in under a millisecond.
+Download sizes for missing extras are **not** reported: they cannot be measured without
+the network, and a figure quoted from elsewhere is what this report exists to avoid.
+
+---
+
 ### `ContrastivePrototypeLearner`
 
 A two-layer projection head trained by InfoNCE gradient descent, then prototypes refined

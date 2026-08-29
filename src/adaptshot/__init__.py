@@ -32,6 +32,7 @@ from .core.explain import (
 )
 from .core.learner import FewShotLearner, PredictionResult
 from .core.uncertainty import UncertaintyQuantifier, UncertaintyReport
+from .preflight import Capability, EnvironmentReport, check_environment
 from .training.contrastive import ContrastiveConfig, ContrastivePrototypeLearner
 from .training.feedback_router import FeedbackRouter
 from .training.up_ugf import UPUGFPruner
@@ -64,6 +65,7 @@ __all__ = [
     "CalibrationEngine",
     "CalibrationMethod",
     "CalibrationNotReadyError",
+    "Capability",
     "ConfidenceDecomposition",
     "ConfigValidationError",
     "ConformalEngine",
@@ -73,6 +75,7 @@ __all__ = [
     "ContrastivePrototypeLearner",
     "Counterfactual",
     "Device",
+    "EnvironmentReport",
     "ExplainabilityEngine",
     "ExplanationResult",
     "FeatureAttribution",
@@ -86,4 +89,5 @@ __all__ = [
     "UncertaintyMode",
     "UncertaintyQuantifier",
     "UncertaintyReport",
+    "check_environment",
 ]
