@@ -1,0 +1,61 @@
+{
+  "machine": "aarch64",
+  "hardware": {
+    "platform": "Linux-6.17.0-1022-azure-aarch64-with-glibc2.39",
+    "processor": "aarch64",
+    "cpu_model": "Neoverse-N2",
+    "install": "core",
+    "python": "3.11.16",
+    "numpy": "2.4.6",
+    "adaptshot": "0.3.0",
+    "cpu_count": 4,
+    "ram_gb": 15.6,
+    "onnxruntime": "1.29.0"
+  },
+  "protocol": {
+    "photographs": "the twelve bundled PlantVillage samples, eleven teach, one asks",
+    "rounds": 5,
+    "warmup_calls": 3,
+    "cold_starts": 3,
+    "seed": 42
+  },
+  "quickstart": {
+    "query": "northern_leaf_blight_4.jpg",
+    "expected": "northern_leaf_blight",
+    "predicted": "northern_leaf_blight",
+    "correct": true
+  },
+  "timing": {
+    "embedding_ms": {
+      "median": 4.253512500014267,
+      "p95": 6.093878750019143,
+      "n": 60
+    },
+    "predict_ms": {
+      "median": 17.988729499961664,
+      "p95": 27.05782319998491,
+      "n": 60
+    },
+    "support_fit_ms": 205.70456699999795,
+    "support_size": 11
+  },
+  "cold_start": {
+    "seconds_min": 0.38469356499996366,
+    "seconds_median": 0.3854602690000206,
+    "peak_rss_mb_max": 101.84375,
+    "n": 3
+  },
+  "benchmark_process_peak_rss_mb": 113.609375,
+  "export": {
+    "verified": true,
+    "graph": "/home/runner/work/_temp/onnx/mobilenet_v3_small.onnx",
+    "graph_bytes": 310847,
+    "weights_bytes": 3681568,
+    "cosine_vs_bundled": 0.9999999403953552,
+    "max_abs_diff_vs_bundled": 0.0,
+    "onnxruntime": "1.29.0",
+    "providers": [
+      "CPUExecutionProvider"
+    ]
+  }
+}

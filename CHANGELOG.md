@@ -30,6 +30,12 @@ is formatted from a committed artifact and held to it by a test.
 - **Latency by stage** (median and p95), cold start, and peak memory for one
   cycle *and* for the harness, named apart, with the CPU model recorded. 120 MB
   for one fresh process on the core install. (#20)
+- **ARM, measured.** `benchmarks/run_device.py` profiles whatever machine it
+  runs on -- torch-free, dataset-free, on the bundled photographs -- and CI
+  runs it, the full suite and the ONNX export on an ARM runner on every
+  change. Both artifacts are committed and the README's device table is
+  held to them. A Neoverse-N2 server core, not a phone; the README says
+  which. (#31)
 - **ONNX parity benchmark**, each backend in its own process. (#36)
 - Every figure in the README, the technical note and the docs is formatted from
   a committed `results/*.json` and asserted by `tests/test_docs_claims.py`.

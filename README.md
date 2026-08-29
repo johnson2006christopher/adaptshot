@@ -383,8 +383,36 @@ Linux-7.1.10-200.fc44.x86_64-x86_64, Python 3.14.7, numpy 2.5.2, onnxruntime 1.2
 Two honest caveats. The p95 of the support fit varied 2.7× between two runs on this
 machine (1.5 s and 4.0 s) while its median held within 2%; the tail is this laptop's,
 and the median is the number to plan around. And this laptop is faster than the hardware
-the project is built for. These figures are what the library costs *here*; a measurement
-on ARM or phone-class hardware is its own open item.
+the project is built for. These figures are what the library costs *here*.
+
+<!-- device-table:start -->
+### On ARM — the same measurement, on the kind of hardware the project is for
+
+The laptop above is not the target. `benchmarks/run_device.py` takes the same
+measurement on whatever machine it runs on — torch-free, dataset-free, on the
+twelve bundled photographs — and CI runs it on every change on GitHub's ARM
+runner, after the full test suite and the ONNX export path have passed there.
+Both artifacts are committed (`results/device_x86_64.json`,
+`results/device_aarch64.json`); a test fails if this table drifts from them.
+
+| | x86_64 laptop | ARM runner |
+|---|---|---|
+| CPU | 11th Gen Intel(R) Core(TM) i7-11800H @ 2.30GHz, 16 cores | Neoverse-N2, 4 cores |
+| embedding, per image (median / p95) | **6.3 ms** / 6.9 ms | **4.3 ms** / 6.1 ms |
+| predict, per query (median / p95) | **8.9 ms** / 12.8 ms | **18.0 ms** / 27.1 ms |
+| support fit, 11 photographs | **568 ms** | **206 ms** |
+| cold start, fresh interpreter (median of 3) | **1.08 s** | **0.39 s** |
+| peak memory, that cold-start cycle | **118 MB** | **102 MB** |
+| the backbone re-exported on that machine | identical to the bundled graph | identical to the bundled graph |
+| the quickstart's first prediction | correct | correct |
+
+What this proves: AdaptShot runs on ARM without torch, the whole test suite
+passes there, a backbone exported on ARM is bit-for-bit the one in the wheel,
+and one cycle fits in about 100 MB. What it does not: a Neoverse-N2 is a server
+core, not a phone. It says nothing about the Cortex-A53 in a 2019 Android phone
+except that the architecture is not the obstacle. The lowest device actually
+measured is the one in the table; a phone-class figure still needs a phone.
+<!-- device-table:end -->
 
 ### Under distribution shift — where the guarantee stops holding
 

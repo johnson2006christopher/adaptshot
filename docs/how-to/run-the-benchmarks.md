@@ -49,6 +49,16 @@ python -m benchmarks.onnx_parity
 
 Embeds the same image through the bundled ONNX backbone and through torch, in separate processes, and reports agreement (cosine and max absolute difference) and latency as min and median across processes. Needs the torch extra. The agreement is also enforced by `tests/test_onnx_parity.py`.
 
+## The device profile — what *this* machine costs
+
+```bash
+python -m benchmarks.run_device --seed 42
+```
+
+Dataset-free and torch-free: a cold start in a fresh interpreter (seconds and peak RSS), per-image embedding and per-query prediction (median and p95), the support fit, and whether the quickstart's first prediction comes out right — on the twelve bundled photographs, written to `results/device_<machine>.json` with the CPU model named. Run it on a core install (numpy, Pillow, onnxruntime): with torch present the memory figure describes torch's import, not the library. `--verify-export DIR` loads a graph exported on this machine with `scripts/export_backbones.py` and compares it with the bundled one, which is how the ONNX path is validated end to end on a device.
+
+CI runs all of this on an ARM runner on every change (the `device-arm` job). The README's device table is formatted from the two committed artifacts, laptop and ARM, and `tests/test_docs_claims.py` fails if it drifts.
+
 ## The synthetic guarantee harness
 
 Not a benchmark — a test — but it is where the conformal guarantee is validated statistically, and it runs in seconds:
