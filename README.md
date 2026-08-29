@@ -145,7 +145,7 @@ Seven lines, no dataset, no GPU, no network. The photographs ship in the wheel.
 from adaptshot import FewShotLearner
 from adaptshot.data import sample_images
 
-paths, labels = sample_images()                      # nine real maize-leaf photos, three per class
+paths, labels = sample_images()                      # twelve real maize-leaf photos, four per class
 learner = FewShotLearner()
 learner.load_support_images(paths[:-1], labels[:-1])  # teach it eight
 result = learner.predict(paths[-1])                   # ask about the ninth
@@ -162,7 +162,7 @@ PlantVillage's, CC BY-SA 3.0, with citation and checksums in
 | step | wall clock | what it does |
 |---|---|---|
 | `pip install adaptshot` | 4.5 s | a 3.5 MB wheel, plus numpy, Pillow and onnxruntime from PyPI |
-| the block above, fresh process, network blocked | 0.4 s | load the backbone, embed nine photos, predict |
+| the block above, fresh process, network blocked | 0.4 s | load the backbone, embed eleven photos, predict |
 
 Site-packages afterwards: 176 MB. That is one machine on a fast connection; on a
 poor one the install is the part that grows, and it is the only part that
