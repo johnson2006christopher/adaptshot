@@ -140,7 +140,7 @@ What `predict()` returns. A frozen dataclass.
 ### `AdaptShotConfig`
 
 Immutable configuration dataclass, 27 fields. Every field is documented in the
-[Config Reference](../reference/config-reference.md). The most-used:
+[Config Reference](config-reference.md). The most-used:
 
 ```python
 from adaptshot import AdaptShotConfig
@@ -445,13 +445,13 @@ in any release.
 |---|---|---|
 | `set_deterministic_seed(seed)` | `adaptshot.utils.determinism` | What CLAUDE.md tells every contributor to call. Torch-free since #35 |
 | `clear_backbone_cache()` | `adaptshot.core.extractor` | A module-level function, not a learner method — an earlier version of this page said otherwise |
-| `MemoryTracker` | `adaptshot.utils.profiling` | No tests, no consumers. See the [profiling tutorial](../tutorials/13_profiling_memory.md) |
+| `MemoryTracker` | `adaptshot.utils.profiling` | No tests, no consumers. Its tutorial is retired under `docs-archive/` |
 | `CAEWCFinetuner` | `adaptshot.training.finetune` | Reached through `FeedbackRouter`; needs the `torch` extra |
 
 ---
 
 ## Next steps
 
-- [Architecture Deep-Dive](../guides/architecture-deep-dive.md)
-- [Algorithm Theory](../guides/algorithm-theory.md)
-- [Configuration Reference](../reference/config-reference.md)
+- [Architecture Deep-Dive](../understand/how-it-works.md)
+- [Algorithm Theory](../understand/algorithm-theory.md)
+- [Configuration Reference](config-reference.md)
