@@ -194,9 +194,12 @@ The conformal guarantee is the core contribution. It is **marginal** coverage �
 the whole distribution, not conditional on any particular class or subgroup. That
 distinction matters in deployment and is documented rather than glossed over.
 
-📖 [Algorithm theory](docs/guides/algorithm-theory.md) ·
-[Architecture](docs/guides/architecture.md) ·
-[Tutorials](docs/tutorials.md)
+📖 [Start here](docs/tutorials/00-what-is-this.md) — six tutorials for someone who has never coded, every command executed by the tests ·
+[How-to guides](docs/how-to/run-the-offline-demo.md) ·
+[How it works](docs/understand/how-it-works.md) ·
+[The guarantee](docs/understand/the-guarantee.md) ·
+[API reference](docs/reference/api.md) ·
+[Contributing](docs/contributing/development-setup.md)
 
 ---
 
