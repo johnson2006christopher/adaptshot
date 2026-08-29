@@ -3,13 +3,11 @@ site_description: Human-aligned few-shot vision learning for resource-constraine
 site_url: https://johnson2006christopher.github.io/adaptshot
 repo_url: https://github.com/johnson2006christopher/adaptshot
 repo_name: johnson2006christopher/adaptshot
+edit_uri: edit/v0.3.0/docs/
 docs_dir: docs
 site_dir: site
 # Built and reachable by URL, but deliberately unlinked: these are historical
 # records of v0.1.1, not current documentation. See the banner at the top of each.
-not_in_nav: |
-  archive/audit-report-v0.1.1.md
-  release-checklist-v0.1.1.md
 
 theme:
   name: material
@@ -31,9 +29,14 @@ theme:
   features:
     - navigation.instant
     - navigation.tracking
-    - navigation.expand
     - content.code.copy
     - content.tabs.link
+    - content.action.edit
+    - content.action.view
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - search.suggest
 
 plugins:
   - search
@@ -51,8 +54,8 @@ validation:
   nav:
     omitted_files: warn
   links:
-    not_found: ignore
-    absolute_links: ignore
+    not_found: warn
+    absolute_links: warn
     unrecognized_links: warn
     anchors: warn
 
@@ -70,63 +73,53 @@ markdown_extensions:
 
 nav:
   - Home: index.md
-  - About: about.md
-  - Technical Note: technical-note.md
-  - Getting Started:
-    - Beginner 101: getting-started/beginner-101.md
-    - Installation: getting-started/installation.md
-    - Quick Start: getting-started/quickstart.md
-    - Benchmarks: getting-started/benchmarks.md
-  - Tutorials:
-    - Tutorial Index: tutorials.md
-    - 01 Getting Started: tutorials/01_getting_started.md
-    - 02 Human in the Loop: tutorials/02_human_in_the_loop.md
-    - 03 Continual Learning: tutorials/03_continual_learning.md
-    - 04 Production Ready: tutorials/04_production_ready.md
-    - 05 Reference FAQ: tutorials/05_reference_faq.md
-    - 06 Core API Deep Dive: tutorials/06_core_api_deep_dive.md
-    - 07 Source Tour: tutorials/07_source_tour.md
-    - 08 Configuration, Determinism, and Safe I/O: tutorials/08_configuration_determinism_io.md
-    - 09 Benchmarks and Reproducibility: tutorials/09_benchmarks_and_reproducibility.md
-    - 10 Module Map: tutorials/10_module_map.md
-    - 11 The Interface Moved Out: tutorials/11_ui_pilot_dashboard.md
-    - 12 Studio Moved Out: tutorials/12_studio_guide.md
-    - 13 Tambua Crop Demo: tutorials/13_crop_disease_demo.md
-    - 14 Memory Profiling: tutorials/13_profiling_memory.md
-    - 15 Conformal Prediction: tutorials/14_conformal_prediction.md
-    - 16 Advanced Uncertainty: tutorials/15_advanced_uncertainty.md
-    - 17 Explainability: tutorials/16_explainability.md
-    - 18 Contrastive Learning: tutorials/17_contrastive_learning.md
-    - 19 End-to-End Workflow: tutorials/18_end_to_end_workflow.md
-    - 20 ONNX Deployment: tutorials/19_onnx_deployment.md
-  - API Reference:
-    - Full API Reference: api/reference.md
-    - Core Engine: api/core.md
-    - Training & Continual Learning: api/training.md
-    - Configuration & Utils: api/config.md
-  - Guides:
-    - Tambua Complete Guide: guides/tambua-complete-guide.md
-    - AdaptShot Deep Dive: guides/adaptshot-deep-dive.md
-    - Architecture & System Design: guides/architecture.md
-    - Architecture Deep-Dive: guides/architecture-deep-dive.md
-    - Algorithm Theory: guides/algorithm-theory.md
-    - Best Practices & Optimization: guides/best-practices.md
-    - Deployment Guide: guides/deployment-guide.md
-    - Studio Moved Out: guides/studio-complete-guide.md
-    - Pilot Dashboard Moved Out: guides/ui-pilot-guide.md
-    - Real-World Use Cases: guides/real-world-use-cases.md
-    - Human-in-the-Loop Deep Dive: guides/human-in-the-loop.md
-    - Error Handling & Troubleshooting: guides/troubleshooting.md
-    - Migration Guide (v0.1 → v0.2): guides/migration-v0.1-to-v0.2.md
+  - Start here:
+    - What AdaptShot is: tutorials/00-what-is-this.md
+    - 1. Install: tutorials/01-install.md
+    - 2. Your first prediction: tutorials/02-first-prediction.md
+    - 3. Your own photographs: tutorials/03-your-own-photos.md
+    - 4. Reading the answer: tutorials/04-reading-the-answer.md
+    - 5. Teaching corrections, saving: tutorials/05-teaching-corrections.md
+    - Where next: tutorials/06-next.md
+  - How-to guides:
+    - Run the demo offline: how-to/run-the-offline-demo.md
+    - Check what a machine can do: how-to/check-what-this-machine-can-do.md
+    - Choose the promise level (α): how-to/choose-alpha.md
+    - Save, load and migrate: how-to/save-load-and-migrate.md
+    - Fine-tune from corrections: how-to/fine-tune-with-corrections.md
+    - Use a different backbone: how-to/use-your-own-backbone.md
+    - Export a backbone to ONNX: how-to/export-a-backbone-to-onnx.md
+    - Run the benchmarks: how-to/run-the-benchmarks.md
+    - Use Tambua: how-to/use-tambua.md
+    - Deploy offline: how-to/deploy-offline.md
+    - Troubleshoot: how-to/troubleshoot.md
+  - Understand:
+    - How it works: understand/how-it-works.md
+    - The guarantee: understand/the-guarantee.md
+    - Why CPU-only and offline: understand/why-cpu-only-and-offline.md
+    - Human in the loop: understand/human-in-the-loop.md
+    - Algorithm theory: understand/algorithm-theory.md
+    - Illustrative use cases: understand/real-world-use-cases.md
+    - Technical note: understand/technical-note.md
+    - About the project: about.md
   - Reference:
-    - Config Reference (All 27 Fields): reference/config-reference.md
-  - v0.1.1 Docs Roadmap: v0.1.1-docs-roadmap.md
+    - API reference: reference/api.md
+    - Core engine: reference/core.md
+    - Training and continual learning: reference/training.md
+    - Configuration and utilities: reference/config.md
+    - Config reference (all fields): reference/config-reference.md
+    - Errors and warnings: reference/errors.md
+    - Results and artifacts: reference/results-and-artifacts.md
+    - Tambua command line and config: reference/tambua-cli.md
+    - Migration v0.1 → v0.2: reference/migration-v0.1-to-v0.2.md
+    - Changelog: reference/changelog.md
   - Contributing:
-    - Contributing Guide: contributing.md
-    - Release Checklist: release-checklist.md
-  - Code of Conduct: code_of_conduct.md
-  - Changelog: changelog.md
+    - Contributing guide: contributing/contributing.md
+    - Development setup and the gate: contributing/development-setup.md
+    - API stability and deprecation: contributing/api-stability.md
+    - How the docs are tested: contributing/how-the-docs-are-tested.md
+    - Release checklist: contributing/release-checklist.md
+    - Code of conduct: contributing/code_of_conduct.md
   - Community:
     - "⭐ Star on GitHub": https://github.com/johnson2006christopher/adaptshot
-    - "📱 WhatsApp Group": https://chat.whatsapp.com/J6AbrvbjmBc5XXX2fnN6RK
     - "💬 GitHub Discussions": https://github.com/johnson2006christopher/adaptshot/discussions
