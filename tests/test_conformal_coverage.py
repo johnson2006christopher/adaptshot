@@ -198,9 +198,8 @@ def test_cold_start_sets_do_not_claim_a_coverage_they_lack() -> None:
 
 
 def test_calibrated_sets_say_so() -> None:
-    mean, se, _ = measure(0.10, 50)
     rng = np.random.default_rng(7)
-    labels, d_cal, y_cal, d_test, y_test = _episode(rng, 50, 20)
+    labels, d_cal, y_cal, d_test, _ = _episode(rng, 50, 20)
     engine = ConformalEngine(alpha=0.10, min_calibration_size=1)
     for row, truth in zip(d_cal, y_cal, strict=True):
         engine.update_calibration(engine.softmax_nonconformity(row, labels, truth), truth)
