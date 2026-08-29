@@ -1,100 +1,94 @@
-# AdaptShot Roadmap
+# AdaptShot roadmap
 
-This roadmap outlines the planned evolution of AdaptShot from the current v0.2.0 release through v1.0.0 and beyond. Priorities are driven by the project constitution: CPU-first, <250MB RAM, human-in-the-loop, and carbon-aware.
-
-For completed work, see [CHANGELOG.md](CHANGELOG.md). For how to contribute, see [CONTRIBUTING.md](CONTRIBUTING.md).
-
----
-
-## v0.1.1 (Released June 2026)
-
-See [CHANGELOG.md](CHANGELOG.md#0111---2026-06-06) for the full release notes. Highlights:
-
-- Eco mode with early-exit thresholds for energy-aware inference
-- EmbeddingCache isolation for safe multi-learner workflows
-- OOD detection and prototypical inference modes
-- String label support throughout correction routing
-- Checkpoint integrity with SHA-256 checksums and schema migration
-- 12-chapter tutorial suite with Studio GUI guide
+Where the project is, what the next release is for, and the direction after that.
+Shipped work is in [CHANGELOG.md](CHANGELOG.md); how to help is in
+[CONTRIBUTING.md](CONTRIBUTING.md). Dates are not promised; issues are. Every item
+below that is committed has an issue number, and an item without one is direction,
+not a plan.
 
 ---
 
-## v0.1.2 — Merged into v0.2.0
+## v0.3.0 — *make it provable* (current)
 
-> **Note**: v0.1.2 was originally planned for July 2026 with localization features, but its scope was merged into the v0.2.0 production hardening release. Swahili localization and accessibility improvements are now tracked under v0.3.0.
+The release that turned claims into measurements. Every number in the README and the
+documentation is formatted from a committed artifact and held to it by a test.
 
----
-
-## v0.2.0 (Released June 2026) — Production Hardening
-
-### Production Hardening
-
-- ✅ **LOO Conformal Prediction**: True leave-one-out calibration for tighter prediction sets with sparse data
-- ✅ **Shrinkage Covariance Mahalanobis**: Robust OOD detection with automatic λ scaling — works with as few as 2 samples/class
-- ✅ **Gradient-Trained Contrastive Projection Head**: W₁,b₁,W₂,b₂ trained via InfoNCE backprop with SGD momentum
-- ✅ **ACT Symmetric Updates with Mean-Reversion**: Prevents threshold drift in long-running services
-- ✅ **UP-UGF LSH Acceleration**: O(N log N) approximate redundancy scoring via Locality-Sensitive Hashing
-- ✅ **Bootstrap Temperature Calibration**: Bootstrap resampling for stable temperature with small calibration windows
-- ✅ **Historical Penalty Tracking**: Per-class penalty history with trend detection in explainability engine
-- ✅ **MemoryTracker**: Section-level memory profiling with budget enforcement
-- ✅ **ONNX Runtime Backend**: Torch-free inference (~800 MB smaller install) for edge deployment
-- ✅ **clear_backbone_cache()**: Memory reclamation for long-running services
-
-### Documentation
-
-- ✅ 42+ markdown files covering all APIs, algorithms, tutorials, and guides
-- ✅ Algorithm theory with full mathematical foundations (shrinkage covariance, InfoNCE gradients, LSH, bootstrap, symmetric ACT)
-- ✅ Quality gates: ruff=0, mypy strict=32 files, pytest=92 passed, benchmark=68%
-
-### Deferred to v0.3.0
-
-- ARM Profiling: Reproducible Raspberry Pi 4 benchmarks
-- PlantVillage Benchmark: Public crop disease dataset loader
-- Community Benchmarks: Energy challenge for lowest Joules/inference
+- The first real result: PlantVillage 5-way 5-shot, 100 episodes, against three
+  baselines on the same episodes and embeddings.
+- The conformal guarantee measured — in distribution, under distribution shift, and
+  after in-situ corrections — with the quantile bug that broke it fixed.
+- Torch-free inference: the backbone ships as ONNX inside a 3.5 MB wheel; the core
+  install is numpy, Pillow and onnxruntime, and one cycle peaks at about 120 MB.
+- Validated on ARM in CI (a Neoverse-N2 server core), with the ONNX export path
+  verified end to end there.
+- Latency and memory by stage, median and p95, with the CPU named.
+- A stable / experimental split of the public API and a deprecation policy.
+- Documentation rebuilt: tutorials that the test suite executes, how-to guides,
+  explanations, reference, contributor pages.
 
 ---
 
-## v1.0.0 (Target: Q1 2027) -- Production-Grade
+## v0.4.0 — *make it usable where it is meant to be used*
 
-### Validation & Trust
+Provability first, then reach. These are the open issues:
 
-- **Peer-Reviewed Publication**: Full methodology paper with ablation studies in a peer-reviewed venue
-- **Field Pilot Results**: Deployment metrics from 3+ NGO partnerships in Tanzania, Kenya, and Uganda
-- **Carbon-Neutral CI/CD**: Offsetting compute emissions through verified carbon credits
-
-### Platform Maturity
-
-- **Plugin Architecture**: `EmbeddingBackend` protocol for alternative runtimes (ONNX Runtime, OpenVINO, Core ML)
-- **Federated Buffer Sharing**: Privacy-preserving multi-device buffer aggregation for community deployments
-- **Multilingual UI**: French and low-literacy icon-driven Gradio/Studio interfaces (Swahili ships in v0.1.2)
-
-### Governance
-
-- **Community Governance Board**: Diverse advisory board with representation from Global South practitioners
-- **Stable API Guarantee**: `FewShotLearner` API frozen as semver-major; deprecation warnings for 2 minor versions
-
----
-
-## v2.0+ (2027 and Beyond) -- Neuromorphic Bridge
-
-- **Event-Based Vision**: Support for DVS (Dynamic Vision Sensor) cameras with spiking neural network backends
-- **Neuromorphic Backends**: Intel Loihi and other neuromorphic hardware support when ecosystem matures
-- **National Integration**: Partnerships with healthcare and agriculture ministries for population-scale deployment
+- **Swahili localisation** (#31). Externalise the user-facing strings — errors,
+  warnings, labels — behind a language setting in `AdaptShotConfig`, ship Swahili for
+  the strings a field user meets, and make a third language a data change rather than
+  a code change. The API stays English. The Swahili itself is reviewed by a native
+  reader before it ships.
+- **Phone-class measurement** (#31). The lowest device measured so far is an ARM
+  server core. `python -m benchmarks.run_device` on a mid-range Android phone or a
+  Raspberry Pi 4 gives the number the README's hardware claim is still waiting for —
+  and if it does not fit, the README will say what the real minimum is.
+- **What strangers found** (#76). Five people who have never seen the project follow
+  the README; every place they got stuck becomes a `first-five-minutes` issue and is
+  fixed here.
+- **Citable** (#24). The Zenodo DOI and its badge, once the first release is
+  published.
 
 ---
 
-## How Priorities Are Set
+## v1.0 — *the promise becomes a contract*
 
-Priorities follow the [project constitution](.openproject.md):
+Direction, not a dated plan. 1.0 means the stable API in `adaptshot.api` is frozen
+as semver-major and the deprecation policy binds; nothing else on this list is a
+precondition for it.
 
-1. Does it reduce energy consumption?
-2. Can it run on a 3-year-old laptop with 4GB RAM?
-3. Does it require internet or cloud infrastructure?
-4. How does it perform under intermittent power or thermal throttling?
-5. Is the marginal accuracy gain worth the carbon cost?
-
-Features that answer "yes" to questions 1-2 and "no" to question 3 are prioritized.
+- The stable tier frozen; experimental features either promoted with measurements
+  or removed.
+- A methodology paper with ablations in a peer-reviewed venue, so the results have
+  been checked by people outside the project.
+- Field results from real partners — this project has none yet, and will not describe
+  any until it does.
+- A backend protocol so alternative runtimes (OpenVINO, Core ML) can be added
+  without touching the learner.
 
 ---
 
-*"The future of AI is not bigger -- it's smarter, humbler, and more human."*
+## Beyond — *ideas, kept honest*
+
+Things the project would like to be true one day and has no work scheduled for:
+event-based (DVS) cameras and neuromorphic backends when that ecosystem matures;
+privacy-preserving sharing of replay buffers between devices in one community;
+low-literacy, icon-driven interfaces. None of these appears in a release until it
+has an issue, a measurement, and a person who will use it.
+
+---
+
+## How priorities are set
+
+Priorities follow the [project constitution](.openproject.md). For any proposed
+feature:
+
+1. Does it work on a CPU someone already owns, offline?
+2. Does it keep the core install small and the cycle under 250 MB?
+3. Can its benefit be measured, and will the measurement be committed?
+4. Does it make the library more honest about what it does not know?
+
+A feature that answers yes to all four is prioritised. One that fails the first is
+not built.
+
+---
+
+*"The future of AI is not bigger — it's smarter, humbler, and more human."*
