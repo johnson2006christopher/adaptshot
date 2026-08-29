@@ -10,29 +10,31 @@
       
       
       
-        <link rel="canonical" href="https://johnson2006christopher.github.io/adaptshot/">
+        <link rel="canonical" href="https://johnson2006christopher.github.io/adaptshot/how-to/fine-tune-with-corrections/">
       
       
+        <link rel="prev" href="../save-load-and-migrate/">
       
-        <link rel="next" href="tutorials/00-what-is-this/">
+      
+        <link rel="next" href="../use-your-own-backbone/">
       
       
         
       
       
-      <link rel="icon" href="images/adaptshot-logo.png">
+      <link rel="icon" href="../../images/adaptshot-logo.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
-        <title>AdaptShot</title>
+        <title>Fine-tune from corrections - AdaptShot</title>
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
-        <link rel="stylesheet" href="assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -51,9 +53,9 @@
       
     
     
-      <link rel="stylesheet" href="assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -78,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#adaptshot" class="md-skip">
+        <a href="#fine-tune-from-corrections-the-pytorch-extra" class="md-skip">
           Skip to content
         </a>
       
@@ -92,9 +94,9 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="." title="AdaptShot" class="md-header__button md-logo" aria-label="AdaptShot" data-md-component="logo">
+    <a href="../.." title="AdaptShot" class="md-header__button md-logo" aria-label="AdaptShot" data-md-component="logo">
       
-  <img src="images/adaptshot-logo.png" alt="logo">
+  <img src="../../images/adaptshot-logo.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -111,7 +113,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Home
+              Fine-tune from corrections
             
           </span>
         </div>
@@ -222,11 +224,9 @@
   
   
   
-    
   
-  
-    <li class="md-tabs__item md-tabs__item--active">
-      <a href="." class="md-tabs__link">
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
         
   
   
@@ -247,7 +247,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="tutorials/00-what-is-this/" class="md-tabs__link">
+        <a href="../../tutorials/00-what-is-this/" class="md-tabs__link">
           
   
   
@@ -263,11 +263,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="how-to/run-the-offline-demo/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../run-the-offline-demo/" class="md-tabs__link">
           
   
   
@@ -287,7 +289,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="understand/how-it-works/" class="md-tabs__link">
+        <a href="../../understand/how-it-works/" class="md-tabs__link">
           
   
   
@@ -307,7 +309,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="reference/api/" class="md-tabs__link">
+        <a href="../../reference/api/" class="md-tabs__link">
           
   
   
@@ -327,7 +329,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="contributing/contributing/" class="md-tabs__link">
+        <a href="../../contributing/contributing/" class="md-tabs__link">
           
   
   
@@ -381,9 +383,9 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="." title="AdaptShot" class="md-nav__button md-logo" aria-label="AdaptShot" data-md-component="logo">
+    <a href="../.." title="AdaptShot" class="md-nav__button md-logo" aria-label="AdaptShot" data-md-component="logo">
       
-  <img src="images/adaptshot-logo.png" alt="logo">
+  <img src="../../images/adaptshot-logo.png" alt="logo">
 
     </a>
     AdaptShot
@@ -407,37 +409,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Home
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="." class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -453,81 +428,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#i-have-never-written-code" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        I have never written code
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#i-have-a-task" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        I have a task
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#i-want-to-understand-why" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        I want to understand why
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#i-need-the-exact-details" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        I need the exact details
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#i-want-to-contribute" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        I want to contribute
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -591,7 +491,7 @@
   
   
     <li class="md-nav__item">
-      <a href="tutorials/00-what-is-this/" class="md-nav__link">
+      <a href="../../tutorials/00-what-is-this/" class="md-nav__link">
         
   
   
@@ -619,7 +519,7 @@
   
   
     <li class="md-nav__item">
-      <a href="tutorials/01-install/" class="md-nav__link">
+      <a href="../../tutorials/01-install/" class="md-nav__link">
         
   
   
@@ -647,7 +547,7 @@
   
   
     <li class="md-nav__item">
-      <a href="tutorials/02-first-prediction/" class="md-nav__link">
+      <a href="../../tutorials/02-first-prediction/" class="md-nav__link">
         
   
   
@@ -675,7 +575,7 @@
   
   
     <li class="md-nav__item">
-      <a href="tutorials/03-your-own-photos/" class="md-nav__link">
+      <a href="../../tutorials/03-your-own-photos/" class="md-nav__link">
         
   
   
@@ -703,7 +603,7 @@
   
   
     <li class="md-nav__item">
-      <a href="tutorials/04-reading-the-answer/" class="md-nav__link">
+      <a href="../../tutorials/04-reading-the-answer/" class="md-nav__link">
         
   
   
@@ -731,7 +631,7 @@
   
   
     <li class="md-nav__item">
-      <a href="tutorials/05-teaching-corrections/" class="md-nav__link">
+      <a href="../../tutorials/05-teaching-corrections/" class="md-nav__link">
         
   
   
@@ -759,7 +659,7 @@
   
   
     <li class="md-nav__item">
-      <a href="tutorials/06-next/" class="md-nav__link">
+      <a href="../../tutorials/06-next/" class="md-nav__link">
         
   
   
@@ -791,26 +691,31 @@
       
   
   
+    
   
   
+  
     
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
             
   
   
@@ -828,7 +733,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -846,7 +751,7 @@
   
   
     <li class="md-nav__item">
-      <a href="how-to/run-the-offline-demo/" class="md-nav__link">
+      <a href="../run-the-offline-demo/" class="md-nav__link">
         
   
   
@@ -874,7 +779,7 @@
   
   
     <li class="md-nav__item">
-      <a href="how-to/check-what-this-machine-can-do/" class="md-nav__link">
+      <a href="../check-what-this-machine-can-do/" class="md-nav__link">
         
   
   
@@ -902,7 +807,7 @@
   
   
     <li class="md-nav__item">
-      <a href="how-to/choose-alpha/" class="md-nav__link">
+      <a href="../choose-alpha/" class="md-nav__link">
         
   
   
@@ -930,7 +835,7 @@
   
   
     <li class="md-nav__item">
-      <a href="how-to/save-load-and-migrate/" class="md-nav__link">
+      <a href="../save-load-and-migrate/" class="md-nav__link">
         
   
   
@@ -955,10 +860,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="how-to/fine-tune-with-corrections/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fine-tune from corrections
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -974,6 +906,92 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-fine-tuning-adds-and-what-it-does-not" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What fine-tuning adds, and what it does not
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#install-the-extra" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Install the extra
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#it-happens-on-its-own" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        It happens on its own
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-it-costs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What it costs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-saved" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is saved
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#turning-it-off-while-keeping-torch-installed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Turning it off while keeping torch installed
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -986,7 +1004,7 @@
   
   
     <li class="md-nav__item">
-      <a href="how-to/use-your-own-backbone/" class="md-nav__link">
+      <a href="../use-your-own-backbone/" class="md-nav__link">
         
   
   
@@ -1014,7 +1032,7 @@
   
   
     <li class="md-nav__item">
-      <a href="how-to/export-a-backbone-to-onnx/" class="md-nav__link">
+      <a href="../export-a-backbone-to-onnx/" class="md-nav__link">
         
   
   
@@ -1042,7 +1060,7 @@
   
   
     <li class="md-nav__item">
-      <a href="how-to/run-the-benchmarks/" class="md-nav__link">
+      <a href="../run-the-benchmarks/" class="md-nav__link">
         
   
   
@@ -1070,7 +1088,7 @@
   
   
     <li class="md-nav__item">
-      <a href="how-to/use-tambua/" class="md-nav__link">
+      <a href="../use-tambua/" class="md-nav__link">
         
   
   
@@ -1098,7 +1116,7 @@
   
   
     <li class="md-nav__item">
-      <a href="how-to/deploy-offline/" class="md-nav__link">
+      <a href="../deploy-offline/" class="md-nav__link">
         
   
   
@@ -1126,7 +1144,7 @@
   
   
     <li class="md-nav__item">
-      <a href="how-to/troubleshoot/" class="md-nav__link">
+      <a href="../troubleshoot/" class="md-nav__link">
         
   
   
@@ -1213,7 +1231,7 @@
   
   
     <li class="md-nav__item">
-      <a href="understand/how-it-works/" class="md-nav__link">
+      <a href="../../understand/how-it-works/" class="md-nav__link">
         
   
   
@@ -1241,7 +1259,7 @@
   
   
     <li class="md-nav__item">
-      <a href="understand/the-guarantee/" class="md-nav__link">
+      <a href="../../understand/the-guarantee/" class="md-nav__link">
         
   
   
@@ -1269,7 +1287,7 @@
   
   
     <li class="md-nav__item">
-      <a href="understand/why-cpu-only-and-offline/" class="md-nav__link">
+      <a href="../../understand/why-cpu-only-and-offline/" class="md-nav__link">
         
   
   
@@ -1297,7 +1315,7 @@
   
   
     <li class="md-nav__item">
-      <a href="understand/human-in-the-loop/" class="md-nav__link">
+      <a href="../../understand/human-in-the-loop/" class="md-nav__link">
         
   
   
@@ -1325,7 +1343,7 @@
   
   
     <li class="md-nav__item">
-      <a href="understand/algorithm-theory/" class="md-nav__link">
+      <a href="../../understand/algorithm-theory/" class="md-nav__link">
         
   
   
@@ -1353,7 +1371,7 @@
   
   
     <li class="md-nav__item">
-      <a href="understand/real-world-use-cases/" class="md-nav__link">
+      <a href="../../understand/real-world-use-cases/" class="md-nav__link">
         
   
   
@@ -1381,7 +1399,7 @@
   
   
     <li class="md-nav__item">
-      <a href="understand/technical-note/" class="md-nav__link">
+      <a href="../../understand/technical-note/" class="md-nav__link">
         
   
   
@@ -1409,7 +1427,7 @@
   
   
     <li class="md-nav__item">
-      <a href="about/" class="md-nav__link">
+      <a href="../../about/" class="md-nav__link">
         
   
   
@@ -1496,7 +1514,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/api/" class="md-nav__link">
+      <a href="../../reference/api/" class="md-nav__link">
         
   
   
@@ -1524,7 +1542,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/config-reference/" class="md-nav__link">
+      <a href="../../reference/config-reference/" class="md-nav__link">
         
   
   
@@ -1552,7 +1570,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/errors/" class="md-nav__link">
+      <a href="../../reference/errors/" class="md-nav__link">
         
   
   
@@ -1580,7 +1598,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/results-and-artifacts/" class="md-nav__link">
+      <a href="../../reference/results-and-artifacts/" class="md-nav__link">
         
   
   
@@ -1608,7 +1626,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/tambua-cli/" class="md-nav__link">
+      <a href="../../reference/tambua-cli/" class="md-nav__link">
         
   
   
@@ -1636,7 +1654,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/migration-v0.1-to-v0.2/" class="md-nav__link">
+      <a href="../../reference/migration-v0.1-to-v0.2/" class="md-nav__link">
         
   
   
@@ -1664,7 +1682,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/changelog/" class="md-nav__link">
+      <a href="../../reference/changelog/" class="md-nav__link">
         
   
   
@@ -1751,7 +1769,7 @@
   
   
     <li class="md-nav__item">
-      <a href="contributing/contributing/" class="md-nav__link">
+      <a href="../../contributing/contributing/" class="md-nav__link">
         
   
   
@@ -1779,7 +1797,7 @@
   
   
     <li class="md-nav__item">
-      <a href="contributing/development-setup/" class="md-nav__link">
+      <a href="../../contributing/development-setup/" class="md-nav__link">
         
   
   
@@ -1807,7 +1825,7 @@
   
   
     <li class="md-nav__item">
-      <a href="contributing/api-stability/" class="md-nav__link">
+      <a href="../../contributing/api-stability/" class="md-nav__link">
         
   
   
@@ -1835,7 +1853,7 @@
   
   
     <li class="md-nav__item">
-      <a href="contributing/how-the-docs-are-tested/" class="md-nav__link">
+      <a href="../../contributing/how-the-docs-are-tested/" class="md-nav__link">
         
   
   
@@ -1863,7 +1881,7 @@
   
   
     <li class="md-nav__item">
-      <a href="contributing/release-checklist/" class="md-nav__link">
+      <a href="../../contributing/release-checklist/" class="md-nav__link">
         
   
   
@@ -1891,7 +1909,7 @@
   
   
     <li class="md-nav__item">
-      <a href="contributing/code_of_conduct/" class="md-nav__link">
+      <a href="../../contributing/code_of_conduct/" class="md-nav__link">
         
   
   
@@ -2061,10 +2079,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#i-have-never-written-code" class="md-nav__link">
+  <a href="#what-fine-tuning-adds-and-what-it-does-not" class="md-nav__link">
     <span class="md-ellipsis">
       
-        I have never written code
+        What fine-tuning adds, and what it does not
       
     </span>
   </a>
@@ -2072,10 +2090,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#i-have-a-task" class="md-nav__link">
+  <a href="#install-the-extra" class="md-nav__link">
     <span class="md-ellipsis">
       
-        I have a task
+        Install the extra
       
     </span>
   </a>
@@ -2083,10 +2101,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#i-want-to-understand-why" class="md-nav__link">
+  <a href="#it-happens-on-its-own" class="md-nav__link">
     <span class="md-ellipsis">
       
-        I want to understand why
+        It happens on its own
       
     </span>
   </a>
@@ -2094,10 +2112,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#i-need-the-exact-details" class="md-nav__link">
+  <a href="#what-it-costs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        I need the exact details
+        What it costs
       
     </span>
   </a>
@@ -2105,10 +2123,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#i-want-to-contribute" class="md-nav__link">
+  <a href="#what-is-saved" class="md-nav__link">
     <span class="md-ellipsis">
       
-        I want to contribute
+        What is saved
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#turning-it-off-while-keeping-torch-installed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Turning it off while keeping torch installed
       
     </span>
   </a>
@@ -2132,7 +2161,7 @@
 
 
   
-    <a href="https://github.com/johnson2006christopher/adaptshot/edit/v0.3.0/docs/index.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/johnson2006christopher/adaptshot/edit/v0.3.0/docs/how-to/fine-tune-with-corrections.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -2141,38 +2170,54 @@
     
       
     
-    <a href="https://github.com/johnson2006christopher/adaptshot/raw/v0.3.0/docs/index.md" title="View source of this page" class="md-content__button md-icon">
+    <a href="https://github.com/johnson2006christopher/adaptshot/raw/v0.3.0/docs/how-to/fine-tune-with-corrections.md" title="View source of this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"/></svg>
     </a>
   
 
 
-<h1 id="adaptshot">AdaptShot<a class="headerlink" href="#adaptshot" title="Permanent link">&para;</a></h1>
-<p><strong>A few-shot image classifier that knows when it doesn't know.</strong> Teach it a new class from a handful of photographs, on an ordinary laptop, with the network switched off. Get back not just a label but a prediction set with a coverage guarantee — and a refusal when it should refuse. Version 0.3.0.</p>
-<p>Every page here says, in its first line, who it is for. Pick the door that matches you.</p>
-<h2 id="i-have-never-written-code">I have never written code<a class="headerlink" href="#i-have-never-written-code" title="Permanent link">&para;</a></h2>
-<p>Start at <a href="tutorials/00-what-is-this/"><strong>what AdaptShot is, in plain words</strong></a> — no installing, ten minutes of reading — and follow the six tutorials in order. They install it, make a prediction on photographs that come with it, teach it your own, read every part of its answer, and correct it. Every command in them is executed by the project's tests on every change; if one does not work for you, that is a bug in the documentation, not in you.</p>
-<h2 id="i-have-a-task">I have a task<a class="headerlink" href="#i-have-a-task" title="Permanent link">&para;</a></h2>
-<p>The <a href="how-to/run-the-offline-demo/"><strong>how-to guides</strong></a> are one page per task and assume the tutorials: run the demo offline, check what a machine can do, choose the promise level, save and load, fine-tune, use another backbone, export to ONNX, run the benchmarks, use the Tambua web app, deploy offline, troubleshoot.</p>
-<h2 id="i-want-to-understand-why">I want to understand why<a class="headerlink" href="#i-want-to-understand-why" title="Permanent link">&para;</a></h2>
-<p><a href="understand/how-it-works/"><strong>How it works</strong></a> in one page. <a href="understand/the-guarantee/"><strong>The guarantee</strong></a> — exactly what the prediction set promises, when it holds, and where it stops, with measurements. <a href="understand/why-cpu-only-and-offline/"><strong>Why CPU-only and offline</strong></a>. The <a href="understand/algorithm-theory/">algorithm theory</a>, the <a href="understand/human-in-the-loop/">human-in-the-loop design</a>, and the <a href="understand/technical-note/">two-page technical note</a> with every number traceable.</p>
-<h2 id="i-need-the-exact-details">I need the exact details<a class="headerlink" href="#i-need-the-exact-details" title="Permanent link">&para;</a></h2>
-<p>The <a href="reference/api/"><strong>API reference</strong></a>, with every public name classified stable or experimental; the <a href="reference/config-reference/">configuration reference</a>; <a href="reference/errors/">errors and warnings</a>; <a href="reference/results-and-artifacts/">results and artifacts</a> — where every published number comes from; the <a href="reference/tambua-cli/">Tambua command line</a>; the <a href="reference/changelog/">changelog</a>.</p>
-<h2 id="i-want-to-contribute">I want to contribute<a class="headerlink" href="#i-want-to-contribute" title="Permanent link">&para;</a></h2>
-<p><a href="contributing/contributing/"><strong>Contributing</strong></a> and the <a href="contributing/development-setup/">development setup</a> with the five-stage gate; <a href="contributing/api-stability/">API stability</a>; <a href="contributing/how-the-docs-are-tested/">how these docs are tested</a>; the <a href="contributing/release-checklist/">release checklist</a>; the <a href="contributing/code_of_conduct/">code of conduct</a>.</p>
-<hr />
-<p>Seven lines, if you would rather just see it:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">adaptshot</span><span class="w"> </span><span class="kn">import</span> <span class="n">FewShotLearner</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">adaptshot.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">sample_images</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">paths</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">sample_images</span><span class="p">()</span>                      <span class="c1"># twelve real maize-leaf photographs, bundled</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">learner</span> <span class="o">=</span> <span class="n">FewShotLearner</span><span class="p">()</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">learner</span><span class="o">.</span><span class="n">load_support_images</span><span class="p">(</span><span class="n">paths</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">labels</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="n">result</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">paths</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">prediction</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">calibrated_confidence</span><span class="si">:</span><span class="s2">.0%</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">conformal_set</span><span class="p">)</span>
+<h1 id="fine-tune-from-corrections-the-pytorch-extra">Fine-tune from corrections (the PyTorch extra)<a class="headerlink" href="#fine-tune-from-corrections-the-pytorch-extra" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p><strong>For:</strong> someone whose corrections keep coming and who wants the model itself to adjust, not only its prototypes and calibration. Assumes the tutorials. Needs the optional PyTorch extra and a machine with a few gigabytes free.</p>
+</blockquote>
+<!-- needs: torch -->
+
+<h2 id="what-fine-tuning-adds-and-what-it-does-not">What fine-tuning adds, and what it does not<a class="headerlink" href="#what-fine-tuning-adds-and-what-it-does-not" title="Permanent link">&para;</a></h2>
+<p>Everything in the tutorials — prototypes, calibration, thresholds, corrections — works on the standard install and never changes the model that turns photographs into numbers. That model is frozen: a general-purpose image encoder, bundled, 4 MB.</p>
+<p>Fine-tuning trains a small <em>head</em> on top of it from your corrections, using CA-EWC — a method that learns from new corrections while penalising changes that would undo earlier ones (the "elastic weight" part), weighted by how confident each correction was (the "correction-aware" part). It helps when your classes are separated by details the general encoder does not emphasise. It does not change the encoder itself, and it cannot create a class you never showed it.</p>
+<p><strong>Be honest with yourself about whether you need it.</strong> On the published benchmark the frozen path is a nearest-centroid classifier, and the layers above it do not change which class comes out; fine-tuning is where that could change, at the cost of a large dependency. Try the standard install first.</p>
+<h2 id="install-the-extra">Install the extra<a class="headerlink" href="#install-the-extra" title="Permanent link">&para;</a></h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"adaptshot[torch]"</span>
 </span></code></pre></div>
-<p><code>pip install adaptshot</code> first. Under five seconds from install to that answer, measured; nothing downloaded after the install.</p>
+<p>This pulls in PyTorch and torchvision. On Linux the default PyPI wheel is the CUDA build, over 2 GB; if you only want the CPU build, install torch first from its CPU index and then AdaptShot's extra:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>pip<span class="w"> </span>install<span class="w"> </span>--index-url<span class="w"> </span>https://download.pytorch.org/whl/cpu<span class="w"> </span>torch<span class="w"> </span>torchvision
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"adaptshot[torch]"</span>
+</span></code></pre></div>
+<p><code>check_environment()</code> afterwards lists <em>fine-tuning (CA-EWC) via correct()</em> under <em>Available now</em>.</p>
+<h2 id="it-happens-on-its-own">It happens on its own<a class="headerlink" href="#it-happens-on-its-own" title="Permanent link">&para;</a></h2>
+<p>There is no <code>finetune()</code> call to make. <code>correct()</code> queues each correction; when <strong>five</strong> are pending, the head is fine-tuned on them and the queue clears. Nothing else in your code changes:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">adaptshot</span><span class="w"> </span><span class="kn">import</span> <span class="n">AdaptShotConfig</span><span class="p">,</span> <span class="n">FewShotLearner</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">adaptshot.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">sample_images</span><span class="p">,</span> <span class="n">demo_images</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">paths</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">sample_images</span><span class="p">()</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="n">learner</span> <span class="o">=</span> <span class="n">FewShotLearner</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">AdaptShotConfig</span><span class="p">(</span><span class="n">conformal_alpha</span><span class="o">=</span><span class="mf">0.10</span><span class="p">))</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="n">learner</span><span class="o">.</span><span class="n">load_support_images</span><span class="p">(</span><span class="n">paths</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">labels</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="c1"># Five corrections trip the fine-tune. Here the "corrections" re-teach known photographs,</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="c1"># which is enough to see the mechanism; in use they would be photographs it got wrong.</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="n">truths</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">demo_images</span><span class="p">(),</span> <span class="p">(</span><span class="s2">"healthy_maize"</span><span class="p">,</span> <span class="s2">"gray_leaf_spot"</span><span class="p">,</span> <span class="s2">"gray_leaf_spot"</span><span class="p">,</span> <span class="s2">"tomato"</span><span class="p">),</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="n">summaries</span> <span class="o">=</span> <span class="p">[</span><span class="n">learner</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span><span class="n">image_path</span><span class="o">=</span><span class="n">p</span><span class="p">,</span> <span class="n">true_label</span><span class="o">=</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">truths</span><span class="o">.</span><span class="n">items</span><span class="p">())[:</span><span class="mi">3</span><span class="p">]]</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="n">summaries</span> <span class="o">+=</span> <span class="p">[</span><span class="n">learner</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span><span class="n">image_path</span><span class="o">=</span><span class="n">paths</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">true_label</span><span class="o">=</span><span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">)]</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="nb">print</span><span class="p">([</span><span class="n">s</span><span class="p">[</span><span class="s2">"fine_tuned"</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">summaries</span><span class="p">])</span>
+</span></code></pre></div>
+<p>The last summary reports <code>fine_tuned: True</code>; the four before it <code>False</code>. The threshold is the router's <code>fine_tune_trigger_threshold</code> (default 5).</p>
+<h2 id="what-it-costs">What it costs<a class="headerlink" href="#what-it-costs" title="Permanent link">&para;</a></h2>
+<p>Training runs on the CPU and takes a few seconds for a handful of corrections. Memory: importing PyTorch alone costs several hundred megabytes in the process, so a learner with the extra installed does not meet the 250 MB target — <code>check_environment()</code> says so on such a process. If memory is the constraint, do not install the extra.</p>
+<h2 id="what-is-saved">What is saved<a class="headerlink" href="#what-is-saved" title="Permanent link">&para;</a></h2>
+<p><code>save()</code> stores the corrections and everything derived from them, but <strong>not</strong> the fine-tuned head's weights: on <code>load()</code> the head is rebuilt fresh and retrained as corrections continue. See <a href="../save-load-and-migrate/">save, load and migrate</a>.</p>
+<h2 id="turning-it-off-while-keeping-torch-installed">Turning it off while keeping torch installed<a class="headerlink" href="#turning-it-off-while-keeping-torch-installed" title="Permanent link">&para;</a></h2>
+<p>There is no configuration switch for fine-tuning; it triggers whenever torch is importable and five corrections are pending. If you want torch on the machine but no fine-tuning, use a separate environment without the extra for that learner.</p>
 
 
 
@@ -2230,10 +2275,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": ["navigation.instant", "navigation.tracking", "content.code.copy", "content.tabs.link", "content.action.edit", "content.action.view", "navigation.tabs", "navigation.sections", "navigation.top", "search.suggest"], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "content.code.copy", "content.tabs.link", "content.action.edit", "content.action.view", "navigation.tabs", "navigation.sections", "navigation.top", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

@@ -1,0 +1,3381 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Human-aligned few-shot vision learning for resource-constrained environments">
+      
+      
+      
+        <link rel="canonical" href="https://johnson2006christopher.github.io/adaptshot/reference/changelog/">
+      
+      
+        <link rel="prev" href="../migration-v0.1-to-v0.2/">
+      
+      
+        <link rel="next" href="../../contributing/contributing/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../images/adaptshot-logo.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Changelog - AdaptShot</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#changelog" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="AdaptShot" class="md-header__button md-logo" aria-label="AdaptShot" data-md-component="logo">
+      
+  <img src="../../images/adaptshot-logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AdaptShot
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Changelog
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="blue"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/johnson2006christopher/adaptshot" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    johnson2006christopher/adaptshot
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../tutorials/00-what-is-this/" class="md-tabs__link">
+          
+  
+  
+  Start here
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../how-to/run-the-offline-demo/" class="md-tabs__link">
+          
+  
+  
+  How-to guides
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../understand/how-it-works/" class="md-tabs__link">
+          
+  
+  
+  Understand
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../api/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../contributing/contributing/" class="md-tabs__link">
+          
+  
+  
+  Contributing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="https://github.com/johnson2006christopher/adaptshot" class="md-tabs__link">
+          
+  
+  
+  Community
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AdaptShot" class="md-nav__button md-logo" aria-label="AdaptShot" data-md-component="logo">
+      
+  <img src="../../images/adaptshot-logo.png" alt="logo">
+
+    </a>
+    AdaptShot
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/johnson2006christopher/adaptshot" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    johnson2006christopher/adaptshot
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Start here
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/00-what-is-this/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    What AdaptShot is
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/01-install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1. Install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/02-first-prediction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2. Your first prediction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/03-your-own-photos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3. Your own photographs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/04-reading-the-answer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    4. Reading the answer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/05-teaching-corrections/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    5. Teaching corrections, saving
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/06-next/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Where next
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How-to guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    How-to guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/run-the-offline-demo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Run the demo offline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/check-what-this-machine-can-do/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Check what a machine can do
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/choose-alpha/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Choose the promise level (α)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/save-load-and-migrate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Save, load and migrate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/fine-tune-with-corrections/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fine-tune from corrections
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/use-your-own-backbone/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Use a different backbone
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/export-a-backbone-to-onnx/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Export a backbone to ONNX
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/run-the-benchmarks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Run the benchmarks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/use-tambua/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Use Tambua
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/deploy-offline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deploy offline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/troubleshoot/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshoot
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Understand
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Understand
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../understand/how-it-works/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How it works
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../understand/the-guarantee/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The guarantee
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../understand/why-cpu-only-and-offline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Why CPU-only and offline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../understand/human-in-the-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Human in the loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../understand/algorithm-theory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Algorithm theory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../understand/real-world-use-cases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Illustrative use cases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../understand/technical-note/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Technical note
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../about/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    About the project
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../config-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Config reference (all fields)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Errors and warnings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../results-and-artifacts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results and artifacts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tambua-cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tambua command line and config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../migration-v0.1-to-v0.2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migration v0.1 → v0.2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#unreleased" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [Unreleased]
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#030-2026-08-29" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.3.0] - 2026-08-29
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.3.0] - 2026-08-29">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added-measured-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added — measured results
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#added-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added — features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deprecated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deprecated
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#infrastructure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Infrastructure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#earlier-notes-in-this-cycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Earlier notes in this cycle
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#removed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Removed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#corrected" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Corrected
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#020-2026-06-14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.2.0] - 2026-06-14
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.2.0] - 2026-06-14">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#012-2026-06-08" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.1.2] - 2026-06-08
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.1.2] - 2026-06-08">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#planned-for-v012-release" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Planned for v0.1.2 release
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#011-2026-06-06" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.1.1] - 2026-06-06
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.1.1] - 2026-06-06">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#known-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Known Limitations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#milestones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Milestones
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#010-2024-05-01" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.1.0] - 2024-05-01
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.1.0] - 2024-05-01">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#known-limitations_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Known Limitations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#security_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#acknowledgments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Acknowledgments
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contributing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/development-setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development setup and the gate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/api-stability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API stability and deprecation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/how-the-docs-are-tested/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How the docs are tested
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/release-checklist/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release checklist
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/code_of_conduct/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Code of conduct
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Community
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Community
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/johnson2006christopher/adaptshot" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ⭐ Star on GitHub
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/johnson2006christopher/adaptshot/discussions" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    💬 GitHub Discussions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#unreleased" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [Unreleased]
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#030-2026-08-29" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.3.0] - 2026-08-29
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.3.0] - 2026-08-29">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added-measured-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added — measured results
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#added-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added — features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deprecated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deprecated
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#infrastructure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Infrastructure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#earlier-notes-in-this-cycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Earlier notes in this cycle
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#removed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Removed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#corrected" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Corrected
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#020-2026-06-14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.2.0] - 2026-06-14
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.2.0] - 2026-06-14">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#012-2026-06-08" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.1.2] - 2026-06-08
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.1.2] - 2026-06-08">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#planned-for-v012-release" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Planned for v0.1.2 release
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#011-2026-06-06" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.1.1] - 2026-06-06
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.1.1] - 2026-06-06">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#known-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Known Limitations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#milestones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Milestones
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#010-2024-05-01" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [0.1.0] - 2024-05-01
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[0.1.0] - 2024-05-01">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changed_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#known-limitations_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Known Limitations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#security_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#acknowledgments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Acknowledgments
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/johnson2006christopher/adaptshot/edit/v0.3.0/docs/reference/changelog.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+    
+      
+    
+    <a href="https://github.com/johnson2006christopher/adaptshot/raw/v0.3.0/docs/reference/changelog.md" title="View source of this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"/></svg>
+    </a>
+  
+
+
+<h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<p>All notable changes to this project will be documented in this file.</p>
+<p>The format is based on <a href="https://keepachangelog.com/en/1.1.0/">Keep a Changelog</a>,
+and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
+<h2 id="unreleased">[Unreleased]<a class="headerlink" href="#unreleased" title="Permanent link">&para;</a></h2>
+<p>Nothing yet.</p>
+<h2 id="030-2026-08-29">[0.3.0] - 2026-08-29<a class="headerlink" href="#030-2026-08-29" title="Permanent link">&para;</a></h2>
+<p>The "make it provable" release. Every number in the README and the documentation
+is formatted from a committed artifact and held to it by a test.</p>
+<h3 id="added-measured-results">Added — measured results<a class="headerlink" href="#added-measured-results" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>The first real result.</strong> PlantVillage 5-way 5-shot, 100 episodes, seed 42:
+  91.4% ± 1.0 accuracy, against nearest-centroid, k-NN and a linear-probe
+  baseline on the same episodes and embeddings. AdaptShot's accuracy <em>is</em>
+  nearest-centroid's, to the query; what the layers above buy is the
+  prediction set. (<code>benchmarks/run_plantvillage.py</code>, #18, #19)</li>
+<li><strong>Conformal coverage, measured</strong>: 98.1% ± 0.6 at a 90% target, mean set size
+  1.66, against a calibrated top-1 threshold that reached 83.9%. (#14, #86)</li>
+<li><strong>Coverage under distribution shift</strong>: blur, brightness, JPEG and downscale
+  applied to queries only; the sets widen, the bound still bends (85.5% at
+  blur σ=4), the OOD flag correlates 0.92 with the loss, and ten in-situ
+  corrections recover the worst cell to 89%. (<code>benchmarks/run_shift.py</code>, #29)</li>
+<li><strong>Latency by stage</strong> (median and p95), cold start, and peak memory for one
+  cycle <em>and</em> for the harness, named apart, with the CPU model recorded. 120 MB
+  for one fresh process on the core install. (#20)</li>
+<li><strong>ARM, measured.</strong> <code>benchmarks/run_device.py</code> profiles whatever machine it
+  runs on -- torch-free, dataset-free, on the bundled photographs -- and CI
+  runs it, the full suite and the ONNX export on an ARM runner on every
+  change. Both artifacts are committed and the README's device table is
+  held to them. A Neoverse-N2 server core, not a phone; the README says
+  which. (#31)</li>
+<li><strong>ONNX parity benchmark</strong>, each backend in its own process. (#36)</li>
+<li>Every figure in the README, the technical note and the docs is formatted from
+  a committed <code>results/*.json</code> and asserted by <code>tests/test_docs_claims.py</code>.</li>
+</ul>
+<h3 id="added-features">Added — features<a class="headerlink" href="#added-features" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Torch-free inference.</strong> <code>mobilenet_v3_small</code> ships as ONNX inside the wheel
+  (4.0 MB); <code>pip install adaptshot</code> is numpy, Pillow and onnxruntime only, and
+  loads a support set, predicts, saves and reloads. Torch is needed only for
+  fine-tuning and non-bundled backbones. The default backbone changed to the
+  bundled one. (#35, #36)</li>
+<li><strong><code>check_environment()</code></strong>: what this machine can do, with every figure measured
+  on it; a GPU is named and never selected. Experimental. (#38)</li>
+<li><strong>Twelve real PlantVillage photographs ship in the wheel</strong> (<code>adaptshot.data.sample_images</code>)
+  so the README quickstart runs offline in seven lines; four more for the demo.
+  Licence and checksums beside them. (#28)</li>
+<li><strong><code>examples/demo/</code></strong>: a conference demo that disables its own network access,
+  runs in under two seconds, and shows the set widening and the refusal. (#27)</li>
+<li><strong><code>BackboneError</code></strong> names the backbone, the ones that would work and the extra
+  that installs torch, instead of <code>ImportError: torch</code> from four frames deep.</li>
+<li><code>PredictionResult.conformal_calibrated</code> and <code>ConformalPredictionSet.calibrated</code>:
+  a cold-start singleton says so instead of claiming 1 − α. (#80)</li>
+<li><code>adaptshot.api</code>: every public name classified <strong>stable</strong> (24) or
+  <strong>experimental</strong> (10), enforced by <code>tests/test_api_surface.py</code>. (#23)</li>
+<li><code>bundled_onnx_backbones()</code>, <code>ConformalEngine.min_informative_size</code>,
+  <code>ConformalEngine.nonconformity()</code>.</li>
+</ul>
+<h3 id="changed">Changed<a class="headerlink" href="#changed" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Conformal nonconformity score</strong> defaults to the distance ratio <code>d_true/min(d)</code>.
+  The max-scaled softmax scored clean, blurred and foreign-crop photographs
+  0.72–0.80 alike and could not widen a set. <code>softmax</code> and <code>distance</code> remain
+  selectable. Published figures moved: coverage 97.5% → 98.1%, set size
+  2.05 → 1.66. Deliberate exception to the stability policy, recorded. (#86)</li>
+<li><code>FewShotLearner</code> gives its conformal engine a floor of <code>max(10, ⌈(1−α)/α⌉)</code>
+  calibration scores. (#14)</li>
+<li><code>adaptshot.core.contrastive</code> moved to <code>adaptshot.training.contrastive</code>; the
+  old path warns and is removed in 0.4.0. (#23)</li>
+<li><code>ACTEngine</code> and <code>UPUGFPruner</code> are stable — they have tests now. (#74)</li>
+<li><code>__version__</code> is read from package metadata; <code>pyproject.toml</code> is the only
+  declaration. (#25)</li>
+<li>numpy annotations are <code>FloatArray</code> / <code>LabelArray</code> / <code>IntArray</code> / <code>BoolArray</code>
+  (<code>adaptshot.utils.arrays</code>); 157 <code>type-arg</code> errors under numpy 2.2 → 0. (#44)</li>
+<li>The ruff ignore list is empty; <code>scripts/</code> is linted. (#41)</li>
+<li>Documentation rebuilt on Diátaxis: six beginner tutorials, eleven how-to
+  guides, explanation, reference and contributor sections; every tutorial and
+  how-to code block is executed by <code>tests/test_docs_tutorials_run.py</code>; every
+  page has an edit link; broken links fail the build. Superseded pages retired
+  to <code>docs-archive/</code>. (#39)</li>
+</ul>
+<h3 id="fixed">Fixed<a class="headerlink" href="#fixed" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Conformal quantile clamp</strong>: where <code>n &lt; (1−α)/α</code> the engine returned the
+  largest observed score instead of the full set, under-covering at 91.3%
+  against a 95% promise at the library's own defaults. (#14)</li>
+<li><strong>OOD threshold calibrated in-sample</strong> flagged 45 of 45 in-distribution
+  photographs; leave-one-out calibration brings it to 3 of 45, with 45 of 45
+  flagged on genuinely out-of-domain photographs. (#54)</li>
+<li><strong><code>UPUGFPruner</code> kept the confident examples</strong> (score <code>(1−u)^w</code>, the inverse of
+  its documentation) and, above 100 rows, <strong>rewarded duplicates</strong> (inverted LSH
+  collision term). (#74)</li>
+<li><strong><code>_project</code> guarded one of four <code>Optional</code> fields</strong>; a partially restored
+  contrastive head failed inside a matmul. (#44)</li>
+<li>The README quickstart pinned a non-bundled backbone and referenced files that
+  did not exist; it now runs, and CI runs it. (#28)</li>
+<li>Tambua's <code>maize.yaml</code> named <code>resnet18</code>, which a standard install cannot run;
+  it names the bundled backbone.</li>
+</ul>
+<h3 id="deprecated">Deprecated<a class="headerlink" href="#deprecated" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>adaptshot.core.contrastive</code> (import path) — removed in 0.4.0.</li>
+<li><code>UncertaintyQuantifier.compute_perturbation_variance</code>, <code>get_ood_summary</code>,
+  <code>get_class_statistics</code> — no callers anywhere; removed in 0.4.0. (#23)</li>
+</ul>
+<h3 id="infrastructure">Infrastructure<a class="headerlink" href="#infrastructure" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Releases on <code>v*</code> tags with PyPI Trusted Publishing, a clean-container install
+  test against the built wheel, TestPyPI for <code>rc</code> tags. (#25)</li>
+<li><code>offline-wheel</code> CI job: the wheel installed into a clean venv and the
+  inference path run inside a network namespace with no interfaces; any network
+  access fails the build. (#30)</li>
+<li>The CI test matrix installs CPU-only torch; the CUDA caches had blown past the
+  10 GB cache limit and evicted the CIFAR-10 cache, turning a two-minute
+  benchmark job into a thirty-five-minute download. The <code>test-core</code> job is
+  enforcing. <code>mkdocs build --strict</code> on every pull request. (#60, #36)</li>
+</ul>
+<h3 id="earlier-notes-in-this-cycle">Earlier notes in this cycle<a class="headerlink" href="#earlier-notes-in-this-cycle" title="Permanent link">&para;</a></h3>
+<h3 id="removed">Removed<a class="headerlink" href="#removed" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong><code>adaptshot.studio</code></strong> (1,822 lines, 23% of the library, four tests) — extracted to
+  its own project. It was a Gradio desktop application, not few-shot learning and not a
+  library, and it dragged <code>gradio</code>, <code>pandas</code>, <code>onnx</code> and <code>onnxruntime</code> into the
+  project's identity and its type checking. A GUI also has a different release cadence
+  from a library; coupling them made every interface tweak a library release.
+  Tracked in <a href="https://github.com/johnson2006christopher/adaptshot/issues/21">#21</a>.</li>
+</ul>
+<p><strong>Nothing was lost.</strong> The full commit history was extracted before anything was
+  deleted and lives on the
+  <a href="https://github.com/johnson2006christopher/adaptshot/tree/studio-extract"><code>studio-extract</code></a>
+  branch — thirteen commits, ready to become a repository of its own.</p>
+<ul>
+<li>
+<p><strong><code>adaptshot.ui.app</code></strong> (151 lines) — the library shipped <em>two</em> Gradio interfaces at
+  once. All four of its capabilities exist in Tambua, in more complete form. Tracked in
+  <a href="https://github.com/johnson2006christopher/adaptshot/issues/22">#22</a>.</p>
+</li>
+<li>
+<p><strong>The <code>gui</code> and <code>ui</code> extras</strong> and the <code>adaptshot-studio</code> console script, which existed
+  only for the above.</p>
+</li>
+</ul>
+<p>The maintained application is <a href="https://github.com/johnson2006christopher/adaptshot/blob/v0.3.0/apps/tambua/README.md">Tambua</a>, a separate distribution
+built on AdaptShot — <code>pip install tambua</code>. <code>tests/test_library_ships_no_gui.py</code> fails if
+a GUI reappears anywhere under <code>src/adaptshot/</code>, if either extra returns, or if a live
+document points at a removed entrypoint.</p>
+<h3 id="corrected">Corrected<a class="headerlink" href="#corrected" title="Permanent link">&para;</a></h3>
+<p>Documentation claims that were not true when written, retracted here rather than
+quietly edited away. A changelog that records a retraction is worth more than one that
+only lists features.</p>
+<ul>
+<li><strong>"MziziGuard is deployed"</strong> — it was not, and is not. No farmer has used it. Its
+  sample images are generated with <code>ImageDraw.ellipse()</code>. It is a worked example, and
+  is now labelled as one. Tracked in
+  <a href="https://github.com/johnson2006christopher/adaptshot/issues/17">#17</a>.</li>
+<li><strong>"Torch-free inference via bundled backbones"</strong> (v0.2.0 entry below, and the front
+  page) — there are no bundled backbones; <code>src/adaptshot/data/</code> contains only
+  <code>__init__.py</code>, and inference requires torch today. Tracked in
+  <a href="https://github.com/johnson2006christopher/adaptshot/issues/35">#35</a> and
+  <a href="https://github.com/johnson2006christopher/adaptshot/issues/36">#36</a>.</li>
+<li><strong>"20ms P95 latency"</strong> — the benchmark artifact this figure cited reports
+  <code>latency_p95_ms: 36.43</code>. The claim was never true of the run it pointed at.</li>
+<li><strong>"~150ms on CPU"</strong> (MziziGuard) and <strong>"&lt;2MB RAM"</strong> (v0.1.1 audit) — no script in
+  <code>benchmarks/</code> produces either number. Removed rather than re-estimated.</li>
+<li><strong>"Distribution-free 95% coverage guarantee"</strong> and <strong>"&lt;250MB RAM"</strong> — these are
+  design targets, not measurements. Neither has been verified. Restated as targets;
+  tracked in <a href="https://github.com/johnson2006christopher/adaptshot/issues/14">#14</a> and
+  <a href="https://github.com/johnson2006christopher/adaptshot/issues/13">#13</a>.</li>
+</ul>
+<p>Historical entries below are left as written. They record what was claimed at the time,
+which is the point of a changelog; the corrections above record what was actually true.</p>
+<h3 id="changed_1">Changed<a class="headerlink" href="#changed_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>BREAKING: minimum supported Python is now 3.10</strong> (was 3.9). Python 3.13 and 3.14 are
+  now supported and tested. The CI matrix covers 3.10 through 3.14; every version listed
+  in the trove classifiers is a version that actually runs the test suite, enforced by
+  <code>tests/test_release_metadata.py</code>.</li>
+</ul>
+<p>If you are on Python 3.9, stay on 0.2.x. Dropping 3.9 lets the codebase use native
+  <code>X | None</code> and builtin generics rather than <code>typing.Optional</code> and <code>typing.Dict</code>, which
+  removed 492 lint findings in one pass.</p>
+<ul>
+<li>
+<p><strong>Development tool versions are now upper-bounded.</strong> <code>ruff</code>, <code>mypy</code>, <code>pytest</code>,
+  <code>pytest-cov</code>, and <code>pre-commit</code> previously had lower bounds only. A ruff release that
+  expanded its default rule set from roughly 60 rules to 413 turned CI red with 479
+  findings without a single line of project code changing. Tool bumps now arrive as
+  reviewable Dependabot PRs.</p>
+</li>
+<li>
+<p><strong>The ruff rule set is now declared explicitly</strong> in <code>[tool.ruff.lint]</code> rather than
+  inherited from whatever the installed version happens to default to.</p>
+</li>
+<li>
+<p><strong><code>mypy --strict</code> now checks all 32 modules in the package</strong> — previously zero. It
+  aborted inside numpy's stubs before reaching any project file, so every merge for
+  months passed a type check that had examined nothing. <code>python_version</code> is now 3.12
+  (the floor stays guarded by ruff's <code>target-version</code> and by a real 3.10 CI job), the
+  lint job installs the torch extra so torch calls are checked against real stubs, and
+  <code>tests/test_mypy_coverage.py</code> asserts on the number of files mypy reports checking,
+  not just on the error count.</p>
+</li>
+</ul>
+<h3 id="fixed_1">Fixed<a class="headerlink" href="#fixed_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>utils/profiling.py</code> silently swallowed every exception from <code>psutil</code>, reporting
+  <code>0.0 MB</code> when a memory measurement failed. Callers could not distinguish a real
+  zero reading from a failed one — which would have made a <code>&lt;250MB</code> ceiling assertion
+  pass for the wrong reason. Failures are now logged.</li>
+<li><code>core/backends/onnx_backend.py</code> used <code>functools.lru_cache</code> on a method, which keys on
+  <code>self</code> and would have retained every backend instance, along with up to four loaded
+  ONNX sessions and their weights, for the lifetime of the process. Replaced with a
+  per-instance cache that is released with the instance.</li>
+<li>Eight type errors that had been invisible behind the aborted mypy run: four redundant
+  <code>cast()</code> calls, two stale <code># type: ignore</code> comments, a numpy overload that resolved to
+  a scalar because a shape was typed <code>Any</code>, and an unproven non-null invariant in
+  <code>core/contrastive.py</code>. The last is now an explicit runtime check rather than a
+  <code># type: ignore</code>, so a future edit that breaks the invariant fails where it is broken
+  instead of surfacing as a <code>TypeError</code> inside the training loop.</li>
+</ul>
+<h2 id="020-2026-06-14">[0.2.0] - 2026-06-14<a class="headerlink" href="#020-2026-06-14" title="Permanent link">&para;</a></h2>
+<h3 id="added">Added<a class="headerlink" href="#added" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Conformal Prediction Engine</strong> (<code>conformal.py</code>): Distribution-free conformal prediction with split and cross modes,
+  softmax/distance nonconformity scores, and adaptive prediction sets at configurable significance levels.</li>
+<li><strong>Contrastive Prototype Networks</strong> (<code>contrastive.py</code>): Siamese-style contrastive loss with InfoNCE, learnable
+  temperature, 2-layer MLP projection head (128-dim bottleneck), and EMA momentum prototype updates.</li>
+<li><strong>Advanced Uncertainty Quantification</strong> (<code>uncertainty.py</code>): Multi-signal uncertainty with epistemic (MC Dropout),
+  aleatoric (k-NN entropy), and distributional (Mahalanobis distance) signals; OOD detection via class-conditional
+  Gaussian distributions.</li>
+<li><strong>XAI Explainability</strong> (<code>explain.py</code>): Gradient-based saliency, feature attribution (top-k neighbor influence),
+  confidence decomposition, and counterfactual explanation support.</li>
+<li><strong>New Config Fields</strong>: <code>conformal_alpha</code>, <code>conformal_mode</code>, <code>uncertainty_mode</code>, <code>explainability_enabled</code>
+  (26 total fields, up from 22).</li>
+<li><strong>New inference mode</strong>: <code>inference_mode="contrastive"</code> for contrastive prototype-based classification.</li>
+<li><strong>37 new tests</strong> across 4 test files: <code>test_conformal.py</code> (12), <code>test_contrastive.py</code> (7),
+  <code>test_uncertainty.py</code> (10), <code>test_explain.py</code> (8).</li>
+<li><strong>12 new documentation pages</strong>: Architecture deep-dive, algorithm theory, full API reference,
+  5 advanced tutorials (conformal prediction, uncertainty, explainability, contrastive learning,
+  end-to-end workflow), 2 comprehensive GUI guides (Studio, Pilot Dashboard).</li>
+<li><strong>True Leave-One-Out Conformal Calibration</strong>: Per-example prototype recomputation for valid
+  finite-sample coverage guarantees under exchangeability.</li>
+<li><strong>Shrinkage Covariance Estimation</strong>: Ledoit-Wolf-style shrinkage with adaptive alpha = d/(d+n_k)
+  for robust Mahalanobis OOD detection in high-dimensional few-shot settings.</li>
+<li><strong>Bootstrap Temperature Calibration</strong>: LOO grid-search temperature optimization for
+  autonomous operation without requiring pre-calibrated temperature.</li>
+<li><strong>Random Projection LSH for UP-UGF</strong>: Approximate O(N log N) redundancy scoring via
+  random projection locality-sensitive hashing when buffer exceeds 100 examples.</li>
+<li><strong>Memory Profiling</strong> (<code>utils/profiling.py</code>): <code>MemoryTracker</code> context manager with
+  tracemalloc + psutil instrumentation; <code>estimate_model_memory_mb()</code> for pre-flight checks.</li>
+<li><strong>ONNX Export Script</strong> (<code>scripts/export_backbones.py</code>): Exports ResNet-18 and
+  MobileNetV3-Small to ONNX with SHA-256 verification and metadata generation.</li>
+<li><strong>miniImageNet Benchmark Support</strong>: CSV-based miniImageNet loading, <code>BASELINE_REFERENCES</code>
+  for Prototypical/Matching/MAML baselines, and <code>--full-benchmark</code> CLI flag.</li>
+<li><strong>Historical Penalty Tracking</strong>: <code>ExplainabilityEngine</code> tracks ACT and OOD penalties
+  over time for intelligent confidence decomposition fallbacks (replaces magic numbers).</li>
+<li><strong>Eco-Mode Enhancements</strong>: 32×32 preview resolution (up from 16×16), <code>clear_backbone_cache()</code>
+  for <code>@lru_cache</code> invalidation on config change, norm ratio eco-mode safety guard.</li>
+</ul>
+<h3 id="changed_2">Changed<a class="headerlink" href="#changed_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Schema version bumped to <code>0.2.0</code> with backwards-compatible migration.</li>
+<li>Package version updated to <code>0.2.0-dev</code> in <code>pyproject.toml</code> and <code>__init__.py</code>.</li>
+<li><code>FewShotLearner</code> now accepts <code>inference_mode="contrastive"</code> and wires new engines (Conformal, Contrastive,
+  Uncertainty, Explainability).</li>
+<li><code>PredictionResult</code> extended with conformal prediction sets, uncertainty reports, and explanation results.</li>
+<li>Default <code>inference_mode</code> changed to <code>"prototypical"</code>.</li>
+</ul>
+<h3 id="fixed_2">Fixed<a class="headerlink" href="#fixed_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>np.unique</code> unpacking bug in uncertainty module (single return value incorrectly destructured).</li>
+<li>Mypy strict-mode compliance across all 31 source files.</li>
+<li>Pre-existing test failures from schema version and inference_mode API mismatches.</li>
+<li><strong>Contrastive inference wired</strong>: <code>predict()</code> now correctly routes to contrastive nearest-prototype when <code>inference_mode="contrastive"</code> (was silently falling through to nearest-neighbor).</li>
+<li><strong>Epistemic uncertainty implemented</strong>: Replaced unimplemented MC Dropout claim with working embedding perturbation sensitivity proxy (<code>estimate_epistemic()</code>).</li>
+<li><strong>Uncertainty mode gating</strong>: <code>uncertainty_mode</code> config field now gates signal computation in <code>UncertaintyQuantifier.quantify()</code>, avoiding wasted compute.</li>
+<li><strong>Cross-conformal mode</strong>: Implemented k-fold cross-conformal quantile averaging in <code>ConformalEngine</code> when <code>conformal_mode="cross"</code>.</li>
+<li><strong>OOD detection unified</strong>: <code>predict()</code> now uses Mahalanobis-based OOD detection via <code>UncertaintyQuantifier.is_ood()</code> as the primary path instead of the legacy distance-threshold method.</li>
+<li><strong>Confidence decomposition clarified</strong>: Simplified math in <code>decompose_confidence()</code> to <code>calibrated + penalties</code>, eliminating confusing intermediate calculations.</li>
+<li><strong>Documentation accuracy</strong>: Replaced "gradient-based saliency" claims with honest "embedding-space saliency" language; updated epistemic uncertainty description from MC Dropout to perturbation sensitivity.</li>
+<li><strong>Contrastive projection head training</strong>: <code>_train_projection_head()</code> now performs full InfoNCE gradient descent through W1/b1/W2/b2 with momentum SGD (was previously initialized but never trained, making the projection head an identity transform).</li>
+<li><strong>Conformal LOO calibration</strong>: <code>_self_calibrate_conformal()</code> recomputes prototypes excluding each support example for true leave-one-out nonconformity scores (was reusing full-support prototypes, invalidating coverage guarantees).</li>
+<li><strong>Mahalanobis shrinkage</strong>: <code>fit_class_distributions()</code> uses shrinkage covariance estimation with adaptive alpha, falling back to diagonal when n_per_class &lt; embedding_dim (was using raw sample covariance, which is singular in few-shot high-dim settings).</li>
+<li><strong>CA-EWC scope honesty</strong>: <code>CAEWCFinetuner</code> docstring now explicitly states head-only scope (~2K params for 5-way ResNet-18), not full-network EWC.</li>
+<li><strong>ACT symmetric update</strong>: Threshold delta replaced with <code>η * (incorrect_rate − correct_rate)</code> plus mean-reversion toward base threshold, eliminating monotonic drift.</li>
+<li><strong>Confidence decomposition fallbacks</strong>: Replaced magic numbers <code>-0.15</code>/<code>-0.25</code> with historical 20-window averages of tracked ACT penalties.</li>
+<li><strong>UP-UGF LSH mode</strong>: <code>_compute_redundancy_scores()</code> splits into exact (N≤100) and approximate LSH (N&gt;100) paths, reducing O(N²) to O(N log N) for large buffers.</li>
+<li><strong>Graceful calibration fallback</strong>: <code>_calibrate_or_raise()</code> no longer raises on first predict; uses bootstrap temperature calibration when conformal buffer is cold.</li>
+<li><strong>Eco-mode resolution</strong>: Preview upgraded from 16×16 to 32×32 with norm ratio guard (&gt;0.3 required before early-exit gating).</li>
+<li><strong>Config default fixed</strong>: <code>uncertainty_mode</code> default changed from <code>"entropy"</code> to <code>"ensemble"</code> (now consistent with README).</li>
+<li><strong>Conformal calibration wired</strong>: Self-calibration on <code>load_support_images()</code> populates calibration buffer via leave-one-out scores; <code>correct()</code> feeds ground-truth nonconformity scores into the conformal engine. Prediction sets now produce meaningful multi-class outputs instead of degenerate singletons.</li>
+<li><strong>Torch lazy imports in learner.py</strong>: Moved <code>import torch</code>, <code>DataLoader</code>, <code>TensorDataset</code> out of module level into lazy getters (<code>_get_torch()</code>, <code>_get_torch_nn()</code>, <code>_get_data_loader()</code>). <code>FewShotLearner</code> is now importable without a hard torch dependency — PyTorch is truly optional.</li>
+<li><strong>Contrastive mode shape mismatch fixed</strong>: Contrastive prototypes (128-dim projection space) now stored in separate <code>_contrastive_prototype_*</code> fields; embedding-space prototypes (<code>_prototype_embeddings</code>) always remain 512-dim for conformal/OOD distance math. Eliminates the 512-vs-128 dimension mismatch in distance computations.</li>
+<li><strong>ACTEngine dynamic class allocation</strong>: Changed from <code>n_classes=200</code> to <code>n_classes=max(10, config.n_way)</code>; dynamic expansion handles additional classes at runtime.</li>
+<li><strong><code>compute_saliency_numpy()</code> implemented</strong>: Returns per-dimension embedding-space feature importance via <code>|query - support|</code> normalized to [0,1]. No longer returns <code>None</code>.</li>
+<li><strong>Epistemic uncertainty stochastic</strong>: <code>estimate_epistemic()</code> seed default changed from <code>42</code> to <code>None</code> — each call produces a genuinely different perturbation pattern, capturing stochastic sensitivity.</li>
+<li><strong>Confidence decomposition penalties derived from state</strong>: ACT penalty now proportional to (confidence - threshold) gap when threshold available; OOD penalty proportional to Mahalanobis OOD score. Falls back to conservative defaults when state unavailable.</li>
+</ul>
+<hr />
+<h2 id="012-2026-06-08">[0.1.2] - 2026-06-08<a class="headerlink" href="#012-2026-06-08" title="Permanent link">&para;</a></h2>
+<h3 id="added_1">Added<a class="headerlink" href="#added_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Lazy torch imports</strong>: <code>extractor.py</code> uses deferred imports for PyTorch and torchvision,
+  keeping the module importable without a hard torch dependency at install time.</li>
+<li><strong>ONNX Runtime backend</strong> (<code>backends/onnx_backend.py</code>): Lightweight feature extraction
+  via bundled ONNX backbone models when torch is not installed.</li>
+<li><strong>Backend abstraction layer</strong> (<code>backends/__init__.py</code>): Unified interface for ONNX Runtime
+  and PyTorch backends with auto-detection.</li>
+<li><strong>ONNX export script</strong> (<code>scripts/export_backbones.py</code>): Generates pre-trained backbone
+  ONNX models for torch-free inference.</li>
+<li><strong>Optional <code>[torch]</code> extra</strong>: PyTorch and torchvision moved to optional dependencies;
+  core library requires only numpy + Pillow.</li>
+<li><strong>Package data support</strong>: <code>.onnx</code> model files bundled via <code>[tool.setuptools.package-data]</code>.</li>
+</ul>
+<h3 id="changed_3">Changed<a class="headerlink" href="#changed_3" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Pretrained backbone weights</strong>: Changed from <code>weights=None</code> (random) to
+  <code>weights="IMAGENET1K_V1"</code> — essential for the ImageNet-normalized preprocessing pipeline
+  and for producing meaningful few-shot embeddings.</li>
+<li><strong>Calibration engine</strong>: Replaced <code>torch.nn.Parameter(torch.tensor(...))</code> with a plain
+  <code>float</code> for the temperature parameter; no autograd needed for grid-search calibration.</li>
+<li><strong>Config validation</strong>: Lazy <code>import torch</code> for CUDA availability check in <code>AdaptShotConfig</code>;
+  graceful warning when torch is not installed.</li>
+<li><strong>Fine-tuning module</strong>: Conditional torch import with <code>_TORCH_AVAILABLE</code> guard;
+  <code>CAEWCFinetuner</code> raises a clear <code>ImportError</code> message when torch is missing.</li>
+<li><strong>PIL API</strong>: Uses <code>Image.Resampling.BILINEAR</code> via <code>getattr</code> lookup for cross-version compatibility.</li>
+<li><strong>Version bump</strong>: <code>__version__</code> updated to <code>"0.1.2"</code> in both <code>pyproject.toml</code> and <code>__init__.py</code>.</li>
+</ul>
+<h3 id="fixed_3">Fixed<a class="headerlink" href="#fixed_3" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Installation performance</strong>: Core dependencies reduced from 4 (torch, torchvision, numpy, Pillow)
+  to 2 (numpy, Pillow). PyTorch is now optional via <code>pip install "adaptshot[torch]"</code>.</li>
+<li><strong>Backbone consistency</strong>: All backbones now use pre-trained ImageNet weights, matching the
+  preprocessing pipeline expectations.</li>
+</ul>
+<h3 id="planned-for-v012-release">Planned for v0.1.2 release<a class="headerlink" href="#planned-for-v012-release" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Swahili UI Localization</strong>: Gradio dashboard interface fully translated to Swahili,
+  serving Tanzanian and East African users in their primary language.</li>
+<li><strong>Gradio UI Enhancements</strong>: Improved widget layout, accessibility labels, and
+  localization infrastructure.</li>
+<li><strong>Localization Framework</strong>: i18n string extraction and translation pipeline for
+  the Gradio dashboard.</li>
+</ul>
+<hr />
+<h2 id="011-2026-06-06">[0.1.1] - 2026-06-06<a class="headerlink" href="#011-2026-06-06" title="Permanent link">&para;</a></h2>
+<h3 id="added_2">Added<a class="headerlink" href="#added_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Eco Mode &amp; Energy Profiling</strong>: <code>eco_mode</code> and <code>early_exit_threshold</code> in <code>AdaptShotConfig</code> reduce carbon footprint by up to 40%</li>
+<li><strong>EmbeddingCache</strong>: Instance-scoped cache class preventing cross-learner embedding contamination in multi-model workflows</li>
+<li><strong>Dynamic Dimension Inference</strong>: <code>BACKBONE_OUTPUT_DIM</code> dictionary maps backbone to output dims; auto-detected from support set when populated</li>
+<li><strong>OOD Detection</strong>: Built-in out-of-distribution detection with configurable <code>ood_threshold_quantile</code> and <code>ood_absolute_min_distance</code></li>
+<li><strong>String Label Corrections</strong>: <code>correct()</code> now accepts human-readable string labels via label index mapping</li>
+<li><strong>Prototypical Inference</strong>: New <code>prototypical</code> inference mode uses class prototypes alongside nearest-neighbor search</li>
+<li><strong>Comparative Feedback</strong>: <code>correct_comparative()</code> method for ordinal-supervision-style human feedback</li>
+<li><strong>Checkpoint Integrity</strong>: SHA-256 checksums on save/load with atomic file writes and schema migration</li>
+<li><strong>Calibration Report</strong>: <code>calibration_report()</code> method returning ECE, temperature, OOD threshold, and buffer statistics</li>
+<li><strong>Comprehensive Documentation</strong>: 12-chapter tutorial suite, About page, Studio GUI guide, v0.1.1 docs roadmap gap analysis</li>
+<li><strong>Logo &amp; Branding</strong>: AdaptShot logo integration in site nav, browser tab, and README</li>
+</ul>
+<h3 id="changed_4">Changed<a class="headerlink" href="#changed_4" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>FewShotLearner.__init__</code> accepts <code>AdaptShotConfig</code> instance (not individual <code>classes</code>/<code>device</code> kwargs)</li>
+<li><code>predicted_label</code> and <code>corrected_label</code> in <code>Correction</code> now store integer indices; originals preserved in metadata</li>
+<li><code>CalibrationEngine</code> supports <code>scaling_binning</code> method alongside <code>temperature</code></li>
+<li><code>BACKBONE_OUTPUT_DIM</code> constant replaces hardcoded backbone output dimensions</li>
+<li>Embedding extraction now passes instance-scoped <code>EmbeddingCache</code> instead of a module-level <code>_last_embedding</code> deque</li>
+<li>Schema version bumped to <code>0.1.1</code> with <code>migrate_v0_1_0_to_v0_1_1</code> backwards-compatible loader</li>
+</ul>
+<h3 id="fixed_4">Fixed<a class="headerlink" href="#fixed_4" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Duplicate <code>wait_for_cuda(device)</code> call in <code>extract_embedding()</code> — replaced with single placement</li>
+<li><code>EmbeddingCache</code> moved from module-level <code>collections.deque</code> to proper class with instance scope</li>
+<li>Config validation added for <code>similarity_metric</code>, <code>inference_mode</code>, <code>calibration_eval_bins</code></li>
+<li><code>calibration_eval_bins &gt;= ece_n_bins</code> constraint enforced in post-init</li>
+<li>Empty-string label validation in <code>_validate_label()</code></li>
+</ul>
+<h3 id="known-limitations">Known Limitations<a class="headerlink" href="#known-limitations" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>UP-UGF Pruning</strong>: Redundancy computation uses exact cosine similarity (<code>O(N^2)</code>). Efficient for <code>N &lt;= 100</code> but will be replaced with approximate search in larger buffers.</li>
+<li><strong>CA-EWC</strong>: Currently operates on classification head only; full backbone fine-tuning requires additional compute and is not recommended for CPU-only deployments.</li>
+<li><strong>Calibration</strong>: Temperature scaling uses grid search over the sliding window. Gradient-based optimization is planned for future releases.</li>
+<li><strong>Gradio UI</strong>: Assumes local file paths; remote/cloud storage integration requires custom callbacks.</li>
+<li><strong>Hardware</strong>: All benchmarks target standard x86_64 CPUs. ARM/Raspberry Pi performance may vary and requires manual latency profiling.</li>
+</ul>
+<h3 id="milestones">Milestones<a class="headerlink" href="#milestones" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>574 PyPI Downloads</strong>: v0.1.0 reached researchers and practitioners in over 30 countries</li>
+<li><strong>52 Regression Tests</strong>: Full test suite passing with <code>pytest tests/ -v</code></li>
+<li><strong>Strict Type Safety</strong>: <code>mypy src/adaptshot --strict</code> clean</li>
+<li><strong>Zero Lint</strong>: <code>ruff check src/ tests/</code> clean</li>
+</ul>
+<h3 id="security">Security<a class="headerlink" href="#security" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Local-only processing by design; no cloud uploads or telemetry.</li>
+<li>API tokens for PyPI publishing must be managed via environment variables or <code>.pypirc</code>.</li>
+</ul>
+<hr />
+<h2 id="010-2024-05-01">[0.1.0] - 2024-05-01<a class="headerlink" href="#010-2024-05-01" title="Permanent link">&para;</a></h2>
+<h3 id="added_3">Added<a class="headerlink" href="#added_3" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Core Inference Engine</strong>: <code>FewShotLearner</code> API with <code>predict()</code>, <code>correct()</code>, <code>save()</code>, and <code>load()</code> methods.</li>
+<li><strong>Embedding Extraction</strong>: Frozen ResNet-18 and MobileNetV3-Small backbones with TorchScript-compatible preprocessing.</li>
+<li><strong>Similarity Search</strong>: CPU-optimized cosine similarity with FAISS-CPU support and NumPy fallback.</li>
+<li><strong>Calibration</strong>: <code>CalibrationEngine</code> implementing online temperature scaling, sliding-window ECE tracking, and conformal prediction stub.</li>
+<li><strong>ACT Engine</strong>: <code>ACTEngine</code> for adaptive per-class confidence thresholding based on correction history.</li>
+<li><strong>Human-in-the-Loop Routing</strong>: <code>FeedbackRouter</code> with configurable buffer capacity and fine-tuning trigger thresholds.</li>
+<li><strong>Continual Learning</strong>: <code>CAEWCFinetuner</code> implementing correction-aware elastic weight consolidation with Fisher Information tracking.</li>
+<li><strong>Memory Management</strong>: <code>UPUGFPruner</code> enforcing bounded replay buffers via uncertainty × recency × redundancy scoring.</li>
+<li><strong>Configuration</strong>: Immutable <code>AdaptShotConfig</code> dataclass with validation and deterministic seeding.</li>
+<li><strong>Utilities</strong>: Determinism verification (<code>verify_determinism</code>), safe I/O helpers, and type-safe logging.</li>
+<li><strong>Benchmarks</strong>: Reproducible smoke test (<code>run_benchmark.py</code>) and Day 2–4 integration scripts.</li>
+<li><strong>UI</strong>: Gradio-based pilot dashboard for image upload, prediction, and human feedback routing.</li>
+<li><strong>Documentation</strong>: <code>CONTRIBUTING.md</code>, <code>CODE_OF_CONDUCT.md</code>, and this <code>CHANGELOG.md</code>.</li>
+</ul>
+<h3 id="changed_5">Changed<a class="headerlink" href="#changed_5" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>extract_embedding</code> now accepts file paths, PIL images, NumPy arrays, or torch tensors.</li>
+<li><code>pyproject.toml</code> updated to modern PEP 621 standard with optional extras (<code>faiss</code>, <code>ui</code>, <code>dev</code>).</li>
+<li>Benchmark harness refactored to output structured JSON metrics and enforce deterministic seeds.</li>
+</ul>
+<h3 id="known-limitations_1">Known Limitations<a class="headerlink" href="#known-limitations_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>UP-UGF Pruning</strong>: Redundancy computation uses exact cosine similarity (<code>O(N²)</code>). Efficient for <code>N ≤ 100</code> but will be replaced with approximate search in larger buffers.</li>
+<li><strong>CA-EWC</strong>: Currently operates on classification head only; full backbone fine-tuning requires additional compute and is not recommended for CPU-only deployments.</li>
+<li><strong>Calibration</strong>: Temperature scaling uses grid search over the sliding window. Gradient-based optimization is planned for future releases.</li>
+<li><strong>Gradio UI</strong>: Assumes local file paths; remote/cloud storage integration requires custom callbacks.</li>
+<li><strong>Hardware</strong>: All benchmarks target standard x86_64 CPUs. ARM/Raspberry Pi performance may vary and requires manual latency profiling.</li>
+</ul>
+<h3 id="security_1">Security<a class="headerlink" href="#security_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Local-only processing by design; no cloud uploads or telemetry in v0.1.0.</li>
+<li>API tokens for PyPI publishing must be managed via environment variables or <code>.pypirc</code>.</li>
+</ul>
+<h3 id="acknowledgments">Acknowledgments<a class="headerlink" href="#acknowledgments" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Built by Johnson Christopher Hassan with community testing and feedback.</li>
+<li>Architecture inspired by few-shot learning literature, continual learning best practices, and open-source ML engineering standards.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "content.code.copy", "content.tabs.link", "content.action.edit", "content.action.view", "navigation.tabs", "navigation.sections", "navigation.top", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

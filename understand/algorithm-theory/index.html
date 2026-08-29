@@ -1,0 +1,3431 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Human-aligned few-shot vision learning for resource-constrained environments">
+      
+      
+      
+        <link rel="canonical" href="https://johnson2006christopher.github.io/adaptshot/understand/algorithm-theory/">
+      
+      
+        <link rel="prev" href="../human-in-the-loop/">
+      
+      
+        <link rel="next" href="../real-world-use-cases/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../images/adaptshot-logo.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Algorithm theory - AdaptShot</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#algorithm-theory-mathematical-foundations-of-adaptshot" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="AdaptShot" class="md-header__button md-logo" aria-label="AdaptShot" data-md-component="logo">
+      
+  <img src="../../images/adaptshot-logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AdaptShot
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Algorithm theory
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="blue"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/johnson2006christopher/adaptshot" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    johnson2006christopher/adaptshot
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../tutorials/00-what-is-this/" class="md-tabs__link">
+          
+  
+  
+  Start here
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../how-to/run-the-offline-demo/" class="md-tabs__link">
+          
+  
+  
+  How-to guides
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../how-it-works/" class="md-tabs__link">
+          
+  
+  
+  Understand
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../reference/api/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../contributing/contributing/" class="md-tabs__link">
+          
+  
+  
+  Contributing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="https://github.com/johnson2006christopher/adaptshot" class="md-tabs__link">
+          
+  
+  
+  Community
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AdaptShot" class="md-nav__button md-logo" aria-label="AdaptShot" data-md-component="logo">
+      
+  <img src="../../images/adaptshot-logo.png" alt="logo">
+
+    </a>
+    AdaptShot
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/johnson2006christopher/adaptshot" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    johnson2006christopher/adaptshot
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Start here
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/00-what-is-this/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    What AdaptShot is
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/01-install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1. Install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/02-first-prediction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2. Your first prediction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/03-your-own-photos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3. Your own photographs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/04-reading-the-answer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    4. Reading the answer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/05-teaching-corrections/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    5. Teaching corrections, saving
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/06-next/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Where next
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How-to guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    How-to guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/run-the-offline-demo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Run the demo offline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/check-what-this-machine-can-do/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Check what a machine can do
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/choose-alpha/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Choose the promise level (α)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/save-load-and-migrate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Save, load and migrate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/fine-tune-with-corrections/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fine-tune from corrections
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/use-your-own-backbone/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Use a different backbone
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/export-a-backbone-to-onnx/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Export a backbone to ONNX
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/run-the-benchmarks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Run the benchmarks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/use-tambua/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Use Tambua
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/deploy-offline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deploy offline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/troubleshoot/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshoot
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Understand
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Understand
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../how-it-works/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How it works
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../the-guarantee/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The guarantee
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../why-cpu-only-and-offline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Why CPU-only and offline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../human-in-the-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Human in the loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Algorithm theory
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Algorithm theory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-few-shot-learning-formulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Few-Shot Learning Formulation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Few-Shot Learning Formulation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#problem-setting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem Setting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prototypical-networks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prototypical Networks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nearest-neighbor-classification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nearest Neighbor Classification
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-distance-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Distance Metrics
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Distance Metrics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#euclidean-distance-normalized" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Euclidean Distance (Normalized)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cosine-similarity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cosine Similarity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distance-to-confidence-conversion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Distance-to-Confidence Conversion
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-calibration-theory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Calibration Theory
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Calibration Theory">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#expected-calibration-error-ece" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Expected Calibration Error (ECE)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#temperature-scaling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Temperature Scaling
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Temperature Scaling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#debiased-ece" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Debiased ECE
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bootstrap-temperature-estimation-v020" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bootstrap Temperature Estimation (v0.2.0)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-adaptive-confidence-thresholding-act" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Adaptive Confidence Thresholding (ACT)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Adaptive Confidence Thresholding (ACT)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#problem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exponential-moving-average-thresholds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exponential Moving Average Thresholds
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#acceptance-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Acceptance Decision
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#symmetric-updates-and-mean-reversion-v020" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Symmetric Updates and Mean-Reversion (v0.2.0)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-ca-ewc-context-aware-elastic-weight-consolidation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. CA-EWC (Context-Aware Elastic Weight Consolidation)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. CA-EWC (Context-Aware Elastic Weight Consolidation)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#elastic-weight-consolidation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Elastic Weight Consolidation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fisher-information-computation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fisher Information Computation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-up-ugf-uncertainty-penalized-utility-guided-forgetting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. UP-UGF (Uncertainty-Penalized Utility-Guided Forgetting)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. UP-UGF (Uncertainty-Penalized Utility-Guided Forgetting)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#utility-score" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Utility Score
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pruning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pruning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lsh-accelerated-redundancy-scoring-v020" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LSH-Accelerated Redundancy Scoring (v0.2.0)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-conformal-prediction-v020" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Conformal Prediction (v0.2.0)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Conformal Prediction (v0.2.0)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#theoretical-foundation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Theoretical Foundation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nonconformity-scores" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nonconformity Scores
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quantile-threshold" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quantile Threshold
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#finite-sample-correction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finite-Sample Correction
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-contrastive-prototype-learning-v020" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Contrastive Prototype Learning (v0.2.0)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Contrastive Prototype Learning (v0.2.0)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#infonce-loss" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        InfoNCE Loss
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#projection-head" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Projection Head
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gradient-training-via-infonce-backpropagation-v020" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gradient Training via InfoNCE Backpropagation (v0.2.0)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ema-prototype-updates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EMA Prototype Updates
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-multi-signal-uncertainty-v020" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Multi-Signal Uncertainty (v0.2.0)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Multi-Signal Uncertainty (v0.2.0)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#three-complementary-uncertainty-signals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Three Complementary Uncertainty Signals
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shrinkage-covariance-estimation-v020" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Shrinkage Covariance Estimation (v0.2.0)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#composite-uncertainty" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Composite Uncertainty
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ood-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OOD Detection
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-xai-explainability-v020" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. XAI Explainability (v0.2.0)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. XAI Explainability (v0.2.0)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#feature-attribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feature Attribution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#confidence-decomposition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Confidence Decomposition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#counterfactual-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Counterfactual Analysis
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../real-world-use-cases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Illustrative use cases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../technical-note/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Technical note
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../about/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    About the project
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/config-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Config reference (all fields)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Errors and warnings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/results-and-artifacts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results and artifacts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/tambua-cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tambua command line and config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/migration-v0.1-to-v0.2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migration v0.1 → v0.2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contributing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/development-setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development setup and the gate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/api-stability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API stability and deprecation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/how-the-docs-are-tested/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How the docs are tested
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/release-checklist/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release checklist
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/code_of_conduct/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Code of conduct
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Community
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Community
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/johnson2006christopher/adaptshot" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ⭐ Star on GitHub
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/johnson2006christopher/adaptshot/discussions" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    💬 GitHub Discussions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-few-shot-learning-formulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Few-Shot Learning Formulation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Few-Shot Learning Formulation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#problem-setting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem Setting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prototypical-networks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prototypical Networks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nearest-neighbor-classification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nearest Neighbor Classification
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-distance-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Distance Metrics
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Distance Metrics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#euclidean-distance-normalized" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Euclidean Distance (Normalized)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cosine-similarity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cosine Similarity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distance-to-confidence-conversion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Distance-to-Confidence Conversion
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-calibration-theory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Calibration Theory
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Calibration Theory">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#expected-calibration-error-ece" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Expected Calibration Error (ECE)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#temperature-scaling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Temperature Scaling
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Temperature Scaling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#debiased-ece" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Debiased ECE
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bootstrap-temperature-estimation-v020" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bootstrap Temperature Estimation (v0.2.0)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-adaptive-confidence-thresholding-act" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Adaptive Confidence Thresholding (ACT)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Adaptive Confidence Thresholding (ACT)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#problem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exponential-moving-average-thresholds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exponential Moving Average Thresholds
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#acceptance-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Acceptance Decision
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#symmetric-updates-and-mean-reversion-v020" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Symmetric Updates and Mean-Reversion (v0.2.0)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-ca-ewc-context-aware-elastic-weight-consolidation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. CA-EWC (Context-Aware Elastic Weight Consolidation)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. CA-EWC (Context-Aware Elastic Weight Consolidation)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#elastic-weight-consolidation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Elastic Weight Consolidation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fisher-information-computation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fisher Information Computation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-up-ugf-uncertainty-penalized-utility-guided-forgetting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. UP-UGF (Uncertainty-Penalized Utility-Guided Forgetting)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. UP-UGF (Uncertainty-Penalized Utility-Guided Forgetting)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#utility-score" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Utility Score
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pruning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pruning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lsh-accelerated-redundancy-scoring-v020" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LSH-Accelerated Redundancy Scoring (v0.2.0)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-conformal-prediction-v020" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Conformal Prediction (v0.2.0)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Conformal Prediction (v0.2.0)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#theoretical-foundation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Theoretical Foundation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nonconformity-scores" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nonconformity Scores
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quantile-threshold" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quantile Threshold
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#finite-sample-correction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finite-Sample Correction
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-contrastive-prototype-learning-v020" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Contrastive Prototype Learning (v0.2.0)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Contrastive Prototype Learning (v0.2.0)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#infonce-loss" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        InfoNCE Loss
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#projection-head" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Projection Head
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gradient-training-via-infonce-backpropagation-v020" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gradient Training via InfoNCE Backpropagation (v0.2.0)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ema-prototype-updates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EMA Prototype Updates
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-multi-signal-uncertainty-v020" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Multi-Signal Uncertainty (v0.2.0)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Multi-Signal Uncertainty (v0.2.0)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#three-complementary-uncertainty-signals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Three Complementary Uncertainty Signals
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shrinkage-covariance-estimation-v020" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Shrinkage Covariance Estimation (v0.2.0)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#composite-uncertainty" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Composite Uncertainty
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ood-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OOD Detection
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-xai-explainability-v020" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. XAI Explainability (v0.2.0)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. XAI Explainability (v0.2.0)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#feature-attribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feature Attribution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#confidence-decomposition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Confidence Decomposition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#counterfactual-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Counterfactual Analysis
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/johnson2006christopher/adaptshot/edit/v0.3.0/docs/understand/algorithm-theory.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+    
+      
+    
+    <a href="https://github.com/johnson2006christopher/adaptshot/raw/v0.3.0/docs/understand/algorithm-theory.md" title="View source of this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"/></svg>
+    </a>
+  
+
+
+<h1 id="algorithm-theory-mathematical-foundations-of-adaptshot">Algorithm Theory: Mathematical Foundations of AdaptShot<a class="headerlink" href="#algorithm-theory-mathematical-foundations-of-adaptshot" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p><strong>v0.2.0</strong> | Complete mathematical reference for all AdaptShot algorithms</p>
+</blockquote>
+<hr />
+<h2 id="1-few-shot-learning-formulation">1. Few-Shot Learning Formulation<a class="headerlink" href="#1-few-shot-learning-formulation" title="Permanent link">&para;</a></h2>
+<h3 id="problem-setting">Problem Setting<a class="headerlink" href="#problem-setting" title="Permanent link">&para;</a></h3>
+<p>AdaptShot operates in the <strong>N-way K-shot</strong> setting:
+- <strong>N</strong>: Number of distinct classes
+- <strong>K</strong>: Number of support examples per class
+- <strong>Support Set</strong> (S = {(x_i, y_i)}_{i=1}^{NK}): Labeled examples
+- <strong>Query</strong> (x_q): Unlabeled input to classify</p>
+<h3 id="prototypical-networks">Prototypical Networks<a class="headerlink" href="#prototypical-networks" title="Permanent link">&para;</a></h3>
+<p>Each class (c) is represented by its <strong>prototype</strong> — the mean embedding of its support examples:</p>
+<p>[\mathbf{p}<em>c = \frac{1}{|S_c|} \sum</em>{(x_i, y_i) \in S_c} f_\theta(x_i)]</p>
+<p>where (f_\theta) is the backbone embedding function (ResNet18 or MobileNetV3-Small).</p>
+<p>Classification is by nearest prototype:</p>
+<p>[\hat{y} = \arg\min_c \, d(f_\theta(x_q), \mathbf{p}_c)]</p>
+<h3 id="nearest-neighbor-classification">Nearest Neighbor Classification<a class="headerlink" href="#nearest-neighbor-classification" title="Permanent link">&para;</a></h3>
+<p>In nearest-neighbor mode, the query is compared directly to every support example:</p>
+<p>[\hat{y} = y_{\arg\min_i \, d(f_\theta(x_q), f_\theta(x_i))}]</p>
+<hr />
+<h2 id="2-distance-metrics">2. Distance Metrics<a class="headerlink" href="#2-distance-metrics" title="Permanent link">&para;</a></h2>
+<h3 id="euclidean-distance-normalized">Euclidean Distance (Normalized)<a class="headerlink" href="#euclidean-distance-normalized" title="Permanent link">&para;</a></h3>
+<p>[d_{\text{euclid}}(\mathbf{a}, \mathbf{b}) = \frac{|\mathbf{a} - \mathbf{b}|_2}{\sqrt{D}}]</p>
+<p>where (D) is the embedding dimensionality. Normalization by (\sqrt{D}) ensures consistent scale across different backbone dimensions.</p>
+<h3 id="cosine-similarity">Cosine Similarity<a class="headerlink" href="#cosine-similarity" title="Permanent link">&para;</a></h3>
+<p>[\text{sim}_{\text{cos}}(\mathbf{a}, \mathbf{b}) = \frac{\mathbf{a} \cdot \mathbf{b}}{|\mathbf{a}|_2 |\mathbf{b}|_2 + \epsilon}]</p>
+<p>For cosine metric: confidence = (\frac{\text{sim} + 1}{2}) (maps from [-1, 1] to [0, 1]).</p>
+<h3 id="distance-to-confidence-conversion">Distance-to-Confidence Conversion<a class="headerlink" href="#distance-to-confidence-conversion" title="Permanent link">&para;</a></h3>
+<p>For Euclidean distances, confidence is derived as:</p>
+<p>[\text{confidence} = \exp(-\tau \cdot d_{\text{euclid}})]</p>
+<p>where (\tau) is a temperature parameter (default: 1.0).</p>
+<hr />
+<h2 id="3-calibration-theory">3. Calibration Theory<a class="headerlink" href="#3-calibration-theory" title="Permanent link">&para;</a></h2>
+<h3 id="expected-calibration-error-ece">Expected Calibration Error (ECE)<a class="headerlink" href="#expected-calibration-error-ece" title="Permanent link">&para;</a></h3>
+<p>ECE measures the discrepancy between predicted confidence and observed accuracy:</p>
+<p>[\text{ECE} = \sum_{m=1}^{M} \frac{|B_m|}{N} \left| \text{acc}(B_m) - \text{conf}(B_m) \right|]</p>
+<p>Where:
+- (M): Number of bins (default: 15)
+- (B_m): Set of predictions in bin (m)
+- (\text{acc}(B_m)): Observed accuracy in bin (m)
+- (\text{conf}(B_m)): Average confidence in bin (m)</p>
+<h3 id="temperature-scaling">Temperature Scaling<a class="headerlink" href="#temperature-scaling" title="Permanent link">&para;</a></h3>
+<p>A single scalar parameter (T) is optimized to minimize NLL on a calibration set:</p>
+<p>[\hat{q}_i = \text{softmax}(z_i / T)]</p>
+<p>The calibrated confidence is:</p>
+<p>[\text{conf}<em>{\text{cal}} = \max_c \hat{q}</em>{i,c}]</p>
+<h4 id="debiased-ece">Debiased ECE<a class="headerlink" href="#debiased-ece" title="Permanent link">&para;</a></h4>
+<p>AdaptShot computes <strong>debiased ECE</strong> to correct for small-sample binning artifacts:</p>
+<p>[\text{ECE}<em>{\text{debiased}} = \text{ECE} - \frac{1}{2MN} \sum</em>{m=1}^{M} \hat{p}_m(1 - \hat{p}_m)]</p>
+<h3 id="bootstrap-temperature-estimation-v020">Bootstrap Temperature Estimation (v0.2.0)<a class="headerlink" href="#bootstrap-temperature-estimation-v020" title="Permanent link">&para;</a></h3>
+<p>When the calibration window is small (&lt; 30 samples), a single temperature estimate can be unstable. v0.2.0 uses bootstrap resampling for a more robust estimate:</p>
+<p>[T_{\text{bootstrap}} = \text{median}\left({T_1, T_2, ..., T_B}\right)]</p>
+<p>Where each (T_b) is the temperature estimated from a bootstrap sample (with replacement) of the calibration window. The number of bootstrap iterations (B) defaults to 100. The median is used instead of the mean because temperature estimates can be right-skewed when the window is small.</p>
+<p>This produces more stable calibrated confidences during early deployment when few corrections have been collected.</p>
+<hr />
+<h2 id="4-adaptive-confidence-thresholding-act">4. Adaptive Confidence Thresholding (ACT)<a class="headerlink" href="#4-adaptive-confidence-thresholding-act" title="Permanent link">&para;</a></h2>
+<h3 id="problem">Problem<a class="headerlink" href="#problem" title="Permanent link">&para;</a></h3>
+<p>Fixed confidence thresholds fail under distribution shift. ACT adapts per-class thresholds using a regret-minimization framework.</p>
+<h3 id="exponential-moving-average-thresholds">Exponential Moving Average Thresholds<a class="headerlink" href="#exponential-moving-average-thresholds" title="Permanent link">&para;</a></h3>
+<p>Each class (c) maintains:</p>
+<p>[a_c^{(t)} = \beta \cdot a_c^{(t-1)} + (1 - \beta) \cdot \mathbb{1}[\text{correct}_t]]</p>
+<p>[r_c^{(t)} = \beta \cdot r_c^{(t-1)} + (1 - \beta) \cdot \mathbb{1}[\text{incorrect}_t]]</p>
+<p>The adaptive threshold is:</p>
+<p>[\theta_c^{(t)} = \theta_c^{(0)} + \eta \cdot (r_c^{(t)} - a_c^{(t)})]</p>
+<p>Where (\beta = 0.9) is the EMA decay rate and (\eta = 0.05) is the learning rate.</p>
+<h3 id="acceptance-decision">Acceptance Decision<a class="headerlink" href="#acceptance-decision" title="Permanent link">&para;</a></h3>
+<p>A prediction is accepted when:</p>
+<p>[\text{conf}_{\text{cal}} \geq \theta_c^{(t)}]</p>
+<p>Actions: <code>ACCEPT</code>, <code>REQUEST_FEEDBACK</code>, <code>REQUEST_FEEDBACK_OOD</code></p>
+<h3 id="symmetric-updates-and-mean-reversion-v020">Symmetric Updates and Mean-Reversion (v0.2.0)<a class="headerlink" href="#symmetric-updates-and-mean-reversion-v020" title="Permanent link">&para;</a></h3>
+<p>In v0.2.0, ACT uses symmetric threshold updates to prevent drift:</p>
+<p>[\theta_c^{(t+1)} = \theta_c^{(t)} + \eta \cdot (r_c^{(t)} - a_c^{(t)}) + \gamma \cdot (\theta_c^{(0)} - \theta_c^{(t)})]</p>
+<p>Where:
+- (\gamma): Mean-reversion strength (default: 0.01)
+- (\theta_c^{(0)}): Initial threshold anchor</p>
+<p>The mean-reversion term (\gamma \cdot (\theta_c^{(0)} - \theta_c^{(t)})) pulls thresholds back toward their initial values over time, preventing unbounded drift in long-running services where correction patterns may change.</p>
+<hr />
+<h2 id="5-ca-ewc-context-aware-elastic-weight-consolidation">5. CA-EWC (Context-Aware Elastic Weight Consolidation)<a class="headerlink" href="#5-ca-ewc-context-aware-elastic-weight-consolidation" title="Permanent link">&para;</a></h2>
+<h3 id="elastic-weight-consolidation">Elastic Weight Consolidation<a class="headerlink" href="#elastic-weight-consolidation" title="Permanent link">&para;</a></h3>
+<p>EWC prevents catastrophic forgetting by penalizing changes to parameters important for previous tasks:</p>
+<p>[\mathcal{L}<em>{\text{EWC}}(\theta) = \mathcal{L}</em>{\text{task}}(\theta) + \frac{\lambda}{2} \sum_i \mathbf{F}_i (\theta_i - \theta_i^*)^2]</p>
+<p>Where:
+- (\mathbf{F}_i): Diagonal of the Fisher Information Matrix for parameter (i)
+- (\theta_i^*): Optimal parameter values from previous tasks
+- (\lambda): Regularization strength (default: 0.1)</p>
+<h3 id="fisher-information-computation">Fisher Information Computation<a class="headerlink" href="#fisher-information-computation" title="Permanent link">&para;</a></h3>
+<p>[\mathbf{F} = \mathbb{E}_{x \sim \mathcal{D}} \left[ \left( \frac{\partial \log p(y|x; \theta)}{\partial \theta} \right)^2 \right]]</p>
+<p>In practice, the Fisher is accumulated over the support set using empirical gradients.</p>
+<hr />
+<h2 id="6-up-ugf-uncertainty-penalized-utility-guided-forgetting">6. UP-UGF (Uncertainty-Penalized Utility-Guided Forgetting)<a class="headerlink" href="#6-up-ugf-uncertainty-penalized-utility-guided-forgetting" title="Permanent link">&para;</a></h2>
+<h3 id="utility-score">Utility Score<a class="headerlink" href="#utility-score" title="Permanent link">&para;</a></h3>
+<p>Each support example (i) receives a utility score:</p>
+<p>[U_i = \alpha \cdot (1 - u_i) + \beta \cdot r_i + \gamma \cdot s_i]</p>
+<p>Where:
+- (u_i): Normalized uncertainty score
+- (r_i): Recency (normalized access time)
+- (s_i): Redundancy penalty (similarity to nearest neighbor in buffer)
+- (\alpha, \beta, \gamma): Configurable weights (default: 1.0 each)</p>
+<h3 id="pruning">Pruning<a class="headerlink" href="#pruning" title="Permanent link">&para;</a></h3>
+<p>When the buffer exceeds <code>max_buffer_size</code>, the (|B| - C) lowest-utility examples are removed.</p>
+<h3 id="lsh-accelerated-redundancy-scoring-v020">LSH-Accelerated Redundancy Scoring (v0.2.0)<a class="headerlink" href="#lsh-accelerated-redundancy-scoring-v020" title="Permanent link">&para;</a></h3>
+<p>Computing exact pairwise similarities for redundancy (s_i) is (O(N^2)) — expensive for large buffers. v0.2.0 uses Locality-Sensitive Hashing (LSH) to approximate nearest-neighbor similarity in (O(N \log N)):</p>
+<p>[h(\mathbf{x}) = \text{sign}(\mathbf{w} \cdot \mathbf{x})]</p>
+<p>Where (\mathbf{w} \sim \mathcal{N}(0, I)) is a random projection vector. Multiple hash functions form a signature, and examples that hash to the same bucket are approximate neighbors. The redundancy penalty (s_i) is then computed from the LSH-colliding example's distance rather than the global nearest neighbor.</p>
+<hr />
+<h2 id="7-conformal-prediction-v020">7. Conformal Prediction (v0.2.0)<a class="headerlink" href="#7-conformal-prediction-v020" title="Permanent link">&para;</a></h2>
+<h3 id="theoretical-foundation">Theoretical Foundation<a class="headerlink" href="#theoretical-foundation" title="Permanent link">&para;</a></h3>
+<p>Conformal prediction provides <strong>distribution-free finite-sample validity</strong>:</p>
+<p>[\mathbb{P}(Y_{n+1} \in \hat{C}<em>\alpha(X</em>{n+1})) \geq 1 - \alpha]</p>
+<p>under the assumption of exchangeability of ((X_1, Y_1), ..., (X_{n+1}, Y_{n+1})).</p>
+<h3 id="nonconformity-scores">Nonconformity Scores<a class="headerlink" href="#nonconformity-scores" title="Permanent link">&para;</a></h3>
+<p><strong>Softmax-based</strong>:
+[s(x, y) = 1 - \frac{\exp(-d(x, \mathbf{p}<em>y) / \tau)}{\sum</em>{c} \exp(-d(x, \mathbf{p}_c) / \tau)}]</p>
+<p><strong>Distance-based</strong>:
+[s(x, y) = \min\left(1, \frac{d(x, \mathbf{p}_y)}{\text{threshold}}\right)]</p>
+<h3 id="quantile-threshold">Quantile Threshold<a class="headerlink" href="#quantile-threshold" title="Permanent link">&para;</a></h3>
+<p>With calibration scores (s_1, ..., s_n):</p>
+<p>[\hat{q} = Q_{1-\alpha}\left(s_1, ..., s_n; \frac{\lceil (n+1)(1-\alpha) \rceil}{n}\right)]</p>
+<p>The prediction set contains all classes with score (\leq \hat{q}).</p>
+<h3 id="finite-sample-correction">Finite-Sample Correction<a class="headerlink" href="#finite-sample-correction" title="Permanent link">&para;</a></h3>
+<p>The (\lceil (n+1)(1-\alpha) \rceil / n) correction ensures valid coverage even with small calibration sets.</p>
+<hr />
+<h2 id="8-contrastive-prototype-learning-v020">8. Contrastive Prototype Learning (v0.2.0)<a class="headerlink" href="#8-contrastive-prototype-learning-v020" title="Permanent link">&para;</a></h2>
+<h3 id="infonce-loss">InfoNCE Loss<a class="headerlink" href="#infonce-loss" title="Permanent link">&para;</a></h3>
+<p>Prototypes are refined using the InfoNCE (Noise Contrastive Estimation) objective:</p>
+<p>[\mathcal{L}<em>{\text{InfoNCE}} = -\mathbb{E}\left[ \log \frac{\exp(\text{sim}(z_i, z_i^+) / \tau)}{\sum</em>{j} \exp(\text{sim}(z_i, z_j) / \tau)} \right]]</p>
+<p>Where:
+- (z_i): Projected embedding of example (i)
+- (z_i^+): Projected prototype of the same class
+- (\tau): Temperature parameter (default: 0.07)
+- (\text{sim}): Cosine similarity in projection space</p>
+<h3 id="projection-head">Projection Head<a class="headerlink" href="#projection-head" title="Permanent link">&para;</a></h3>
+<p>A 2-layer MLP maps backbone embeddings to a contrastive space:</p>
+<p>[z = \text{L2-Normalize}(W_2 \cdot \text{ReLU}(W_1 \cdot x + b_1) + b_2)]</p>
+<p>Dimensions: (D_{\text{embed}} \to D_{\text{hidden}} \to D_{\text{proj}}) (default: 128).</p>
+<h3 id="gradient-training-via-infonce-backpropagation-v020">Gradient Training via InfoNCE Backpropagation (v0.2.0)<a class="headerlink" href="#gradient-training-via-infonce-backpropagation-v020" title="Permanent link">&para;</a></h3>
+<p>In v0.2.0, the projection head parameters ((W_1, b_1, W_2, b_2)) are trained end-to-end via gradient descent through the InfoNCE loss:</p>
+<p>[\frac{\partial \mathcal{L}<em>{\text{InfoNCE}}}{\partial W_1} = \frac{\partial \mathcal{L}</em>{\text{InfoNCE}}}{\partial z} \cdot \frac{\partial z}{\partial h} \cdot \frac{\partial h}{\partial W_1}]</p>
+<p>Where (h = \text{ReLU}(W_1 x + b_1)) is the hidden layer activation and (z) is the L2-normalized output. The gradient flows through both linear layers and the ReLU nonlinearity.</p>
+<p>Parameter updates use SGD with momentum:</p>
+<p>[W_1^{(t+1)} = W_1^{(t)} - \alpha \cdot v_1^{(t)}, \quad v_1^{(t+1)} = \mu \cdot v_1^{(t)} + \frac{\partial \mathcal{L}}{\partial W_1}]</p>
+<p>Where (\alpha) is the learning rate (default: 0.01) and (\mu) is the momentum coefficient (default: 0.9). This is a significant upgrade from v0.1.x where the projection head used fixed or randomly initialized weights.</p>
+<h3 id="ema-prototype-updates">EMA Prototype Updates<a class="headerlink" href="#ema-prototype-updates" title="Permanent link">&para;</a></h3>
+<p>Prototypes are updated using exponential moving average for stability:</p>
+<p>[\mathbf{p}_c^{(t+1)} = \mu \cdot \mathbf{p}_c^{(t)} + (1 - \mu) \cdot \bar{z}_c]</p>
+<p>Where (\mu = 0.9) and (\bar{z}_c) is the mean projected embedding of class (c).</p>
+<hr />
+<h2 id="9-multi-signal-uncertainty-v020">9. Multi-Signal Uncertainty (v0.2.0)<a class="headerlink" href="#9-multi-signal-uncertainty-v020" title="Permanent link">&para;</a></h2>
+<h3 id="three-complementary-uncertainty-signals">Three Complementary Uncertainty Signals<a class="headerlink" href="#three-complementary-uncertainty-signals" title="Permanent link">&para;</a></h3>
+<p><strong>Epistemic</strong> (Model Uncertainty) — MC Dropout variance:
+[U_{\text{epi}} = \text{Var}<em>{m \sim \text{MC}} \left[ f</em>\theta^{(m)}(x) \right]]</p>
+<p><strong>Aleatoric</strong> (Data Uncertainty) — k-NN entropy:
+[U_{\text{alea}} = -\sum_{c} p_c \log p_c]</p>
+<p>where (p_c) is the weighted class distribution over k nearest neighbors.</p>
+<p><strong>Distributional</strong> (OOD Uncertainty) — Mahalanobis distance:
+[D_M(x, c) = \sqrt{(x - \mu_c)^\top \Sigma_c^{-1} (x - \mu_c)}]</p>
+<h3 id="shrinkage-covariance-estimation-v020">Shrinkage Covariance Estimation (v0.2.0)<a class="headerlink" href="#shrinkage-covariance-estimation-v020" title="Permanent link">&para;</a></h3>
+<p>When the number of samples per class (n_c) is small relative to the embedding dimension (D), the empirical covariance (\Sigma_{\text{emp}}) is poorly conditioned. v0.2.0 uses shrinkage to stabilize the estimate:</p>
+<p>[\Sigma_{\text{shrunk}} = (1 - \lambda)\Sigma_{\text{emp}} + \lambda \cdot \text{diag}(\Sigma_{\text{emp}})]</p>
+<p>Where the shrinkage intensity (\lambda) is automatically scaled:</p>
+<p>[\lambda = \min\left(1.0, \max\left(0.1, \frac{D}{n_c + D}\right)\right)]</p>
+<ul>
+<li>When (n_c \gg D): (\lambda \to 0.1) (mostly empirical — reliable estimate)</li>
+<li>When (n_c \ll D): (\lambda \to 1.0) (mostly diagonal — avoids singular matrices)</li>
+</ul>
+<p>A ridge term (\epsilon I) is also added for numerical stability: (\Sigma_c^{-1} \approx (\Sigma_{\text{shrunk}} + \epsilon I)^{-1}).</p>
+<h3 id="composite-uncertainty">Composite Uncertainty<a class="headerlink" href="#composite-uncertainty" title="Permanent link">&para;</a></h3>
+<p>[U_{\text{composite}} = \frac{w_e U_{\text{epi}} + w_a U_{\text{alea}} + w_d U_{\text{dist}}}{w_e + w_a + w_d}]</p>
+<h3 id="ood-detection">OOD Detection<a class="headerlink" href="#ood-detection" title="Permanent link">&para;</a></h3>
+<p>Inputs are flagged as OOD when:</p>
+<p>[\min_c D_M(x, c) &gt; Q_p({D_M(x_i, y_i)}_{i \in \text{calib}})]</p>
+<p>where (Q_p) is the (p)-th percentile of in-distribution Mahalanobis distances.</p>
+<hr />
+<h2 id="10-xai-explainability-v020">10. XAI Explainability (v0.2.0)<a class="headerlink" href="#10-xai-explainability-v020" title="Permanent link">&para;</a></h2>
+<h3 id="feature-attribution">Feature Attribution<a class="headerlink" href="#feature-attribution" title="Permanent link">&para;</a></h3>
+<p>The influence of support example (i) on the query (x_q) is:</p>
+<p>[w_i = \frac{1 / (d(x_q, x_i) + \epsilon)}{\sum_j 1 / (d(x_q, x_j) + \epsilon)}]</p>
+<p>Top-k support examples with highest weights are reported with their class, distance, and whether they share the predicted class.</p>
+<h3 id="confidence-decomposition">Confidence Decomposition<a class="headerlink" href="#confidence-decomposition" title="Permanent link">&para;</a></h3>
+<p>[\text{conf}<em>{\text{final}} = \text{raw} + \Delta</em>{\text{cal}} + \Delta_{\text{ACT}} + \Delta_{\text{OOD}}]</p>
+<p>Where each (\Delta) term represents the contribution (positive or negative) from each pipeline stage.</p>
+<h3 id="counterfactual-analysis">Counterfactual Analysis<a class="headerlink" href="#counterfactual-analysis" title="Permanent link">&para;</a></h3>
+<p>The counterfactual class is the nearest alternative:</p>
+<p>[c_{\text{cf}} = \arg\min_{c \neq \hat{y}} d(x_q, \mathbf{p}_c)]</p>
+<p>The <strong>swap required</strong> is the minimum change in embedding space to flip the prediction:</p>
+<p>[\text{swap} = \max(0, d(x_q, \mathbf{p}<em>{\hat{y}}) - d(x_q, \mathbf{p}</em>{c_{\text{cf}}}))]</p>
+<hr />
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Vovk, V., Gammerman, A., &amp; Shafer, G. (2005). <em>Algorithmic Learning in a Random World</em>. Springer.</li>
+<li>Snell, J., Swersky, K., &amp; Zemel, R. (2017). Prototypical Networks for Few-shot Learning. <em>NeurIPS</em>.</li>
+<li>Guo, C., et al. (2017). On Calibration of Modern Neural Networks. <em>ICML</em>.</li>
+<li>Chen, T., et al. (2020). A Simple Framework for Contrastive Learning of Visual Representations. <em>ICML</em>.</li>
+<li>Lee, K., et al. (2018). A Simple Unified Framework for Detecting Out-of-Distribution Samples. <em>NeurIPS</em>.</li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "content.code.copy", "content.tabs.link", "content.action.edit", "content.action.view", "navigation.tabs", "navigation.sections", "navigation.top", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

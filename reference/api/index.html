@@ -1,0 +1,3574 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Human-aligned few-shot vision learning for resource-constrained environments">
+      
+      
+      
+        <link rel="canonical" href="https://johnson2006christopher.github.io/adaptshot/reference/api/">
+      
+      
+        <link rel="prev" href="../../about/">
+      
+      
+        <link rel="next" href="../config-reference/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../images/adaptshot-logo.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>API reference - AdaptShot</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#adaptshot-v030-api-reference" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="AdaptShot" class="md-header__button md-logo" aria-label="AdaptShot" data-md-component="logo">
+      
+  <img src="../../images/adaptshot-logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AdaptShot
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              API reference
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="blue"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/johnson2006christopher/adaptshot" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    johnson2006christopher/adaptshot
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../tutorials/00-what-is-this/" class="md-tabs__link">
+          
+  
+  
+  Start here
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../how-to/run-the-offline-demo/" class="md-tabs__link">
+          
+  
+  
+  How-to guides
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../understand/how-it-works/" class="md-tabs__link">
+          
+  
+  
+  Understand
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../contributing/contributing/" class="md-tabs__link">
+          
+  
+  
+  Contributing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="https://github.com/johnson2006christopher/adaptshot" class="md-tabs__link">
+          
+  
+  
+  Community
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AdaptShot" class="md-nav__button md-logo" aria-label="AdaptShot" data-md-component="logo">
+      
+  <img src="../../images/adaptshot-logo.png" alt="logo">
+
+    </a>
+    AdaptShot
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/johnson2006christopher/adaptshot" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    johnson2006christopher/adaptshot
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Start here
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/00-what-is-this/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    What AdaptShot is
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/01-install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1. Install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/02-first-prediction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2. Your first prediction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/03-your-own-photos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3. Your own photographs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/04-reading-the-answer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    4. Reading the answer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/05-teaching-corrections/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    5. Teaching corrections, saving
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/06-next/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Where next
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How-to guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    How-to guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/run-the-offline-demo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Run the demo offline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/check-what-this-machine-can-do/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Check what a machine can do
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/choose-alpha/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Choose the promise level (α)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/save-load-and-migrate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Save, load and migrate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/fine-tune-with-corrections/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fine-tune from corrections
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/use-your-own-backbone/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Use a different backbone
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/export-a-backbone-to-onnx/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Export a backbone to ONNX
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/run-the-benchmarks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Run the benchmarks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/use-tambua/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Use Tambua
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/deploy-offline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deploy offline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/troubleshoot/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshoot
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Understand
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Understand
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../understand/how-it-works/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How it works
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../understand/the-guarantee/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The guarantee
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../understand/why-cpu-only-and-offline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Why CPU-only and offline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../understand/human-in-the-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Human in the loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../understand/algorithm-theory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Algorithm theory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../understand/real-world-use-cases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Illustrative use cases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../understand/technical-note/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Technical note
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../about/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    About the project
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API reference
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#stable-and-experimental" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stable and experimental
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#stable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stable
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Stable">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fewshotlearner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FewShotLearner
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="FewShotLearner">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#load_support_imagesimage_paths-labels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        load_support_images(image_paths, labels)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#predictimage-predictionresult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        predict(image) -&gt; PredictionResult
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explainimage-explanationresult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        explain(image) -&gt; ExplanationResult
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#correctimage_path-true_label-confidence_weight10-dictstr-any" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        correct(image_path, true_label, confidence_weight=1.0) -&gt; dict[str, Any]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#savepath-fewshotlearnerloadpath" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        save(path) / FewShotLearner.load(path)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#predictionresult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PredictionResult
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adaptshotconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AdaptShotConfig
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="AdaptShotConfig">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#configuration-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration types
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#calibrationengine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CalibrationEngine
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#conformalengine-and-conformalpredictionset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ConformalEngine and ConformalPredictionSet
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#feedbackrouter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FeedbackRouter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#uncertaintyquantifier-and-uncertaintyreport" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        UncertaintyQuantifier and UncertaintyReport
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actengine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ACTEngine
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#upugfpruner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        UPUGFPruner
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#experimental" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Experimental
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Experimental">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#explainabilityengine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplainabilityEngine
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ExplainabilityEngine">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#explanationresult-featureattribution-confidencedecomposition-counterfactual" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplanationResult, FeatureAttribution, ConfidenceDecomposition, Counterfactual
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#check_environment-environmentreport-capability" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        check_environment(), EnvironmentReport, Capability
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#contrastiveprototypelearner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ContrastivePrototypeLearner
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ContrastivePrototypeLearner">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#contrastiveconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ContrastiveConfig
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#outside-the-api-surface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Outside the API surface
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../config-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Config reference (all fields)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Errors and warnings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../results-and-artifacts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results and artifacts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tambua-cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tambua command line and config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../migration-v0.1-to-v0.2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migration v0.1 → v0.2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contributing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/development-setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development setup and the gate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/api-stability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API stability and deprecation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/how-the-docs-are-tested/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How the docs are tested
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/release-checklist/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release checklist
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/code_of_conduct/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Code of conduct
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Community
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Community
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/johnson2006christopher/adaptshot" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ⭐ Star on GitHub
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/johnson2006christopher/adaptshot/discussions" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    💬 GitHub Discussions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#stable-and-experimental" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stable and experimental
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#stable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stable
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Stable">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fewshotlearner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FewShotLearner
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="FewShotLearner">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#load_support_imagesimage_paths-labels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        load_support_images(image_paths, labels)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#predictimage-predictionresult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        predict(image) -&gt; PredictionResult
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explainimage-explanationresult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        explain(image) -&gt; ExplanationResult
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#correctimage_path-true_label-confidence_weight10-dictstr-any" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        correct(image_path, true_label, confidence_weight=1.0) -&gt; dict[str, Any]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#savepath-fewshotlearnerloadpath" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        save(path) / FewShotLearner.load(path)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#predictionresult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PredictionResult
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adaptshotconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AdaptShotConfig
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="AdaptShotConfig">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#configuration-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration types
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#calibrationengine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CalibrationEngine
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#conformalengine-and-conformalpredictionset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ConformalEngine and ConformalPredictionSet
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#feedbackrouter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FeedbackRouter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#uncertaintyquantifier-and-uncertaintyreport" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        UncertaintyQuantifier and UncertaintyReport
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actengine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ACTEngine
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#upugfpruner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        UPUGFPruner
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#experimental" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Experimental
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Experimental">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#explainabilityengine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplainabilityEngine
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ExplainabilityEngine">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#explanationresult-featureattribution-confidencedecomposition-counterfactual" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplanationResult, FeatureAttribution, ConfidenceDecomposition, Counterfactual
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#check_environment-environmentreport-capability" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        check_environment(), EnvironmentReport, Capability
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#contrastiveprototypelearner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ContrastivePrototypeLearner
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ContrastivePrototypeLearner">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#contrastiveconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ContrastiveConfig
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#outside-the-api-surface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Outside the API surface
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/johnson2006christopher/adaptshot/edit/v0.3.0/docs/reference/api.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+    
+      
+    
+    <a href="https://github.com/johnson2006christopher/adaptshot/raw/v0.3.0/docs/reference/api.md" title="View source of this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"/></svg>
+    </a>
+  
+
+
+<h1 id="adaptshot-v030-api-reference">AdaptShot v0.3.0 API Reference<a class="headerlink" href="#adaptshot-v030-api-reference" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>Every name here is exported from <code>adaptshot</code> and classified in <code>adaptshot.api</code>.
+<code>tests/test_api_surface.py</code> fails if this page, the classification and the
+docstrings disagree.</p>
+</blockquote>
+<h2 id="stable-and-experimental">Stable and experimental<a class="headerlink" href="#stable-and-experimental" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Meaning</th>
+<th>What a change costs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Stable</strong></td>
+<td>Supported, semver-protected, tested</td>
+<td>A deprecation cycle: warn for one minor release, then remove</td>
+</tr>
+<tr>
+<td><strong>Experimental</strong></td>
+<td>Works; may change in a minor release</td>
+<td>Nothing beyond a changelog line. The docstring says <strong>Experimental</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The policy is in <code>CONTRIBUTING.md</code> under <em>API Stability and Deprecation</em>. Two things
+were found to be neither: three <code>UncertaintyQuantifier</code> methods with no caller anywhere
+are deprecated (removed in 0.4.0), and <code>MemoryTracker</code> was documented here as an engine
+while never having been exported — it is listed at the end, outside the surface.</p>
+<hr />
+<h2 id="stable">Stable<a class="headerlink" href="#stable" title="Permanent link">&para;</a></h2>
+<h3 id="fewshotlearner"><code>FewShotLearner</code><a class="headerlink" href="#fewshotlearner" title="Permanent link">&para;</a></h3>
+<p>Main entry point for few-shot learning and inference.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">adaptshot</span><span class="w"> </span><span class="kn">import</span> <span class="n">FewShotLearner</span><span class="p">,</span> <span class="n">AdaptShotConfig</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">learner</span> <span class="o">=</span> <span class="n">FewShotLearner</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">AdaptShotConfig</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="s2">"cpu"</span><span class="p">))</span>
+</span></code></pre></div>
+<p><strong>Constructor</strong> — <code>__init__(config: AdaptShotConfig | None = None, **kwargs)</code></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>config</code></td>
+<td><code>AdaptShotConfig</code></td>
+<td><code>None</code></td>
+<td>Central configuration object</td>
+</tr>
+<tr>
+<td><code>**kwargs</code></td>
+<td>—</td>
+<td>—</td>
+<td>Passed to <code>AdaptShotConfig(**kwargs)</code> if no config is given</td>
+</tr>
+</tbody>
+</table>
+<h4 id="load_support_imagesimage_paths-labels"><code>load_support_images(image_paths, labels)</code><a class="headerlink" href="#load_support_imagesimage_paths-labels" title="Permanent link">&para;</a></h4>
+<p>Ingest a support set and initialise every internal index. Also runs leave-one-out
+conformal calibration and bootstrap temperature estimation on the support set, fits the
+OOD class distributions, and — when <code>inference_mode="contrastive"</code> — trains the
+projection head.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">learner</span><span class="o">.</span><span class="n">load_support_images</span><span class="p">(</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">image_paths</span><span class="o">=</span><span class="p">[</span><span class="s2">"cat_01.jpg"</span><span class="p">,</span> <span class="s2">"cat_02.jpg"</span><span class="p">,</span> <span class="s2">"dog_01.jpg"</span><span class="p">,</span> <span class="s2">"dog_02.jpg"</span><span class="p">],</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s2">"cat"</span><span class="p">,</span> <span class="s2">"cat"</span><span class="p">,</span> <span class="s2">"dog"</span><span class="p">,</span> <span class="s2">"dog"</span><span class="p">],</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="p">)</span>
+</span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>image_paths</code></td>
+<td><code>Sequence[str]</code></td>
+<td>Paths to RGB images</td>
+</tr>
+<tr>
+<td><code>labels</code></td>
+<td><code>Sequence[str \| int]</code></td>
+<td>One class label per image</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Raises</strong> <code>ConfigValidationError</code> (mismatched lengths or empty inputs),
+<code>InvalidImageError</code> (missing, unreadable or non-RGB), <code>BackboneError</code> (no usable backend
+for the configured backbone on this install), <code>AdaptShotError</code> (embedding failure).</p>
+<h4 id="predictimage-predictionresult"><code>predict(image) -&gt; PredictionResult</code><a class="headerlink" href="#predictimage-predictionresult" title="Permanent link">&para;</a></h4>
+<p>Embedding → inference → calibration → ACT gating → conformal set → uncertainty report.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"query.jpg"</span><span class="p">)</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">result</span><span class="o">.</span><span class="n">prediction</span>              <span class="c1"># "cat"</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">result</span><span class="o">.</span><span class="n">calibrated_confidence</span>   <span class="c1"># 0.87</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">result</span><span class="o">.</span><span class="n">conformal_set</span>           <span class="c1"># ["cat", "dog"]</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="n">result</span><span class="o">.</span><span class="n">ood_flag</span>                <span class="c1"># False</span>
+</span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>image</code></td>
+<td><code>str \| PIL.Image.Image \| np.ndarray</code></td>
+<td>File path, PIL image, or HWC array</td>
+</tr>
+</tbody>
+</table>
+<h4 id="explainimage-explanationresult"><code>explain(image) -&gt; ExplanationResult</code><a class="headerlink" href="#explainimage-explanationresult" title="Permanent link">&para;</a></h4>
+<p>Feature attribution, confidence decomposition and a counterfactual, in one object.</p>
+<p>The method is stable. <strong>What it returns is experimental</strong>: <code>ExplanationResult</code> and the
+dataclasses it holds may change in a minor release. See the Experimental section.</p>
+<h4 id="correctimage_path-true_label-confidence_weight10-dictstr-any"><code>correct(image_path, true_label, confidence_weight=1.0) -&gt; dict[str, Any]</code><a class="headerlink" href="#correctimage_path-true_label-confidence_weight10-dictstr-any" title="Permanent link">&para;</a></h4>
+<p>Route a human correction into the continual-learning pipeline and feed the ground-truth
+nonconformity score into the conformal engine.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">summary</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span><span class="s2">"cat_01.jpg"</span><span class="p">,</span> <span class="n">true_label</span><span class="o">=</span><span class="s2">"dog"</span><span class="p">,</span> <span class="n">confidence_weight</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">summary</span><span class="p">[</span><span class="s2">"buffer_size"</span><span class="p">],</span> <span class="n">summary</span><span class="p">[</span><span class="s2">"calibration_updated"</span><span class="p">],</span> <span class="n">summary</span><span class="p">[</span><span class="s2">"fine_tuned"</span><span class="p">]</span>
+</span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>image_path</code></td>
+<td><code>str</code></td>
+<td>—</td>
+<td>Path to the corrected image</td>
+</tr>
+<tr>
+<td><code>true_label</code></td>
+<td><code>str \| int</code></td>
+<td>—</td>
+<td>Human-provided ground truth</td>
+</tr>
+<tr>
+<td><code>confidence_weight</code></td>
+<td><code>float</code></td>
+<td><code>1.0</code></td>
+<td>Confidence in the correction, <code>[0, 1]</code></td>
+</tr>
+</tbody>
+</table>
+<p>Fine-tuning with CA-EWC needs the <code>torch</code> extra; without it <code>correct()</code> still updates the
+buffer and calibration and reports <code>fine_tuned: False</code>.</p>
+<h4 id="savepath-fewshotlearnerloadpath"><code>save(path)</code> / <code>FewShotLearner.load(path)</code><a class="headerlink" href="#savepath-fewshotlearnerloadpath" title="Permanent link">&para;</a></h4>
+<p>Persist and restore. SHA-256 integrity check, schema migration from 0.1.x with a
+<code>RuntimeWarning</code>, atomic writes.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">learner</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">"checkpoint.json"</span><span class="p">)</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">restored</span> <span class="o">=</span> <span class="n">FewShotLearner</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"checkpoint.json"</span><span class="p">)</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">restored</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"query.jpg"</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<h3 id="predictionresult"><code>PredictionResult</code><a class="headerlink" href="#predictionresult" title="Permanent link">&para;</a></h3>
+<p>What <code>predict()</code> returns. A frozen dataclass.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>prediction</code></td>
+<td><code>str \| int</code></td>
+<td>Predicted class label</td>
+</tr>
+<tr>
+<td><code>raw_confidence</code></td>
+<td><code>float</code></td>
+<td>Similarity score <code>[0, 1]</code></td>
+</tr>
+<tr>
+<td><code>calibrated_confidence</code></td>
+<td><code>float</code></td>
+<td>Temperature-scaled confidence <code>[0, 1]</code></td>
+</tr>
+<tr>
+<td><code>neighbor_idx</code></td>
+<td><code>int</code></td>
+<td>Index of the nearest support example</td>
+</tr>
+<tr>
+<td><code>uncertainty_flag</code></td>
+<td><code>bool</code></td>
+<td>High-uncertainty flag</td>
+</tr>
+<tr>
+<td><code>act_action</code></td>
+<td><code>str</code></td>
+<td><code>ACCEPT</code>, <code>REQUEST_FEEDBACK</code>, or <code>REQUEST_FEEDBACK_OOD</code></td>
+</tr>
+<tr>
+<td><code>distance_to_prototype</code></td>
+<td><code>float</code></td>
+<td>Distance to the predicted class prototype</td>
+</tr>
+<tr>
+<td><code>prototype_margin</code></td>
+<td><code>float</code></td>
+<td>Gap between best and second-best prototype</td>
+</tr>
+<tr>
+<td><code>ood_flag</code></td>
+<td><code>bool</code></td>
+<td>Out-of-distribution flag (leave-one-out-calibrated Mahalanobis, #54)</td>
+</tr>
+<tr>
+<td><code>debiased_ece</code></td>
+<td><code>float</code></td>
+<td>Current debiased ECE</td>
+</tr>
+<tr>
+<td><code>conformal_set</code></td>
+<td><code>list[str \| int] \| None</code></td>
+<td>Conformal prediction set</td>
+</tr>
+<tr>
+<td><code>uncertainty_report</code></td>
+<td><code>dict[str, float] \| None</code></td>
+<td>Multi-signal uncertainty</td>
+</tr>
+<tr>
+<td><code>nearest_neighbors</code></td>
+<td><code>list[dict] \| None</code></td>
+<td>Top-5 nearest support examples</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="adaptshotconfig"><code>AdaptShotConfig</code><a class="headerlink" href="#adaptshotconfig" title="Permanent link">&para;</a></h3>
+<p>Immutable configuration dataclass, 27 fields. Every field is documented in the
+<a href="../config-reference/">Config Reference</a>. The most-used:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">adaptshot</span><span class="w"> </span><span class="kn">import</span> <span class="n">AdaptShotConfig</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">config</span> <span class="o">=</span> <span class="n">AdaptShotConfig</span><span class="p">(</span><span class="n">backbone</span><span class="o">=</span><span class="s2">"mobilenet_v3_small"</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"cpu"</span><span class="p">,</span> <span class="n">conformal_alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+</span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>backbone</code></td>
+<td><code>Backbone</code></td>
+<td><code>"mobilenet_v3_small"</code></td>
+<td>The backbone whose ONNX weights ship in the wheel; <code>resnet18</code> needs the <code>torch</code> extra</td>
+</tr>
+<tr>
+<td><code>device</code></td>
+<td><code>Device</code></td>
+<td><code>"cpu"</code></td>
+<td>Compute device</td>
+</tr>
+<tr>
+<td><code>seed</code></td>
+<td><code>int</code></td>
+<td><code>42</code></td>
+<td>Seed for every source of randomness</td>
+</tr>
+<tr>
+<td><code>n_way</code></td>
+<td><code>int</code></td>
+<td><code>5</code></td>
+<td>Classes per episode</td>
+</tr>
+<tr>
+<td><code>k_shot</code></td>
+<td><code>int</code></td>
+<td><code>10</code></td>
+<td>Support examples per class</td>
+</tr>
+<tr>
+<td><code>inference_mode</code></td>
+<td><code>InferenceMode</code></td>
+<td><code>"prototypical"</code></td>
+<td>Inference strategy</td>
+</tr>
+<tr>
+<td><code>calibration_method</code></td>
+<td><code>CalibrationMethod</code></td>
+<td><code>"temperature"</code></td>
+<td>Calibration method</td>
+</tr>
+<tr>
+<td><code>conformal_alpha</code></td>
+<td><code>float</code></td>
+<td><code>0.05</code></td>
+<td>Target miscoverage, <code>[0.01, 0.50]</code></td>
+</tr>
+<tr>
+<td><code>conformal_mode</code></td>
+<td><code>ConformalMode</code></td>
+<td><code>"split"</code></td>
+<td>Split or cross conformal</td>
+</tr>
+<tr>
+<td><code>uncertainty_mode</code></td>
+<td><code>UncertaintyMode</code></td>
+<td><code>"ensemble"</code></td>
+<td>Which uncertainty signals to fuse</td>
+</tr>
+<tr>
+<td><code>explainability_enabled</code></td>
+<td><code>bool</code></td>
+<td><code>True</code></td>
+<td>Enable <code>explain()</code></td>
+</tr>
+<tr>
+<td><code>max_buffer_size</code></td>
+<td><code>int</code></td>
+<td><code>100</code></td>
+<td>Support buffer capacity</td>
+</tr>
+</tbody>
+</table>
+<h4 id="configuration-types">Configuration types<a class="headerlink" href="#configuration-types" title="Permanent link">&para;</a></h4>
+<p>The <code>Literal</code> aliases that type the fields above are exported, so code that annotates
+against them can name them. They are exactly as stable as the fields they type.</p>
+<table>
+<thead>
+<tr>
+<th>Alias</th>
+<th>Values</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Backbone</code></td>
+<td><code>"resnet18"</code>, <code>"mobilenet_v3_small"</code></td>
+</tr>
+<tr>
+<td><code>Device</code></td>
+<td><code>"cpu"</code>, <code>"cuda"</code>, <code>"mps"</code></td>
+</tr>
+<tr>
+<td><code>SimilarityMetric</code></td>
+<td><code>"cosine"</code>, <code>"euclidean"</code></td>
+</tr>
+<tr>
+<td><code>InferenceMode</code></td>
+<td><code>"nearest_neighbor"</code>, <code>"prototypical"</code>, <code>"contrastive"</code></td>
+</tr>
+<tr>
+<td><code>CalibrationMethod</code></td>
+<td><code>"temperature"</code>, <code>"scaling_binning"</code>, <code>"conformal"</code>, <code>"none"</code></td>
+</tr>
+<tr>
+<td><code>ConformalMode</code></td>
+<td><code>"split"</code>, <code>"cross"</code></td>
+</tr>
+<tr>
+<td><code>UncertaintyMode</code></td>
+<td><code>"mcdropout"</code>, <code>"entropy"</code>, <code>"mahalanobis"</code>, <code>"ensemble"</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="calibrationengine"><code>CalibrationEngine</code><a class="headerlink" href="#calibrationengine" title="Permanent link">&para;</a></h3>
+<p>Temperature scaling over a sliding window of observed confidences, with debiased ECE.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">adaptshot</span><span class="w"> </span><span class="kn">import</span> <span class="n">CalibrationEngine</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">engine</span> <span class="o">=</span> <span class="n">CalibrationEngine</span><span class="p">(</span><span class="n">window_size</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="n">engine</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">raw_confidence</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">predicted_label</span><span class="o">=</span><span class="s2">"cat"</span><span class="p">,</span> <span class="n">true_label</span><span class="o">=</span><span class="s2">"cat"</span><span class="p">)</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="n">engine</span><span class="o">.</span><span class="n">calibrate</span><span class="p">(</span><span class="mf">0.9</span><span class="p">)</span>
+</span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>update(raw_confidence, predicted_label, true_label)</code></td>
+<td>Record one observation</td>
+</tr>
+<tr>
+<td><code>calibrate(raw_confidence) -&gt; float</code></td>
+<td>Apply the fitted temperature</td>
+</tr>
+<tr>
+<td><code>compute_ece(confidences, labels_correct) -&gt; float</code></td>
+<td>Expected calibration error, equal-width bins</td>
+</tr>
+<tr>
+<td><code>compute_debiased_ece(confidences, labels_correct) -&gt; float</code></td>
+<td>Debiased squared-CE estimate</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="conformalengine-and-conformalpredictionset"><code>ConformalEngine</code> and <code>ConformalPredictionSet</code><a class="headerlink" href="#conformalengine-and-conformalpredictionset" title="Permanent link">&para;</a></h3>
+<p>Split or cross conformal prediction over a rolling calibration buffer.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">adaptshot</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConformalEngine</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">engine</span> <span class="o">=</span> <span class="n">ConformalEngine</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"split"</span><span class="p">)</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">predict_set</span><span class="p">(</span><span class="n">distances</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">top_prediction</span><span class="p">,</span> <span class="n">confidence</span><span class="p">)</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="n">result</span><span class="o">.</span><span class="n">prediction_set</span>   <span class="c1"># {"cat", "dog"}</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="n">result</span><span class="o">.</span><span class="n">q_hat</span>            <span class="c1"># 0.82</span>
+</span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>predict_set(distances, labels, top_prediction, confidence)</code></td>
+<td>Build the prediction set</td>
+</tr>
+<tr>
+<td><code>predict_set_class_conditional(...)</code></td>
+<td>Class-conditional variant</td>
+</tr>
+<tr>
+<td><code>update_calibration(score, true_label)</code></td>
+<td>Add a nonconformity score</td>
+</tr>
+<tr>
+<td><code>get_calibration_summary()</code></td>
+<td>Diagnostic summary</td>
+</tr>
+<tr>
+<td><code>reset()</code></td>
+<td>Clear the calibration buffer</td>
+</tr>
+</tbody>
+</table>
+<p><code>ConformalPredictionSet</code> fields: <code>prediction_set</code>, <code>set_size</code>, <code>alpha</code>, <code>q_hat</code>,
+<code>coverage_estimate</code>, <code>prediction</code>, <code>confidence</code>.</p>
+<p><strong>The guarantee needs enough calibration scores to mean anything.</strong> At level α the
+conformal quantile is the ⌈(n+1)(1−α)⌉-th smallest score, which does not exist while
+n &lt; (1−α)/α. In that region the only honest set is <em>every class</em>, and that is what the
+engine returns — <code>q_hat</code> is <code>inf</code>. At the default α = 0.05 that is every n below 19; at
+α = 0.10, below 9. <code>min_informative_size</code> on the engine is that number, the engine warns
+at construction if <code>min_calibration_size</code> is below it, and <code>get_calibration_summary()</code>
+reports it. Before #14 the engine returned the largest observed score instead, and
+under-covered — 91.3% against a 95% target at n = 10.</p>
+<p>Validated, not asserted: <code>tests/test_conformal_coverage.py</code> measures coverage on
+overlapping synthetic classes over α ∈ {0.01, 0.05, 0.1, 0.2} × n ∈ {10, 20, 50, 200},
+with a tolerance derived from the trial-level standard error. Every cell clears its
+target; every cell where a finite quantile exists has a mean set smaller than the label
+set.</p>
+<p>Measured on real data (PlantVillage 5-way 5-shot, 100 episodes, α = 0.10 with 25
+calibration scores — above the informative size): 98.1% empirical coverage at a 90%
+target, mean set size 1.66. See the README's results section.</p>
+<hr />
+<h3 id="feedbackrouter"><code>FeedbackRouter</code><a class="headerlink" href="#feedbackrouter" title="Permanent link">&para;</a></h3>
+<p>Routes a correction to the buffer, the calibration engine, the conformal engine and —
+when torch is installed — CA-EWC fine-tuning. <code>FewShotLearner.correct()</code> is the usual way
+in; use this directly to drive the pipeline from your own feedback loop.</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>route_feedback(correction) -&gt; dict[str, Any]</code></td>
+<td>Apply one correction end to end</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="uncertaintyquantifier-and-uncertaintyreport"><code>UncertaintyQuantifier</code> and <code>UncertaintyReport</code><a class="headerlink" href="#uncertaintyquantifier-and-uncertaintyreport" title="Permanent link">&para;</a></h3>
+<p>Epistemic (perturbation sensitivity), aleatoric (k-NN entropy) and distributional
+(Mahalanobis OOD) uncertainty, fused into a composite score.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">adaptshot</span><span class="w"> </span><span class="kn">import</span> <span class="n">UncertaintyQuantifier</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="n">uq</span> <span class="o">=</span> <span class="n">UncertaintyQuantifier</span><span class="p">(</span><span class="n">ood_percentile</span><span class="o">=</span><span class="mf">95.0</span><span class="p">)</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="n">uq</span><span class="o">.</span><span class="n">fit_class_distributions</span><span class="p">(</span><span class="n">support_embeddings</span><span class="p">,</span> <span class="n">support_labels</span><span class="p">)</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="n">report</span> <span class="o">=</span> <span class="n">uq</span><span class="o">.</span><span class="n">quantify</span><span class="p">(</span><span class="n">query_embedding</span><span class="p">,</span> <span class="n">support_embeddings</span><span class="p">,</span> <span class="n">support_labels</span><span class="p">)</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="n">report</span><span class="o">.</span><span class="n">epistemic</span><span class="p">,</span> <span class="n">report</span><span class="o">.</span><span class="n">aleatoric</span><span class="p">,</span> <span class="n">report</span><span class="o">.</span><span class="n">is_ood</span>
+</span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fit_class_distributions(embeddings, labels)</code></td>
+<td>Fit shrinkage-regularised class Gaussians and calibrate the OOD threshold by leave-one-out (#54)</td>
+</tr>
+<tr>
+<td><code>quantify(query, support_embeddings, support_labels)</code></td>
+<td>Full <code>UncertaintyReport</code></td>
+</tr>
+<tr>
+<td><code>mahalanobis_distance(embedding, class_label)</code></td>
+<td>Distance to one class</td>
+</tr>
+<tr>
+<td><code>min_mahalanobis_distance(embedding)</code></td>
+<td>Nearest class and margin</td>
+</tr>
+<tr>
+<td><code>is_ood(embedding)</code></td>
+<td><code>(flag, normalised score)</code></td>
+</tr>
+<tr>
+<td><code>compute_knn_entropy(query, support_embeddings, support_labels)</code></td>
+<td>Aleatoric term</td>
+</tr>
+<tr>
+<td><code>estimate_epistemic(embedding, seed=None)</code></td>
+<td>Epistemic term</td>
+</tr>
+<tr>
+<td><code>reset()</code></td>
+<td>Clear fitted state</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Deprecated in 0.3.0, removed in 0.4.0</strong>: <code>compute_perturbation_variance()</code>,
+<code>get_ood_summary()</code>, <code>get_class_statistics()</code>. Nothing in the library, its tests or its
+applications calls them. Each warns.</p>
+<p><code>UncertaintyReport</code> fields: <code>epistemic</code>, <code>aleatoric</code>, <code>distributional</code>, <code>composite</code>,
+<code>is_ood</code>, <code>ood_score</code>.</p>
+<hr />
+<h3 id="actengine"><code>ACTEngine</code><a class="headerlink" href="#actengine" title="Permanent link">&para;</a></h3>
+<p>Adaptive Confidence Thresholding: a per-class acceptance threshold that moves with
+feedback and reverts slowly toward its base. Tested directly since #74.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">adaptshot</span><span class="w"> </span><span class="kn">import</span> <span class="n">ACTEngine</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="n">act</span> <span class="o">=</span> <span class="n">ACTEngine</span><span class="p">(</span><span class="n">base_threshold</span><span class="o">=</span><span class="mf">0.65</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">min_threshold</span><span class="o">=</span><span class="mf">0.50</span><span class="p">,</span> <span class="n">max_threshold</span><span class="o">=</span><span class="mf">0.95</span><span class="p">)</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="n">accepted</span><span class="p">,</span> <span class="n">action</span> <span class="o">=</span> <span class="n">act</span><span class="o">.</span><span class="n">should_accept</span><span class="p">(</span><span class="n">confidence</span><span class="p">,</span> <span class="n">class_idx</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<h3 id="upugfpruner"><code>UPUGFPruner</code><a class="headerlink" href="#upugfpruner" title="Permanent link">&para;</a></h3>
+<p>Scores every buffered example by uncertainty, recency and redundancy, and keeps the
+<code>capacity</code> highest. Exact cosine redundancy up to 100 examples, LSH-approximate beyond.
+Tested directly since #74, which found and fixed two inverted terms: it had been keeping
+the <em>confident</em> examples and, above 100 rows, rewarding duplicates.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">adaptshot</span><span class="w"> </span><span class="kn">import</span> <span class="n">UPUGFPruner</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">pruner</span> <span class="o">=</span> <span class="n">UPUGFPruner</span><span class="p">(</span><span class="n">capacity</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="n">embeddings</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">uncertainties</span><span class="p">,</span> <span class="n">times</span> <span class="o">=</span> <span class="n">pruner</span><span class="o">.</span><span class="n">prune</span><span class="p">(</span><span class="n">embeddings</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">uncertainties</span><span class="p">,</span> <span class="n">times</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<h3 id="exceptions">Exceptions<a class="headerlink" href="#exceptions" title="Permanent link">&para;</a></h3>
+<p>Everything raised on purpose derives from <code>AdaptShotError</code>, so <code>except AdaptShotError</code>
+catches the library and nothing else.</p>
+<table>
+<thead>
+<tr>
+<th>Exception</th>
+<th>Raised when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AdaptShotError</code></td>
+<td>Base class</td>
+</tr>
+<tr>
+<td><code>InvalidImageError</code></td>
+<td>An image is missing, unreadable, or not RGB</td>
+</tr>
+<tr>
+<td><code>ConfigValidationError</code></td>
+<td>A configuration value is outside its supported range, or inputs are malformed</td>
+</tr>
+<tr>
+<td><code>BackboneError</code></td>
+<td>No usable backend for the requested backbone on this install (#36) — the message names the backbones that would work and the extra that installs torch</td>
+</tr>
+<tr>
+<td><code>CalibrationNotReadyError</code></td>
+<td>Calibration needs more observations</td>
+</tr>
+<tr>
+<td><code>BufferCapacityError</code></td>
+<td>Buffer pruning failed to enforce capacity</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="experimental">Experimental<a class="headerlink" href="#experimental" title="Permanent link">&para;</a></h2>
+<p>Each of these opens its docstring with <strong>Experimental</strong>. Why each is here is recorded once,
+in <code>adaptshot.api</code>.</p>
+<h3 id="explainabilityengine"><code>ExplainabilityEngine</code><a class="headerlink" href="#explainabilityengine" title="Permanent link">&para;</a></h3>
+<p>Feature attribution, confidence decomposition with historical penalty tracking, and
+counterfactuals. One test file, no consumer outside the library; the shape of the result
+is the part most likely to change.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">adaptshot</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExplainabilityEngine</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="n">engine</span> <span class="o">=</span> <span class="n">ExplainabilityEngine</span><span class="p">(</span><span class="n">top_k_attributions</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">explain</span><span class="p">(</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    <span class="n">query_embedding</span><span class="p">,</span> <span class="n">support_embeddings</span><span class="p">,</span> <span class="n">support_labels</span><span class="p">,</span>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>    <span class="n">predicted_label</span><span class="o">=</span><span class="s2">"cat"</span><span class="p">,</span> <span class="n">raw_confidence</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>    <span class="n">calibrated_confidence</span><span class="o">=</span><span class="mf">0.87</span><span class="p">,</span> <span class="n">act_action</span><span class="o">=</span><span class="s2">"ACCEPT"</span><span class="p">,</span> <span class="n">is_ood</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="p">)</span>
+</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="n">result</span><span class="o">.</span><span class="n">summary</span>
+</span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>explain(...)</code></td>
+<td>Everything below, in one <code>ExplanationResult</code></td>
+</tr>
+<tr>
+<td><code>attribute(query, support_embeddings, support_labels, predicted_label)</code></td>
+<td>Feature attribution</td>
+</tr>
+<tr>
+<td><code>decompose_confidence(raw, calibrated, act_action, is_ood)</code></td>
+<td>Confidence decomposition</td>
+</tr>
+<tr>
+<td><code>counterfactual(query, support_embeddings, support_labels, predicted_label)</code></td>
+<td>Nearest alternative class</td>
+</tr>
+</tbody>
+</table>
+<h4 id="explanationresult-featureattribution-confidencedecomposition-counterfactual"><code>ExplanationResult</code>, <code>FeatureAttribution</code>, <code>ConfidenceDecomposition</code>, <code>Counterfactual</code><a class="headerlink" href="#explanationresult-featureattribution-confidencedecomposition-counterfactual" title="Permanent link">&para;</a></h4>
+<p>The result and the three dataclasses it holds. All four are exported so that a caller can
+name the type of what they receive.</p>
+<table>
+<thead>
+<tr>
+<th><code>ExplanationResult</code> field</th>
+<th>Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>prediction</code></td>
+<td><code>str \| int</code></td>
+</tr>
+<tr>
+<td><code>attributions</code></td>
+<td><code>list[FeatureAttribution]</code></td>
+</tr>
+<tr>
+<td><code>confidence_decomposition</code></td>
+<td><code>ConfidenceDecomposition \| None</code></td>
+</tr>
+<tr>
+<td><code>counterfactual</code></td>
+<td><code>Counterfactual \| None</code></td>
+</tr>
+<tr>
+<td><code>summary</code></td>
+<td><code>str</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="check_environment-environmentreport-capability"><code>check_environment()</code>, <code>EnvironmentReport</code>, <code>Capability</code><a class="headerlink" href="#check_environment-environmentreport-capability" title="Permanent link">&para;</a></h3>
+<p>What this install can do on this machine, with every figure measured <em>here</em>: a real
+inference on the bundled photographs for latency, this process's own high-water mark
+for memory, the installed optional dependencies, and for each missing capability the
+exact install command. A GPU, if present, is named and not selected.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">adaptshot</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="nb">print</span><span class="p">(</span><span class="n">adaptshot</span><span class="o">.</span><span class="n">check_environment</span><span class="p">())</span>
+</span></code></pre></div>
+<p><code>check_environment(measure=False)</code> reports availability only, in under a millisecond.
+Download sizes for missing extras are <strong>not</strong> reported: they cannot be measured without
+the network, and a figure quoted from elsewhere is what this report exists to avoid.</p>
+<hr />
+<h3 id="contrastiveprototypelearner"><code>ContrastivePrototypeLearner</code><a class="headerlink" href="#contrastiveprototypelearner" title="Permanent link">&para;</a></h3>
+<p>A two-layer projection head trained by InfoNCE gradient descent, then prototypes refined
+in the projected space. Used when <code>inference_mode="contrastive"</code>.</p>
+<p>Lives in <code>adaptshot.training</code> as of 0.3.0, because training a head is training. The old
+path <code>adaptshot.core.contrastive</code> warns and is removed in 0.4.0.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">adaptshot</span><span class="w"> </span><span class="kn">import</span> <span class="n">ContrastivePrototypeLearner</span><span class="p">,</span> <span class="n">ContrastiveConfig</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="n">learner</span> <span class="o">=</span> <span class="n">ContrastivePrototypeLearner</span><span class="p">(</span><span class="n">ContrastiveConfig</span><span class="p">(</span><span class="n">projection_dim</span><span class="o">=</span><span class="mi">128</span><span class="p">))</span>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="n">prototypes</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">refine_prototypes</span><span class="p">(</span><span class="n">embeddings</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="n">prediction</span><span class="p">,</span> <span class="n">confidence</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">nearest_prototype</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">prototypes</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+</span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>refine_prototypes(embeddings, labels, seed)</code></td>
+<td>Train the head, then refine prototypes</td>
+</tr>
+<tr>
+<td><code>nearest_prototype(query, prototypes, labels)</code></td>
+<td>Nearest refined prototype</td>
+</tr>
+<tr>
+<td><code>class_separation_score(embeddings, labels)</code></td>
+<td>Inter/intra-class similarity ratio</td>
+</tr>
+<tr>
+<td><code>project_query(embedding)</code></td>
+<td>Project through the trained head</td>
+</tr>
+</tbody>
+</table>
+<h4 id="contrastiveconfig"><code>ContrastiveConfig</code><a class="headerlink" href="#contrastiveconfig" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>projection_dim</code></td>
+<td><code>int</code></td>
+<td><code>128</code></td>
+</tr>
+<tr>
+<td><code>temperature</code></td>
+<td><code>float</code></td>
+<td><code>0.07</code></td>
+</tr>
+<tr>
+<td><code>learning_rate</code></td>
+<td><code>float</code></td>
+<td><code>0.01</code></td>
+</tr>
+<tr>
+<td><code>momentum</code></td>
+<td><code>float</code></td>
+<td><code>0.9</code></td>
+</tr>
+<tr>
+<td><code>n_epochs</code></td>
+<td><code>int</code></td>
+<td><code>50</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="outside-the-api-surface">Outside the API surface<a class="headerlink" href="#outside-the-api-surface" title="Permanent link">&para;</a></h2>
+<p>Useful, importable, and deliberately not part of the promise above. They can change or go
+in any release.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Where</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>set_deterministic_seed(seed)</code></td>
+<td><code>adaptshot.utils.determinism</code></td>
+<td>What CLAUDE.md tells every contributor to call. Torch-free since #35</td>
+</tr>
+<tr>
+<td><code>clear_backbone_cache()</code></td>
+<td><code>adaptshot.core.extractor</code></td>
+<td>A module-level function, not a learner method — an earlier version of this page said otherwise</td>
+</tr>
+<tr>
+<td><code>MemoryTracker</code></td>
+<td><code>adaptshot.utils.profiling</code></td>
+<td>No tests, no consumers. Its tutorial is retired under <code>docs-archive/</code></td>
+</tr>
+<tr>
+<td><code>CAEWCFinetuner</code></td>
+<td><code>adaptshot.training.finetune</code></td>
+<td>Reached through <code>FeedbackRouter</code>; needs the <code>torch</code> extra</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="next-steps">Next steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../../understand/how-it-works/">Architecture Deep-Dive</a></li>
+<li><a href="../../understand/algorithm-theory/">Algorithm Theory</a></li>
+<li><a href="../config-reference/">Configuration Reference</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "content.code.copy", "content.tabs.link", "content.action.edit", "content.action.view", "navigation.tabs", "navigation.sections", "navigation.top", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
