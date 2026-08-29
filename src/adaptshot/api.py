@@ -75,7 +75,12 @@ STABLE: tuple[str, ...] = (
 #:   benchmarks/. The result's shape is the part most likely to change.
 #: - Contrastive: one test file, no consumer. Moved to `training/` in 0.3.0,
 #:   because it trains a projection head; the old path warns until 0.4.0.
+#: - Preflight (#38): new in 0.3.0, one test file, no consumer yet. Its report
+#:   shape is the part most likely to change as people say what they need in it.
 EXPERIMENTAL: tuple[str, ...] = (
+    "Capability",
+    "EnvironmentReport",
+    "check_environment",
     "ConfidenceDecomposition",
     "Counterfactual",
     "ExplainabilityEngine",
