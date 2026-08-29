@@ -13,11 +13,15 @@ Integration points:
 
 from __future__ import annotations
 
+import logging
+import math
 from dataclasses import dataclass, field
 
 import numpy as np
 
 from ..utils.arrays import FloatArray, LabelArray
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -94,6 +98,20 @@ class ConformalEngine:
         self.alpha = float(alpha)
         self.n_bins = int(n_bins)
         self.min_calibration_size = int(min_calibration_size)
+
+        # Below this many calibration scores, no finite quantile exists at this
+        # alpha and every prediction set is the full label set. The maths, not a
+        # policy: see _compute_quantile. Said once, here, rather than discovered
+        # from a run of uninformative sets.
+        self.min_informative_size = math.ceil((1.0 - self.alpha) / self.alpha)
+        if self.min_calibration_size < self.min_informative_size:
+            logger.warning(
+                "ConformalEngine(alpha=%.3f): prediction sets are uninformative -- "
+                "every class -- until %d calibration scores exist, but sets are "
+                "produced from %d. Raise min_calibration_size to %d, or raise alpha.",
+                self.alpha, self.min_informative_size, self.min_calibration_size,
+                self.min_informative_size,
+            )
         self.max_calibration_size = int(max_calibration_size)
         self.mode = mode
         self.score_method = score_method
@@ -232,13 +250,26 @@ class ConformalEngine:
         """
         n = len(scores)
         if n == 0:
-            return 1.0  # No calibration data: accept everything
+            return float("inf")  # No calibration data: every class is in the set.
+
+        # The finite-sample guarantee is P(y in set) >= 1 - alpha, and it comes
+        # from taking the ceil((n+1)(1-alpha))-th smallest calibration score.
+        # When that rank exceeds n there is no such score: the theorem's answer
+        # is +inf, meaning every class is included, because n points cannot
+        # certify a (1-alpha) level. That happens whenever n < (1-alpha)/alpha
+        # -- at the default alpha = 0.05, for every n below 19.
+        #
+        # This used to clamp the rank to n-1 and return the largest observed
+        # score instead. That is a smaller set than the guarantee allows, and it
+        # under-covered: 91.3% measured against a 95% target at n = 10, the
+        # library's own min_calibration_size (#14). A set that is honestly
+        # everything beats a set that is quietly too small.
+        rank = math.ceil((n + 1) * (1.0 - self.alpha))
+        if rank > n:
+            return float("inf")
 
         sorted_scores = np.sort(np.asarray(scores, dtype=np.float64))
-        # Finite-sample correction for valid marginal coverage
-        idx = int(np.ceil((n + 1) * (1.0 - self.alpha))) - 1
-        idx = max(0, min(idx, n - 1))
-        return float(sorted_scores[idx])
+        return float(sorted_scores[rank - 1])
 
     def _compute_cross_quantile(self, scores: list[float]) -> float:
         """Compute cross-conformal quantile via k-fold averaging.
@@ -415,6 +446,7 @@ class ConformalEngine:
         """Return diagnostic summary of calibration state."""
         return {
             "calibration_size": float(len(self._calibration_scores)),
+            "min_informative_size": float(self.min_informative_size),
             "empirical_coverage": float(self.empirical_coverage),
             "target_coverage": float(1.0 - self.alpha),
             "q_hat": float(self._compute_quantile(self._calibration_scores))
