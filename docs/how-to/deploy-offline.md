@@ -38,7 +38,7 @@ Either copy a saved learner's two files ([save, load and migrate](save-load-and-
 
 **One laptop, one person.** The tutorials as they stand. A script, or Tambua in a browser on the same machine (`tambua --config yours`).
 
-**A tablet or phone-class device.** AdaptShot runs wherever Python 3.10 and onnxruntime run. The published latency and memory were measured on a laptop and say so; measure on the device with `check_environment()` and treat its numbers, not the README's, as the specification. ARM validation is open work (issue #31).
+**A tablet or phone-class device.** AdaptShot runs wherever Python 3.10 and onnxruntime run, and CI validates it on ARM on every change — the full test suite, the ONNX export, and a device profile on a Neoverse-N2 server core, in the README's device table. A server core is not a phone: measure on the device itself with `python -m benchmarks.run_device` and treat its numbers, not the README's, as the specification. The lowest device actually measured is the one in that table.
 
 **A small server for several users.** Run Tambua with `--host 0.0.0.0 --port 7860` on the office network. One learner is shared, so one person's corrections teach everyone's — decide who is allowed to correct. Do not expose it to the internet; there is no authentication.
 
