@@ -1,0 +1,68 @@
+# MziziGuard — maize disease identification
+# =========================================
+# The flagship Tambua configuration. Edit this file to add crops, diseases and
+# treatment advice; the application reads it at startup and rebuilds the label
+# set from it. Nothing here is compiled into the code.
+#
+# Every value is validated on load. A mistake is reported with the file, the
+# line and the fix -- see apps/tambua/src/tambua/config.py.
+
+application:
+  name: "MziziGuard"
+  version: "0.2.0"
+  description: "Maize disease identification for smallholder farmers — powered by AdaptShot"
+
+engine:
+  backbone: "mobilenet_v3_small" # bundled; resnet18 needs the torch extra
+  device: "cpu"                  # cpu | cuda | mps
+  seed: 42
+  inference_mode: "prototypical" # prototypical | nearest_neighbor
+  similarity_metric: "euclidean" # euclidean | cosine
+  eco_mode: true                 # carbon-aware inference
+  enable_ood_detection: true
+
+  # Conformal prediction: return a *set* of labels carrying a coverage
+  # guarantee, rather than one label and a confidence number nobody checked.
+  # alpha 0.1 targets 90% coverage. Not 0.05: with only a handful of classes a
+  # 95% target routinely returns all of them, and a set containing the whole
+  # label space tells the person holding the phone nothing.
+  conformal_alpha: 0.1
+  conformal_mode: "split"     # flag images unlike anything it was taught
+
+# What the application can recognise.
+#
+# Class keys share a single label space across all domains, so they must be
+# unique file-wide -- the engine predicts one label, not a (domain, label) pair.
+#
+# Fields:
+#   local_name:   label shown in the interface, in localization.language
+#   action:       what the person holding the phone should do next
+#   description:  the longer form, for an extension officer
+#   severity:     low | moderate | high | critical
+domains:
+  maize:
+    local_name: "mahindi"
+    classes:
+      healthy_maize:
+        local_name: "mahindi yenye afya"
+        action: "Hakuna matibabu yanayohitajika. Endelea na utunzaji wa kawaida."
+        description: "Healthy maize with no visible disease symptoms."
+        severity: "low"
+      northern_leaf_blight:
+        local_name: "ugonjwa wa mabaka ya kahawia"
+        action: "Ondoa majani yaliyoathirika. Tumia dawa ya kuvu (fungicide) ikiwa imeenea sana. Panda mbegu sugu msimu ujao."
+        description: "Cigar-shaped gray-green to tan lesions on leaves, caused by Exserohilum turcicum."
+        severity: "moderate"
+      gray_leaf_spot:
+        local_name: "ugonjwa wa mabaka ya kijivu"
+        action: "Tumia dawa ya kuvu mapema. Badilisha mazao. Epuka kupanda mahindi shambani mwaka baada ya mwaka."
+        description: "Rectangular gray lesions restricted by leaf veins, caused by Cercospora zeae-maydis."
+        severity: "high"
+
+localization:
+  language: "sw"                 # the language local_name is written in
+  fallback: "en"                 # used when a class has no local_name
+
+paths:
+  model_dir: "models"            # where taught models are saved, relative to this file
+  sample_data: "samples"         # sample image cache

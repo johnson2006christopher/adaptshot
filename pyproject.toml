@@ -4,46 +4,57 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "adaptshot"
-version = "0.2.0"
+version = "0.3.0"
 description = "Human-aligned few-shot vision learning for resource-constrained environments"
 readme = "README.md"
 license = "MIT"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [{name = "Johnson Christopher Hassan", email = "johnson2006christopher@gmail.com"}]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [
     "numpy>=1.24.0",
     "Pillow>=9.0.0",
+    # Core, not an extra, since #36: it is what makes inference work without
+    # torch. ~23MB against torch's ~1.2GB, which on a metered or intermittent
+    # connection is the difference between installable and not -- the constraint
+    # this project exists to address.
+    "onnxruntime>=1.14.0",
 ]
 
 [project.optional-dependencies]
 torch = ["torch>=2.0.0", "torchvision>=0.15.0"]
 faiss = ["faiss-cpu>=1.7.4"]
-ui = ["gradio>=3.50.0"]
-gui = ["gradio>=3.50.0", "pandas>=2.0.0", "onnx>=1.16.0", "onnxscript>=0.3.0", "onnxruntime>=1.14.0"]
+# Upper bounds are deliberate. Linters and type checkers add rules in minor
+# releases, so an unbounded pin means a tool release can turn CI red without any
+# code change -- which is exactly what happened (see #15). Dependabot proposes
+# bumps as reviewable PRs instead.
 dev = [
-    "pytest>=7.4.0",
-    "pytest-cov>=4.1.0",
-    "mypy>=1.5.0",
-    "ruff>=0.1.0",
-    "pre-commit>=3.4.0",
+    "pytest>=7.4.0,<10",
+    "pytest-cov>=4.1.0,<8",
+    "mypy>=1.5.0,<3",
+    "ruff>=0.16.0,<0.17",
+    "pre-commit>=3.4.0,<5",
 ]
-all = ["adaptshot[torch,faiss,gui,dev]"]
+# Export tooling only. onnxruntime is a *core* dependency since #36 -- it is what
+# runs inference without torch. These two are needed solely to produce the ONNX
+# graphs, which is a maintainer task (scripts/export_backbones.py), not a user one.
+onnx = ["onnx>=1.16.0", "onnxscript>=0.3.0"]
+all = ["adaptshot[torch,faiss,onnx,dev]"]
 
 [project.scripts]
-adaptshot-studio = "adaptshot.studio.app:launch"
 
 [project.urls]
 Homepage = "https://github.com/johnson2006christopher/adaptshot"
-Documentation = "https://github.com/johnson2006christopher/adaptshot/docs"
+Documentation = "https://johnson2006christopher.github.io/adaptshot/"
 Repository = "https://github.com/johnson2006christopher/adaptshot.git"
 "Bug Tracker" = "https://github.com/johnson2006christopher/adaptshot/issues"
 
@@ -51,35 +62,111 @@ Repository = "https://github.com/johnson2006christopher/adaptshot.git"
 where = ["src"]
 
 [tool.setuptools.package-data]
-"adaptshot" = ["data/*.onnx", "data/*.onnx.data"]
+# py.typed (PEP 561) is what tells a type checker that this library's annotations
+# are real and may be relied on. Without it, `mypy --strict` in a downstream
+# project treats every AdaptShot symbol as `Any` -- the library type-checks itself
+# cleanly while giving its users nothing. Found by building an actual consumer
+# (apps/tambua), which is the only way this kind of gap shows up.
+"adaptshot" = [
+    "py.typed",
+    # Named explicitly, not globbed. `scripts/export_backbones.py` writes into the
+    # same directory, and a glob packaged whatever happened to be on disk: a
+    # locally exported resnet18 turned a 4.5 MB wheel into a 44 MB one. What
+    # ships is a decision, and this is where it is made (#36, #28).
+    "data/mobilenet_v3_small.onnx",
+    "data/mobilenet_v3_small.onnx.data",
+    # Nine real photographs (~135 KB) so the quickstart runs offline. Their
+    # licence and provenance are in data/samples/README.md, which ships too.
+    "data/samples/*.jpg",
+    "data/samples/demo/*.jpg",
+    "data/samples/README.md",
+]
 
 [tool.ruff]
-target-version = "py39"
+target-version = "py310"
 line-length = 100
 
+# The rule set is chosen explicitly. Inheriting ruff's default meant a tool
+# release could change what "green" means without any code change -- ruff 0.16
+# enables 413 rules by default where earlier versions enabled about 60, which
+# turned CI red with 479 errors overnight (#15). An explicit list is a decision;
+# an implicit one is a hostage to the next release.
+[tool.ruff.lint]
+select = [
+    "E4", "E7", "E9",  # pycodestyle: imports, statements, syntax
+    "F",               # pyflakes: unused imports and names, undefined names
+    "I",               # isort: import ordering
+    "UP",              # pyupgrade: modern syntax for the supported Python range
+    "B",               # bugbear: likely bugs (mutable defaults, method lru_cache)
+    "SIM",             # simplify
+    "RUF",             # ruff-specific
+    "C4",              # comprehensions
+    "BLE",             # blind except
+    "EXE",             # shebang / executable-bit consistency
+    "PLE", "PLW",      # pylint errors and warnings
+    "LOG", "G",        # logging correctness
+    "PIE",             # misc lint
+]
+ignore = [
+    # Ambiguous-unicode checks fire on en dashes and arrows in prose docstrings,
+    # which are intentional. They are about homoglyph attacks in identifiers,
+    # not documentation.
+    "RUF001", "RUF002", "RUF003",
+
+    # The deferred-findings queue that lived here is empty (#41). Every rule it
+    # held is enforced again; the two places that genuinely need an exception
+    # carry a per-line `# noqa: E402` with the reason next to it, which is
+    # reviewable in a way a repo-wide ignore is not.
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests legitimately use assert, and fixtures shadow names by design.
+"tests/**" = ["S101"]
+"apps/*/tests/**" = ["S101"]
+
 [tool.mypy]
-python_version = "3.10"
+# NOT the 3.10 floor from `requires-python`, deliberately. numpy's bundled stubs
+# use PEP 695 `type X = ...` statements, which mypy can only parse when analysing
+# at 3.12 or later; at 3.10 it reports a syntax error inside numpy itself and
+# aborts before checking a single file of ours (#16).
+#
+# The floor is guarded elsewhere, and more convincingly:
+#   - ruff `target-version = "py310"` rejects syntax newer than the floor;
+#   - the CI matrix actually runs the suite on 3.10.
+# An executed test on the real interpreter beats a static guess about it.
+python_version = "3.12"
 strict = true
 warn_return_any = true
 warn_unused_configs = true
 
+# Optional dependencies that ship no type information, or are absent from the
+# lint environment entirely. An unresolved import is an error but not a fatal one:
+# mypy still checks the rest of the tree, so these were never the cause of #16 --
+# they only made the type check exit non-zero, and padded the failure so the one
+# error that *did* abort the run looked like a third of the problem.
+# Each entry costs real checking of that library's API, so add one only for a
+# genuinely optional dependency, never to silence an error in our own modules.
 [[tool.mypy.overrides]]
-module = "onnxruntime"
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = "torchvision.*"
+module = [
+    "onnxruntime",
+    "torchvision.*",
+    "faiss",
+    "psutil",
+]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+# `apps/` holds separately-installable applications built on the library. Their
+# tests run here so a change to the library cannot break them unnoticed, but they
+# are skipped cleanly when the app is not installed.
+testpaths = ["tests", "apps"]
 addopts = "-ra --strict-markers"
 filterwarnings = ["error::DeprecationWarning:adaptshot.*"]
 
 [tool.coverage.run]
 source = ["src/adaptshot"]
 branch = true
-omit = ["*/ui/*", "*/studio/*"]
+omit = []
 
 [tool.coverage.report]
 show_missing = true

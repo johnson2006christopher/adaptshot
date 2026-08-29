@@ -6,7 +6,7 @@ and conformal prediction fallback logic.
 
 import numpy as np
 
-from src.adaptshot.core.calibration import CalibrationEngine
+from adaptshot.core.calibration import CalibrationEngine
 
 
 def test_initial_state():
@@ -41,7 +41,7 @@ def test_ece_computation_overconfident():
 def test_sliding_window_updates():
     """Verify that the sliding window enforces fixed capacity."""
     engine = CalibrationEngine(window_size=5)
-    for i in range(10):
+    for _ in range(10):
         engine.update(raw_confidence=0.9, predicted_label=1, true_label=1)
     
     # After 10 updates, window should only hold the last 5

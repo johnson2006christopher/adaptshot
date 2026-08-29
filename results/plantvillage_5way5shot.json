@@ -1,0 +1,126 @@
+{
+  "accuracy": {
+    "adaptshot": {
+      "ci95_half_width": 0.010380021712283395,
+      "mean": 0.9144,
+      "n_episodes": 100
+    },
+    "knn_1": {
+      "ci95_half_width": 0.012869174194346909,
+      "mean": 0.8899999999999999,
+      "n_episodes": 100
+    },
+    "knn_5": {
+      "ci95_half_width": 0.011771543156393227,
+      "mean": 0.877,
+      "n_episodes": 100
+    },
+    "linear_probe": {
+      "ci95_half_width": 0.01146595346619237,
+      "mean": 0.9139999999999998,
+      "n_episodes": 100
+    },
+    "nearest_centroid": {
+      "ci95_half_width": 0.010380021712283395,
+      "mean": 0.9144,
+      "n_episodes": 100
+    }
+  },
+  "conformal": {
+    "alpha": 0.1,
+    "empirical_coverage": {
+      "ci95_half_width": 0.005526190351225682,
+      "mean": 0.9809999999999998,
+      "n_episodes": 100
+    },
+    "mean_set_size": {
+      "ci95_half_width": 0.1385597524340523,
+      "mean": 1.6636000000000002,
+      "n_episodes": 100
+    },
+    "ood_flag_rate": {
+      "ci95_half_width": 0.004589595329975105,
+      "mean": 0.0146,
+      "n_episodes": 100
+    },
+    "target_coverage": 0.9
+  },
+  "dataset": {
+    "citation": "Mohanty, S.P., Hughes, D.P., Salathe, M. (2016). Using deep learning for image-based plant disease detection. Frontiers in Plant Science 7:1419. https://doi.org/10.3389/fpls.2016.01419",
+    "commit": "7f7ecc7e1eaca78107e3affe7cb5abd9427e139a",
+    "licence": "CC BY-SA 3.0 (per huggingface.co/datasets/mohanty/PlantVillage)",
+    "n_files": 400,
+    "preset": "benchmark",
+    "repo": "spMohanty/PlantVillage-Dataset"
+  },
+  "hardware": {
+    "adaptshot": "0.2.0",
+    "cpu_count": 16,
+    "cpu_model": "11th Gen Intel(R) Core(TM) i7-11800H @ 2.30GHz",
+    "install": "core",
+    "numpy": "2.5.2",
+    "onnxruntime": "1.29.0",
+    "platform": "Linux-7.1.10-200.fc44.x86_64-x86_64-with-glibc2.43",
+    "processor": "x86_64",
+    "python": "3.14.7",
+    "ram_gb": 31.0
+  },
+  "latency_ms_per_query": {
+    "ci95_half_width": 1.9647521028274053,
+    "mean": 22.161587603594672
+  },
+  "protocol": {
+    "alpha": 0.1,
+    "backbone": "mobilenet_v3_small",
+    "episodes": 100,
+    "n_calibration_per_class": 5,
+    "n_query_per_class": 10,
+    "seed": 42,
+    "task": "5-way 5-shot"
+  },
+  "timing": {
+    "benchmark_process_peak_rss_mb": 540.73828125,
+    "cold_start": {
+      "peak_rss_mb": 122.58984375,
+      "seconds": 0.8508739229982893
+    },
+    "embedding_ms": {
+      "median": 3.1868059995758813,
+      "n": 100,
+      "p95": 3.8450286972874883
+    },
+    "note": "predict_ms is the full path per query, ONNX forward included; support_fit_ms is load_support_images per episode (embed the support, leave-one-out calibration, OOD fit); cold_start is a fresh interpreter from before the first import to the first answer, with that process's peak RSS -- the single-cycle memory figure; benchmark_process_peak_rss_mb is this whole run's VmHWM and describes the harness, not the library. Both depend on which install ran them: see hardware.install",
+    "predict_ms": {
+      "median": 6.429912999010412,
+      "n": 5000,
+      "p95": 12.743561201023114
+    },
+    "support_fit_ms": {
+      "median": 641.1929759997292,
+      "n": 100,
+      "p95": 861.3712131007541
+    }
+  },
+  "top1_threshold": {
+    "accuracy": {
+      "ci95_half_width": 0.010380021712283395,
+      "mean": 0.9144,
+      "n_episodes": 100
+    },
+    "coverage": {
+      "ci95_half_width": 0.014268417088879276,
+      "mean": 0.8388000000000001,
+      "n_episodes": 100
+    },
+    "mean_set_size": {
+      "ci95_half_width": 0.016315315152495596,
+      "mean": 0.8904000000000001,
+      "n_episodes": 100
+    },
+    "threshold": {
+      "ci95_half_width": 0.001573212710176826,
+      "mean": 0.21589225590229033,
+      "n_episodes": 100
+    }
+  }
+}

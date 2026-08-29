@@ -25,10 +25,17 @@ Design: numpy-first with optional torch acceleration planned for MC Dropout.
 
 from __future__ import annotations
 
+import hashlib
+import logging
+import warnings
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any
 
 import numpy as np
+
+from ..utils.arrays import FloatArray, IntArray, LabelArray
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -57,7 +64,7 @@ class UncertaintyReport:
     entropy: float = 0.0
     variance: float = 0.0
 
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> dict[str, float]:
         """Serialize to a flat dictionary."""
         return {
             "epistemic": self.epistemic,
@@ -70,6 +77,26 @@ class UncertaintyReport:
             "entropy": self.entropy,
             "variance": self.variance,
         }
+
+
+def _seed_from_embedding(embedding: FloatArray) -> int:
+    """A stable seed derived from an embedding's contents.
+
+    `hashlib`, never the builtin `hash()`: hash randomisation is seeded per
+    process, so the builtin would reintroduce exactly the run-to-run variation
+    this exists to remove.
+
+    Args:
+        embedding: The array to derive a seed from.
+
+    Returns:
+        A non-negative integer, identical for identical contents.
+    """
+
+    digest = hashlib.blake2b(
+        np.ascontiguousarray(embedding, dtype=np.float32).tobytes(), digest_size=8
+    ).digest()
+    return int.from_bytes(digest, "big")
 
 
 class UncertaintyQuantifier:
@@ -101,6 +128,8 @@ class UncertaintyQuantifier:
         perturbation_samples: int = 10,
         perturbation_scale: float = 0.01,
         mahalanobis_regularization: float = 1e-4,
+        max_ood_calibration_folds: int = 100,
+        ood_calibration_seed: int = 42,
     ) -> None:
         """Initialize the uncertainty quantifier.
 
@@ -114,6 +143,12 @@ class UncertaintyQuantifier:
             perturbation_samples: Number of perturbed embeddings for epistemic proxy.
             perturbation_scale: Std of Gaussian noise for embedding perturbation.
             mahalanobis_regularization: Ridge term for covariance inverse.
+            max_ood_calibration_folds: Cap on leave-one-out folds used to
+                calibrate the OOD threshold. Each fold costs one covariance
+                inversion, so this bounds what `load_support_images` pays on a
+                large support set.
+            ood_calibration_seed: Seed for subsampling folds once the cap is
+                exceeded, so calibration stays reproducible.
         """
         self.w_e = epistemic_weight
         self.w_a = aleatoric_weight
@@ -124,25 +159,81 @@ class UncertaintyQuantifier:
         self.perturbation_samples = perturbation_samples
         self.perturbation_scale = perturbation_scale
         self.reg = mahalanobis_regularization
+        self.max_ood_calibration_folds = max_ood_calibration_folds
+        self.ood_calibration_seed = ood_calibration_seed
 
         # Class-conditional Gaussian parameters for Mahalanobis
-        self._class_means: Dict[Union[str, int], np.ndarray] = {}
-        self._class_covs: Dict[Union[str, int], np.ndarray] = {}
-        self._class_cov_invs: Dict[Union[str, int], np.ndarray] = {}
-        self._global_mean: Optional[np.ndarray] = None
+        self._class_means: dict[str | int, FloatArray] = {}
+        self._class_covs: dict[str | int, FloatArray] = {}
+        self._class_cov_invs: dict[str | int, FloatArray] = {}
+        self._global_mean: FloatArray | None = None
 
         # OOD threshold (computed from calibration data)
         self._ood_threshold: float = float("inf")
-        self._calibration_distances: List[float] = []
+        self._calibration_distances: list[float] = []
 
     # ------------------------------------------------------------------
     # Mahalanobis OOD (distributional uncertainty)
     # ------------------------------------------------------------------
 
+    def _fit_one_class(
+        self,
+        class_embs: FloatArray,
+    ) -> tuple[FloatArray, FloatArray, FloatArray] | None:
+        """Fit one class-conditional Gaussian. Returns (mean, cov, cov_inv).
+
+        Extracted so that leave-one-out calibration can re-fit a single class
+        with one sample removed using exactly the estimator that produced the
+        original fit. A calibration path that shrank differently from the fit it
+        calibrates would be measuring a distribution that never gets used.
+
+        Returns None when the class has fewer than two samples, which is the
+        point below which there is no spread to estimate.
+        """
+
+        n_k = len(class_embs)
+        if n_k < 2:
+            return None
+
+        d = class_embs.shape[1]
+        mean = class_embs.mean(axis=0)
+        centered = class_embs - mean
+
+        if n_k <= d:
+            # Few-shot regime: use diagonal covariance with shrinkage
+            # Compute per-dimension variance
+            diag_var = np.var(class_embs, axis=0) + self.reg
+            # Shrinkage factor: more shrinkage when n_k << d
+            alpha = min(1.0, d / (d + n_k))
+            # Empirical covariance (best effort)
+            sample_cov = (centered.T @ centered) / max(n_k - 1, 1)
+            # Shrunk toward diagonal
+            diag_mat = np.diag(diag_var)
+            cov_reg = (1.0 - alpha) * sample_cov + alpha * diag_mat
+        else:
+            # Sufficient samples: use ridge-regularized covariance
+            cov = (centered.T @ centered) / (n_k - 1)
+            alpha = d / (d + n_k)  # Light shrinkage
+            diag_var = np.diag(cov) + self.reg
+            diag_mat = np.diag(diag_var)
+            cov_reg = (1.0 - alpha) * cov + alpha * diag_mat
+            cov_reg = cov_reg + self.reg * np.eye(d, dtype=np.float32)
+
+        try:
+            cov_inv = np.linalg.inv(cov_reg.astype(np.float64))
+        except np.linalg.LinAlgError:
+            cov_inv = np.linalg.pinv(cov_reg.astype(np.float64))
+
+        return (
+            mean.astype(np.float32),
+            cov_reg.astype(np.float32),
+            cov_inv.astype(np.float32),
+        )
+
     def fit_class_distributions(
         self,
-        embeddings: np.ndarray,
-        labels: np.ndarray,
+        embeddings: FloatArray,
+        labels: LabelArray,
     ) -> None:
         """Fit class-conditional Gaussian distributions with shrinkage.
 
@@ -168,47 +259,15 @@ class UncertaintyQuantifier:
         self._class_cov_invs.clear()
 
         unique_labels = np.unique(labels)
-        d = embeddings.shape[1]
 
         for label in unique_labels:
-            mask = labels == label
-            class_embs = embeddings[mask]
-            n_k = len(class_embs)
-
-            if n_k < 2:
+            fitted = self._fit_one_class(embeddings[labels == label])
+            if fitted is None:
                 continue
-
-            mean = class_embs.mean(axis=0)
-            centered = class_embs - mean
-
-            if n_k <= d:
-                # Few-shot regime: use diagonal covariance with shrinkage
-                # Compute per-dimension variance
-                diag_var = np.var(class_embs, axis=0) + self.reg
-                # Shrinkage factor: more shrinkage when n_k << d
-                alpha = min(1.0, d / (d + n_k))
-                # Empirical covariance (best effort)
-                sample_cov = (centered.T @ centered) / max(n_k - 1, 1)
-                # Shrunk toward diagonal
-                diag_mat = np.diag(diag_var)
-                cov_reg = (1.0 - alpha) * sample_cov + alpha * diag_mat
-            else:
-                # Sufficient samples: use ridge-regularized covariance
-                cov = (centered.T @ centered) / (n_k - 1)
-                alpha = d / (d + n_k)  # Light shrinkage
-                diag_var = np.diag(cov) + self.reg
-                diag_mat = np.diag(diag_var)
-                cov_reg = (1.0 - alpha) * cov + alpha * diag_mat
-                cov_reg = cov_reg + self.reg * np.eye(d, dtype=np.float32)
-
-            try:
-                cov_inv = np.linalg.inv(cov_reg.astype(np.float64))
-            except np.linalg.LinAlgError:
-                cov_inv = np.linalg.pinv(cov_reg.astype(np.float64))
-
-            self._class_means[label] = mean.astype(np.float32)
-            self._class_covs[label] = cov_reg.astype(np.float32)
-            self._class_cov_invs[label] = cov_inv.astype(np.float32)
+            mean, cov_reg, cov_inv = fitted
+            self._class_means[label] = mean
+            self._class_covs[label] = cov_reg
+            self._class_cov_invs[label] = cov_inv
 
         if len(embeddings) > 0:
             self._global_mean = embeddings.mean(axis=0).astype(np.float32)
@@ -217,8 +276,8 @@ class UncertaintyQuantifier:
 
     def mahalanobis_distance(
         self,
-        embedding: np.ndarray,
-        class_label: Union[str, int],
+        embedding: FloatArray,
+        class_label: str | int,
     ) -> float:
         """Compute Mahalanobis distance to a class-conditional distribution.
 
@@ -238,12 +297,12 @@ class UncertaintyQuantifier:
 
         diff = embedding - self._class_means[class_label]
         maha_sq = diff @ self._class_cov_invs[class_label] @ diff
-        return float(np.sqrt(max(0.0, maha_sq)))
+        return float(np.sqrt(max(0.0, float(maha_sq))))
 
     def min_mahalanobis_distance(
         self,
-        embedding: np.ndarray,
-    ) -> Tuple[float, Union[str, int], float]:
+        embedding: FloatArray,
+    ) -> tuple[float, str | int, float]:
         """Find the minimum Mahalanobis distance across all known classes.
 
         Args:
@@ -255,7 +314,7 @@ class UncertaintyQuantifier:
         if not self._class_means:
             return 0.0, "unknown", 0.0
 
-        distances: List[Tuple[float, Union[str, int]]] = []
+        distances: list[tuple[float, str | int]] = []
         for label in self._class_means:
             dist = self.mahalanobis_distance(embedding, label)
             distances.append((dist, label))
@@ -266,46 +325,150 @@ class UncertaintyQuantifier:
 
         return min_dist, closest, margin
 
+    def _leave_one_out_distance(
+        self,
+        index: int,
+        embeddings: FloatArray,
+        labels: LabelArray,
+        indices_by_label: dict[Any, IntArray],
+    ) -> float | None:
+        """Distance from one support point to a fit that excludes it.
+
+        Removing a point only changes the class that owns it, so the other
+        classes' fits are reused as they are. That makes this O(1) covariance
+        inversions per point rather than O(K), which is what keeps honest
+        calibration affordable: on 25 support points it is the difference
+        between 4.4s and 0.5s.
+
+        Returns None when the owning class would be left with fewer than two
+        samples, since there is then no held-out fit to measure against.
+        """
+
+        own = labels[index]
+        kept = indices_by_label[own]
+        kept = kept[kept != index]
+        if len(kept) < 2:
+            return None
+
+        refit = self._fit_one_class(embeddings[kept])
+        if refit is None:
+            return None
+        mean, _, cov_inv = refit
+
+        diff = embeddings[index] - mean
+        own_distance = float(np.sqrt(max(0.0, diff @ cov_inv @ diff)))
+
+        # `is_ood` tests the minimum across every class, so calibration has to
+        # be the same statistic. Distances to the other classes are unaffected
+        # by removing this point, so the already-fitted parameters are correct.
+        others = [
+            self.mahalanobis_distance(embeddings[index], label)
+            for label in indices_by_label
+            if label != own
+        ]
+        return min([own_distance, *others])
+
     def _compute_ood_threshold(
         self,
-        embeddings: np.ndarray,
-        labels: np.ndarray,
+        embeddings: FloatArray,
+        labels: LabelArray,
     ) -> None:
-        """Compute OOD threshold from in-distribution calibration data.
+        """Compute the OOD threshold by leave-one-out over the support set.
 
-        Uses the specified percentile of Mahalanobis distances on training data.
-        New inputs with distances exceeding this threshold are flagged as OOD.
+        Each support point's distance is measured against a fit that excludes
+        it, so the calibration distances estimate what a *new* in-distribution
+        image will score. The threshold is the configured percentile of those.
+
+        This used to measure each support point against a fit that included it,
+        and the result was not a detector that was sometimes wrong -- it flagged
+        **100% of held-out in-distribution samples** in every synthetic
+        configuration tested, and 8 of 15 real PlantVillage queries (#54).
+
+        The reason is specific to the few-shot regime. With 5 samples in 512
+        dimensions the fitted Gaussian is dominated by those 5 points, so each
+        one sits almost exactly at its own centre: the in-sample distances came
+        out between 13.97 and 14.36 -- no spread at all -- while genuinely new
+        images from the same class scored a median of 39.1. A percentile of a
+        degenerate distribution is not a threshold, it is an artifact.
+
+        Leave-one-out is mildly conservative here for the opposite reason: a fit
+        on n-1 points is worse than the fit on n that will actually be used, so
+        the calibration distances run a little high. Measured false-positive
+        rates against a nominal 5% are 0.3% at 5-shot, 4.0% at 10-shot and 3.7%
+        at 20-shot, with a 100% true-positive rate throughout. Erring toward
+        silence is the right direction for a flag that tells a farmer the tool
+        does not recognise their crop.
 
         Args:
-            embeddings: [N, D] training embeddings.
+            embeddings: [N, D] support embeddings.
             labels: [N] class labels.
         """
+        self._calibration_distances = []
+        self._ood_threshold = float("inf")
+
         if len(embeddings) < self.min_ood_samples:
-            self._ood_threshold = float("inf")
             return
 
-        distances: List[float] = []
-        for i in range(len(embeddings)):
-            emb = embeddings[i]
-            label = labels[i]
-            dist = self.mahalanobis_distance(emb, label)
-            distances.append(dist)
+        indices_by_label: dict[Any, IntArray] = {
+            label: np.flatnonzero(labels == label) for label in np.unique(labels)
+        }
+
+        candidates = self._calibration_indices(len(embeddings))
+        distances: list[float] = []
+        for index in candidates:
+            distance = self._leave_one_out_distance(
+                index, embeddings, labels, indices_by_label
+            )
+            if distance is not None:
+                distances.append(distance)
+
+        # Every class had fewer than three samples, so no point could be held
+        # out. Leaving the threshold at infinity disables the detector, which is
+        # the safe direction: it stays quiet rather than flagging everything.
+        if len(distances) < 2:
+            logger.warning(
+                "OOD detection disabled: no class has enough samples to hold one "
+                "out for calibration. At least 3 examples per class are needed."
+            )
+            return
 
         self._calibration_distances = distances
-        self._ood_threshold = float(
-            np.percentile(distances, self.ood_percentile)
+        self._ood_threshold = float(np.percentile(distances, self.ood_percentile))
+
+    def _calibration_indices(self, n_samples: int) -> IntArray:
+        """Which support points to hold out, capped so load time stays bounded.
+
+        Leave-one-out costs a covariance inversion per point -- about 20ms at
+        512 dimensions -- so calibrating every point in a 1000-image support set
+        would add 20 seconds to `load_support_images`. A percentile does not
+        need every point, so beyond the cap a deterministic subsample is used.
+        """
+
+        if n_samples <= self.max_ood_calibration_folds:
+            return np.arange(n_samples)
+        rng = np.random.default_rng(self.ood_calibration_seed)
+        return np.sort(
+            rng.choice(n_samples, size=self.max_ood_calibration_folds, replace=False)
         )
 
-    def is_ood(self, embedding: np.ndarray) -> Tuple[bool, float]:
+    def is_ood(
+        self, embedding: FloatArray, *, min_dist: float | None = None
+    ) -> tuple[bool, float]:
         """Check if an embedding is out-of-distribution.
 
         Args:
             embedding: [D] feature vector.
+            min_dist: The embedding's minimum Mahalanobis distance, if the
+                caller has already computed it. Mahalanobis is O(D^2) per class
+                and is the most expensive step here, so a caller that has the
+                number should not pay for it twice (#40). Omit it and the
+                distance is computed from `embedding` as before.
 
         Returns:
             (is_ood, ood_score_normalized)
         """
-        min_dist, _, _ = self.min_mahalanobis_distance(embedding)
+        if min_dist is None:
+            min_dist, _, _ = self.min_mahalanobis_distance(embedding)
 
         if self._ood_threshold == float("inf") or not self._calibration_distances:
             return False, 0.0
@@ -324,37 +487,58 @@ class UncertaintyQuantifier:
 
     def estimate_epistemic(
         self,
-        query_embedding: np.ndarray,
-        seed: Optional[int] = None,
-    ) -> Tuple[float, float]:
+        query_embedding: FloatArray,
+        seed: int | None = None,
+    ) -> tuple[float, float]:
         """Estimate epistemic uncertainty via stochastic embedding perturbation.
 
-        Adds small Gaussian noise to the query embedding with a non-deterministic
-        seed and measures how much the normalized direction shifts. High sensitivity
-        indicates the embedding lacks robustness — the model has high epistemic
-        uncertainty for this input.
+        Adds small Gaussian noise to the query embedding and measures how much the
+        normalized direction shifts. High sensitivity indicates the embedding
+        lacks robustness — the model has high epistemic uncertainty for this
+        input.
 
-        When seed=None (default), each call produces a different perturbation
-        pattern, capturing genuine stochastic sensitivity. Pass an explicit seed
-        for reproducible diagnostics.
+        When ``seed`` is None the seed is derived from the embedding's own bytes,
+        so the same input always gives the same answer while different inputs
+        still get different perturbation patterns.
+
+        This used to seed from OS entropy, which made the result vary between
+        identical calls — including through `quantify(mode="ensemble")`, the
+        default, and therefore through `PredictionResult.uncertainty_report`. It
+        contradicted the project's determinism guarantee, and the smoke benchmark
+        reported that guarantee as holding because accuracy does not depend on
+        this signal (#58).
+
+        Nothing is lost by fixing it. The stochastic signal is carried by
+        averaging over ``perturbation_samples`` *within* a call; varying the seed
+        *between* calls added run-to-run noise to a reported number without
+        adding information to any single report. Pass an explicit seed to choose
+        a different pattern deliberately.
 
         This is a numpy-based proxy for MC Dropout. Full MC Dropout through the
         backbone requires torch and is planned for a future release.
 
         Args:
             query_embedding: [D] query embedding vector.
-            seed: Optional random seed. None = non-deterministic (default).
+            seed: Optional random seed. None (default) derives one from the
+                embedding, which is reproducible.
 
         Returns:
             (raw_variance, normalized_variance in [0, 1])
         """
-        rng = np.random.default_rng(seed)
         query = np.asarray(query_embedding, dtype=np.float32)
+        rng = np.random.default_rng(
+            _seed_from_embedding(query) if seed is None else seed
+        )
         query_norm = float(np.linalg.norm(query)) + 1e-8
 
-        perturbed_embeddings: List[np.ndarray] = []
+        perturbed_embeddings: list[FloatArray] = []
+        # `query.shape` is Any because the parameter is a bare FloatArray, and with an
+        # Any size numpy's overloads resolve to the scalar (size=None) signature, which
+        # returns a float. Naming the type picks the array overload instead. Runtime
+        # behaviour is unchanged -- this is a typing fix, not a logic fix.
+        noise_shape: tuple[int, ...] = query.shape
         for _ in range(self.perturbation_samples):
-            noise = rng.normal(0.0, self.perturbation_scale, size=query.shape).astype(np.float32)
+            noise = rng.normal(0.0, self.perturbation_scale, size=noise_shape).astype(np.float32)
             perturbed = query + noise * query_norm  # scale noise to embedding magnitude
             # L2 normalize to focus on directional sensitivity
             perturbed_norm = float(np.linalg.norm(perturbed)) + 1e-8
@@ -370,9 +554,9 @@ class UncertaintyQuantifier:
 
     @staticmethod
     def compute_perturbation_variance(
-        perturbed_embeddings: List[np.ndarray],
-    ) -> Tuple[float, float]:
-        """Compute variance across a set of perturbed or sampled embeddings.
+        perturbed_embeddings: list[FloatArray],
+    ) -> tuple[float, float]:
+        """Deprecated since 0.3.0, removed in 0.4.0. Compute variance across a set of perturbed or sampled embeddings.
 
         The sample variance of L2-normalized embeddings indicates model uncertainty:
         if the embedding direction is stable under perturbation, uncertainty is low.
@@ -383,6 +567,13 @@ class UncertaintyQuantifier:
         Returns:
             (variance_raw, normalized_variance in [0, 1])
         """
+        warnings.warn(
+            "UncertaintyQuantifier.compute_perturbation_variance() is deprecated as of 0.3.0 and will be "
+            "removed in 0.4.0: nothing in the library, its tests or its applications "
+            "calls it (#23).",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         if len(perturbed_embeddings) < 2:
             return 0.0, 0.0
 
@@ -398,10 +589,10 @@ class UncertaintyQuantifier:
 
     def compute_knn_entropy(
         self,
-        query_embedding: np.ndarray,
-        support_embeddings: np.ndarray,
-        support_labels: np.ndarray,
-    ) -> Tuple[float, float]:
+        query_embedding: FloatArray,
+        support_embeddings: FloatArray,
+        support_labels: LabelArray,
+    ) -> tuple[float, float]:
         """Compute entropy of softmax over k nearest neighbors.
 
         High entropy indicates ambiguous class boundaries (data uncertainty).
@@ -459,9 +650,9 @@ class UncertaintyQuantifier:
 
     def quantify(
         self,
-        query_embedding: np.ndarray,
-        support_embeddings: np.ndarray,
-        support_labels: np.ndarray,
+        query_embedding: FloatArray,
+        support_embeddings: FloatArray,
+        support_labels: LabelArray,
         mode: str = "ensemble",
     ) -> UncertaintyReport:
         """Compute the multi-signal uncertainty decomposition.
@@ -502,8 +693,10 @@ class UncertaintyQuantifier:
 
         # Distributional: Mahalanobis OOD
         if compute_distributional:
-            min_dist, closest_class, margin = self.min_mahalanobis_distance(query_embedding)
-            is_ood_flag, ood_score = self.is_ood(query_embedding)
+            # One Mahalanobis computation, shared. It used to run twice per
+            # query: once here for the margin, and again inside is_ood() (#40).
+            min_dist, _closest_class, margin = self.min_mahalanobis_distance(query_embedding)
+            is_ood_flag, ood_score = self.is_ood(query_embedding, min_dist=min_dist)
             report.distributional = ood_score
             report.is_ood = is_ood_flag
             report.ood_score = ood_score
@@ -530,8 +723,15 @@ class UncertaintyQuantifier:
     # Diagnostics
     # ------------------------------------------------------------------
 
-    def get_ood_summary(self) -> Dict[str, Any]:
-        """Return diagnostic summary of OOD detection state."""
+    def get_ood_summary(self) -> dict[str, Any]:
+        """Deprecated since 0.3.0, removed in 0.4.0. Return diagnostic summary of OOD detection state."""
+        warnings.warn(
+            "UncertaintyQuantifier.get_ood_summary() is deprecated as of 0.3.0 and will be "
+            "removed in 0.4.0: nothing in the library, its tests or its applications "
+            "calls it (#23).",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return {
             "ood_threshold": self._ood_threshold,
             "n_calibration_samples": len(self._calibration_distances),
@@ -546,9 +746,16 @@ class UncertaintyQuantifier:
             "min_ood_samples": self.min_ood_samples,
         }
 
-    def get_class_statistics(self) -> Dict[str, Dict[str, Any]]:
-        """Return per-class distribution statistics."""
-        stats: Dict[str, Dict[str, Any]] = {}
+    def get_class_statistics(self) -> dict[str, dict[str, Any]]:
+        """Deprecated since 0.3.0, removed in 0.4.0. Return per-class distribution statistics."""
+        warnings.warn(
+            "UncertaintyQuantifier.get_class_statistics() is deprecated as of 0.3.0 and will be "
+            "removed in 0.4.0: nothing in the library, its tests or its applications "
+            "calls it (#23).",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        stats: dict[str, dict[str, Any]] = {}
         for label in self._class_means:
             mean = self._class_means[label]
             cov = self._class_covs.get(label)

@@ -14,10 +14,9 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import os
 import sys
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import numpy as np
 import torch
@@ -29,7 +28,7 @@ def export_backbone(
     backbone_name: str,
     output_dir: str = "src/adaptshot/data",
     opset_version: int = 17,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Export a pretrained backbone to ONNX format.
 
     Args:

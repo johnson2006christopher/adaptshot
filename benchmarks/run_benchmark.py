@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Minimal benchmark harness for AdaptShot core pipeline.
 
 This module provides a reproducible, CPU-only evaluation harness for validating
@@ -10,20 +9,87 @@ Usage:
 
 import argparse
 import json
+import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any
 
-import csv
 import numpy as np
 import torch
 from torchvision import datasets, transforms
 from torchvision.transforms import ToPILImage
 
-from src.adaptshot.config.settings import AdaptShotConfig
-from src.adaptshot.core.extractor import extract_embedding
-from src.adaptshot.core.similarity import find_nearest_neighbor
-from src.adaptshot.utils.determinism import set_deterministic_seed, verify_determinism
+from adaptshot.config.settings import AdaptShotConfig
+from adaptshot.core.extractor import BackboneRegistry, extract_embedding
+from adaptshot.core.similarity import find_nearest_neighbor
+from adaptshot.utils.determinism import set_deterministic_seed, verify_determinism
+
+#: The backbone every published figure was measured on. Kept as the benchmark
+#: default even though the library default moved to mobilenet_v3_small in #36,
+#: so that results stay comparable across the project's history.
+DEFAULT_BENCHMARK_BACKBONE = "resnet18"
+
+#: The canonical artifact tests/test_docs_claims.py verifies the README against.
+DEFAULT_OUTPUT = "results/smoke_test.json"
+
+#: Where torchvision caches CIFAR-10, relative to `data_dir`.
+_CIFAR_MARKER = Path("cifar-10-batches-py") / "data_batch_1"
+
+
+def cifar10_is_cached(data_dir: str = "./data") -> bool:
+    """Whether CIFAR-10 is already on disk, so no network is needed."""
+
+    return (Path(data_dir) / _CIFAR_MARKER).is_file()
+
+
+def resolve_dataset(requested: str, data_dir: str, allow_download: bool) -> str:
+    """Decide which dataset to actually use, and say so out loud.
+
+    `auto` is the default because the documented validation gate must work with
+    no network. AdaptShot's whole argument is that connectivity is the resource
+    its users do not have; a pre-PR command that silently requires a 170MB
+    download contradicts that, and on a slow link it does not fail, it hangs.
+
+    Returns:
+        The dataset name to load.
+    """
+
+    if requested != "auto":
+        return requested
+    if cifar10_is_cached(data_dir):
+        return "cifar10"
+    if allow_download:
+        return "cifar10"
+    return "synthetic"
+
+
+def _synthetic_split(
+    n_way: int, k_shot: int, seed: int, n_query: int = 5
+) -> tuple[list[tuple[torch.Tensor, int]], list[tuple[torch.Tensor, int]]]:
+    """A deterministic fixture that needs no network and no disk.
+
+    Each class is a fixed random mean plus per-sample noise, so the classes are
+    separable and the pipeline exercises every stage end to end.
+
+    This measures whether the pipeline still *works* and how fast, which is what
+    a smoke test is for. It does not measure whether the model is any good, and
+    `run_smoke_test` refuses to report an accuracy figure from it -- a number
+    measured on random tensors describes nothing, and publishing one would be
+    the same mistake #17 had to retract.
+    """
+
+    generator = torch.Generator().manual_seed(seed)
+    support: list[tuple[torch.Tensor, int]] = []
+    query: list[tuple[torch.Tensor, int]] = []
+
+    for label in range(n_way):
+        centre = torch.rand(3, 32, 32, generator=generator)
+        for store, count in ((support, k_shot), (query, n_query)):
+            for _ in range(count):
+                noise = torch.randn(3, 32, 32, generator=generator) * 0.08
+                store.append((torch.clamp(centre + noise, 0.0, 1.0), label))
+
+    return support, query
 
 
 def load_few_shot_split(
@@ -32,7 +98,8 @@ def load_few_shot_split(
     k_shot: int = 10,
     seed: int = 42,
     data_dir: str = "./data",
-) -> Tuple[List[Tuple[torch.Tensor, int]], List[Tuple[torch.Tensor, int]]]:
+    allow_download: bool = False,
+) -> tuple[list[tuple[torch.Tensor, int]], list[tuple[torch.Tensor, int]]]:
     """
     Load a few-shot split from a torchvision dataset.
 
@@ -52,11 +119,28 @@ def load_few_shot_split(
     """
     set_deterministic_seed(seed)
 
+    if dataset_name == "synthetic":
+        return _synthetic_split(n_way=n_way, k_shot=k_shot, seed=seed)
+
     if dataset_name == "cifar10":
+        if not cifar10_is_cached(data_dir) and not allow_download:
+            # Fail immediately and say what to run. The previous behaviour was to
+            # start a 170MB download with no warning, which on a constrained link
+            # produced five minutes of silence and then an opaque timeout.
+            raise FileNotFoundError(
+                f"CIFAR-10 is not cached in {data_dir} and downloads are not "
+                "permitted.\n"
+                "  Offline (default):  python -m benchmarks.run_benchmark "
+                "--smoke-test --seed 42\n"
+                "  Fetch it once:      python -m benchmarks.run_benchmark "
+                "--smoke-test --dataset cifar10 --allow-download --seed 42\n"
+                "The download is ~170MB and has taken over 30 minutes from some "
+                "networks."
+            )
         dataset = datasets.CIFAR10(
             root=data_dir,
             train=True,
-            download=True,
+            download=allow_download,
             transform=transforms.ToTensor(),  # Minimal transform for speed
         )
 
@@ -93,10 +177,10 @@ def load_few_shot_split(
             )
 
         # Read train.csv to get file-to-label mapping
-        label_to_images: Dict[str, List[str]] = {}
-        with open(csv_path, "r") as f:
+        label_to_images: dict[str, list[str]] = {}
+        with open(csv_path) as f:
             reader = csv.reader(f)
-            header = next(reader)
+            next(reader)  # skip the header row
             for row in reader:
                 filename, label = row[0], row[1]
                 if label not in label_to_images:
@@ -115,19 +199,19 @@ def load_few_shot_split(
             transforms.ToTensor(),
         ])
 
-        support_data: List[Tuple[torch.Tensor, int]] = []
-        query_data: List[Tuple[torch.Tensor, int]] = []
+        support_data: list[tuple[torch.Tensor, int]] = []
+        query_data: list[tuple[torch.Tensor, int]] = []
 
         for cls_idx, label in enumerate(selected_labels):
             images = label_to_images[label]
             if len(images) < k_shot + 5:
                 continue
             selected = rng.choice(len(images), size=k_shot + 5, replace=False)
-            for j, img_idx in enumerate(selected[:k_shot]):
+            for img_idx in selected[:k_shot]:
                 img_path = images_dir / images[img_idx]
                 img = datasets.folder.default_loader(str(img_path))
                 support_data.append((img_transform(img), cls_idx))
-            for j, img_idx in enumerate(selected[k_shot:k_shot + 5]):
+            for img_idx in selected[k_shot:k_shot + 5]:
                 img_path = images_dir / images[img_idx]
                 img = datasets.folder.default_loader(str(img_path))
                 query_data.append((img_transform(img), cls_idx))
@@ -143,7 +227,7 @@ def load_few_shot_split(
 # These are NOT claims about AdaptShot performance — they are provided for
 # context when interpreting AdaptShot benchmark results.
 # ---------------------------------------------------------------------------
-BASELINE_REFERENCES: Dict[str, Dict[str, Any]] = {
+BASELINE_REFERENCES: dict[str, dict[str, Any]] = {
     "prototypical_networks": {
         "paper": "Snell et al. (2017) Prototypical Networks for Few-shot Learning",
         "miniImageNet_5way_1shot": 49.42,
@@ -168,16 +252,22 @@ BASELINE_REFERENCES: Dict[str, Dict[str, Any]] = {
 }
 
 
-def run_smoke_test(config: AdaptShotConfig, dataset: str = "cifar10") -> Dict[str, Any]:
+def run_smoke_test(
+    config: AdaptShotConfig, dataset: str = "cifar10", allow_download: bool = False
+) -> dict[str, Any]:
     """
     Run minimal end-to-end pipeline and return metrics.
 
     Args:
         config: AdaptShotConfig with pipeline settings
-        dataset: Dataset name ('cifar10' or 'miniimagenet')
+        dataset: Dataset name ('cifar10', 'miniimagenet' or 'synthetic')
+        allow_download: Whether fetching a missing dataset over the network is
+            permitted. False by default: the documented validation gate must
+            work offline.
 
     Returns:
-        Dictionary containing accuracy, latency, and metadata metrics
+        Dictionary containing accuracy, latency, and metadata metrics. On the
+        synthetic fixture `accuracy` is ``None`` -- see `_synthetic_split`.
     """
     print(f"🧪 Running benchmark on {dataset}...")
 
@@ -187,6 +277,7 @@ def run_smoke_test(config: AdaptShotConfig, dataset: str = "cifar10") -> Dict[st
         n_way=config.n_way,
         k_shot=config.k_shot,
         seed=config.seed,
+        allow_download=allow_download,
     )
 
     print(f"   • Support: {len(support_data)} examples")
@@ -194,8 +285,8 @@ def run_smoke_test(config: AdaptShotConfig, dataset: str = "cifar10") -> Dict[st
 
     # Extract support embeddings
     print("   • Extracting support embeddings...")
-    support_embeddings: List[np.ndarray] = []
-    support_labels: List[int] = []
+    support_embeddings: list[np.ndarray] = []
+    support_labels: list[int] = []
 
     start_time = time.perf_counter()
     for img_tensor, label in support_data:
@@ -211,14 +302,14 @@ def run_smoke_test(config: AdaptShotConfig, dataset: str = "cifar10") -> Dict[st
     # Evaluate on query set
     print("   • Evaluating on query set...")
     correct = 0
-    latencies: List[float] = []
+    latencies: list[float] = []
 
     for img_tensor, true_label in query_data:
         img_pil = ToPILImage()(img_tensor)
         start = time.perf_counter()
 
         # Get prediction
-        pred_label, confidence, _ = find_nearest_neighbor(
+        pred_label, _confidence, _ = find_nearest_neighbor(
             query=extract_embedding(img_pil, config),
             support_embeddings=support_embeddings_np,
             support_labels=np.array(support_labels),
@@ -228,13 +319,13 @@ def run_smoke_test(config: AdaptShotConfig, dataset: str = "cifar10") -> Dict[st
         latency_ms = (time.perf_counter() - start) * 1000
         latencies.append(latency_ms)
 
-        # Normalize types for comparison: both to int
-        if isinstance(pred_label, str) and pred_label.isdigit():
-            pred_label = int(pred_label)
-        if isinstance(true_label, (np.integer, int)):
-            true_label = int(true_label)
+        # Normalize types for comparison: both to int. Written to new names
+        # rather than over the loop variables, so a reader further down the body
+        # can still tell which value came from the dataset.
+        predicted = int(pred_label) if isinstance(pred_label, str) and pred_label.isdigit() else pred_label
+        expected = int(true_label) if isinstance(true_label, (np.integer, int)) else true_label
 
-        if pred_label == true_label:
+        if predicted == expected:
             correct += 1
 
     accuracy = correct / len(query_data)
@@ -242,7 +333,11 @@ def run_smoke_test(config: AdaptShotConfig, dataset: str = "cifar10") -> Dict[st
     p95_latency = np.percentile(latencies, 95)
 
     return {
-        "accuracy": float(accuracy),
+        # None on the synthetic fixture, deliberately. The pipeline can be timed
+        # on random tensors; it cannot be evaluated on them, and a figure that
+        # describes nothing is worse than no figure once someone quotes it.
+        "accuracy": None if dataset == "synthetic" else float(accuracy),
+        "data_source": dataset,
         "latency_avg_ms": float(avg_latency),
         "latency_p95_ms": float(p95_latency),
         "embedding_time_s": float(embedding_time),
@@ -269,8 +364,20 @@ def main() -> int:
     parser.add_argument(
         "--dataset",
         type=str,
-        default="cifar10",
-        help="Dataset name (default: cifar10)",
+        default="auto",
+        help=(
+            "Dataset: auto | cifar10 | miniimagenet | synthetic. "
+            "auto (default) uses CIFAR-10 if it is already cached, and the "
+            "offline synthetic fixture otherwise."
+        ),
+    )
+    parser.add_argument(
+        "--allow-download",
+        action="store_true",
+        help=(
+            "Permit fetching a missing dataset over the network. Off by "
+            "default: the validation gate must work without connectivity."
+        ),
     )
     parser.add_argument(
         "--seed",
@@ -281,7 +388,7 @@ def main() -> int:
     parser.add_argument(
         "--output",
         type=str,
-        default="results/smoke_test.json",
+        default=DEFAULT_OUTPUT,
         help="Output JSON path for results (default: results/smoke_test.json)",
     )
     parser.add_argument(
@@ -294,14 +401,29 @@ def main() -> int:
         action="store_true",
         help="Enable memory profiling via tracemalloc",
     )
+    parser.add_argument(
+        "--backbone",
+        default=DEFAULT_BENCHMARK_BACKBONE,
+        choices=sorted(BackboneRegistry),
+        help=(
+            "Backbone to measure. Defaults to resnet18 for comparability with "
+            "every number this project has published; pass "
+            "mobilenet_v3_small to measure what a core install actually runs."
+        ),
+    )
     args = parser.parse_args()
 
     # Set deterministic seed globally
     set_deterministic_seed(args.seed)
 
-    # Default config for smoke test: CPU-only, no FAISS, ResNet-18
+    # resnet18 is the default here deliberately, not inherited from
+    # AdaptShotConfig's default. The library default became mobilenet_v3_small in
+    # #36 -- the backbone whose ONNX weights ship in the wheel -- but this
+    # benchmark's whole value is comparability with every number the project has
+    # published, and silently changing the backbone would break that. --backbone
+    # measures another one explicitly.
     config = AdaptShotConfig(
-        backbone="resnet18",
+        backbone=args.backbone,
         device="cpu",
         seed=args.seed,
         n_way=5,
@@ -310,18 +432,37 @@ def main() -> int:
     )
 
     if args.smoke_test or args.full_benchmark:
-        dataset_name = args.dataset
-        results = run_smoke_test(config, dataset=dataset_name)
+        dataset_name = resolve_dataset(args.dataset, "./data", args.allow_download)
+        if args.dataset == "auto":
+            print(f"   • Dataset resolved to '{dataset_name}' (--dataset auto)")
+        results = run_smoke_test(
+            config, dataset=dataset_name, allow_download=args.allow_download
+        )
 
         # Print human-readable results
         print(f"\n📊 Benchmark Results ({dataset_name}):")
-        print(f"   • Accuracy: {results['accuracy']:.1%}")
+        if results["accuracy"] is None:
+            print("   • Accuracy: not reported")
+            print("     The synthetic fixture is random tensors. An accuracy")
+            print("     measured on it describes nothing, so none is published.")
+            print("     For a measured figure:")
+            print("       --dataset cifar10 --allow-download")
+        else:
+            print(f"   • Accuracy: {results['accuracy']:.1%}")
         print(f"   • Avg Latency: {results['latency_avg_ms']:.1f} ms")
         print(f"   • P95 Latency: {results['latency_p95_ms']:.1f} ms")
         print(f"   • Embedding Time: {results['embedding_time_s']:.3f}s")
 
         # Save to JSON
+        # results/smoke_test.json is the artifact tests/test_docs_claims.py checks
+        # every quoted figure in the README against. A run on another backbone
+        # measures a different thing, so writing it there would silently replace
+        # the numbers the docs are verified against -- which is exactly what
+        # happened the first time --backbone was used. Non-default backbones get
+        # their own file unless --output says otherwise.
         output_path = Path(args.output)
+        if args.backbone != DEFAULT_BENCHMARK_BACKBONE and args.output == DEFAULT_OUTPUT:
+            output_path = output_path.with_suffix(f".{args.backbone}.json")
         output_path.parent.mkdir(parents=True, exist_ok=True)
         with open(output_path, "w", encoding="utf-8") as f:
             json.dump(results, f, indent=2, ensure_ascii=False)
@@ -339,7 +480,7 @@ def main() -> int:
             for name, ref in BASELINE_REFERENCES.items():
                 s1 = ref.get("miniImageNet_5way_1shot", "N/A")
                 s5 = ref.get("miniImageNet_5way_5shot", "N/A")
-                print(f"   {name:<25} {str(s1):>8} {str(s5):>8}")
+                print(f"   {name:<25} {s1!s:>8} {s5!s:>8}")
             print()
             print("   AdaptShot results shown above are from: " + dataset_name)
 
@@ -361,7 +502,7 @@ def main() -> int:
         if args.profile_memory:
             print("\n📊 Memory Profile:")
             try:
-                from src.adaptshot.utils.profiling import estimate_model_memory_mb
+                from adaptshot.utils.profiling import estimate_model_memory_mb
                 mem_est = estimate_model_memory_mb(config.backbone, config.n_way)
                 print(f"   • Estimated total: {mem_est['estimated_total_mb']:.1f} MB")
                 print(f"   • Under 250MB: {'✅ YES' if mem_est['under_250mb'] else '❌ NO'}")
@@ -375,8 +516,19 @@ def main() -> int:
         # Verify determinism
         print("\n🔍 Verifying determinism...")
         def run_once() -> np.ndarray:
-            """Helper: run extraction once for determinism check."""
-            img_tensor, _ = load_few_shot_split(seed=config.seed)[1][0]
+            """Helper: run extraction once for determinism check.
+
+            It must load the same dataset the benchmark just ran on. It used to
+            take `load_few_shot_split`'s default, which is CIFAR-10 regardless of
+            what was measured -- harmless while every path downloaded CIFAR
+            anyway, and a hard failure the moment downloads stopped being
+            implicit.
+            """
+            img_tensor, _ = load_few_shot_split(
+                dataset_name=dataset_name,
+                seed=config.seed,
+                allow_download=args.allow_download,
+            )[1][0]
             return extract_embedding(ToPILImage()(img_tensor), config)
         is_deterministic = verify_determinism(run_once, runs=3, seed=config.seed)
         print(f"   • Determinism check: {'✅ PASS' if is_deterministic else '❌ FAIL'}")
@@ -392,4 +544,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    exit(main())
+    sys.exit(main())

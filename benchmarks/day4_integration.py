@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Day 4 Integration: End-to-end FewShotLearner workflow validation.
 
 Demonstrates the complete production API:
@@ -11,20 +10,18 @@ Demonstrates the complete production API:
 
 import os
 import tempfile
-import time
 from pathlib import Path
-from typing import List, Tuple
 
 import numpy as np
 from PIL import Image
 
-from src.adaptshot.config.settings import AdaptShotConfig
-from src.adaptshot.core.learner import FewShotLearner
+from adaptshot.config.settings import AdaptShotConfig
+from adaptshot.core.learner import FewShotLearner
 
 
 def _generate_synthetic_dataset(
-    base_dir: str, classes: List[str], n_per_class: int = 10
-) -> Tuple[List[str], List[str]]:
+    base_dir: str, classes: list[str], n_per_class: int = 10
+) -> tuple[list[str], list[str]]:
     """Create lightweight colored/patterned images to simulate a few-shot dataset."""
     os.makedirs(base_dir, exist_ok=True)
     paths, labels = [], []

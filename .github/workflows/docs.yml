@@ -17,10 +17,10 @@ jobs:
     name: Build and deploy MkDocs site
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
           cache: "pip"
@@ -29,9 +29,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
           pip install mkdocs mkdocs-material "mkdocstrings[python]"
-      # TODO(stage-2): switch to `mkdocs build --strict` once the docs nav
-      # cleanup lands, so broken links and orphaned pages fail CI.
+      # --strict: a broken link or an orphaned page fails the build instead of
+      # deploying. The same strict build runs on every pull request in ci.yml,
+      # so this is the second line of defence, not the first.
       - name: Build site
-        run: mkdocs build
+        run: mkdocs build --strict
       - name: Deploy to gh-pages
         run: mkdocs gh-deploy --force

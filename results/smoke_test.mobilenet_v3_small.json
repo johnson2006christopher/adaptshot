@@ -1,0 +1,16 @@
+{
+  "accuracy": 0.76,
+  "data_source": "cifar10",
+  "latency_avg_ms": 3.3108160799747566,
+  "latency_p95_ms": 4.1348295999341635,
+  "embedding_time_s": 0.2100815350004268,
+  "support_size": 50,
+  "query_size": 25,
+  "config": {
+    "backbone": "mobilenet_v3_small",
+    "device": "cpu",
+    "use_faiss": false,
+    "n_way": 5,
+    "k_shot": 10
+  }
+}

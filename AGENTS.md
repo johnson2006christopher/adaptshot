@@ -2,7 +2,7 @@
 
 - Primary public API lives in `src/adaptshot/core/learner.py` (`FewShotLearner`); verify any API or signature against `src/adaptshot/` before stating it.
 - CPU-only, <250MB RAM are non-negotiable; never assume GPU availability.
-- Import paths in code and tests use `src.adaptshot...` (not `adaptshot...`) when running from repo.
+- Import paths in code, tests, and benchmarks use `adaptshot...` (the installed package), never `src.adaptshot...`. Requires an editable install: `pip install -e ".[dev]"`.
 
 ## Commands that matter
 - Install dev deps: `pip install -e ".[dev]"`
@@ -12,7 +12,7 @@
 - Benchmark smoke test (CPU-only): `python -m benchmarks.run_benchmark --smoke-test --seed 42`
 
 ## Optional/UI
-- Gradio UI entrypoint: `src/adaptshot/ui/app.py` (requires `pip install -e ".[ui]"`).
+- The library ships no GUI (#22). The application is `apps/tambua/` — `pip install -e apps/tambua`, then `tambua`.
 
 ## Repo-specific constraints from .openproject.md
 - Do not add dependencies outside `pyproject.toml` optional groups; never claim features/metrics not backed by code or benchmarks.

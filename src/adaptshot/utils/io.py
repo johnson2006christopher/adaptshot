@@ -1,18 +1,31 @@
-"""I/O utilities for path validation, serialization, and safe data conversion."""
+"""I/O utilities for path validation, serialization, and safe data conversion.
+
+torch appears here only in an annotation, so it is imported under TYPE_CHECKING
+rather than at module scope. The eager import made this module -- and therefore
+the whole save/load path -- unreachable on a core install, and contributed
+~479MB to the cost of `import adaptshot` (#13, #35).
+
+`tensor_to_numpy` is duck-typed at runtime: anything with `.detach().cpu()`
+works, which is every torch tensor and nothing else that matters here.
+"""
+
+from __future__ import annotations
 
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, Union, cast
+from typing import TYPE_CHECKING, Any, cast
 
-import numpy as np
-import torch
+from .arrays import FloatArray
+
+if TYPE_CHECKING:  # pragma: no cover - import for annotations only
+    import torch
 
 # Module logger (configure at app level; defaults to WARNING if unconfigured)
 logger = logging.getLogger(__name__)
 
 
-def validate_path(path: Union[str, Path], must_exist: bool = False, is_dir: bool = False) -> Path:
+def validate_path(path: str | Path, must_exist: bool = False, is_dir: bool = False) -> Path:
     """
     Validate and normalize a file or directory path.
 
@@ -42,7 +55,7 @@ def validate_path(path: Union[str, Path], must_exist: bool = False, is_dir: bool
     return path_obj
 
 
-def save_json(data: Dict[str, Any], path: Union[str, Path], indent: int = 2) -> None:
+def save_json(data: dict[str, Any], path: str | Path, indent: int = 2) -> None:
     """
     Save dictionary to JSON file with pretty formatting.
 
@@ -63,7 +76,7 @@ def save_json(data: Dict[str, Any], path: Union[str, Path], indent: int = 2) -> 
     logger.info("Saved JSON to %s", path_obj)
 
 
-def load_json(path: Union[str, Path]) -> Dict[str, Any]:
+def load_json(path: str | Path) -> dict[str, Any]:
     """
     Load dictionary from JSON file.
 
@@ -75,11 +88,11 @@ def load_json(path: Union[str, Path]) -> Dict[str, Any]:
     """
     path_obj = validate_path(path, must_exist=True)
 
-    with open(path_obj, "r", encoding="utf-8") as f:
-        return cast(Dict[str, Any], json.load(f))
+    with open(path_obj, encoding="utf-8") as f:
+        return cast(dict[str, Any], json.load(f))
 
 
-def tensor_to_numpy(tensor: torch.Tensor) -> np.ndarray:
+def tensor_to_numpy(tensor: torch.Tensor) -> FloatArray:
     """
     Convert torch.Tensor to numpy array, handling device and gradients safely.
 
@@ -90,10 +103,10 @@ def tensor_to_numpy(tensor: torch.Tensor) -> np.ndarray:
         tensor: Input torch.Tensor (any shape, any device)
 
     Returns:
-        np.ndarray: Equivalent numpy array pinned to CPU memory
+        FloatArray: Equivalent numpy array pinned to CPU memory
     """
     if tensor.requires_grad:
         tensor = tensor.detach()
     if tensor.is_cuda:
         tensor = tensor.cpu()
-    return tensor.numpy()
+    return cast(FloatArray, tensor.numpy())

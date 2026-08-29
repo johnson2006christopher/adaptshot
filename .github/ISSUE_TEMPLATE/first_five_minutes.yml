@@ -1,0 +1,61 @@
+name: I got stuck in the first five minutes
+description: You followed the README quickstart and something did not go as it said. Nothing is too small.
+labels: ["first-five-minutes"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you. The people who wrote the quickstart cannot see where it is
+        confusing; you can. Every report here, stuck or not, is the evidence
+        the project needs (issue #76). Skip anything you do not know.
+
+  - type: dropdown
+    id: outcome
+    attributes:
+      label: Did you get a prediction?
+      options:
+        - "Yes, and it looked right"
+        - "Yes, but something in the output confused me"
+        - "No -- an error stopped me"
+        - "No -- I gave up before the end"
+    validations:
+      required: true
+
+  - type: textarea
+    id: where
+    attributes:
+      label: Where did you stop, or slow down?
+      description: Quote the line of the README you were on. If you got past it, say what you had to work out on your own.
+      placeholder: "At `pip install adaptshot` -- it said ... / At the third line of the block -- I did not know what `paths` was ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: output
+    attributes:
+      label: What did the screen say?
+      description: Paste it as it appeared. Do not trim -- the boring lines are often the useful ones.
+      render: text
+
+  - type: input
+    id: time
+    attributes:
+      label: How long did it take, from opening the README to a prediction (or giving up)?
+      placeholder: "about 6 minutes"
+
+  - type: textarea
+    id: machine
+    attributes:
+      label: Your machine
+      description: "Operating system, Python version, roughly how fast your internet was. `python -c \"import adaptshot; print(adaptshot.check_environment())\"` prints most of it, if you got that far."
+      placeholder: "Windows 11, Python 3.12, slow hotel wifi"
+
+  - type: dropdown
+    id: experience
+    attributes:
+      label: How would you describe yourself?
+      options:
+        - "I have never used Python"
+        - "I use Python sometimes"
+        - "I write Python for a living"
+        - "I work in machine learning"

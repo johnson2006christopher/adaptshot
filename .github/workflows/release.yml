@@ -1,0 +1,184 @@
+name: Release
+
+# Tag vX.Y.Z and this builds, validates, proves the wheel installs cleanly, and
+# publishes. A tag containing "rc" goes to TestPyPI; anything else goes to PyPI.
+# PyPI releases cannot be overwritten, which is why a release candidate exists.
+#
+# Publishing uses PyPI Trusted Publishing (OIDC): the job presents a short-lived
+# identity token and PyPI checks it against a publisher registered for this
+# repository, workflow file and environment. There is no API token anywhere in
+# this repository's secrets, and none is needed. What has to exist on the PyPI
+# side is written down in docs/release-checklist.md.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+env:
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  build:
+    name: Build sdist and wheel
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      # The tag is the release. If it does not match what pyproject.toml says,
+      # nothing downstream is trustworthy, so stop here rather than publish a
+      # wheel whose filename disagrees with its git ref.
+      - name: Check the tag matches the declared version
+        id: version
+        run: |
+          declared=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+          tag="${GITHUB_REF_NAME#v}"
+          if [ "$declared" != "$tag" ]; then
+            echo "::error::tag v$tag does not match pyproject.toml version $declared"
+            exit 1
+          fi
+          echo "version=$declared" >> "$GITHUB_OUTPUT"
+
+      # A clean checkout has no build/ or egg-info/ to go stale, which is the
+      # local hazard CLAUDE.md documents. This is the wheel that ships.
+      - name: Build
+        run: |
+          python -m pip install --upgrade pip build
+          python -m build
+          ls -la dist/
+
+      - name: Check the wheel carries its package data
+        run: |
+          python - <<'PY'
+          import glob, sys, zipfile
+          wheel = glob.glob("dist/*.whl")[0]
+          names = zipfile.ZipFile(wheel).namelist()
+          required = [
+              "adaptshot/py.typed",
+              "adaptshot/data/mobilenet_v3_small.onnx",
+              "adaptshot/data/mobilenet_v3_small.onnx.data",
+              "adaptshot/data/samples/README.md",
+          ]
+          missing = [n for n in required if n not in names]
+          samples = [n for n in names if n.startswith("adaptshot/data/samples/") and n.endswith(".jpg")]
+          if missing or len(samples) < 9:
+              print("missing:", missing, "| sample images:", len(samples))
+              sys.exit(1)
+          print(f"ok: {wheel} carries the backbone and {len(samples)} sample images")
+          PY
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+  gate:
+    name: Full validation gate on the tagged commit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          # CPU-only torch, on purpose (#60): the CUDA build is 2.6 GB of wheels the
+          # tests never exercise, and caching it for five Pythons blew past the
+          # repository's 10 GB cache limit -- which evicted the CIFAR-10 cache and
+          # turned a two-minute benchmark job into a thirty-five-minute download.
+          pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+          pip install -e ".[dev]"
+          pip install -e "apps/tambua[dev]"
+      # gradio writes its component stubs into site-packages on first import;
+      # they are not in the wheel, and mypy needs them on disk (see ci.yml).
+      - name: Materialise gradio stubs
+        run: python -c "import gradio"
+      - name: ruff
+        run: ruff check src/ tests/ benchmarks/ apps/ examples/ scripts/
+      - name: mypy
+        run: mypy src/adaptshot --strict
+      - name: pytest
+        run: pytest tests/ apps/tambua/tests -q
+      - name: Deterministic smoke benchmark
+        run: python -m benchmarks.run_benchmark --smoke-test --seed 42
+
+  install-smoke:
+    # The only job that tests the wheel rather than the working tree. A clean
+    # container, pip install of the built artifact, and the README quickstart
+    # executed with the network blocked -- the same test CI runs against the
+    # tree, now run against what a user would actually receive.
+    name: Clean-container install and first prediction
+    needs: build
+    runs-on: ubuntu-latest
+    container:
+      image: python:3.12-slim
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          name: dist
+          path: dist/
+      - name: Install the wheel, not the tree
+        run: |
+          python -m pip install --upgrade pip
+          pip install dist/*.whl pytest
+          pip show adaptshot | head -3
+      # The checkout is only for README.md and the test that reads it. The
+      # package under test is the one in site-packages; `src/` is not on the
+      # path and there is no editable install.
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: |
+            README.md
+            tests/test_quickstart.py
+          sparse-checkout-cone-mode: false
+      - name: Confirm the installed package is the wheel
+        run: |
+          python -c "import adaptshot, pathlib; p = pathlib.Path(adaptshot.__file__); assert 'site-packages' in str(p), p; print(p)"
+      - name: Run the README quickstart against the installed wheel
+        run: python -m pytest tests/test_quickstart.py -q
+
+  publish-testpypi:
+    name: Publish to TestPyPI (release candidates)
+    if: contains(github.ref_name, 'rc')
+    needs: [build, gate, install-smoke]
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/project/adaptshot/${{ needs.build.outputs.version }}/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33  # v1.14.2
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
+  publish-pypi:
+    name: Publish to PyPI
+    if: ${{ !contains(github.ref_name, 'rc') }}
+    needs: [build, gate, install-smoke]
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/adaptshot/${{ needs.build.outputs.version }}/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33  # v1.14.2

@@ -6,7 +6,6 @@ by requesting human feedback when the model is genuinely unsure.
 """
 
 import logging
-from typing import Dict, Tuple
 
 import numpy as np
 
@@ -14,8 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class ACTEngine:
-    """
-    Adaptive Confidence Thresholding engine.
+    """Adaptive Confidence Thresholding engine.
 
     Maintains a dynamic threshold τ_k for each class k that adapts based on:
     - Historical correction rates (incorrect vs. correct)
@@ -52,7 +50,7 @@ class ACTEngine:
         self._mean_reversion_strength = 0.001  # Slow pull toward base
 
         # Per-class state: {class_idx: {"threshold": float, "correct": float, "incorrect": float, "total": float}}
-        self._class_state: Dict[int, Dict[str, float]] = {}
+        self._class_state: dict[int, dict[str, float]] = {}
         for k in range(n_classes):
             self._class_state[k] = {
                 "threshold": base_threshold,
@@ -67,7 +65,7 @@ class ACTEngine:
         class_idx: int,
         recent_incorrect_rate: float = 0.0,
         recent_correct_rate: float = 1.0,
-    ) -> Tuple[bool, str]:
+    ) -> tuple[bool, str]:
         """
         Evaluate whether to accept a prediction or request human feedback.
 
@@ -126,7 +124,8 @@ class ACTEngine:
         action = "ACCEPT" if accept else "REQUEST_FEEDBACK"
 
         logger.debug(
-            f"ACT | Class {class_idx} | Conf: {confidence:.3f} | τ: {threshold_updated:.3f} | Action: {action}"
+            "ACT | Class %s | Conf: %.3f | τ: %.3f | Action: %s",
+            class_idx, confidence, threshold_updated, action,
         )
 
         return accept, action
@@ -138,7 +137,7 @@ class ACTEngine:
         existing = [s["threshold"] for s in self._class_state.values()]
         return float(np.clip(np.mean(existing), self.min_threshold, self.max_threshold)) if existing else 0.65
 
-    def get_all_thresholds(self) -> Dict[int, float]:
+    def get_all_thresholds(self) -> dict[int, float]:
         """Return a snapshot of all current class thresholds."""
         return {k: self.get_threshold(k) for k in self._class_state}
 

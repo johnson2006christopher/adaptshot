@@ -13,10 +13,15 @@ Integration points:
 
 from __future__ import annotations
 
+import logging
+import math
 from dataclasses import dataclass, field
-from typing import Dict, List, Set, Union
 
 import numpy as np
+
+from ..utils.arrays import FloatArray, LabelArray
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -28,20 +33,25 @@ class ConformalPredictionSet:
         set_size: Number of classes in the prediction set.
         alpha: Significance level used (e.g., 0.05 = 95% coverage target).
         q_hat: Computed nonconformity quantile threshold.
-        coverage_estimate: Empirical coverage on calibration data.
+        coverage_estimate: Running empirical coverage observed so far; NaN until the
+            engine has calibrated, because a singleton fallback has no basis for one.
+        calibrated: False while the set is the top-1 alone because the engine has
+            fewer than ``min_calibration_size`` scores. No guarantee applies then, and
+            consumers should say so rather than show the set (#80).
         prediction: The single best-guess prediction (for backward compat).
         confidence: Calibrated confidence of the top prediction.
     """
 
-    prediction_set: Set[Union[str, int]] = field(default_factory=set)
+    prediction_set: set[str | int] = field(default_factory=set)
     set_size: int = 0
     alpha: float = 0.05
     q_hat: float = 0.0
     coverage_estimate: float = 0.0
-    prediction: Union[str, int] = ""
+    prediction: str | int = ""
     confidence: float = 0.0
+    calibrated: bool = True
 
-    def contains(self, label: Union[str, int]) -> bool:
+    def contains(self, label: str | int) -> bool:
         """Check whether a label is within the conformal prediction set."""
         return label in self.prediction_set
 
@@ -78,7 +88,7 @@ class ConformalEngine:
         min_calibration_size: int = 10,
         max_calibration_size: int = 500,
         mode: str = "split",
-        score_method: str = "softmax",
+        score_method: str = "ratio",
     ) -> None:
         """Initialize the conformal prediction engine.
 
@@ -88,19 +98,34 @@ class ConformalEngine:
             min_calibration_size: Minimum scores before producing sets.
             max_calibration_size: Rolling buffer capacity for scores.
             mode: "split" for split-conformal or "cross" for cross-conformal.
-            score_method: "softmax" or "distance" nonconformity function.
+            score_method: "ratio" (default), "softmax" or "distance". See
+                ``nonconformity`` for what each measures and why the default changed.
         """
         self.alpha = float(alpha)
         self.n_bins = int(n_bins)
         self.min_calibration_size = int(min_calibration_size)
+
+        # Below this many calibration scores, no finite quantile exists at this
+        # alpha and every prediction set is the full label set. The maths, not a
+        # policy: see _compute_quantile. Said once, here, rather than discovered
+        # from a run of uninformative sets.
+        self.min_informative_size = math.ceil((1.0 - self.alpha) / self.alpha)
+        if self.min_calibration_size < self.min_informative_size:
+            logger.warning(
+                "ConformalEngine(alpha=%.3f): prediction sets are uninformative -- "
+                "every class -- until %d calibration scores exist, but sets are "
+                "produced from %d. Raise min_calibration_size to %d, or raise alpha.",
+                self.alpha, self.min_informative_size, self.min_calibration_size,
+                self.min_informative_size,
+            )
         self.max_calibration_size = int(max_calibration_size)
         self.mode = mode
         self.score_method = score_method
 
         # Rolling calibration buffer: nonconformity scores for correct predictions
-        self._calibration_scores: List[float] = []
+        self._calibration_scores: list[float] = []
         # Per-class score distributions for class-conditional conformal
-        self._class_scores: Dict[Union[str, int], List[float]] = {}
+        self._class_scores: dict[str | int, list[float]] = {}
         # Tracking
         self._total_predictions: int = 0
         self._covered: int = 0
@@ -109,11 +134,50 @@ class ConformalEngine:
     # Nonconformity score computation
     # ------------------------------------------------------------------
 
+    def nonconformity(
+        self,
+        distances: FloatArray,
+        labels: LabelArray,
+        true_label: str | int,
+    ) -> float:
+        """The nonconformity of `true_label` given distances to every class.
+
+        One place for the choice of score, so that calibration and prediction
+        cannot drift apart by using different ones.
+
+        ``ratio`` -- the default since 0.3.0 -- is ``d_true / min(d)``: 1.0 for
+        the nearest class, growing with how much worse the true class is than
+        the best. It replaces ``softmax``, which divided every distance by the
+        row's maximum before a five-way softmax and so produced scores between
+        0.72 and 0.80 for clean photographs, blurred ones, and a crop the model
+        had never seen (#86). A score that cannot tell those apart cannot widen
+        a prediction set when it should. Measured on real PlantVillage
+        episodes, the ratio gives tighter sets at the same clean coverage --
+        1.11 against 1.22 -- and sets that widen under shift, from 1.09 to 1.43
+        at blur radius 4, though coverage there stays far below the target:
+        that failure is exchangeability breaking, not the score.
+        """
+
+        if len(distances) == 0 or len(labels) == 0:
+            return float("inf")
+        if self.score_method == "softmax":
+            return self.softmax_nonconformity(distances, labels, true_label)
+        if self.score_method == "distance":
+            true_idx = np.where(labels == true_label)[0]
+            if len(true_idx) == 0:
+                return 1.0
+            reference = float(np.median(distances) + np.std(distances))
+            return self.distance_nonconformity(float(distances[true_idx[0]]), reference)
+        true_idx = np.where(labels == true_label)[0]
+        if len(true_idx) == 0:
+            return float("inf")  # true class not a candidate: fully non-conforming
+        return float(distances[true_idx[0]] / (float(np.min(distances)) + 1e-8))
+
     @staticmethod
     def softmax_nonconformity(
-        distances: np.ndarray,
-        labels: np.ndarray,
-        true_label: Union[str, int],
+        distances: FloatArray,
+        labels: LabelArray,
+        true_label: str | int,
     ) -> float:
         """Compute nonconformity as 1 - softmax(true_label | distances).
 
@@ -173,7 +237,7 @@ class ConformalEngine:
     def update_calibration(
         self,
         score: float,
-        true_label: Union[str, int],
+        true_label: str | int,
         predicted_in_set: bool = False,
     ) -> None:
         """Add a nonconformity score to the calibration buffer.
@@ -217,7 +281,7 @@ class ConformalEngine:
     # Quantile computation
     # ------------------------------------------------------------------
 
-    def _compute_quantile(self, scores: List[float]) -> float:
+    def _compute_quantile(self, scores: list[float]) -> float:
         """Compute the (1-alpha) empirical quantile with finite-sample correction.
 
         Uses the standard conformal quantile formula:
@@ -231,15 +295,28 @@ class ConformalEngine:
         """
         n = len(scores)
         if n == 0:
-            return 1.0  # No calibration data: accept everything
+            return float("inf")  # No calibration data: every class is in the set.
+
+        # The finite-sample guarantee is P(y in set) >= 1 - alpha, and it comes
+        # from taking the ceil((n+1)(1-alpha))-th smallest calibration score.
+        # When that rank exceeds n there is no such score: the theorem's answer
+        # is +inf, meaning every class is included, because n points cannot
+        # certify a (1-alpha) level. That happens whenever n < (1-alpha)/alpha
+        # -- at the default alpha = 0.05, for every n below 19.
+        #
+        # This used to clamp the rank to n-1 and return the largest observed
+        # score instead. That is a smaller set than the guarantee allows, and it
+        # under-covered: 91.3% measured against a 95% target at n = 10, the
+        # library's own min_calibration_size (#14). A set that is honestly
+        # everything beats a set that is quietly too small.
+        rank = math.ceil((n + 1) * (1.0 - self.alpha))
+        if rank > n:
+            return float("inf")
 
         sorted_scores = np.sort(np.asarray(scores, dtype=np.float64))
-        # Finite-sample correction for valid marginal coverage
-        idx = int(np.ceil((n + 1) * (1.0 - self.alpha))) - 1
-        idx = max(0, min(idx, n - 1))
-        return float(sorted_scores[idx])
+        return float(sorted_scores[rank - 1])
 
-    def _compute_cross_quantile(self, scores: List[float]) -> float:
+    def _compute_cross_quantile(self, scores: list[float]) -> float:
         """Compute cross-conformal quantile via k-fold averaging.
 
         Partitions calibration scores into n_bins folds, computes the
@@ -263,7 +340,7 @@ class ConformalEngine:
         scores_arr = np.asarray(scores, dtype=np.float64)
         fold_size = n // self.n_bins
 
-        q_hats: List[float] = []
+        q_hats: list[float] = []
         for fold in range(self.n_bins):
             start = fold * fold_size
             end = start + fold_size if fold < self.n_bins - 1 else n
@@ -279,9 +356,9 @@ class ConformalEngine:
 
     def predict_set(
         self,
-        distances: np.ndarray,
-        labels: np.ndarray,
-        top_prediction: Union[str, int],
+        distances: FloatArray,
+        labels: LabelArray,
+        top_prediction: str | int,
         confidence: float,
     ) -> ConformalPredictionSet:
         """Generate a conformal prediction set for a query.
@@ -301,12 +378,17 @@ class ConformalEngine:
             confidence=confidence,
         )
 
-        # If not enough calibration data, return a singleton set
+        # Not enough calibration data: the top-1 alone, and said plainly. This
+        # used to report coverage_estimate = 1 - alpha and q_hat = 1.0 -- the
+        # target restated as if measured, on a set whose real coverage is the
+        # top-1 accuracy (about 74% on the harness data, against a 95% claim).
+        # A consumer could not tell it from a calibrated singleton (#80).
         if len(self._calibration_scores) < self.min_calibration_size:
             result.prediction_set = {top_prediction}
             result.set_size = 1
-            result.q_hat = 1.0
-            result.coverage_estimate = 1.0 - self.alpha
+            result.q_hat = float("nan")
+            result.coverage_estimate = float("nan")
+            result.calibrated = False
             return result
 
         # Compute quantile threshold based on mode
@@ -318,18 +400,10 @@ class ConformalEngine:
         result.coverage_estimate = self.empirical_coverage
 
         # Build prediction set: include classes with score <= q_hat
-        prediction_set: Set[Union[str, int]] = set()
+        prediction_set: set[str | int] = set()
         for i in range(len(distances)):
             label = labels[i]
-            dist = float(distances[i])
-
-            if self.score_method == "softmax":
-                # Compute per-class nonconformity using softmax
-                score = self.softmax_nonconformity(distances, labels, label)
-            else:
-                # Distance-based: use a reference threshold
-                ref_threshold = np.median(distances) + np.std(distances)
-                score = self.distance_nonconformity(dist, ref_threshold)
+            score = self.nonconformity(distances, labels, label)
 
             if score <= q_hat:
                 prediction_set.add(label)
@@ -343,9 +417,9 @@ class ConformalEngine:
 
     def predict_set_class_conditional(
         self,
-        distances: np.ndarray,
-        labels: np.ndarray,
-        top_prediction: Union[str, int],
+        distances: FloatArray,
+        labels: LabelArray,
+        top_prediction: str | int,
         confidence: float,
     ) -> ConformalPredictionSet:
         """Generate prediction set using class-conditional quantiles.
@@ -376,8 +450,8 @@ class ConformalEngine:
             result.coverage_estimate = 1.0 - self.alpha
             return result
 
-        prediction_set: Set[Union[str, int]] = set()
-        q_hats: List[float] = []
+        prediction_set: set[str | int] = set()
+        q_hats: list[float] = []
 
         for i in range(len(distances)):
             label = labels[i]
@@ -388,12 +462,7 @@ class ConformalEngine:
                 q_class = self._compute_quantile(self._calibration_scores)
             q_hats.append(q_class)
 
-            dist = float(distances[i])
-            if self.score_method == "softmax":
-                score = self.softmax_nonconformity(distances, labels, label)
-            else:
-                ref_threshold = np.median(distances) + np.std(distances)
-                score = self.distance_nonconformity(dist, ref_threshold)
+            score = self.nonconformity(distances, labels, label)
 
             if score <= q_class:
                 prediction_set.add(label)
@@ -410,10 +479,11 @@ class ConformalEngine:
     # Diagnostics
     # ------------------------------------------------------------------
 
-    def get_calibration_summary(self) -> Dict[str, float]:
+    def get_calibration_summary(self) -> dict[str, float]:
         """Return diagnostic summary of calibration state."""
         return {
             "calibration_size": float(len(self._calibration_scores)),
+            "min_informative_size": float(self.min_informative_size),
             "empirical_coverage": float(self.empirical_coverage),
             "target_coverage": float(1.0 - self.alpha),
             "q_hat": float(self._compute_quantile(self._calibration_scores))

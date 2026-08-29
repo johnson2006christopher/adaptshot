@@ -1,0 +1,642 @@
+{
+  "cells": [
+    {
+      "accuracy": {
+        "ci95_half_width": 0.015991017991680713,
+        "mean": 0.9279999999999999
+      },
+      "after_in_situ_corrections": {
+        "accuracy": {
+          "ci95_half_width": 0.013719999999999996,
+          "mean": 0.9469999999999998
+        },
+        "coverage": {
+          "ci95_half_width": 0.011800762687216448,
+          "mean": 0.9674999999999999
+        },
+        "k": 10,
+        "set_size": {
+          "ci95_half_width": 0.053738938849943324,
+          "mean": 1.1115
+        }
+      },
+      "coverage": {
+        "ci95_half_width": 0.010116529251801929,
+        "mean": 0.969
+      },
+      "identity": true,
+      "kind": "blur",
+      "level": 0.0,
+      "ood_rate": {
+        "ci95_half_width": 0.00918249393529856,
+        "mean": 0.018
+      },
+      "set_size": {
+        "ci95_half_width": 0.1440433323691173,
+        "mean": 1.341
+      }
+    },
+    {
+      "accuracy": {
+        "ci95_half_width": 0.020827401822278904,
+        "mean": 0.8975
+      },
+      "after_in_situ_corrections": {
+        "accuracy": {
+          "ci95_half_width": 0.016052498487534816,
+          "mean": 0.932
+        },
+        "coverage": {
+          "ci95_half_width": 0.012597127877783519,
+          "mean": 0.9570000000000001
+        },
+        "k": 10,
+        "set_size": {
+          "ci95_half_width": 0.06870402369435774,
+          "mean": 1.1600000000000001
+        }
+      },
+      "coverage": {
+        "ci95_half_width": 0.015805141649605753,
+        "mean": 0.952
+      },
+      "identity": false,
+      "kind": "blur",
+      "level": 1.0,
+      "ood_rate": {
+        "ci95_half_width": 0.007002117628407229,
+        "mean": 0.0165
+      },
+      "set_size": {
+        "ci95_half_width": 0.17922496380605588,
+        "mean": 1.439
+      }
+    },
+    {
+      "accuracy": {
+        "ci95_half_width": 0.029488235115998553,
+        "mean": 0.8065
+      },
+      "after_in_situ_corrections": {
+        "accuracy": {
+          "ci95_half_width": 0.01986891167834945,
+          "mean": 0.8734999999999999
+        },
+        "coverage": {
+          "ci95_half_width": 0.01592620804096513,
+          "mean": 0.9350000000000002
+        },
+        "k": 10,
+        "set_size": {
+          "ci95_half_width": 0.09996529649115288,
+          "mean": 1.2805000000000002
+        }
+      },
+      "coverage": {
+        "ci95_half_width": 0.023992686065036246,
+        "mean": 0.916
+      },
+      "identity": false,
+      "kind": "blur",
+      "level": 2.0,
+      "ood_rate": {
+        "ci95_half_width": 0.01133346123608069,
+        "mean": 0.026000000000000002
+      },
+      "set_size": {
+        "ci95_half_width": 0.25975309568501526,
+        "mean": 1.7724999999999997
+      }
+    },
+    {
+      "accuracy": {
+        "ci95_half_width": 0.03747828622631427,
+        "mean": 0.6695
+      },
+      "after_in_situ_corrections": {
+        "accuracy": {
+          "ci95_half_width": 0.030054016157237406,
+          "mean": 0.7795
+        },
+        "coverage": {
+          "ci95_half_width": 0.02289178108024015,
+          "mean": 0.89
+        },
+        "k": 10,
+        "set_size": {
+          "ci95_half_width": 0.17195808565029103,
+          "mean": 1.557
+        }
+      },
+      "coverage": {
+        "ci95_half_width": 0.034046344131462174,
+        "mean": 0.8584999999999999
+      },
+      "identity": false,
+      "kind": "blur",
+      "level": 4.0,
+      "ood_rate": {
+        "ci95_half_width": 0.04170797624017834,
+        "mean": 0.1
+      },
+      "set_size": {
+        "ci95_half_width": 0.3150977941642554,
+        "mean": 2.1294999999999997
+      }
+    },
+    {
+      "accuracy": {
+        "ci95_half_width": 0.015991017991680713,
+        "mean": 0.9279999999999999
+      },
+      "after_in_situ_corrections": {
+        "accuracy": {
+          "ci95_half_width": 0.013719999999999996,
+          "mean": 0.9469999999999998
+        },
+        "coverage": {
+          "ci95_half_width": 0.011800762687216448,
+          "mean": 0.9674999999999999
+        },
+        "k": 10,
+        "set_size": {
+          "ci95_half_width": 0.053738938849943324,
+          "mean": 1.1115
+        }
+      },
+      "coverage": {
+        "ci95_half_width": 0.010116529251801929,
+        "mean": 0.969
+      },
+      "identity": true,
+      "kind": "brightness",
+      "level": 1.0,
+      "ood_rate": {
+        "ci95_half_width": 0.00918249393529856,
+        "mean": 0.018
+      },
+      "set_size": {
+        "ci95_half_width": 0.1440433323691173,
+        "mean": 1.341
+      }
+    },
+    {
+      "accuracy": {
+        "ci95_half_width": 0.017960954803013598,
+        "mean": 0.925
+      },
+      "after_in_situ_corrections": {
+        "accuracy": {
+          "ci95_half_width": 0.017086163242781397,
+          "mean": 0.9425000000000001
+        },
+        "coverage": {
+          "ci95_half_width": 0.012154390997200167,
+          "mean": 0.9655000000000001
+        },
+        "k": 10,
+        "set_size": {
+          "ci95_half_width": 0.05469278966212676,
+          "mean": 1.1184999999999998
+        }
+      },
+      "coverage": {
+        "ci95_half_width": 0.014619368606801677,
+        "mean": 0.9604999999999999
+      },
+      "identity": false,
+      "kind": "brightness",
+      "level": 0.6,
+      "ood_rate": {
+        "ci95_half_width": 0.008919946533127098,
+        "mean": 0.013500000000000002
+      },
+      "set_size": {
+        "ci95_half_width": 0.15205555310730756,
+        "mean": 1.3575
+      }
+    },
+    {
+      "accuracy": {
+        "ci95_half_width": 0.02521330845162774,
+        "mean": 0.8924999999999998
+      },
+      "after_in_situ_corrections": {
+        "accuracy": {
+          "ci95_half_width": 0.021879727181536374,
+          "mean": 0.9199999999999999
+        },
+        "coverage": {
+          "ci95_half_width": 0.018110464180150457,
+          "mean": 0.9445
+        },
+        "k": 10,
+        "set_size": {
+          "ci95_half_width": 0.06433547324725852,
+          "mean": 1.1455
+        }
+      },
+      "coverage": {
+        "ci95_half_width": 0.01960942081284872,
+        "mean": 0.9425000000000001
+      },
+      "identity": false,
+      "kind": "brightness",
+      "level": 0.3,
+      "ood_rate": {
+        "ci95_half_width": 0.006099946195643335,
+        "mean": 0.008499999999999999
+      },
+      "set_size": {
+        "ci95_half_width": 0.20169083993285494,
+        "mean": 1.4920000000000002
+      }
+    },
+    {
+      "accuracy": {
+        "ci95_half_width": 0.01694796379873042,
+        "mean": 0.9280000000000002
+      },
+      "after_in_situ_corrections": {
+        "accuracy": {
+          "ci95_half_width": 0.01366604776584882,
+          "mean": 0.9420000000000002
+        },
+        "coverage": {
+          "ci95_half_width": 0.01174218736448044,
+          "mean": 0.9654999999999999
+        },
+        "k": 10,
+        "set_size": {
+          "ci95_half_width": 0.05955238297456044,
+          "mean": 1.116
+        }
+      },
+      "coverage": {
+        "ci95_half_width": 0.01122429416431962,
+        "mean": 0.969
+      },
+      "identity": false,
+      "kind": "brightness",
+      "level": 1.6,
+      "ood_rate": {
+        "ci95_half_width": 0.010455296290054171,
+        "mean": 0.0245
+      },
+      "set_size": {
+        "ci95_half_width": 0.16123819993397567,
+        "mean": 1.3805
+      }
+    },
+    {
+      "accuracy": {
+        "ci95_half_width": 0.015182094717133067,
+        "mean": 0.93
+      },
+      "after_in_situ_corrections": {
+        "accuracy": {
+          "ci95_half_width": 0.01295563079246893,
+          "mean": 0.9460000000000001
+        },
+        "coverage": {
+          "ci95_half_width": 0.012135128072391052,
+          "mean": 0.9649999999999999
+        },
+        "k": 10,
+        "set_size": {
+          "ci95_half_width": 0.05470021834672587,
+          "mean": 1.1119999999999999
+        }
+      },
+      "coverage": {
+        "ci95_half_width": 0.010213433085139171,
+        "mean": 0.9690000000000001
+      },
+      "identity": true,
+      "kind": "jpeg",
+      "level": 95,
+      "ood_rate": {
+        "ci95_half_width": 0.008559280463408243,
+        "mean": 0.017499999999999998
+      },
+      "set_size": {
+        "ci95_half_width": 0.14560936064584687,
+        "mean": 1.346
+      }
+    },
+    {
+      "accuracy": {
+        "ci95_half_width": 0.01671902064362776,
+        "mean": 0.9235
+      },
+      "after_in_situ_corrections": {
+        "accuracy": {
+          "ci95_half_width": 0.014713395605923541,
+          "mean": 0.9435
+        },
+        "coverage": {
+          "ci95_half_width": 0.011889120215019254,
+          "mean": 0.9650000000000001
+        },
+        "k": 10,
+        "set_size": {
+          "ci95_half_width": 0.055815898020141815,
+          "mean": 1.1215
+        }
+      },
+      "coverage": {
+        "ci95_half_width": 0.010090937797896963,
+        "mean": 0.9675
+      },
+      "identity": false,
+      "kind": "jpeg",
+      "level": 40,
+      "ood_rate": {
+        "ci95_half_width": 0.008279962839009884,
+        "mean": 0.022
+      },
+      "set_size": {
+        "ci95_half_width": 0.1628490734013931,
+        "mean": 1.3845
+      }
+    },
+    {
+      "accuracy": {
+        "ci95_half_width": 0.01984969159483986,
+        "mean": 0.8800000000000001
+      },
+      "after_in_situ_corrections": {
+        "accuracy": {
+          "ci95_half_width": 0.01651749003096647,
+          "mean": 0.9205
+        },
+        "coverage": {
+          "ci95_half_width": 0.015207215224090005,
+          "mean": 0.9465
+        },
+        "k": 10,
+        "set_size": {
+          "ci95_half_width": 0.08209413458544607,
+          "mean": 1.1789999999999998
+        }
+      },
+      "coverage": {
+        "ci95_half_width": 0.015579162941208292,
+        "mean": 0.9440000000000002
+      },
+      "identity": false,
+      "kind": "jpeg",
+      "level": 15,
+      "ood_rate": {
+        "ci95_half_width": 0.015018197167231696,
+        "mean": 0.0395
+      },
+      "set_size": {
+        "ci95_half_width": 0.20949184330244558,
+        "mean": 1.53
+      }
+    },
+    {
+      "accuracy": {
+        "ci95_half_width": 0.03767488982169587,
+        "mean": 0.7205
+      },
+      "after_in_situ_corrections": {
+        "accuracy": {
+          "ci95_half_width": 0.02517421045027771,
+          "mean": 0.8074999999999999
+        },
+        "coverage": {
+          "ci95_half_width": 0.02356184312149733,
+          "mean": 0.8779999999999999
+        },
+        "k": 10,
+        "set_size": {
+          "ci95_half_width": 0.1442636167860945,
+          "mean": 1.4774999999999998
+        }
+      },
+      "coverage": {
+        "ci95_half_width": 0.03607923758362119,
+        "mean": 0.8550000000000001
+      },
+      "identity": false,
+      "kind": "jpeg",
+      "level": 5,
+      "ood_rate": {
+        "ci95_half_width": 0.03214447498085591,
+        "mean": 0.10450000000000001
+      },
+      "set_size": {
+        "ci95_half_width": 0.30205057922516293,
+        "mean": 2.0149999999999997
+      }
+    },
+    {
+      "accuracy": {
+        "ci95_half_width": 0.015991017991680713,
+        "mean": 0.9279999999999999
+      },
+      "after_in_situ_corrections": {
+        "accuracy": {
+          "ci95_half_width": 0.013719999999999996,
+          "mean": 0.9469999999999998
+        },
+        "coverage": {
+          "ci95_half_width": 0.011800762687216448,
+          "mean": 0.9674999999999999
+        },
+        "k": 10,
+        "set_size": {
+          "ci95_half_width": 0.053738938849943324,
+          "mean": 1.1115
+        }
+      },
+      "coverage": {
+        "ci95_half_width": 0.010116529251801929,
+        "mean": 0.969
+      },
+      "identity": true,
+      "kind": "downscale",
+      "level": 1.0,
+      "ood_rate": {
+        "ci95_half_width": 0.00918249393529856,
+        "mean": 0.018
+      },
+      "set_size": {
+        "ci95_half_width": 0.1440433323691173,
+        "mean": 1.341
+      }
+    },
+    {
+      "accuracy": {
+        "ci95_half_width": 0.020406964874390685,
+        "mean": 0.9065
+      },
+      "after_in_situ_corrections": {
+        "accuracy": {
+          "ci95_half_width": 0.01619909969008249,
+          "mean": 0.9339999999999999
+        },
+        "coverage": {
+          "ci95_half_width": 0.01331187863603454,
+          "mean": 0.959
+        },
+        "k": 10,
+        "set_size": {
+          "ci95_half_width": 0.0640577488657195,
+          "mean": 1.1515
+        }
+      },
+      "coverage": {
+        "ci95_half_width": 0.015642262279822863,
+        "mean": 0.954
+      },
+      "identity": false,
+      "kind": "downscale",
+      "level": 0.5,
+      "ood_rate": {
+        "ci95_half_width": 0.006874343978024749,
+        "mean": 0.014500000000000002
+      },
+      "set_size": {
+        "ci95_half_width": 0.18388030217564122,
+        "mean": 1.4505
+      }
+    },
+    {
+      "accuracy": {
+        "ci95_half_width": 0.02766478442778648,
+        "mean": 0.8205
+      },
+      "after_in_situ_corrections": {
+        "accuracy": {
+          "ci95_half_width": 0.019794407653652438,
+          "mean": 0.8915
+        },
+        "coverage": {
+          "ci95_half_width": 0.014347324953918529,
+          "mean": 0.9404999999999999
+        },
+        "k": 10,
+        "set_size": {
+          "ci95_half_width": 0.09580998095857264,
+          "mean": 1.2570000000000001
+        }
+      },
+      "coverage": {
+        "ci95_half_width": 0.023092601767887834,
+        "mean": 0.9275
+      },
+      "identity": false,
+      "kind": "downscale",
+      "level": 0.25,
+      "ood_rate": {
+        "ci95_half_width": 0.01087099127412267,
+        "mean": 0.029500000000000005
+      },
+      "set_size": {
+        "ci95_half_width": 0.26005364020643,
+        "mean": 1.7745000000000002
+      }
+    },
+    {
+      "accuracy": {
+        "ci95_half_width": 0.037517689366279146,
+        "mean": 0.6755
+      },
+      "after_in_situ_corrections": {
+        "accuracy": {
+          "ci95_half_width": 0.030001530046452715,
+          "mean": 0.7835000000000001
+        },
+        "coverage": {
+          "ci95_half_width": 0.02288317352923826,
+          "mean": 0.9019999999999999
+        },
+        "k": 10,
+        "set_size": {
+          "ci95_half_width": 0.15633569718840482,
+          "mean": 1.484
+        }
+      },
+      "coverage": {
+        "ci95_half_width": 0.035838177036971806,
+        "mean": 0.8690000000000001
+      },
+      "identity": false,
+      "kind": "downscale",
+      "level": 0.125,
+      "ood_rate": {
+        "ci95_half_width": 0.04748496809382728,
+        "mean": 0.137
+      },
+      "set_size": {
+        "ci95_half_width": 0.3256303942847646,
+        "mean": 2.117
+      }
+    }
+  ],
+  "dataset": {
+    "citation": "Mohanty, S.P., Hughes, D.P., Salathe, M. (2016). Using deep learning for image-based plant disease detection. Frontiers in Plant Science 7:1419. https://doi.org/10.3389/fpls.2016.01419",
+    "commit": "7f7ecc7e1eaca78107e3affe7cb5abd9427e139a",
+    "licence": "CC BY-SA 3.0 (per huggingface.co/datasets/mohanty/PlantVillage)",
+    "n_files": 400,
+    "preset": "benchmark",
+    "repo": "spMohanty/PlantVillage-Dataset"
+  },
+  "early_warning": {
+    "correlation": 0.9154149351873841,
+    "n_cells": 12,
+    "note": "Pearson correlation across shifted cells between coverage shortfall (target minus measured, floored at 0) and the OOD flag rate"
+  },
+  "hardware": {
+    "adaptshot": "0.2.0",
+    "cpu_count": 16,
+    "cpu_model": "11th Gen Intel(R) Core(TM) i7-11800H @ 2.30GHz",
+    "install": "core",
+    "numpy": "2.5.2",
+    "onnxruntime": "1.29.0",
+    "platform": "Linux-7.1.10-200.fc44.x86_64-x86_64-with-glibc2.43",
+    "processor": "x86_64",
+    "python": "3.14.7",
+    "ram_gb": 31.0
+  },
+  "protocol": {
+    "alpha": 0.1,
+    "backbone": "mobilenet_v3_small",
+    "episodes": 40,
+    "mitigation": "FewShotLearner.correct() on shifted labelled calibration photographs",
+    "recalibrate_k": 10,
+    "seed": 42,
+    "shift_applied_to": "queries only",
+    "suite": {
+      "blur": [
+        0.0,
+        1.0,
+        2.0,
+        4.0
+      ],
+      "brightness": [
+        1.0,
+        0.6,
+        0.3,
+        1.6
+      ],
+      "downscale": [
+        1.0,
+        0.5,
+        0.25,
+        0.125
+      ],
+      "jpeg": [
+        95,
+        40,
+        15,
+        5
+      ]
+    },
+    "target_coverage": 0.9,
+    "task": "5-way 5-shot"
+  }
+}

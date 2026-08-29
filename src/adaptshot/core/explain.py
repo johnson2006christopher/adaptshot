@@ -26,14 +26,18 @@ saliency; torch-optional for future gradient-based saliency.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple, Union, cast
+from typing import Any, cast
 
 import numpy as np
+
+from ..utils.arrays import FloatArray, LabelArray
 
 
 @dataclass
 class FeatureAttribution:
-    """Weighted contribution of a support example to the prediction.
+    """**Experimental.** May change in a minor release without a deprecation cycle; see ``adaptshot.api``.
+
+    Weighted contribution of a support example to the prediction.
 
     Attributes:
         index: Position in the support set.
@@ -44,7 +48,7 @@ class FeatureAttribution:
     """
 
     index: int = 0
-    label: Union[str, int] = ""
+    label: str | int = ""
     weight: float = 0.0
     distance: float = 0.0
     is_same_class: bool = False
@@ -52,7 +56,9 @@ class FeatureAttribution:
 
 @dataclass
 class ConfidenceDecomposition:
-    """Decomposed confidence showing each component's contribution.
+    """**Experimental.** May change in a minor release without a deprecation cycle; see ``adaptshot.api``.
+
+    Decomposed confidence showing each component's contribution.
 
     Attributes:
         raw_similarity: Base confidence from nearest-neighbor similarity.
@@ -68,7 +74,7 @@ class ConfidenceDecomposition:
     ood_penalty: float = 0.0
     final_confidence: float = 0.0
 
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> dict[str, float]:
         """Serialize to a flat dictionary."""
         return {
             "raw_similarity": self.raw_similarity,
@@ -81,7 +87,9 @@ class ConfidenceDecomposition:
 
 @dataclass
 class Counterfactual:
-    """Counterfactual explanation for a prediction.
+    """**Experimental.** May change in a minor release without a deprecation cycle; see ``adaptshot.api``.
+
+    Counterfactual explanation for a prediction.
 
     Attributes:
         current_prediction: The model's actual prediction.
@@ -95,8 +103,8 @@ class Counterfactual:
         swap_required: Minimum change in embedding space to flip prediction.
     """
 
-    current_prediction: Union[str, int] = ""
-    counterfactual_class: Union[str, int] = ""
+    current_prediction: str | int = ""
+    counterfactual_class: str | int = ""
     distance_to_counterfactual: float = 0.0
     distance_to_current: float = 0.0
     margin: float = 0.0
@@ -105,7 +113,9 @@ class Counterfactual:
 
 @dataclass
 class ExplanationResult:
-    """Complete explanation for a single prediction.
+    """**Experimental.** May change in a minor release without a deprecation cycle; see ``adaptshot.api``.
+
+    Complete explanation for a single prediction.
 
     Combines feature attributions, confidence decomposition, and
     counterfactual analysis into a single structured result.
@@ -118,15 +128,15 @@ class ExplanationResult:
         summary: Human-readable summary string.
     """
 
-    prediction: Union[str, int] = ""
-    attributions: List[FeatureAttribution] = field(default_factory=list)
-    confidence_decomposition: Optional[ConfidenceDecomposition] = None
-    counterfactual: Optional[Counterfactual] = None
+    prediction: str | int = ""
+    attributions: list[FeatureAttribution] = field(default_factory=list)
+    confidence_decomposition: ConfidenceDecomposition | None = None
+    counterfactual: Counterfactual | None = None
     summary: str = ""
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to a nested dictionary."""
-        result: Dict[str, Any] = {
+        result: dict[str, Any] = {
             "prediction": str(self.prediction),
             "summary": self.summary,
             "attributions": [
@@ -155,7 +165,9 @@ class ExplanationResult:
 
 
 class ExplainabilityEngine:
-    """Generate multi-faceted explanations for AdaptShot predictions.
+    """**Experimental.** May change in a minor release without a deprecation cycle; see ``adaptshot.api``.
+
+    Generate multi-faceted explanations for AdaptShot predictions.
 
     All methods are model-agnostic and operate on embeddings and
     similarity scores, making them applicable to any backbone and
@@ -176,8 +188,8 @@ class ExplainabilityEngine:
         self.top_k = top_k_attributions
         self.counterfactual_k = counterfactual_k
         # v0.2.0: Track historical penalties to derive intelligent fallbacks
-        self._act_penalty_history: List[float] = []
-        self._ood_penalty_history: List[float] = []
+        self._act_penalty_history: list[float] = []
+        self._ood_penalty_history: list[float] = []
         self._default_ood_score: float = 0.5  # Conservative default
 
     # ------------------------------------------------------------------
@@ -186,11 +198,11 @@ class ExplainabilityEngine:
 
     def attribute(
         self,
-        query_embedding: np.ndarray,
-        support_embeddings: np.ndarray,
-        support_labels: np.ndarray,
-        predicted_label: Union[str, int],
-    ) -> List[FeatureAttribution]:
+        query_embedding: FloatArray,
+        support_embeddings: FloatArray,
+        support_labels: LabelArray,
+        predicted_label: str | int,
+    ) -> list[FeatureAttribution]:
         """Identify which support examples most influenced the prediction.
 
         Computes distances from query to all support examples, then
@@ -226,7 +238,7 @@ class ExplainabilityEngine:
         k = min(self.top_k, len(support))
         top_indices = np.argsort(weights)[-k:][::-1]
 
-        attributions: List[FeatureAttribution] = []
+        attributions: list[FeatureAttribution] = []
         for idx in top_indices:
             attributions.append(FeatureAttribution(
                 index=int(idx),
@@ -248,8 +260,8 @@ class ExplainabilityEngine:
         calibrated_confidence: float,
         act_action: str,
         is_ood: bool = False,
-        act_threshold: Optional[float] = None,
-        ood_score: Optional[float] = None,
+        act_threshold: float | None = None,
+        ood_score: float | None = None,
     ) -> ConfidenceDecomposition:
         """Break down confidence into its constituent components.
 
@@ -326,10 +338,10 @@ class ExplainabilityEngine:
 
     def counterfactual(
         self,
-        query_embedding: np.ndarray,
-        support_embeddings: np.ndarray,
-        support_labels: np.ndarray,
-        predicted_label: Union[str, int],
+        query_embedding: FloatArray,
+        support_embeddings: FloatArray,
+        support_labels: LabelArray,
+        predicted_label: str | int,
     ) -> Counterfactual:
         """Determine the minimum change needed for a different prediction.
 
@@ -372,7 +384,7 @@ class ExplainabilityEngine:
 
         # Distances to alternative classes
         unique_labels = np.unique(labels)
-        alt_distances: List[Tuple[float, Union[str, int]]] = []
+        alt_distances: list[tuple[float, str | int]] = []
         for label in unique_labels:
             if label == predicted_label:
                 continue
@@ -411,16 +423,16 @@ class ExplainabilityEngine:
 
     def explain(
         self,
-        query_embedding: np.ndarray,
-        support_embeddings: np.ndarray,
-        support_labels: np.ndarray,
-        predicted_label: Union[str, int],
+        query_embedding: FloatArray,
+        support_embeddings: FloatArray,
+        support_labels: LabelArray,
+        predicted_label: str | int,
         raw_confidence: float,
         calibrated_confidence: float,
         act_action: str = "ACCEPT",
         is_ood: bool = False,
-        act_threshold: Optional[float] = None,
-        ood_score: Optional[float] = None,
+        act_threshold: float | None = None,
+        ood_score: float | None = None,
     ) -> ExplanationResult:
         """Generate a complete explanation for a prediction.
 
@@ -461,7 +473,7 @@ class ExplainabilityEngine:
         # Build summary
         same_class_attrs = [a for a in attributions if a.is_same_class]
         
-        summary_parts: List[str] = []
+        summary_parts: list[str] = []
         summary_parts.append(
             f"Predicted '{predicted_label}' with confidence {calibrated_confidence:.3f}."
         )
@@ -505,9 +517,9 @@ class ExplainabilityEngine:
 
     @staticmethod
     def compute_saliency_numpy(
-        query_embedding: np.ndarray,
-        support_embedding: np.ndarray,
-    ) -> np.ndarray:
+        query_embedding: FloatArray,
+        support_embedding: FloatArray,
+    ) -> FloatArray:
         """Compute embedding-space feature importance via |query - support|.
 
         Returns per-dimension importance scores [D] showing which embedding
@@ -533,15 +545,15 @@ class ExplainabilityEngine:
         max_val = float(importance.max())
         if max_val > 1e-8:
             importance = importance / max_val
-        return cast(np.ndarray, importance.astype(np.float32))
+        return cast(FloatArray, importance.astype(np.float32))
 
     @staticmethod
     def compute_saliency(
-        query_embedding: np.ndarray,
-        support_embeddings: np.ndarray,
-        support_labels: np.ndarray,
-        predicted_label: Union[str, int],
-    ) -> Dict[str, Any]:
+        query_embedding: FloatArray,
+        support_embeddings: FloatArray,
+        support_labels: LabelArray,
+        predicted_label: str | int,
+    ) -> dict[str, Any]:
         """Generate a saliency-like explanation without requiring torch.
 
         Instead of pixel-level saliency (which requires gradient access
@@ -563,10 +575,9 @@ class ExplainabilityEngine:
         # Compute feature importance as the absolute difference between
         # query and class prototype, normalized
         same_mask = support_labels == predicted_label
-        if same_mask.any():
-            prototype = support[same_mask].mean(axis=0)
-        else:
-            prototype = support.mean(axis=0)
+        prototype = (
+            support[same_mask].mean(axis=0) if same_mask.any() else support.mean(axis=0)
+        )
 
         feature_importance = np.abs(query - prototype)
         feature_importance = feature_importance / (feature_importance.sum() + 1e-8)

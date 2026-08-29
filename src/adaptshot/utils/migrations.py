@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
-
+from typing import Any
 
 SCHEMA_VERSION = "0.1.1"
 
 
-def migrate_v0_1_0_to_v0_1_1(data: Dict[str, Any]) -> Dict[str, Any]:
+def migrate_v0_1_0_to_v0_1_1(data: dict[str, Any]) -> dict[str, Any]:
     """Migrate a v0.1.0 checkpoint payload to the v0.1.1 schema.
 
     Migration rules:

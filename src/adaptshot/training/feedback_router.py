@@ -7,9 +7,9 @@ accumulated feedback exceeds a configurable threshold.
 
 import logging
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Union
-
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -18,12 +18,12 @@ logger = logging.getLogger(__name__)
 class Correction:
     """Structured representation of a single human feedback event."""
     image_path: str
-    predicted_label: Union[str, int]
-    corrected_label: Union[str, int]
+    predicted_label: str | int
+    corrected_label: str | int
     raw_confidence: float
     confidence_weight: float = 1.0  # Human's confidence in their correction [0.0, 1.0]
     timestamp: float = 0.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class FeedbackRouter:
@@ -39,8 +39,8 @@ class FeedbackRouter:
         self,
         buffer_capacity: int = 100,
         fine_tune_trigger_threshold: int = 5,
-        calibrator: Optional[Any] = None,
-        finetune_fn: Optional[Callable[[List[Correction]], None]] = None,
+        calibrator: Any | None = None,
+        finetune_fn: Callable[[list[Correction]], None] | None = None,
     ) -> None:
         """
         Args:
@@ -54,11 +54,11 @@ class FeedbackRouter:
         self.calibrator = calibrator
         self.finetune_fn = finetune_fn
 
-        self.buffer: List[Correction] = []
-        self.pending_corrections: List[Correction] = []
+        self.buffer: list[Correction] = []
+        self.pending_corrections: list[Correction] = []
         self.total_corrections = 0
 
-    def route_feedback(self, correction: Correction) -> Dict[str, Any]:
+    def route_feedback(self, correction: Correction) -> dict[str, Any]:
         """
         Process a single human correction and route to buffer/calibration/fine-tuning.
 
@@ -77,7 +77,7 @@ class FeedbackRouter:
 
         # Update online calibration state
         calibration_updated = False
-        calibration_summary: Dict[str, float] = {}
+        calibration_summary: dict[str, float] = {}
         if self.calibrator is not None:
             self.calibrator.update(
                 raw_confidence=correction.raw_confidence,
@@ -124,11 +124,12 @@ class FeedbackRouter:
             self.pending_corrections.clear()
             logger.info("CA-EWC fine-tuning triggered and pending queue cleared.")
             return True
-        except Exception as e:
-            logger.error(f"CA-EWC fine-tuning failed: {e}")
+        except Exception as e:  # noqa: BLE001 - finetune_fn is user-supplied; a
+            # failure there must not propagate into the correction path.
+            logger.error("CA-EWC fine-tuning failed: %s", e)
             return False
 
-    def get_buffer(self) -> List[Correction]:
+    def get_buffer(self) -> list[Correction]:
         """Return a shallow copy of the current replay buffer."""
         return list(self.buffer)
 

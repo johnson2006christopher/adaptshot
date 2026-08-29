@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Day 3 Integration: Full continuous learning loop simulation.
 
 Wires ACT, Calibration, FeedbackRouter, and CA-EWC finetuner into a single
@@ -6,12 +5,14 @@ end-to-end simulation. Demonstrates how the system adapts to domain shift
 through human-in-the-loop corrections.
 """
 
-import torch
 import numpy as np
-from src.adaptshot.core.act import ACTEngine
-from src.adaptshot.core.calibration import CalibrationEngine
-from src.adaptshot.training.feedback_router import Correction, FeedbackRouter
-from src.adaptshot.training.finetune import CAEWCFinetuner
+import torch
+
+from adaptshot.core.act import ACTEngine
+from adaptshot.core.calibration import CalibrationEngine
+from adaptshot.training.feedback_router import Correction, FeedbackRouter
+from adaptshot.training.finetune import CAEWCFinetuner
+
 
 # Lightweight mock classification head for simulation
 class MockClassificationHead(torch.nn.Linear):

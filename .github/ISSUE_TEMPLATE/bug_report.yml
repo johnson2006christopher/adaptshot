@@ -23,8 +23,8 @@ body:
       description: The smallest script that shows the problem. Include the seed you used.
       render: python
       placeholder: |
-        from src.adaptshot import AdaptShotConfig, FewShotLearner
-        from src.adaptshot.utils.determinism import set_deterministic_seed
+        from adaptshot import AdaptShotConfig, FewShotLearner
+        from adaptshot.utils.determinism import set_deterministic_seed
 
         set_deterministic_seed(42)
         learner = FewShotLearner(config=AdaptShotConfig(backbone="resnet18", device="cpu"))

@@ -15,57 +15,417 @@ jobs:
     name: Lint & type check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
-          python-version: "3.11"
+          # Matches mypy's `python_version` in pyproject.toml, so the interpreter
+          # that resolves third-party stubs and the version mypy analyses for are
+          # the same. A mismatch there is a slow way to learn about stub drift.
+          python-version: "3.12"
           cache: "pip"
       - name: Install dependencies
+        # The torch extra is needed for the type check, not the lint. torch ships
+        # py.typed, so installing it lets mypy verify our torch calls against the
+        # real signatures instead of treating the whole library as Any. Without it
+        # mypy stops at the unresolved import and checks nothing (#16).
         run: |
           python -m pip install --upgrade pip
+          # CPU-only torch, on purpose (#60): the CUDA build is 2.6 GB of wheels the
+          # tests never exercise, and caching it for five Pythons blew past the
+          # repository's 10 GB cache limit -- which evicted the CIFAR-10 cache and
+          # turned a two-minute benchmark job into a thirty-five-minute download.
+          pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
           pip install -e ".[dev]"
+          pip install -e "apps/tambua[dev]"
+      - name: Materialise gradio's event-listener stubs
+        # gradio attaches .click()/.change() to components dynamically, in a
+        # metaclass, and writes the matching .pyi files into site-packages the
+        # first time it is imported. Those files are NOT in the wheel. mypy reads
+        # files, not metaclasses, so on a fresh install it reports
+        # `"Button" has no attribute "click"` -- and whether it does depends on
+        # whether anything happened to import gradio earlier in the job, which
+        # made this check silently non-hermetic.
+        #
+        # Import once, deliberately, then assert a stub actually landed, so a
+        # change in gradio's behaviour fails here with a clear message instead of
+        # surfacing as confusing attr-defined errors in our own code.
+        run: |
+          python - <<'PY'
+          import pathlib
+          import gradio
+          stub = pathlib.Path(gradio.__file__).parent / "components" / "button.pyi"
+          if not stub.is_file():
+              raise SystemExit(
+                  f"gradio no longer generates {stub} on import. The strict type "
+                  "check below will report spurious attr-defined errors on every "
+                  "event handler until this is re-solved."
+              )
+          print(f"gradio stubs generated: {stub}")
+          PY
       - name: Lint with ruff
-        run: ruff check src/ tests/ benchmarks/
+        run: ruff check src/ tests/ benchmarks/ apps/ examples/ scripts/
       - name: Type check with mypy (strict)
         run: mypy src/adaptshot --strict
+      - name: Type check the application (strict)
+        # A separate invocation: the app is its own distribution, and mypy should
+        # resolve `adaptshot` through the install rather than the source tree.
+        run: mypy apps/tambua/src/tambua --strict
 
+  # The full suite. Needs the torch extra: two test modules and the benchmark
+  # exercise torch-backed paths directly. See #33.
   test:
     name: Tests (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        # Target range is 3.10-3.14 (#34). 3.13 and 3.14 have never been tested;
+        # the dependency floors (numpy>=1.24, Pillow>=9) and the torch extra may
+        # not reach the top of this range. Failures here are the evidence #34 needs
+        # before pyproject.toml claims support.
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
           cache: "pip"
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          # CPU-only torch, on purpose (#60): the CUDA build is 2.6 GB of wheels the
+          # tests never exercise, and caching it for five Pythons blew past the
+          # repository's 10 GB cache limit -- which evicted the CIFAR-10 cache and
+          # turned a two-minute benchmark job into a thirty-five-minute download.
+          pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
           pip install -e ".[dev]"
+          # The application is a separate distribution. Installing it here is what
+          # makes apps/tambua/tests meaningful -- they assert that `tambua` resolves
+          # by installation, not by happening to sit under the working directory.
+          pip install -e "apps/tambua[dev]"
       - name: Test with pytest
         run: pytest tests/ -v --tb=short --cov=src/adaptshot --cov-report=xml --cov-report=term-missing
       - name: Upload coverage artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-${{ matrix.python-version }}
           path: coverage.xml
 
-  benchmark:
-    name: Deterministic smoke benchmark
+  # The job that turns "torch is optional" from a README sentence into a tested
+  # property. Installs ONLY the core extra -- numpy, Pillow, and the dev tools.
+  #
+  # KNOWN RED: this currently fails with 14 errors, because inference itself requires
+  # torch -- `predict`, `correct`, and save/load all reach `torch.nn` (#35). That
+  # contradicts README.md:100 ("PyTorch is optional and needed only for training").
+  # `continue-on-error` is here so the failure stays VISIBLE while #35 is decided,
+  # rather than being hidden by narrowing what this job runs.
+  # REMOVE `continue-on-error` when #35 is resolved. It is a marker, not a soft-fail.
+  # Enforcing since #36. It was advisory while inference still needed torch, so
+  # a core install could not complete a prediction and the job could only ever
+  # report how far short it fell. The bundled ONNX backbone closed that, the
+  # whole suite passes here, and an advisory job that cannot fail protects
+  # nothing -- so this is the job that holds the core-install promise now.
+  test-core:
+    name: Tests (core install, no torch)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
           cache: "pip"
-      - name: Install dependencies
+      - name: Install dependencies (no torch extra)
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
+      - name: Assert torch really is absent
+        # Guards against a transitive dependency quietly pulling torch in, which
+        # would make this job pass without testing anything it claims to test.
+        run: |
+          python - <<'PY'
+          import importlib.util, sys
+          if importlib.util.find_spec("torch") is not None:
+              sys.exit("torch is installed in the core-only job; it no longer proves anything")
+          print("confirmed: torch is not installed")
+          PY
+      - name: Test with pytest
+        run: pytest tests/ -v --tb=short -rs
+
+  # Proves the claim in #12: the validation gate needs no dataset download. It
+  # uses the synthetic fixture, so it reports determinism and latency and
+  # deliberately no accuracy -- a figure measured on random tensors would
+  # describe nothing.
+  #
+  # No pip cache and no dataset cache here on purpose: a cache is a form of
+  # network access that already happened, and this job exists to prove the run
+  # needs neither. Backbone weights are the one documented exception -- see the
+  # step that fetches them, and #36.
+  benchmark-offline:
+    name: Smoke benchmark (offline)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - name: Install dependencies (CPU-only torch)
+        run: |
+          python -m pip install --upgrade pip
+          pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+          pip install -e ".[dev]"
+      - name: Assert the CPU-only build is what we are testing
+        # The default PyPI index serves the CUDA build on Linux, which pulled in
+        # ~2-3GB of nvidia-* wheels to run a job named "CPU-only" (#60). CPU-only
+        # is this project's first constraint; it should be verified, not assumed.
+        run: |
+          python - <<'PY'
+          import sys
+          import torch
+          if torch.version.cuda:
+              sys.exit(f"CUDA-enabled torch ({torch.version.cuda}) in a CPU-only job")
+          print(f"confirmed: CPU-only torch {torch.__version__}")
+          PY
+      - name: Warm the backbone weight cache
+        # A documented exception, fetched here deliberately so the boundary is
+        # visible rather than accidental.
+        #
+        # benchmarks/run_benchmark.py pins resnet18 for comparability with every
+        # number the project has published, and resnet18's 44.8 MB of weights are
+        # not bundled (#36 ships mobilenet_v3_small, 4.0 MB). torchvision fetches
+        # them on first use. So this job proves that the *benchmark* makes no
+        # network call once its backbone is present. The job below,
+        # offline-wheel, proves the stronger claim -- a cold wheel install with
+        # the bundled backbone, nothing warmed, no interfaces at all (#30).
+        run: |
+          python -c "from torchvision.models import resnet18; resnet18(weights='IMAGENET1K_V1')"
+      - name: Verify the namespace really has no network
+        # Ubuntu 24.04 restricts unprivileged user namespaces through AppArmor,
+        # so a plain `unshare -rn` fails with
+        # "write failed /proc/self/uid_map: Operation not permitted".
+        # Lifting the restriction is the documented workaround on these runners.
+        #
+        # Then prove the isolation before relying on it. A namespace that
+        # silently failed to isolate would make the step below pass while
+        # demonstrating nothing, which is worse than not having the job.
+        run: |
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          unshare -rn python - <<'PY'
+          import socket
+          import sys
+          try:
+              socket.create_connection(("1.1.1.1", 443), timeout=5)
+          except OSError as exc:
+              print(f"confirmed: no network inside the namespace ({type(exc).__name__})")
+          else:
+              sys.exit("the namespace did not isolate; the offline proof would be vacuous")
+          PY
+      - name: Run the smoke benchmark with networking disabled
+        # An empty network namespace: no interface but loopback. If anything
+        # reaches for the network, it fails here rather than on a contributor's
+        # connection.
+        run: |
+          unshare -rn python -m benchmarks.run_benchmark \
+            --smoke-test --seed 42 --output results/offline_smoke.json
+      - name: Assert it really ran offline, on the fixture
+        run: |
+          python - <<'PY'
+          import json
+          import sys
+          with open("results/offline_smoke.json", encoding="utf-8") as handle:
+              results = json.load(handle)
+          if results["data_source"] != "synthetic":
+              sys.exit(f"expected the offline fixture, got {results['data_source']!r}")
+          if results["accuracy"] is not None:
+              sys.exit("an accuracy figure was published from synthetic data")
+          print(f"offline run OK: {results['latency_avg_ms']:.1f} ms average latency")
+          PY
+
+  benchmark:
+    name: Deterministic smoke benchmark
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+          cache: "pip"
+      - name: Cache the CIFAR-10 download
+        # Measured on this runner: the download took 34m48s while the benchmark
+        # itself took 56s -- 97% of the job was waiting for cs.toronto.edu, which
+        # served roughly 80KB/s. The dataset never changes, so fetch it once.
+        uses: actions/cache@v4
+        with:
+          path: ./data
+          key: cifar10-v1
+      - name: Install dependencies (CPU-only torch)
+        # benchmarks/run_benchmark.py imports torch at module scope and loads
+        # ResNet-18 via torchvision. The CPU index is deliberate: see #60.
+        run: |
+          python -m pip install --upgrade pip
+          pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+          pip install -e ".[dev]"
+      - name: Assert the CPU-only build is what we are testing
+        run: |
+          python - <<'PY'
+          import sys
+          import torch
+          if torch.version.cuda:
+              sys.exit(f"CUDA-enabled torch ({torch.version.cuda}) in a CPU-only job")
+          print(f"confirmed: CPU-only torch {torch.__version__}")
+          PY
       - name: Run CPU-only smoke benchmark
-        run: python -m benchmarks.run_benchmark --smoke-test --seed 42
+        # --allow-download so a cold cache still produces the measured CIFAR-10
+        # figure rather than silently falling back to the fixture.
+        run: |
+          python -m benchmarks.run_benchmark \
+            --smoke-test --dataset cifar10 --allow-download --seed 42
+
+  # The claim the project is named for, as a test rather than a promise (#30):
+  # the wheel a user installs runs the inference path with no network at all.
+  #
+  # Everything that needs the network happens first -- building the wheel,
+  # installing it and its dependencies. Then a network namespace with no
+  # interfaces is entered, its isolation is proven by a canary that must fail,
+  # and inside it: the package is asserted to come from site-packages and not
+  # the tree; the README quickstart and the conference demo run; the conformal
+  # and calibration suites run; and the offline smoke benchmark runs on the
+  # bundled backbone. A dependency that adds a download, a telemetry call or a
+  # version check in a patch release fails this job.
+  offline-wheel:
+    name: Offline, from the wheel (no network namespace)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - name: Build the wheel (network on)
+        run: |
+          python -m pip install --upgrade pip build
+          python -m build --wheel
+      - name: The wheel carries its backbone and photographs -- nothing to fetch later
+        run: |
+          python - <<'PY'
+          import glob, sys, zipfile
+          names = zipfile.ZipFile(glob.glob("dist/*.whl")[0]).namelist()
+          need = ["adaptshot/data/mobilenet_v3_small.onnx", "adaptshot/data/mobilenet_v3_small.onnx.data"]
+          samples = [n for n in names if n.startswith("adaptshot/data/samples/") and n.endswith(".jpg")]
+          missing = [n for n in need if n not in names]
+          if missing or len(samples) < 12:
+              sys.exit(f"wheel is missing {missing}; sample images: {len(samples)}")
+          print(f"ok: backbone bundled, {len(samples)} sample images bundled")
+          PY
+      - name: Install the wheel into a clean venv (network on)
+        # CPU torch only because benchmarks/run_benchmark.py imports torch at
+        # module scope. The inference path under test does not touch it.
+        run: |
+          python -m venv "$RUNNER_TEMP/wheelenv"
+          "$RUNNER_TEMP/wheelenv/bin/pip" install --upgrade pip
+          "$RUNNER_TEMP/wheelenv/bin/pip" install dist/*.whl pytest
+          "$RUNNER_TEMP/wheelenv/bin/pip" install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+      - name: Enter a namespace with no network and run the inference path
+        run: |
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          cat > "$RUNNER_TEMP/inside.sh" <<'SH'
+          set -eu
+          PY="$RUNNER_TEMP/wheelenv/bin/python"
+          up=$(ip -o link show | grep -c 'state UP' || true)
+          test "$up" = "0" || { echo "namespace has $up interface(s) up; not isolated"; exit 1; }
+          if "$PY" -c "import urllib.request; urllib.request.urlopen('https://pypi.org', timeout=5)" 2>/dev/null; then
+            echo "CANARY REACHED THE NETWORK: the sandbox is not sealed"; exit 1
+          fi
+          echo "confirmed: no interfaces, canary refused"
+          "$PY" - <<'PYY'
+          import adaptshot, pathlib
+          p = pathlib.Path(adaptshot.__file__)
+          assert "site-packages" in str(p), f"testing the tree, not the wheel: {p}"
+          print("package under test:", p.parent)
+          PYY
+          "$PY" -m pytest tests/test_quickstart.py tests/test_demo.py tests/test_conformal*.py tests/test_calibration.py -q
+          "$PY" -m benchmarks.run_benchmark --smoke-test --seed 42 --backbone mobilenet_v3_small
+          SH
+          chmod +x "$RUNNER_TEMP/inside.sh"
+          unshare -rn bash "$RUNNER_TEMP/inside.sh"
+
+  # The claim is "hardware people already own". In the target setting that is
+  # an ARM board or a phone, not a laptop, and every published number so far was
+  # taken on a laptop (#31). This is the same measurement on real ARM silicon --
+  # GitHub's Neoverse runners, which are server-class ARM, and the artifact says
+  # so -- with the full suite, the ONNX export path end to end, and the
+  # torch-free device profile on a core-only venv, because with torch present
+  # the memory figure describes torch's import, not the library.
+  device-arm:
+    name: ARM (ubuntu-24.04-arm) -- tests, ONNX export, device profile
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - name: Confirm the runner is ARM
+        run: |
+          test "$(uname -m)" = "aarch64" || { echo "not ARM: $(uname -m)"; exit 1; }
+          lscpu | grep -E 'Model name|Architecture|^CPU\(s\)' || true
+      - name: Install with the torch and onnx extras
+        # The aarch64 torch wheel on PyPI is CPU-only; no index override needed.
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev,torch,onnx]"
+      - name: Full test suite on ARM
+        run: python -m pytest tests/ -q --tb=short -rs
+      - name: Export the bundled backbone here and verify it with onnxruntime
+        run: |
+          python scripts/export_backbones.py --backbone mobilenet_v3_small \
+            --output-dir "$RUNNER_TEMP/onnx" --verify
+          ls -l "$RUNNER_TEMP/onnx"
+      - name: Core-only venv for the device profile (numpy, Pillow, onnxruntime)
+        run: |
+          python -m venv "$RUNNER_TEMP/core"
+          "$RUNNER_TEMP/core/bin/pip" install --upgrade pip
+          "$RUNNER_TEMP/core/bin/pip" install -e .
+          "$RUNNER_TEMP/core/bin/python" - <<'PYY'
+          import importlib.util, sys
+          if importlib.util.find_spec("torch") is not None:
+              sys.exit("torch leaked into the core venv; the memory figure would be torch's")
+          print("confirmed: core venv has no torch")
+          PYY
+      - name: Device profile, torch-free, against the graph exported above
+        run: |
+          "$RUNNER_TEMP/core/bin/python" -m benchmarks.run_device --seed 42 \
+            --verify-export "$RUNNER_TEMP/onnx" --output "$RUNNER_TEMP/device_aarch64.json"
+          python - <<'PYY'
+          import json, os, sys
+          path = os.path.join(os.environ["RUNNER_TEMP"], "device_aarch64.json")
+          record = json.load(open(path))
+          if not record["quickstart"]["correct"]:
+              sys.exit("the quickstart prediction is wrong on ARM")
+          if not record["export"]["verified"]:
+              sys.exit(f"the export disagrees with the bundled graph: {record['export']}")
+          print(json.dumps(record["hardware"], indent=1))
+          PYY
+      - uses: actions/upload-artifact@v7
+        with:
+          name: device-aarch64
+          path: ${{ runner.temp }}/device_aarch64.json
+
+  # A broken link or an orphaned page fails here, on the pull request, rather
+  # than on the deploy that only happens after merge to main (#25).
+  docs:
+    name: Docs build (strict)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+          cache: "pip"
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+          pip install mkdocs mkdocs-material "mkdocstrings[python]"
+      - name: mkdocs build --strict
+        run: mkdocs build --strict

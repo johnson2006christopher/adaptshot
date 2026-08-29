@@ -11,15 +11,16 @@ Designed for CPU-first edge deployment with strict memory ceilings.
 
 import logging
 import time
-from typing import Optional, Tuple
 
 import numpy as np
+
+from ..utils.arrays import FloatArray, LabelArray
+
 logger = logging.getLogger(__name__)
 
 
 class UPUGFPruner:
-    """
-    Uncertainty-Guided Forgetting (UP-UGF) buffer manager.
+    """Uncertainty-Guided Forgetting (UP-UGF) buffer manager.
 
     Scores each stored embedding using a multiplicative utility function.
     When buffer capacity is exceeded, the lowest-scoring examples are evicted
@@ -50,15 +51,15 @@ class UPUGFPruner:
 
     def compute_scores(
         self,
-        embeddings: np.ndarray,
-        uncertainties: np.ndarray,
-        last_access_times: np.ndarray,
-        current_time: Optional[float] = None,
-    ) -> np.ndarray:
+        embeddings: FloatArray,
+        uncertainties: FloatArray,
+        last_access_times: FloatArray,
+        current_time: float | None = None,
+    ) -> FloatArray:
         """
         Compute UP-UGF utility score for each embedding in the buffer.
 
-        Score(e) = (1 - u(e))^w_unc × exp(-λ × Δt)^w_rec × (1 - max_sim_to_same_class)^w_red
+        Score(e) = u(e)^w_unc × exp(-λ × Δt)^w_rec × (1 - max_sim_to_others)^w_red
 
         Args:
             embeddings: [N, D] array of stored embeddings
@@ -76,10 +77,16 @@ class UPUGFPruner:
         if N == 0:
             return np.asarray([])
 
-        # 1. Uncertainty component: prefer informative examples near boundary
-        # Clamp to [0, 1] and invert (lower uncertainty → higher score)
+        # 1. Uncertainty component: prefer informative examples near the boundary.
+        # Higher uncertainty -> higher score. This used to be (1 - u)^w, which
+        # kept the confident examples and evicted the uncertain ones first --
+        # the opposite of what the class name, this comment and the constructor
+        # docstring all said. Measured before the fix: survivors had mean
+        # uncertainty 0.24, the evicted 0.76 (#74). A correction the model was
+        # sure about is the one the prototype already explains; the one it was
+        # unsure about is the one worth keeping.
         u_norm = np.clip(uncertainties, 0.0, 1.0)
-        unc_score = np.power(1.0 - u_norm, self.w_unc)
+        unc_score = np.power(u_norm, self.w_unc)
 
         # 2. Recency component: exponential decay since last access
         dt = np.clip(current_time - last_access_times, 0.0, None)
@@ -118,8 +125,13 @@ class UPUGFPruner:
                     if run_len > 1:
                         max_collisions[sort_idx[run_start:j]] = float(run_len)
                     run_start = j
-            # Convert collisions to redundancy: 1 - (collisions / max_possible)
-            max_sim = 1.0 - np.clip(max_collisions / max(2, n_hashes), 0.0, 1.0)
+            # More hash collisions means more near-duplicates, so the collision
+            # fraction *is* the similarity proxy. This used to be 1 minus that,
+            # which red_score then inverted again: above 100 rows the pruner
+            # rewarded duplicates, while the exact path below 100 penalised them
+            # (#74). Measured before the fix: a planted block of near-duplicates
+            # scored 0.625 against 0.031 for the isolated points around it.
+            max_sim = np.clip(max_collisions / max(2, n_hashes), 0.0, 1.0)
         red_score = np.power(np.clip(1.0 - max_sim, 0.0, 1.0), self.w_red)
 
         # Composite score (multiplicative)
@@ -128,11 +140,11 @@ class UPUGFPruner:
 
     def prune(
         self,
-        embeddings: np.ndarray,
-        labels: np.ndarray,
-        uncertainties: np.ndarray,
-        last_access_times: np.ndarray,
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        embeddings: FloatArray,
+        labels: LabelArray,
+        uncertainties: FloatArray,
+        last_access_times: FloatArray,
+    ) -> tuple[FloatArray, LabelArray, FloatArray, FloatArray]:
         """
         Enforce buffer capacity by evicting lowest-scoring examples.
 
@@ -152,7 +164,7 @@ class UPUGFPruner:
         scores = self.compute_scores(embeddings, uncertainties, last_access_times)
         # Keep top-K by score
         keep_idx = np.argsort(scores)[-self.capacity:]
-        
+
         return (
             np.asarray(embeddings[keep_idx]),
             np.asarray(labels[keep_idx]),

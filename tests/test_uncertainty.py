@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from src.adaptshot import UncertaintyQuantifier, UncertaintyReport
+from adaptshot import UncertaintyQuantifier, UncertaintyReport
 
 
 class TestUncertaintyReport:
@@ -154,3 +154,177 @@ class TestUncertaintyQuantifier:
         quantifier.reset()
         assert len(quantifier._class_means) == 0
         assert quantifier._ood_threshold == float("inf")
+
+
+# ---------------------------------------------------------------------------
+# #40: the Mahalanobis distance is computed once per query, not twice
+# ---------------------------------------------------------------------------
+
+
+def _fitted_quantifier(dim: int = 64, n_classes: int = 4, per_class: int = 15):
+    """A quantifier with fitted class distributions, for the #40 tests."""
+
+    rng = np.random.default_rng(42)
+    embeddings = rng.normal(size=(n_classes * per_class, dim)).astype(np.float32)
+    labels = np.array([f"c{i // per_class}" for i in range(n_classes * per_class)])
+    quantifier = UncertaintyQuantifier()
+    quantifier.fit_class_distributions(embeddings, labels)
+    return quantifier, embeddings, labels
+
+
+def test_mahalanobis_is_computed_once_per_query() -> None:
+    """It used to run twice: once for the margin, once inside is_ood() (#40).
+
+    Mahalanobis is O(D^2) per class and the most expensive step on this path, so
+    a duplicate is not a rounding error for a library whose stated constraints
+    are CPU-only and under 250MB.
+
+    Counting calls rather than timing them: a timing assertion would be flaky on
+    a shared CI runner, and the property that matters is structural.
+    """
+
+    quantifier, embeddings, labels = _fitted_quantifier()
+    rng = np.random.default_rng(7)
+    query = rng.normal(size=(embeddings.shape[1],)).astype(np.float32)
+
+    calls = 0
+    original = quantifier.min_mahalanobis_distance
+
+    def counting(embedding: np.ndarray):  # type: ignore[no-untyped-def]
+        nonlocal calls
+        calls += 1
+        return original(embedding)
+
+    quantifier.min_mahalanobis_distance = counting  # type: ignore[method-assign]
+    quantifier.quantify(query, embeddings, labels, mode="mahalanobis")
+
+    assert calls == 1, f"min_mahalanobis_distance ran {calls} times for one query"
+
+
+def test_sharing_the_distance_does_not_change_any_output() -> None:
+    """A performance fix must not move a single reported value.
+
+    `is_ood(embedding, min_dist=...)` must agree exactly with `is_ood(embedding)`
+    -- passing the precomputed distance is an optimisation, not a variation.
+    """
+
+    quantifier, embeddings, _labels = _fitted_quantifier()
+    rng = np.random.default_rng(11)
+
+    for _ in range(25):
+        query = rng.normal(size=(embeddings.shape[1],)).astype(np.float32)
+        min_dist, _, _ = quantifier.min_mahalanobis_distance(query)
+
+        recomputed = quantifier.is_ood(query)
+        shared = quantifier.is_ood(query, min_dist=min_dist)
+
+        assert recomputed == shared
+
+
+def test_is_ood_still_works_without_a_precomputed_distance() -> None:
+    """The public signature must keep working for callers that pass one argument."""
+
+    quantifier, embeddings, _labels = _fitted_quantifier()
+    rng = np.random.default_rng(3)
+    query = rng.normal(size=(embeddings.shape[1],)).astype(np.float32)
+
+    flag, score = quantifier.is_ood(query)
+    assert isinstance(flag, bool)
+    assert 0.0 <= score <= 1.0
+
+
+def test_the_mahalanobis_path_is_reproducible() -> None:
+    """Distinct from #58: this path has no stochastic component and must not gain one.
+
+    `mode="ensemble"` is *not* reproducible, because its epistemic signal seeds
+    from OS entropy on every call (#58). The Mahalanobis path is, and the fix for
+    #40 must leave it that way.
+    """
+
+    quantifier, embeddings, labels = _fitted_quantifier()
+    rng = np.random.default_rng(5)
+    query = rng.normal(size=(embeddings.shape[1],)).astype(np.float32)
+
+    first = quantifier.quantify(query, embeddings, labels, mode="mahalanobis")
+    second = quantifier.quantify(query, embeddings, labels, mode="mahalanobis")
+
+    assert first.distributional == second.distributional
+    assert first.ood_score == second.ood_score
+    assert first.nearest_class_margin == second.nearest_class_margin
+    assert first.is_ood == second.is_ood
+
+
+# ---------------------------------------------------------------------------
+# #58: the default uncertainty mode must be reproducible
+# ---------------------------------------------------------------------------
+
+
+def test_ensemble_mode_is_reproducible() -> None:
+    """It was not, and `ensemble` is the default (#58).
+
+    `estimate_epistemic` seeded from OS entropy, so identical calls returned
+    different numbers -- including through `FewShotLearner.predict()`, whose
+    `uncertainty_report` is public. The determinism guarantee was stated,
+    documented, and false, and the smoke benchmark reported it as holding
+    because accuracy does not depend on this signal.
+    """
+
+    quantifier, embeddings, labels = _fitted_quantifier()
+    query = np.random.default_rng(17).normal(size=(embeddings.shape[1],)).astype(np.float32)
+
+    first = quantifier.quantify(query, embeddings, labels, mode="ensemble")
+    second = quantifier.quantify(query, embeddings, labels, mode="ensemble")
+
+    assert first.epistemic == second.epistemic
+    assert first.composite == second.composite
+    assert first.variance == second.variance
+
+
+def test_the_seed_survives_a_fresh_process() -> None:
+    """Reproducibility has to hold across runs, not only within one.
+
+    A per-process seed would satisfy the test above and still give a different
+    answer tomorrow. `hashlib` is used rather than the builtin `hash()` for
+    exactly this reason -- hash randomisation is seeded per process.
+    """
+
+    import subprocess
+    import sys
+
+    script = (
+        "import numpy as np;"
+        "from adaptshot.core.uncertainty import UncertaintyQuantifier;"
+        "q = UncertaintyQuantifier();"
+        "print(q.estimate_epistemic(np.arange(64, dtype=np.float32))[0])"
+    )
+    runs = [
+        subprocess.run([sys.executable, "-c", script], capture_output=True, text=True, check=True)
+        for _ in range(2)
+    ]
+    assert runs[0].stdout.strip() == runs[1].stdout.strip(), (
+        "epistemic uncertainty differs between processes for identical input"
+    )
+
+
+def test_different_inputs_still_get_different_perturbations() -> None:
+    """Seeding from content must not collapse the signal into a constant.
+
+    If every query drew the same noise, the measure would say nothing about the
+    query -- reproducible and useless.
+    """
+
+    quantifier = UncertaintyQuantifier()
+    ones = quantifier.estimate_epistemic(np.ones(64, dtype=np.float32))
+    ramp = quantifier.estimate_epistemic(np.arange(64, dtype=np.float32))
+
+    assert ones[0] != ramp[0]
+
+
+def test_an_explicit_seed_still_overrides() -> None:
+    """Callers who want a chosen perturbation pattern keep that ability."""
+
+    quantifier = UncertaintyQuantifier()
+    query = np.arange(64, dtype=np.float32)
+
+    assert quantifier.estimate_epistemic(query, seed=1) == quantifier.estimate_epistemic(query, seed=1)
+    assert quantifier.estimate_epistemic(query, seed=1) != quantifier.estimate_epistemic(query, seed=2)

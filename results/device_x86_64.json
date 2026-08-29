@@ -1,0 +1,61 @@
+{
+  "machine": "x86_64",
+  "hardware": {
+    "platform": "Linux-7.1.10-200.fc44.x86_64-x86_64-with-glibc2.43",
+    "processor": "x86_64",
+    "cpu_model": "11th Gen Intel(R) Core(TM) i7-11800H @ 2.30GHz",
+    "install": "core",
+    "python": "3.14.7",
+    "numpy": "2.5.2",
+    "adaptshot": "0.3.0",
+    "cpu_count": 16,
+    "ram_gb": 31.0,
+    "onnxruntime": "1.29.0"
+  },
+  "protocol": {
+    "photographs": "the twelve bundled PlantVillage samples, eleven teach, one asks",
+    "rounds": 5,
+    "warmup_calls": 3,
+    "cold_starts": 3,
+    "seed": 42
+  },
+  "quickstart": {
+    "query": "northern_leaf_blight_4.jpg",
+    "expected": "northern_leaf_blight",
+    "predicted": "northern_leaf_blight",
+    "correct": true
+  },
+  "timing": {
+    "embedding_ms": {
+      "median": 6.283524000025409,
+      "p95": 6.946370799983014,
+      "n": 60
+    },
+    "predict_ms": {
+      "median": 8.905481999931908,
+      "p95": 12.785301599996046,
+      "n": 60
+    },
+    "support_fit_ms": 568.1826049999472,
+    "support_size": 11
+  },
+  "cold_start": {
+    "seconds_min": 0.8582263860000694,
+    "seconds_median": 1.075276285999962,
+    "peak_rss_mb_max": 118.23046875,
+    "n": 3
+  },
+  "benchmark_process_peak_rss_mb": 129.28515625,
+  "export": {
+    "verified": true,
+    "graph": "/tmp/claude-1000/-home-johnsonhassan-Projects-adaptshot/868d7b80-c3cb-40a1-aa66-5e0da7f4a7f7/scratchpad/onnx/mobilenet_v3_small.onnx",
+    "graph_bytes": 313531,
+    "weights_bytes": 3681568,
+    "cosine_vs_bundled": 0.9999999403953552,
+    "max_abs_diff_vs_bundled": 0.0,
+    "onnxruntime": "1.29.0",
+    "providers": [
+      "CPUExecutionProvider"
+    ]
+  }
+}

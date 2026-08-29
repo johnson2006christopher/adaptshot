@@ -14,58 +14,57 @@ is available and the preview similarity already exceeds the configured bound.
 
 from dataclasses import dataclass, field
 from functools import lru_cache
-from typing import Any, Dict, Optional, Union, cast
+from pathlib import Path
+from typing import Any, cast
 
 import numpy as np
 from PIL import Image
 
 from ..config.settings import AdaptShotConfig
+from ..utils.arrays import FloatArray
+from ..utils.exceptions import BackboneError
 
 # ---------------------------------------------------------------------------
 # Lazy import helpers – torch/torchvision are resolved only when first needed.
 # This keeps the module importable without a hard torch dependency.
 # ---------------------------------------------------------------------------
 
-_TORCH: Any = None
-_TORCH_NN: Any = None
-_TV_MODELS: Any = None
-_TV_TRANSFORMS: Any = None
+# `lru_cache` rather than a module global guarded by `global`: it memoises on the
+# first call exactly as the hand-written version did, but the cache is the
+# function's own rather than a name any other code in the module could rebind.
+# The import still happens once, and still only when first asked for.
 
 
+@lru_cache(maxsize=1)
 def _get_torch() -> Any:
-    global _TORCH
-    if _TORCH is None:
-        import torch as _t
-        _TORCH = _t
-    return _TORCH
+    import torch
+
+    return torch
 
 
+@lru_cache(maxsize=1)
 def _get_torch_nn() -> Any:
-    global _TORCH_NN
-    if _TORCH_NN is None:
-        from torch import nn as _nn
-        _TORCH_NN = _nn
-    return _TORCH_NN
+    from torch import nn
+
+    return nn
 
 
+@lru_cache(maxsize=1)
 def _get_tv_models() -> Any:
-    global _TV_MODELS
-    if _TV_MODELS is None:
-        from torchvision import models as _m
-        _TV_MODELS = _m
-    return _TV_MODELS
+    from torchvision import models
+
+    return models
 
 
+@lru_cache(maxsize=1)
 def _get_tv_transforms() -> Any:
-    global _TV_TRANSFORMS
-    if _TV_TRANSFORMS is None:
-        from torchvision import transforms as _t
-        _TV_TRANSFORMS = _t
-    return _TV_TRANSFORMS
+    from torchvision import transforms
+
+    return transforms
 
 
 # Type alias for flexible image input (lazy reference to torch.Tensor via Any)
-ImageInput = Any  # str | np.ndarray | PIL.Image | torch.Tensor
+ImageInput = Any  # str | FloatArray | PIL.Image | torch.Tensor
 
 # ---------------------------------------------------------------------------
 # Backbone registry – lazy factories with ImageNet pretrained weights.
@@ -75,7 +74,7 @@ ImageInput = Any  # str | np.ndarray | PIL.Image | torch.Tensor
 # the backbone produces features the normalisation was designed for.
 # ---------------------------------------------------------------------------
 
-BackboneRegistry: Dict[str, Any] = {
+BackboneRegistry: dict[str, Any] = {
     "resnet18": lambda: _get_tv_models().resnet18(weights="IMAGENET1K_V1"),
     "mobilenet_v3_small": lambda: _get_tv_models().mobilenet_v3_small(
         weights="IMAGENET1K_V1"
@@ -83,12 +82,12 @@ BackboneRegistry: Dict[str, Any] = {
 }
 
 # Output dimensionality for each backbone (used for dynamic dimension inference)
-BACKBONE_OUTPUT_DIM: Dict[str, int] = {
+BACKBONE_OUTPUT_DIM: dict[str, int] = {
     "resnet18": 512,
     "mobilenet_v3_small": 576,
 }
 
-_RESAMPLE_BILINEAR = getattr(getattr(Image, "Resampling", Image), "BILINEAR")
+_RESAMPLE_BILINEAR = getattr(Image, "Resampling", Image).BILINEAR
 
 
 @dataclass
@@ -99,13 +98,13 @@ class EmbeddingCache:
     cross-instance interference that occurred with module-level globals.
     """
 
-    embedding: Optional[np.ndarray] = field(default=None, repr=False)
-    preview: Optional[np.ndarray] = field(default=None, repr=False)
+    embedding: FloatArray | None = field(default=None, repr=False)
+    preview: FloatArray | None = field(default=None, repr=False)
 
     def set(
         self,
-        embedding: Optional[np.ndarray],
-        preview_signature: Optional[np.ndarray] = None,
+        embedding: FloatArray | None,
+        preview_signature: FloatArray | None = None,
     ) -> None:
         """Register a support embedding and its preview for eco-mode checks."""
         if embedding is None:
@@ -143,6 +142,9 @@ def _build_backbone(backbone_name: str, device: str) -> Any:
     return backbone
 
 
+_DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+
+
 def clear_backbone_cache() -> None:
     """Clear the LRU backbone cache to release GPU/CPU memory.
 
@@ -151,11 +153,11 @@ def clear_backbone_cache() -> None:
     _build_backbone.cache_clear()
 
 
-def compute_preview_signature(image: ImageInput, size: int = 32) -> np.ndarray:
+def compute_preview_signature(image: ImageInput, size: int = 32) -> FloatArray:
     """Compute a low-cost preview signature for early-exit similarity checks."""
     pil_image = _normalize_to_pil(image).resize((size, size), _RESAMPLE_BILINEAR)
     preview = np.asarray(pil_image, dtype=np.float32) / 255.0
-    return cast(np.ndarray, preview.reshape(-1))
+    return cast(FloatArray, preview.reshape(-1))
 
 
 # Module-level default cache for backward compatibility (benchmarks, scripts).
@@ -164,8 +166,8 @@ _DEFAULT_CACHE = EmbeddingCache()
 
 
 def set_support_embedding_cache(
-    embedding: Optional[np.ndarray],
-    preview_signature: Optional[np.ndarray] = None,
+    embedding: FloatArray | None,
+    preview_signature: FloatArray | None = None,
 ) -> None:
     """Register the top-1 support embedding and preview for eco-mode early exit.
 
@@ -176,18 +178,18 @@ def set_support_embedding_cache(
     _DEFAULT_CACHE.set(embedding, preview_signature)
 
 
-def get_support_embedding_cache() -> Optional[np.ndarray]:
+def get_support_embedding_cache() -> FloatArray | None:
     """Return a copy of the cached support embedding used by eco mode."""
     if _DEFAULT_CACHE.embedding is None:
         return None
-    return cast(np.ndarray, _DEFAULT_CACHE.embedding.copy())
+    return _DEFAULT_CACHE.embedding.copy()
 
 
-def get_support_preview_cache() -> Optional[np.ndarray]:
+def get_support_preview_cache() -> FloatArray | None:
     """Return a copy of the cached support preview signature used by eco mode."""
     if _DEFAULT_CACHE.preview is None:
         return None
-    return cast(np.ndarray, _DEFAULT_CACHE.preview.copy())
+    return _DEFAULT_CACHE.preview.copy()
 
 
 def _normalize_to_pil(image: ImageInput) -> Any:
@@ -214,18 +216,114 @@ def _get_preprocess_transform(img_size: int = 224) -> Any:
     ])
 
 
+def _torch_is_available() -> bool:
+    """Whether torch can actually be imported, not merely whether it is listed."""
+
+    try:
+        import torch  # noqa: F401
+    except ImportError:
+        return False
+    return True
+
+
+def onnx_weights_available(backbone_name: str) -> bool:
+    """Whether a bundled ONNX graph exists for this backbone.
+
+    `resnet18` is 44.8MB of weights and `mobilenet_v3_small` is 4.0MB, so which
+    ones ship is a packaging decision (#36). This asks what is actually present
+    rather than what ought to be.
+    """
+
+    return (_DATA_DIR / f"{backbone_name}.onnx").is_file()
+
+
+def _should_use_onnx(backbone_name: str, return_numpy: bool) -> bool:
+    """Decide between the ONNX and torch paths.
+
+    ONNX wins when its weights are bundled and the caller wants numpy back.
+    Without torch that is the only option; with torch it is still the better one,
+    since the embeddings agree and ONNX is faster on CPU.
+
+    `return_numpy=False` asks for a torch tensor by name, so it always takes the
+    torch path -- an ONNX session cannot produce one.
+    """
+
+    if not return_numpy:
+        return False
+    if not onnx_weights_available(backbone_name):
+        return False
+    try:
+        import onnxruntime  # noqa: F401
+    except ImportError:
+        return False
+    return True
+
+
+def bundled_onnx_backbones() -> list[str]:
+    """Backbone names whose ONNX weights ship inside the installed package."""
+
+    return sorted(
+        path.stem for path in _DATA_DIR.glob("*.onnx") if path.stem in BackboneRegistry
+    )
+
+
+def _require_a_usable_backend(backbone_name: str, return_numpy: bool) -> None:
+    """Fail with an actionable message instead of a bare ``ImportError``.
+
+    Before #36 every backbone needed torch, so a core install failed uniformly
+    and obviously. Now the answer varies by backbone, and the fall-through path
+    raised ``ImportError: No module named 'torch'`` from four frames inside
+    ``_get_torch_nn`` -- true, but it named neither the backbone that caused it
+    nor either of the two ways out.
+    """
+
+    if _torch_is_available():
+        return
+
+    if not return_numpy:
+        raise BackboneError(
+            "return_numpy=False asks for a torch.Tensor, which requires torch: "
+            "pip install 'adaptshot[training]'"
+        )
+
+    bundled = bundled_onnx_backbones()
+    suggestion = (
+        f"use one of the bundled backbones ({', '.join(bundled)})"
+        if bundled
+        else "reinstall adaptshot -- no bundled ONNX weights were found"
+    )
+    raise BackboneError(
+        f"Backbone {backbone_name!r} needs PyTorch on this install: its ONNX "
+        f"weights are not bundled. Either {suggestion}, or install torch with "
+        "pip install 'adaptshot[training]'."
+    )
+
+
+@lru_cache(maxsize=1)
+def _onnx_backend() -> Any:
+    """The process-wide ONNX backend, built on first use.
+
+    It caches its own sessions per backbone; constructing one per call would
+    reload the graph every time.
+    """
+
+    from .backends.onnx_backend import ONNXBackend
+
+    return ONNXBackend()
+
+
 def extract_embedding(
     image: ImageInput,
     config: AdaptShotConfig,
     return_numpy: bool = True,
-    cache: Optional[EmbeddingCache] = None,
-) -> Union[Any, np.ndarray]:
+    cache: EmbeddingCache | None = None,
+) -> Any | FloatArray:
     """Extract feature embedding from input image using a frozen backbone.
 
     Args:
         image: Input image (path, PIL, NumPy, or Tensor).
         config: AdaptShotConfig with backbone and device settings.
-        return_numpy: If True, return np.ndarray; otherwise return torch.Tensor
+        return_numpy: If True, return FloatArray; otherwise return torch.Tensor
             (requires torch to be installed).
         cache: Optional EmbeddingCache for eco-mode early exit. If None,
             falls back to the module-level default cache for backward compat.
@@ -254,8 +352,18 @@ def extract_embedding(
         norm_ratio = min(preview_norm, support_norm) / max(preview_norm, support_norm)
         if quick_similarity >= config.early_exit_threshold and norm_ratio > 0.3:
             if return_numpy:
-                return cast(np.ndarray, support_embedding.copy())
+                return support_embedding.copy()
             return _get_torch().from_numpy(support_embedding.copy())
+
+    if _should_use_onnx(config.backbone, return_numpy):
+        # The backend priority `backends/__init__.py` has documented since v0.2.0,
+        # finally wired up (#36). ONNX is preferred when its weights are bundled
+        # and the caller wants numpy back, because it is what makes inference work
+        # without torch at all -- and it is not a compromise: embeddings agree with
+        # torch to ~4e-06 (cosine 0.99999994), and it is faster on CPU.
+        return _onnx_backend().extract(pil_image, config.backbone)
+
+    _require_a_usable_backend(config.backbone, return_numpy)
 
     backbone = _build_backbone(config.backbone, config.device)
 

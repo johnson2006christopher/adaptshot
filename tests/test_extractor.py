@@ -1,13 +1,21 @@
 """Unit tests for core/extractor.py and utils/determinism.py."""
 
+from typing import Any, cast
+
 import pytest
 from PIL import Image
-from typing import Any, Optional, cast
-import torch
 
-from src.adaptshot.config.settings import AdaptShotConfig
-from src.adaptshot.core.extractor import extract_embedding, BackboneRegistry
-from src.adaptshot.utils.determinism import verify_determinism
+from adaptshot.config.settings import AdaptShotConfig
+from adaptshot.core.extractor import BackboneRegistry, extract_embedding
+from adaptshot.utils.determinism import verify_determinism
+
+# `config/settings.py` and `core/extractor.py` resolve torch lazily (see `_get_torch`),
+# so they import fine on a core-only install and sit above this guard. These tests do
+# not: they exercise the torch-backed paths directly and patch `torchvision.models`, so
+# on a core install the whole module skips rather than failing collection and taking the
+# other 93 tests down with it.
+torch = pytest.importorskip("torch")
+pytest.importorskip("torchvision")
 
 
 def test_resnet18_embedding_shape() -> None:
@@ -69,11 +77,11 @@ def test_backbone_factories_request_imagenet_pretrained_weights(monkeypatch: pyt
 
     captured: dict[str, object] = {}
 
-    def fake_resnet18(*, weights: Optional[object] = None) -> torch.nn.Module:
+    def fake_resnet18(*, weights: object | None = None) -> torch.nn.Module:
         captured["resnet18_weights"] = weights
         return torch.nn.Identity()
 
-    def fake_mobilenet_v3_small(*, weights: Optional[object] = None) -> torch.nn.Module:
+    def fake_mobilenet_v3_small(*, weights: object | None = None) -> torch.nn.Module:
         captured["mobilenet_weights"] = weights
         return torch.nn.Identity()
 

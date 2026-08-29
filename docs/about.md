@@ -4,126 +4,214 @@
 <img src="../images/johnson.jpeg" alt="Johnson Christopher Hassan" width="200" height="200" style="border-radius: 50%; border: 4px solid #4ADE80; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
 </div>
 
-## Built in Tanzania for the World
+## In one sentence
 
-**AdaptShot is proof that world-class AI can be built anywhere, with any resources, when guided by a clear mission: make AI work for the people who need it most.**
+> **AdaptShot lets you teach a computer to recognise things from just 5 or 10 photos — and it tells you when it isn't sure, instead of guessing.**
 
----
+Three facts, and they are the whole product:
 
-## 🌍 The Origin Story
-
-### The Problem
-
-In 2025, I watched an agricultural extension worker in Mbeya, Tanzania try to diagnose crop disease from phone photos. She had years of training and a smartphone—but every AI tool available to her required cloud connectivity, GPU acceleration, or thousands of labeled images. None of those exist in rural Tanzania.
-
-**Every "state-of-the-art" solution failed her.**
-
-That moment crystallized a truth: modern AI has been optimized for Silicon Valley, not for the world. 80% of the global population lives in regions with unreliable internet, limited electricity, or both—yet 95% of AI research assumes the opposite.
-
-### The Response
-
-AdaptShot was built to flip this paradigm. It is:
-
-- **CPU-first**: Runs on laptops and single-board computers, no GPU required
-- **Offline-capable**: Fully functional without internet after initial installation
-- **Few-shot**: Learns from as few as 5 examples per class
-- **Memory-efficient**: Operates within 250MB RAM indefinitely
-- **Human-aligned**: Every prediction is calibrated and every correction improves the model
+1. **Few photos.** Five or ten examples per category, not thousands.
+2. **Ordinary laptop.** No graphics card, no internet, no cloud account.
+3. **Admits when it's unsure.** It flags what it doesn't recognise instead of picking an answer anyway.
 
 ---
 
-## 🎯 Mission & Vision
+## Where this started
 
-### Our Mission
+I hit the wall myself first.
 
-> Democratize trustworthy, CPU-first, human-in-the-loop few-shot vision AI for resource-constrained environments worldwide.
+When I started training image models, I could not do it on my own computer — the
+specifications were too small. I was not alone in that; other students around me had
+exactly the same problem. So we all did what everybody does: we trained in the cloud.
 
-### Who We Build For
+But training online means *staying* online. And I could not afford to be connected
+for hours at a time, day after day. That is the part nobody mentions: the standard
+answer to "you don't have a GPU" is "use the cloud", which quietly assumes you have
+cheap, uninterrupted internet instead. **When one resource is missing, the workaround
+usually assumes another one you also don't have.**
 
-| User | Use Case | Why AdaptShot |
-|------|----------|---------------|
-| 🧑‍🌾 **Small-scale farmers** | Crop disease identification from 10 leaf photos | Works offline on low-cost Android phones |
-| 🏥 **Rural healthcare workers** | Triage pneumonia from chest X-rays without a radiologist | Calibrated confidence prevents dangerous overconfidence |
-| 🦁 **Wildlife conservationists** | Classify camera trap images in remote areas | Runs on battery-powered Raspberry Pi |
-| 🏭 **Quality control inspectors** | Detect manufacturing defects from few reference samples | Learns new defect types from human corrections |
-| 🎓 **Students & educators** | Learn AI concepts with real, runnable code | No GPU, no cloud, no expensive hardware |
+Then I watched the same problem land on someone with more at stake than a student
+assignment.
 
-### Core Values
+In 2025, I watched an agricultural extension worker in Mbeya, Tanzania try to
+diagnose crop disease from phone photos. She had years of training and a
+smartphone — but every AI tool available to her required cloud connectivity, GPU
+acceleration, or thousands of labelled images. None of those exist in rural Tanzania.
 
-1. **Truth Over Hype** — We document what works, what doesn't, and why. No exaggerated claims.
-2. **Constraint-First Engineering** — We design for the hardest constraints first. If it runs on a $50 phone in rural Tanzania, it runs anywhere.
-3. **Human Dignity** — AI should augment human expertise, not replace it. Uncertain predictions are flagged for review, never silently wrong.
-4. **Environmental Responsibility** — CPU-first inference uses 10–100× less energy than GPU alternatives. Carbon-aware configuration lets users optimize further.
-5. **Global South First** — We build for the user in Mbeya before the user in Menlo Park. Innovation should serve the many, not the few.
+Every state-of-the-art solution failed her.
 
----
+She was not short of expertise. She was short of a tool that fit the conditions she
+actually worked in.
 
-## 📜 Technical Journey
-
-### v0.1.0 — The Foundation (May 2024)
-Frozen backbone extraction (ResNet-18, MobileNetV3-Small) with cosine similarity search. 68% accuracy on CIFAR-10 with 10 images per class at 90ms latency on a consumer CPU. Proved that useful few-shot inference doesn't require GPUs.
-
-### v0.1.1 — Trust & Continual Learning (June 2025)
-Introduced online temperature scaling with sliding-window ECE tracking, Adaptive Confidence Thresholding (ACT), CA-EWC head fine-tuning, and UP-UGF buffer pruning. Added energy profiling, embedding caching, and OOD detection.
-
-### v0.2.0 — Production Hardening (Current)
-Comprehensive algorithmic and production hardening across all subsystems:
-
-- **Contrastive Learning**: Gradient-trained InfoNCE projection head with 2-layer MLP and full backpropagation
-- **Conformal Prediction**: True leave-one-out prototype recomputation for valid finite-sample coverage
-- **Uncertainty**: Shrinkage-regularized Mahalanobis covariance with adaptive alpha = d/(d+n_k)
-- **ACT**: Symmetric threshold updates with mean-reversion to prevent monotonic drift
-- **UP-UGF**: Random projection LSH for O(N log N) approximate redundancy scoring
-- **Explainability**: Historical penalty tracking replacing magic-number fallbacks
-- **Calibration**: Bootstrap temperature estimation for cold-start autonomous operation
-- **Production**: ONNX export, memory profiling, miniImageNet benchmarks, baseline comparisons
+Two versions of one problem. AdaptShot is an attempt to build the tool that assumes
+none of it — no data centre, no fast connection, no thousand-image dataset — and that
+is honest enough to say when it cannot help, so the person using it always knows when
+to fall back on their own judgement.
 
 ---
 
-## 🏆 What Sets AdaptShot Apart
+## How it works, in plain language
 
-| Dimension | Conventional AI | AdaptShot |
-|-----------|----------------|-----------|
-| **Hardware** | GPU cluster required | CPU-only, <250MB RAM |
-| **Data per class** | Thousands to millions | 5–50 images |
-| **Connectivity** | Cloud-dependent | Fully offline |
-| **Confidence** | Overconfident softmax | Calibrated ECE with conformal guarantees |
-| **Learning** | Retrain from scratch | Continual via human corrections |
-| **Memory** | Unbounded growth | Bounded via UP-UGF with LSH acceleration |
-| **Energy** | Hidden carbon cost | Transparent per-inference Joule tracking |
-| **Trust** | Black-box output | Conformal sets + uncertainty report + explanation |
-| **Cost** | $10,000+ in compute | $0 (runs on existing hardware) |
-| **Quality Gates** | Often absent | ruff=0, mypy strict=32 files clean, pytest=92 passed |
+You show it a few example photos of each thing you care about — say 5 healthy leaves
+and 5 diseased leaves. Then you show it a new photo, and it tells you which one it
+looks like.
+
+The important part is the second half. It also tells you **how much to trust that
+answer**. And when it sees something it doesn't recognise at all, it says *"I don't
+know, ask a person"* rather than forcing the photo into one of the categories it knows.
 
 ---
 
-## 🔮 Roadmap
+## Two ideas worth understanding
 
-### v0.2.0 (Current)
-- [x] ONNX export for torch-free inference
-- [x] Memory profiling with tracemalloc + psutil
-- [x] miniImageNet benchmarks with baseline comparisons
-- [x] Full production hardening of all algorithmic subsystems
-- [ ] Swahili documentation translation
-- [ ] Federated buffer sharing for multi-device deployments
+You do not need the mathematics to use AdaptShot, but these two ideas are what make
+it different from ordinary image classification.
 
-### v1.0.0 (Target: 2027)
-- Field pilot results from 3+ NGOs in Tanzania, Kenya, and Uganda
-- Peer-reviewed ablation studies
-- Carbon-neutral CI/CD pipeline
-- Community governance board
+### Honest confidence — like a weather forecast
 
-### v2.0+ (Vision)
-- Neuromorphic backend support
-- Event-based vision for DVS cameras
-- Multilingual, low-literacy UI extensions
-- Integration with national healthcare/agriculture systems
+When a forecast says "70% chance of rain," you can check it over a year. If it rained
+on roughly 70 of the 100 days it said 70%, the forecast is honest. You can plan around it.
+
+Most AI systems say "97% sure" and are wrong far more often than 3% of the time. This
+is a [well-documented property](https://arxiv.org/abs/1706.04599) of modern neural
+networks, not a bug in any one system. AdaptShot measures and corrects this, so its
+confidence numbers are built to mean what they say.
+
+### A short list you can trust — like a careful doctor
+
+A careless doctor says "it's malaria" and is confidently wrong. A careful one says
+"it's one of these two things, let's check."
+
+Being given a short list you can trust is often more useful than one confident answer
+that might be wrong. AdaptShot can return such a list, along with a mathematical
+guarantee about how often the correct answer is inside it. The technical name is
+*conformal prediction*; the useful description is **a short list you can trust**.
 
 ---
 
-## 👨‍💻 About the Creator
+## What would I use it for?
 
-**Johnson Christopher Hassan** is a self-taught AI research engineer and diploma student in Computer Engineering at Mbeya University of Science and Technology, Tanzania. He built AdaptShot with a standard laptop, unreliable electricity, and determination—proving that world-class engineering doesn't require Silicon Valley resources.
+The pattern to look for:
+
+> Anywhere you need to sort or check images, you cannot collect thousands of labelled
+> examples, and a wrong answer costs something real.
+
+| Situation | How AdaptShot helps |
+| :--- | :--- |
+| **Crop disease** from leaf photos | An extension officer covers more farms; uncertain photos get escalated |
+| **Quality control** on a small production line | Learns a new defect type from a handful of samples |
+| **Clinical image triage**, with a clinician confirming every case | Calibrated confidence makes the sorting trustworthy; it never replaces the clinician |
+| **Wildlife camera traps** | Runs on battery-powered hardware in the field, offline |
+| **Document and form sorting** | New categories added from a few examples, no retraining pipeline |
+
+The common thread: **a human is available to handle the hard cases, and AdaptShot's
+job is to correctly identify which cases are hard.** It does not replace the expert.
+It lets one expert cover far more ground.
+
+!!! warning "On medical and safety-critical use"
+    AdaptShot has not been clinically validated and is not a medical device. Any use
+    in a healthcare setting must keep a qualified clinician in the loop for every
+    case. Calibrated uncertainty reduces the risk of silent errors — it does not
+    eliminate it.
+
+---
+
+## Why not just use a cloud AI service?
+
+Hosted vision APIs are excellent when they fit. They need internet, they charge per
+photo, and your images leave your device. They also cannot learn *your* five specific
+categories from ten photographs.
+
+AdaptShot runs offline on hardware you already own, and the data never leaves the room.
+
+## Who should not use AdaptShot
+
+If you have thousands of labelled photos and a good graphics card, train a
+conventional model instead — you will get better accuracy. AdaptShot is built for
+when you do not have those things.
+
+Saying this plainly matters. A tool that claims to be right for everyone is right
+for no one.
+
+---
+
+## Explaining it to different people
+
+| They are | Say this |
+| :--- | :--- |
+| **A farmer or nurse** | "Take a photo, it tells you what it thinks it is — and it's honest when it doesn't know." |
+| **A developer** | "A Python library for few-shot image classification with calibrated uncertainty and OOD detection. `pip install adaptshot`, five lines to a prediction. CPU-only, torch optional." |
+| **A researcher** | "Conformal prediction in the few-shot regime on CPU — distribution-free marginal coverage with leave-one-out calibration when you only have five shots per class." |
+| **A funder** | "It brings reliable image AI to places with no GPUs and no internet — and unlike most AI, it knows the limits of its own knowledge, so people can trust it." |
+
+**Lead with the problem, never the technology.** "It uses conformal prediction with
+Mahalanobis-based OOD detection" makes people nod and change the subject. "It tells
+you when it isn't sure" makes them ask a follow-up question.
+
+---
+
+## Mission
+
+> Make trustworthy image AI work in the places where AI usually doesn't — no GPU,
+> no reliable internet, and very few labelled examples.
+
+Most machine learning research assumes abundant data, abundant compute, and a fast
+connection. A great many working environments have none of the three. AdaptShot is
+built for those environments first, on the view that a method which survives the
+hardest constraints will work comfortably everywhere else.
+
+### Values
+
+1. **Truth over hype.** Document what works, what doesn't, and what hasn't been
+   measured yet. A small true claim beats a large unprovable one.
+2. **Constraint-first engineering.** Design for the hardest environment first.
+3. **Human dignity.** AI should extend human expertise, not replace it. Uncertain
+   predictions get flagged for review, never silently guessed.
+4. **Efficiency as a feature.** CPU-only inference is cheaper and lower-power than
+   GPU alternatives. Where energy is measured, it is measured honestly.
+5. **Built where it's needed.** Designed in Mbeya, for conditions like Mbeya's.
+
+---
+
+## How it got here
+
+See the [changelog](https://github.com/johnson2006christopher/adaptshot/blob/main/CHANGELOG.md)
+for full detail. The short version:
+
+| Version | Theme |
+| :--- | :--- |
+| **v0.1.x** | **Built it.** Frozen-backbone feature extraction, similarity search, calibration, human corrections, energy-aware inference. |
+| **v0.2.0** | **Made it honest.** Conformal prediction, multi-signal uncertainty, Mahalanobis OOD detection — alongside a substantial pass correcting claims the code did not yet support. |
+| **v0.3.0** | **Made it provable.** Validation on real public datasets, a narrower and better-defended API, and the graphical tools split into their own project. |
+
+That middle step is worth dwelling on. Much of v0.2.0 was not new features but
+corrections: an uncertainty method that had been described but not implemented, a
+projection head that was created but never trained, a calibration path that quietly
+invalidated its own coverage guarantee. Finding and fixing those mattered more than
+any feature added alongside them.
+
+---
+
+## Current status
+
+AdaptShot is **pre-1.0**. The API may change between minor versions, and every change
+is recorded in the changelog.
+
+What exists today is a well-tested implementation of well-established methods —
+prototypical networks, temperature scaling, split and cross conformal prediction,
+Mahalanobis OOD detection — engineered for CPU-only operation and checked by `ruff`,
+`mypy --strict`, and a full test suite on every change.
+
+What does not exist yet is large-scale validation on real-world data. Benchmarks on
+public datasets were the headline goal of v0.3.0, and they landed: the README's results section and the [technical note](understand/technical-note.md) carry them, every figure traced to a committed artifact by a test.
+
+---
+
+## About the creator
+
+**Johnson Christopher Hassan** is a self-taught AI research engineer and a diploma
+student in Computer Engineering at Mbeya University of Science and Technology,
+Tanzania. AdaptShot was built on a standard laptop.
 
 - 📍 Mbeya, Tanzania 🇹🇿
 - ✉️ [johnson2006christopher@gmail.com](mailto:johnson2006christopher@gmail.com)
@@ -132,21 +220,24 @@ Comprehensive algorithmic and production hardening across all subsystems:
 
 ---
 
-## 🤝 Get Involved
+## Get involved
 
-- **Use it**: Deploy AdaptShot in your community. Share your results.
-- **Contribute**: Submit a PR, write a tutorial, or translate documentation.
-- **Research it**: Publish ablation studies, comparisons, or extensions.
-- **Teach it**: Use AdaptShot in your classroom or workshop.
+- **Use it.** Deploy AdaptShot in your community and share what happened — including
+  what didn't work. Negative results are genuinely useful here.
+- **Contribute.** Submit a pull request, write a tutorial, or translate documentation.
+- **Research it.** Ablation studies, comparisons, and extensions are all welcome.
+- **Teach it.** The codebase is small enough to read end to end, which makes it
+  usable in a classroom.
 
 ---
 
-<div align="center" style="margin-top: 60px; padding: 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; color: white;">
+<div align="center" style="margin-top: 60px;">
 
-### "The best AI doesn't guess confidently.
-### It learns humbly, admits uncertainty,
-### and improves through every human correction."
+*The best AI doesn't guess confidently.<br>
+It learns humbly, admits uncertainty, and improves through every human correction.*
 
-[⭐ Star on GitHub](https://github.com/johnson2006christopher/adaptshot) · [📖 Read the Docs](https://johnson2006christopher.github.io/adaptshot/) · [💬 GitHub Discussions](https://github.com/johnson2006christopher/adaptshot/discussions) · [📱 WhatsApp Community](https://chat.whatsapp.com/J6AbrvbjmBc5XXX2fnN6RK)
+[⭐ Star on GitHub](https://github.com/johnson2006christopher/adaptshot) ·
+[📖 Documentation](https://johnson2006christopher.github.io/adaptshot/) ·
+[💬 Discussions](https://github.com/johnson2006christopher/adaptshot/discussions)
 
 </div>

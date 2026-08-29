@@ -1,0 +1,37 @@
+# Citation metadata. GitHub renders a "Cite this repository" button from this
+# file, in APA and BibTeX, so anyone referencing AdaptShot has one canonical
+# form to copy rather than inventing their own.
+#
+# `version` and `date-released` must track the release. tests/test_citation.py
+# checks the version against pyproject.toml, because a stale citation is worse
+# than none -- it looks authoritative while pointing at software that no longer
+# exists.
+#
+cff-version: 1.2.0
+title: "AdaptShot: human-aligned few-shot vision learning for resource-constrained environments"
+message: "If you use this software, please cite it using the metadata from this file."
+type: software
+authors:
+  - given-names: "Johnson Christopher"
+    family-names: "Hassan"
+    email: "johnson2006christopher@gmail.com"
+    orcid: "https://orcid.org/0009-0006-2546-7549"
+repository-code: "https://github.com/johnson2006christopher/adaptshot"
+url: "https://johnson2006christopher.github.io/adaptshot/"
+abstract: >-
+  AdaptShot is a CPU-first, human-in-the-loop few-shot vision library. It learns
+  a classifier from a handful of labelled examples per class, reports conformal
+  prediction sets rather than bare confidence scores, and accepts corrections
+  from a person without retraining. It is built for settings where connectivity,
+  hardware and labelled data are all scarce.
+keywords:
+  - few-shot learning
+  - computer vision
+  - conformal prediction
+  - human-in-the-loop
+  - uncertainty quantification
+  - edge computing
+  - CPU inference
+license: MIT
+version: 0.3.0
+date-released: "2026-08-29"

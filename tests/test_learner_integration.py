@@ -14,7 +14,7 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from src.adaptshot import AdaptShotConfig, AdaptShotError, FewShotLearner
+from adaptshot import AdaptShotConfig, AdaptShotError, FewShotLearner
 
 
 @pytest.fixture
@@ -43,10 +43,7 @@ def patched_embeddings(monkeypatch: pytest.MonkeyPatch) -> None:
         return_numpy: bool = True,
         cache: Any = None,
     ) -> np.ndarray:
-        if isinstance(image, Image.Image):
-            color = image.getpixel((0, 0))
-        else:
-            color = (0, 0, 0)
+        color = image.getpixel((0, 0)) if isinstance(image, Image.Image) else (0, 0, 0)
         base = float(sum(color)) / 255.0
         embedding = np.full(8, base, dtype=np.float32)
         if return_numpy:
@@ -54,7 +51,7 @@ def patched_embeddings(monkeypatch: pytest.MonkeyPatch) -> None:
         return embedding
 
     monkeypatch.setattr(
-        "src.adaptshot.core.learner.extract_embedding", fake_extract
+        "adaptshot.core.learner.extract_embedding", fake_extract
     )
 
 
