@@ -182,7 +182,7 @@ for full detail. The short version:
 | :--- | :--- |
 | **v0.1.x** | **Built it.** Frozen-backbone feature extraction, similarity search, calibration, human corrections, energy-aware inference. |
 | **v0.2.0** | **Made it honest.** Conformal prediction, multi-signal uncertainty, Mahalanobis OOD detection — alongside a substantial pass correcting claims the code did not yet support. |
-| **v0.3.0** *(in progress)* | **Making it provable.** Validation on real public datasets, a narrower and better-defended API, and the graphical tools split into their own project. |
+| **v0.3.0** | **Made it provable.** Validation on real public datasets, a narrower and better-defended API, and the graphical tools split into their own project. |
 
 That middle step is worth dwelling on. Much of v0.2.0 was not new features but
 corrections: an uncertainty method that had been described but not implemented, a
@@ -203,10 +203,7 @@ Mahalanobis OOD detection — engineered for CPU-only operation and checked by `
 `mypy --strict`, and a full test suite on every change.
 
 What does not exist yet is large-scale validation on real-world data. Benchmarks on
-public datasets are the headline goal of v0.3.0. Until they land, treat AdaptShot as
-carefully built infrastructure rather than a proven accuracy result — and when the
-numbers arrive, they will be published with the seeds and hardware needed to
-reproduce them.
+public datasets were the headline goal of v0.3.0, and they landed: the README's results section and the [technical note](understand/technical-note.md) carry them, every figure traced to a committed artifact by a test.
 
 ---
 
