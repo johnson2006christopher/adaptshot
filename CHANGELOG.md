@@ -7,6 +7,113 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+> Everything below is the 0.3.0 release ("make it provable"). The version in
+> `pyproject.toml` is bumped at release time, which is the maintainer's step.
+
+### Added — measured results
+
+- **The first real result.** PlantVillage 5-way 5-shot, 100 episodes, seed 42:
+  91.4% ± 1.0 accuracy, against nearest-centroid, k-NN and a linear-probe
+  baseline on the same episodes and embeddings. AdaptShot's accuracy *is*
+  nearest-centroid's, to the query; what the layers above buy is the
+  prediction set. (`benchmarks/run_plantvillage.py`, #18, #19)
+- **Conformal coverage, measured**: 98.1% ± 0.6 at a 90% target, mean set size
+  1.66, against a calibrated top-1 threshold that reached 83.9%. (#14, #86)
+- **Coverage under distribution shift**: blur, brightness, JPEG and downscale
+  applied to queries only; the sets widen, the bound still bends (85.5% at
+  blur σ=4), the OOD flag correlates 0.92 with the loss, and ten in-situ
+  corrections recover the worst cell to 89%. (`benchmarks/run_shift.py`, #29)
+- **Latency by stage** (median and p95), cold start, and peak memory for one
+  cycle *and* for the harness, named apart, with the CPU model recorded. 120 MB
+  for one fresh process on the core install. (#20)
+- **ONNX parity benchmark**, each backend in its own process. (#36)
+- Every figure in the README, the technical note and the docs is formatted from
+  a committed `results/*.json` and asserted by `tests/test_docs_claims.py`.
+
+### Added — features
+
+- **Torch-free inference.** `mobilenet_v3_small` ships as ONNX inside the wheel
+  (4.0 MB); `pip install adaptshot` is numpy, Pillow and onnxruntime only, and
+  loads a support set, predicts, saves and reloads. Torch is needed only for
+  fine-tuning and non-bundled backbones. The default backbone changed to the
+  bundled one. (#35, #36)
+- **`check_environment()`**: what this machine can do, with every figure measured
+  on it; a GPU is named and never selected. Experimental. (#38)
+- **Twelve real PlantVillage photographs ship in the wheel** (`adaptshot.data.sample_images`)
+  so the README quickstart runs offline in seven lines; four more for the demo.
+  Licence and checksums beside them. (#28)
+- **`examples/demo/`**: a conference demo that disables its own network access,
+  runs in under two seconds, and shows the set widening and the refusal. (#27)
+- **`BackboneError`** names the backbone, the ones that would work and the extra
+  that installs torch, instead of `ImportError: torch` from four frames deep.
+- `PredictionResult.conformal_calibrated` and `ConformalPredictionSet.calibrated`:
+  a cold-start singleton says so instead of claiming 1 − α. (#80)
+- `adaptshot.api`: every public name classified **stable** (24) or
+  **experimental** (10), enforced by `tests/test_api_surface.py`. (#23)
+- `bundled_onnx_backbones()`, `ConformalEngine.min_informative_size`,
+  `ConformalEngine.nonconformity()`.
+
+### Changed
+
+- **Conformal nonconformity score** defaults to the distance ratio `d_true/min(d)`.
+  The max-scaled softmax scored clean, blurred and foreign-crop photographs
+  0.72–0.80 alike and could not widen a set. `softmax` and `distance` remain
+  selectable. Published figures moved: coverage 97.5% → 98.1%, set size
+  2.05 → 1.66. Deliberate exception to the stability policy, recorded. (#86)
+- `FewShotLearner` gives its conformal engine a floor of `max(10, ⌈(1−α)/α⌉)`
+  calibration scores. (#14)
+- `adaptshot.core.contrastive` moved to `adaptshot.training.contrastive`; the
+  old path warns and is removed in 0.4.0. (#23)
+- `ACTEngine` and `UPUGFPruner` are stable — they have tests now. (#74)
+- `__version__` is read from package metadata; `pyproject.toml` is the only
+  declaration. (#25)
+- numpy annotations are `FloatArray` / `LabelArray` / `IntArray` / `BoolArray`
+  (`adaptshot.utils.arrays`); 157 `type-arg` errors under numpy 2.2 → 0. (#44)
+- The ruff ignore list is empty; `scripts/` is linted. (#41)
+- Documentation rebuilt on Diátaxis: six beginner tutorials, eleven how-to
+  guides, explanation, reference and contributor sections; every tutorial and
+  how-to code block is executed by `tests/test_docs_tutorials_run.py`; every
+  page has an edit link; broken links fail the build. Superseded pages retired
+  to `docs-archive/`. (#39)
+
+### Fixed
+
+- **Conformal quantile clamp**: where `n < (1−α)/α` the engine returned the
+  largest observed score instead of the full set, under-covering at 91.3%
+  against a 95% promise at the library's own defaults. (#14)
+- **OOD threshold calibrated in-sample** flagged 45 of 45 in-distribution
+  photographs; leave-one-out calibration brings it to 3 of 45, with 45 of 45
+  flagged on genuinely out-of-domain photographs. (#54)
+- **`UPUGFPruner` kept the confident examples** (score `(1−u)^w`, the inverse of
+  its documentation) and, above 100 rows, **rewarded duplicates** (inverted LSH
+  collision term). (#74)
+- **`_project` guarded one of four `Optional` fields**; a partially restored
+  contrastive head failed inside a matmul. (#44)
+- The README quickstart pinned a non-bundled backbone and referenced files that
+  did not exist; it now runs, and CI runs it. (#28)
+- Tambua's `maize.yaml` named `resnet18`, which a standard install cannot run;
+  it names the bundled backbone.
+
+### Deprecated
+
+- `adaptshot.core.contrastive` (import path) — removed in 0.4.0.
+- `UncertaintyQuantifier.compute_perturbation_variance`, `get_ood_summary`,
+  `get_class_statistics` — no callers anywhere; removed in 0.4.0. (#23)
+
+### Infrastructure
+
+- Releases on `v*` tags with PyPI Trusted Publishing, a clean-container install
+  test against the built wheel, TestPyPI for `rc` tags. (#25)
+- `offline-wheel` CI job: the wheel installed into a clean venv and the
+  inference path run inside a network namespace with no interfaces; any network
+  access fails the build. (#30)
+- The CI test matrix installs CPU-only torch; the CUDA caches had blown past the
+  10 GB cache limit and evicted the CIFAR-10 cache, turning a two-minute
+  benchmark job into a thirty-five-minute download. The `test-core` job is
+  enforcing. `mkdocs build --strict` on every pull request. (#60, #36)
+
+### Earlier notes in this cycle
+
 ### Removed
 
 - **`adaptshot.studio`** (1,822 lines, 23% of the library, four tests) — extracted to
