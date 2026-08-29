@@ -29,13 +29,13 @@
   "conformal": {
     "alpha": 0.1,
     "empirical_coverage": {
-      "ci95_half_width": 0.006717819511560204,
-      "mean": 0.9750000000000001,
+      "ci95_half_width": 0.005526190351225682,
+      "mean": 0.9809999999999998,
       "n_episodes": 100
     },
     "mean_set_size": {
-      "ci95_half_width": 0.18015406823038882,
-      "mean": 2.0512,
+      "ci95_half_width": 0.1385597524340523,
+      "mean": 1.6636000000000002,
       "n_episodes": 100
     },
     "ood_flag_rate": {
@@ -66,8 +66,8 @@
     "ram_gb": 31.0
   },
   "latency_ms_per_query": {
-    "ci95_half_width": 2.404309600208518,
-    "mean": 28.23598383400131
+    "ci95_half_width": 1.9647521028274053,
+    "mean": 22.161587603594672
   },
   "protocol": {
     "alpha": 0.1,
@@ -79,26 +79,26 @@
     "task": "5-way 5-shot"
   },
   "timing": {
-    "benchmark_process_peak_rss_mb": 523.3203125,
+    "benchmark_process_peak_rss_mb": 540.73828125,
     "cold_start": {
-      "peak_rss_mb": 119.88671875,
-      "seconds": 1.3351109960003669
+      "peak_rss_mb": 122.58984375,
+      "seconds": 0.8508739229982893
     },
     "embedding_ms": {
-      "median": 4.005406000032963,
+      "median": 3.1868059995758813,
       "n": 100,
-      "p95": 4.869945250356977
+      "p95": 3.8450286972874883
     },
     "note": "predict_ms is the full path per query, ONNX forward included; support_fit_ms is load_support_images per episode (embed the support, leave-one-out calibration, OOD fit); cold_start is a fresh interpreter from before the first import to the first answer, with that process's peak RSS -- the single-cycle memory figure; benchmark_process_peak_rss_mb is this whole run's VmHWM and describes the harness, not the library. Both depend on which install ran them: see hardware.install",
     "predict_ms": {
-      "median": 8.051877499383409,
+      "median": 6.429912999010412,
       "n": 5000,
-      "p95": 16.337300649320245
+      "p95": 12.743561201023114
     },
     "support_fit_ms": {
-      "median": 776.8456609992427,
+      "median": 641.1929759997292,
       "n": 100,
-      "p95": 2016.383865050193
+      "p95": 861.3712131007541
     }
   },
   "top1_threshold": {

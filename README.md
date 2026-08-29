@@ -333,18 +333,19 @@ What those layers do change is what you are told alongside the prediction:
 
 | At α = 0.1 (90% target coverage) | Conformal sets | Top-1 + threshold |
 |---|---|---|
-| Empirical coverage | **97.5% ± 0.7** | 83.9% ± 1.4 |
-| Mean set size | 2.05 ± 0.18 | 0.89 ± 0.02 |
+| Empirical coverage | **98.1% ± 0.6** | 83.9% ± 1.4 |
+| Mean set size | 1.66 ± 0.14 | 0.89 ± 0.02 |
 
 The threshold baseline is calibrated on the same held-out split, to the same
 target, and it *misses* it — 83.9% against a promised 90%. Conformal clears it
-with room to spare, and the price is roughly 2.3× the set size. That is the
+with room to spare, and the price is roughly 1.9× the set size. That is the
 trade, stated plainly: the guarantee is real, it is not free, and if you do not
 need it the cheaper thing is genuinely cheaper.
 
-Conformal over-covers here (97.5% against a 90% target), which costs set size
-it did not have to spend. That is a known consequence of self-calibrating by
-leave-one-out on 25 support points and is not yet tuned.
+Conformal over-covers here (98.1% against a 90% target), which costs set size
+it did not have to spend. That is a consequence of self-calibrating by
+leave-one-out on 25 support points. The score behind these sets is the distance ratio
+`d_true / d_min` (#86); the max-scaled softmax it replaced produced sets of 2.05 at 97.5%.
 
 OOD flagged 1.5% ± 0.5 of this pool, which is entirely in-distribution.
 
@@ -362,13 +363,13 @@ Median and p95, not mean — tail latency is what makes a tool feel broken. All 
 
 | stage | median | p95 | what it includes |
 |---|---|---|---|
-| embedding, per image | **4.0 ms** | 4.9 ms | the ONNX forward pass, cache bypassed |
-| support fit, per episode | **777 ms** | 2016 ms | embed 11 photos, leave-one-out calibration, OOD fit |
-| predict, per query | **8.1 ms** | 16.3 ms | the full path, embedding included |
-| cold start | **1.34 s** | — | a fresh interpreter, from before `import adaptshot` to the first answer |
+| embedding, per image | **3.2 ms** | 3.8 ms | the ONNX forward pass, cache bypassed |
+| support fit, per episode | **641 ms** | 861 ms | embed 11 photos, leave-one-out calibration, OOD fit |
+| predict, per query | **6.4 ms** | 12.7 ms | the full path, embedding included |
+| cold start | **0.85 s** | — | a fresh interpreter, from before `import adaptshot` to the first answer |
 
-**Peak memory for that cold-start cycle: 120 MB**, in-process, on the core install.
-The benchmark harness itself peaks at 523 MB with 400 cached embeddings and four
+**Peak memory for that cold-start cycle: 123 MB**, in-process, on the core install.
+The benchmark harness itself peaks at 541 MB with 400 cached embeddings and four
 baselines in memory; that number describes the harness, not the library, and the artifact
 names them separately so they cannot be confused.
 

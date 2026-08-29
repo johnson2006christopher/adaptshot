@@ -241,8 +241,8 @@ target; every cell where a finite quantile exists has a mean set smaller than th
 set.
 
 Measured on real data (PlantVillage 5-way 5-shot, 100 episodes, α = 0.10 with 25
-calibration scores — above the informative size): 97.5% empirical coverage at a 90%
-target, mean set size 2.05. See the README's results section.
+calibration scores — above the informative size): 98.1% empirical coverage at a 90%
+target, mean set size 1.66. See the README's results section.
 
 ---
 

@@ -38,21 +38,21 @@ All figures: PlantVillage crop-disease photographs (Mohanty et al., 2016), 20 cl
 
 | At α = 0.10 (90% target) | Conformal sets | Top-1 + calibrated threshold |
 |---|---|---|
-| Empirical coverage | **97.5% ± 0.7** | 83.9% ± 1.4 |
-| Mean set size | 2.05 ± 0.18 | 0.89 ± 0.02 |
+| Empirical coverage | **98.1% ± 0.6** | 83.9% ± 1.4 |
+| Mean set size | 1.66 ± 0.14 | 0.89 ± 0.02 |
 
-The threshold baseline is calibrated on the same held-out split to the same target and misses it. Conformal clears it, at roughly 2.3× the set size. The guarantee is real, it is not free, and a reader who does not need it is told the cheaper thing is cheaper. Conformal also *over*-covers here — 97.5% against 90% — which is set size spent without need; it follows from self-calibrating on 25 points and is not yet tuned.
+The threshold baseline is calibrated on the same held-out split to the same target and misses it. Conformal clears it, at roughly 1.9× the set size. The guarantee is real, it is not free, and a reader who does not need it is told the cheaper thing is cheaper. Conformal also *over*-covers here — 98.1% against 90% — which is set size spent without need; it follows from self-calibrating on 25 points. The nonconformity score is the distance ratio d_true / d_min; the max-scaled softmax it replaced could not distinguish a clean leaf from a blurred one or a different crop (scores 0.72–0.80 for all three), and gave sets of 2.05 at 97.5%.
 
 **Cost, measured on the same runs**, core install, 11th Gen Intel i7-11800H, 16 cores, 31 GB RAM, Linux 7.1, Python 3.14.7:
 
 | | median | p95 |
 |---|---|---|
-| Embedding, per image | 4.0 ms | 4.9 ms |
-| Support fit, per episode | 777 ms | 2016 ms |
-| Predict, per query, full path | 8.1 ms | 16.3 ms |
-| Cold start: fresh interpreter to first answer | 1.34 s | — |
+| Embedding, per image | 3.2 ms | 3.8 ms |
+| Support fit, per episode | 641 ms | 861 ms |
+| Predict, per query, full path | 6.4 ms | 12.7 ms |
+| Cold start: fresh interpreter to first answer | 0.85 s | — |
 
-Peak resident memory for that cold-start cycle — one process, one support set, one answer — is **120 MB**. From `pip install` (3.5 MB wheel) to a correct first prediction on the bundled photographs: about five seconds.
+Peak resident memory for that cold-start cycle — one process, one support set, one answer — is **123 MB**. From `pip install` (3.5 MB wheel) to a correct first prediction on the bundled photographs: about five seconds.
 
 **Three things the validation found and fixed before this note was written.** The conformal quantile clamped its rank to *n* − 1 where the theorem's answer is infinite; at the library's own default α and calibration floor that under-covered at 91.3% against 95%. The OOD threshold was calibrated on the points that defined the distribution and flagged 45 of 45 in-distribution photographs; leave-one-out calibration brings it to 3 of 45, with 45 of 45 flagged on genuinely out-of-domain photographs. And the replay-buffer pruner scored uncertainty with the wrong sign, keeping the examples its documentation said it discarded. Each is in a test now.
 

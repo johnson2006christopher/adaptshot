@@ -88,7 +88,7 @@ class ConformalEngine:
         min_calibration_size: int = 10,
         max_calibration_size: int = 500,
         mode: str = "split",
-        score_method: str = "softmax",
+        score_method: str = "ratio",
     ) -> None:
         """Initialize the conformal prediction engine.
 
@@ -98,7 +98,8 @@ class ConformalEngine:
             min_calibration_size: Minimum scores before producing sets.
             max_calibration_size: Rolling buffer capacity for scores.
             mode: "split" for split-conformal or "cross" for cross-conformal.
-            score_method: "softmax" or "distance" nonconformity function.
+            score_method: "ratio" (default), "softmax" or "distance". See
+                ``nonconformity`` for what each measures and why the default changed.
         """
         self.alpha = float(alpha)
         self.n_bins = int(n_bins)
@@ -132,6 +133,45 @@ class ConformalEngine:
     # ------------------------------------------------------------------
     # Nonconformity score computation
     # ------------------------------------------------------------------
+
+    def nonconformity(
+        self,
+        distances: FloatArray,
+        labels: LabelArray,
+        true_label: str | int,
+    ) -> float:
+        """The nonconformity of `true_label` given distances to every class.
+
+        One place for the choice of score, so that calibration and prediction
+        cannot drift apart by using different ones.
+
+        ``ratio`` -- the default since 0.3.0 -- is ``d_true / min(d)``: 1.0 for
+        the nearest class, growing with how much worse the true class is than
+        the best. It replaces ``softmax``, which divided every distance by the
+        row's maximum before a five-way softmax and so produced scores between
+        0.72 and 0.80 for clean photographs, blurred ones, and a crop the model
+        had never seen (#86). A score that cannot tell those apart cannot widen
+        a prediction set when it should. Measured on real PlantVillage
+        episodes, the ratio gives tighter sets at the same clean coverage --
+        1.11 against 1.22 -- and sets that widen under shift, from 1.09 to 1.43
+        at blur radius 4, though coverage there stays far below the target:
+        that failure is exchangeability breaking, not the score.
+        """
+
+        if len(distances) == 0 or len(labels) == 0:
+            return float("inf")
+        if self.score_method == "softmax":
+            return self.softmax_nonconformity(distances, labels, true_label)
+        if self.score_method == "distance":
+            true_idx = np.where(labels == true_label)[0]
+            if len(true_idx) == 0:
+                return 1.0
+            reference = float(np.median(distances) + np.std(distances))
+            return self.distance_nonconformity(float(distances[true_idx[0]]), reference)
+        true_idx = np.where(labels == true_label)[0]
+        if len(true_idx) == 0:
+            return float("inf")  # true class not a candidate: fully non-conforming
+        return float(distances[true_idx[0]] / (float(np.min(distances)) + 1e-8))
 
     @staticmethod
     def softmax_nonconformity(
@@ -363,15 +403,7 @@ class ConformalEngine:
         prediction_set: set[str | int] = set()
         for i in range(len(distances)):
             label = labels[i]
-            dist = float(distances[i])
-
-            if self.score_method == "softmax":
-                # Compute per-class nonconformity using softmax
-                score = self.softmax_nonconformity(distances, labels, label)
-            else:
-                # Distance-based: use a reference threshold
-                ref_threshold = float(np.median(distances) + np.std(distances))
-                score = self.distance_nonconformity(dist, ref_threshold)
+            score = self.nonconformity(distances, labels, label)
 
             if score <= q_hat:
                 prediction_set.add(label)
@@ -430,12 +462,7 @@ class ConformalEngine:
                 q_class = self._compute_quantile(self._calibration_scores)
             q_hats.append(q_class)
 
-            dist = float(distances[i])
-            if self.score_method == "softmax":
-                score = self.softmax_nonconformity(distances, labels, label)
-            else:
-                ref_threshold = float(np.median(distances) + np.std(distances))
-                score = self.distance_nonconformity(dist, ref_threshold)
+            score = self.nonconformity(distances, labels, label)
 
             if score <= q_class:
                 prediction_set.add(label)
