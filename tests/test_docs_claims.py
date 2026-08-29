@@ -345,3 +345,68 @@ def test_docs_changelog_is_the_root_changelog() -> None:
     root = (REPO_ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
     docs = (REPO_ROOT / "docs" / "reference" / "changelog.md").read_text(encoding="utf-8")
     assert root == docs, "docs/reference/changelog.md has drifted from CHANGELOG.md; copy the root file over it"
+
+
+DEVICE_MACHINES = ("x86_64", "aarch64")
+
+
+def _device_profile(machine: str) -> dict[str, object]:
+    return json.loads((REPO_ROOT / "results" / f"device_{machine}.json").read_text(encoding="utf-8"))
+
+
+def test_readme_device_table_traces_to_the_artifacts() -> None:
+    """The ARM-versus-laptop table is formatted from the two device profiles (#31).
+
+    Each column is one machine's ``results/device_<machine>.json``; the row labels
+    name the field. The prose claims "identical" and "correct" only because the
+    artifact records ``export.verified`` and ``quickstart.correct`` as true, so
+    those are asserted too rather than trusted.
+    """
+
+    readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+    start, end = readme.find("<!-- device-table:start -->"), readme.find("<!-- device-table:end -->")
+    assert 0 <= start < end, "README has no device table between its markers"
+    rows: dict[str, list[str]] = {}
+    for line in readme[start:end].splitlines():
+        if line.startswith("| ") and line.count("|") >= 4:
+            cells = [cell.strip() for cell in line.split("|")[1:4]]
+            rows[cells[0]] = cells[1:]
+
+    for column, machine in enumerate(DEVICE_MACHINES):
+        record = _device_profile(machine)
+        hardware = record["hardware"]
+        timing = record["timing"]
+        cold = record["cold_start"]
+        assert isinstance(hardware, dict) and isinstance(timing, dict) and isinstance(cold, dict)
+        embed, predict = timing["embedding_ms"], timing["predict_ms"]
+        assert isinstance(embed, dict) and isinstance(predict, dict)
+        expected = {
+            "CPU": f"{hardware['cpu_model']}, {hardware['cpu_count']} cores",
+            "embedding, per image (median / p95)": (
+                f"**{embed['median']:.1f} ms** / {embed['p95']:.1f} ms"
+            ),
+            "predict, per query (median / p95)": (
+                f"**{predict['median']:.1f} ms** / {predict['p95']:.1f} ms"
+            ),
+            "support fit, 11 photographs": f"**{timing['support_fit_ms']:.0f} ms**",
+            f"cold start, fresh interpreter (median of {cold['n']})": (
+                f"**{cold['seconds_median']:.2f} s**"
+            ),
+            "peak memory, that cold-start cycle": f"**{cold['peak_rss_mb_max']:.0f} MB**",
+        }
+        for label, value in expected.items():
+            assert label in rows, f"README device table has no row {label!r}"
+            assert rows[label][column] == value, (
+                f"README device table, row {label!r}, column {machine}: "
+                f"{rows[label][column]!r} but results/device_{machine}.json formats to {value!r}"
+            )
+
+        export = record["export"]
+        quickstart = record["quickstart"]
+        assert isinstance(export, dict) and isinstance(quickstart, dict)
+        assert export["verified"] is True, f"{machine}: the README says identical; the artifact does not"
+        assert quickstart["correct"] is True, f"{machine}: the README says correct; the artifact does not"
+        assert hardware["install"] == "core", f"{machine}: profiled with torch present; memory is torch's"
+        assert hardware["cpu_model"] not in ("aarch64", "x86_64", None), (
+            f"{machine}: the CPU is not named; the issue asks for the device"
+        )
