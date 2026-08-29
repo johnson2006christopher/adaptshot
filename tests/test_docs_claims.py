@@ -305,3 +305,35 @@ def test_readme_results_tables_trace_to_the_artifact() -> None:
     missing = [f"{label}: {text}" for label, text in expected.items() if text not in readme]
     assert not missing, "README results tables disagree with the artifact:\n  " + "\n  ".join(missing)
 
+
+
+SHIFT_RESULT_PATH = REPO_ROOT / "results" / "plantvillage_shift.json"
+
+
+def test_readme_shift_section_matches_the_artifact() -> None:
+    """The distribution-shift figures trace to results/plantvillage_shift.json (#29).
+
+    The clean cell, the worst cell, its recovery after in-situ corrections and
+    the early-warning correlation are formatted from the artifact and must
+    appear verbatim. A claim about where the guarantee fails is the last one
+    that may drift.
+    """
+
+    record = json.loads(SHIFT_RESULT_PATH.read_text(encoding="utf-8"))
+    cells = record["cells"]
+    clean = next(c for c in cells if c["identity"])
+    worst = min((c for c in cells if not c["identity"]), key=lambda c: c["coverage"]["mean"])
+
+    def pct(block: dict[str, float]) -> str:
+        return f"{block['mean'] * 100:.1f}% ± {block['ci95_half_width'] * 100:.1f}"
+
+    expected = [
+        pct(clean["coverage"]),
+        pct(worst["coverage"]),
+        pct(worst["after_in_situ_corrections"]["coverage"]),
+        f"correlates {record['early_warning']['correlation']:.2f}",
+        f"{record['protocol']['episodes']} episodes",
+    ]
+    readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+    missing = [text for text in expected if text not in readme]
+    assert not missing, "README shift section disagrees with the artifact:\n  " + "\n  ".join(missing)
