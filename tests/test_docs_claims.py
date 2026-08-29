@@ -25,7 +25,7 @@ DOCS_ROOT = REPO_ROOT / "docs"
 SMOKE_RESULT_PATH = REPO_ROOT / "results" / "smoke_test.json"
 
 # Historical records, deliberately preserved as written. They carry a banner saying so.
-_HISTORICAL = {"archive/audit-report-v0.1.1.md", "release-checklist-v0.1.1.md"}
+_HISTORICAL: set[str] = set()  # retired pages live in docs-archive/, outside the site
 
 
 def _live_docs() -> list[Path]:
@@ -263,7 +263,7 @@ def test_technical_note_figures_trace_to_the_artifact() -> None:
         f"seed {record['protocol']['seed']}",
         f"{record['protocol']['episodes']} episodes",
     ]
-    note = (REPO_ROOT / "docs" / "technical-note.md").read_text(encoding="utf-8")
+    note = (REPO_ROOT / "docs" / "understand" / "technical-note.md").read_text(encoding="utf-8")
     missing = [text for text in expected if text not in note]
     assert not missing, (
         "docs/technical-note.md does not quote these figures from "
@@ -337,3 +337,11 @@ def test_readme_shift_section_matches_the_artifact() -> None:
     readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
     missing = [text for text in expected if text not in readme]
     assert not missing, "README shift section disagrees with the artifact:\n  " + "\n  ".join(missing)
+
+
+def test_docs_changelog_is_the_root_changelog() -> None:
+    """One changelog. The docs page is a copy of the root file, and must stay one."""
+
+    root = (REPO_ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    docs = (REPO_ROOT / "docs" / "reference" / "changelog.md").read_text(encoding="utf-8")
+    assert root == docs, "docs/reference/changelog.md has drifted from CHANGELOG.md; copy the root file over it"
