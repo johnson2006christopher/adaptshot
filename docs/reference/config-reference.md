@@ -12,7 +12,7 @@ Source: [src/adaptshot/config/settings.py](https://github.com/johnson2006christo
 from adaptshot.config.settings import AdaptShotConfig
 
 config = AdaptShotConfig(
-    backbone="resnet18",
+    backbone="mobilenet_v3_small",
     device="cpu",
     seed=42,
 )
@@ -28,7 +28,7 @@ All other fields use sensible defaults. You only need to set what you want to ch
 
 | # | Field | Type | Default | Description |
 |---|-------|------|---------|-------------|
-| 1 | `backbone` | `Literal["resnet18", "mobilenet_v3_small"]` | `"resnet18"` | Feature extractor backbone. `"resnet18"` provides higher accuracy at the cost of ~45MB model size and slightly slower inference. `"mobilenet_v3_small"` is faster and lighter (~12MB) -- recommended for Raspberry Pi and low-RAM deployments. Both are frozen (not fine-tuned). |
+| 1 | `backbone` | `Literal["resnet18", "mobilenet_v3_small"]` | `"mobilenet_v3_small"` | Feature extractor backbone. `"mobilenet_v3_small"` is bundled as ONNX and needs no torch; `"resnet18"` provides higher accuracy at the cost of ~45MB model size and slightly slower inference. `"mobilenet_v3_small"` is faster and lighter (~12MB) -- recommended for Raspberry Pi and low-RAM deployments. Both are frozen (not fine-tuned). |
 | 2 | `device` | `Literal["cpu", "cuda", "mps"]` | `"cpu"` | Execution device. v0.1.1 is CPU-first: `_validate_config()` rejects non-CPU values with `ConfigValidationError`. CUDA and MPS are opt-in for future releases. |
 | 3 | `seed` | `int` | `42` | Master random seed. Controls PyTorch (`torch.manual_seed`), NumPy (`np.random.seed`), Python (`random.seed`), and `PYTHONHASHSEED`. Change this to get different random behavior; fix it to `42` for reproducible benchmarks. |
 | 4 | `verbose` | `bool` | `True` | Enable INFO-level logging during pipeline execution. Set to `False` for silent production operation. |
