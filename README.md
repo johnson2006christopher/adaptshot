@@ -289,7 +289,7 @@ versions, and each change is documented in the [changelog](CHANGELOG.md).
 | :--- | :--- |
 | **v0.1.x** | *Built it.* Few-shot inference, calibration, human corrections, eco mode |
 | **v0.2.0** | *Made it honest.* Conformal prediction, multi-signal uncertainty, OOD detection — plus a substantial pass replacing claims that the code did not yet support |
-| **v0.3.0** *(in progress)* | *Make it provable.* Validation on real public datasets, a narrower and better-defended API, GUIs split into their own project |
+| **v0.3.0** | *Made it provable.* Validation on real public datasets, a narrower and better-defended API, GUIs split into their own project |
 
 Quality gates on every change: `ruff`, `mypy --strict`, 232 tests, and a
 deterministic smoke benchmark. See [ROADMAP.md](ROADMAP.md) for what's planned.
