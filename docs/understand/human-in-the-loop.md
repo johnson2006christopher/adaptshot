@@ -61,7 +61,7 @@ The pipeline makes three sequential gating decisions:
 
 ## Step 2: Interpreting the Result
 
-Use the decision tree from [Tutorial 2](../tutorials/02_human_in_the_loop.md):
+Use the decision tree from [Tutorial 2](../tutorials/05-teaching-corrections.md):
 
 ```
 if calibrated_confidence >= 0.8 AND uncertainty_flag == False:
