@@ -7,8 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-> Everything below is the 0.3.0 release ("make it provable"). The version in
-> `pyproject.toml` is bumped at release time, which is the maintainer's step.
+Nothing yet.
+
+## [0.3.0] - 2026-08-29
+
+The "make it provable" release. Every number in the README and the documentation
+is formatted from a committed artifact and held to it by a test.
 
 ### Added — measured results
 
@@ -213,7 +217,7 @@ which is the point of a changelog; the corrections above record what was actuall
   `# type: ignore`, so a future edit that breaks the invariant fails where it is broken
   instead of surfacing as a `TypeError` inside the training loop.
 
-## [0.2.0-dev] - Unreleased
+## [0.2.0] - 2026-06-14
 
 ### Added
 - **Conformal Prediction Engine** (`conformal.py`): Distribution-free conformal prediction with split and cross modes,

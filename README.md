@@ -17,7 +17,8 @@
 
 **[Documentation](https://johnson2006christopher.github.io/adaptshot/)** ·
 **[Source](https://github.com/johnson2006christopher/adaptshot)** ·
-**[Changelog](CHANGELOG.md)**
+**[Changelog](CHANGELOG.md)** ·
+**[Cite](#citing)**
 
 </div>
 
@@ -466,7 +467,7 @@ If AdaptShot is useful in your work:
   title   = {AdaptShot: Human-Aligned Few-Shot Vision Learning for
              Resource-Constrained Environments},
   url     = {https://github.com/johnson2006christopher/adaptshot},
-  version = {0.2.0},
+  version = {0.3.0},
   year    = {2026}
 }
 ```
