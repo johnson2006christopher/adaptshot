@@ -7,10 +7,6 @@
 # than none -- it looks authoritative while pointing at software that no longer
 # exists.
 #
-# TODO(maintainer): add `orcid: "https://orcid.org/0000-0000-0000-0000"` under
-# authors once registered. It is free, takes a few minutes, and is what
-# disambiguates you from every other author with a similar name in a
-# bibliography. Deliberately left out rather than filled with a placeholder.
 cff-version: 1.2.0
 title: "AdaptShot: human-aligned few-shot vision learning for resource-constrained environments"
 message: "If you use this software, please cite it using the metadata from this file."
@@ -19,6 +15,7 @@ authors:
   - given-names: "Johnson Christopher"
     family-names: "Hassan"
     email: "johnson2006christopher@gmail.com"
+    orcid: "https://orcid.org/0009-0006-2546-7549"
 repository-code: "https://github.com/johnson2006christopher/adaptshot"
 url: "https://johnson2006christopher.github.io/adaptshot/"
 abstract: >-
