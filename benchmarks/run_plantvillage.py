@@ -29,6 +29,7 @@ import argparse
 import importlib.util
 import json
 import platform
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -237,6 +238,15 @@ def _cpu_model() -> str | None:
                     return line.split(":", 1)[1].strip()
     except OSError:
         pass
+    # ARM kernels do not write "model name"; lscpu decodes the implementer and
+    # part ids into one ("Neoverse-N2"), which is the line a reader can compare.
+    try:
+        listing = subprocess.run(["lscpu"], capture_output=True, text=True, check=False).stdout
+    except OSError:
+        listing = ""
+    for line in listing.splitlines():
+        if line.startswith("Model name:"):
+            return line.split(":", 1)[1].strip()
     return platform.processor() or None
 
 
@@ -300,7 +310,6 @@ def cold_start(
     describes the library rather than the benchmark harness around it."""
 
     import json
-    import subprocess
     import sys
 
     completed = subprocess.run(
