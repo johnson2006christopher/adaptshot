@@ -11,6 +11,7 @@
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Docs](https://img.shields.io/badge/docs-MkDocs-blue)](https://johnson2006christopher.github.io/adaptshot/)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22161335.svg)](https://doi.org/10.5281/zenodo.22161335)
 [![Code Style: Ruff](https://img.shields.io/badge/code%20style-ruff-black)](https://github.com/astral-sh/ruff)
 [![Type Checked: mypy](https://img.shields.io/badge/type--checked-mypy-blue)](https://mypy-lang.org/)
 [![Built in Tanzania](https://img.shields.io/badge/Built%20in-Tanzania%20🇹🇿-gold.svg)](https://en.wikipedia.org/wiki/Tanzania)
@@ -506,7 +507,8 @@ If AdaptShot is useful in your work:
              Resource-Constrained Environments},
   url     = {https://github.com/johnson2006christopher/adaptshot},
   version = {0.3.0},
-  year    = {2026}
+  year    = {2026},
+  doi     = {10.5281/zenodo.22161336}
 }
 ```
 
@@ -514,10 +516,9 @@ GitHub also renders a **Cite this repository** button from
 [`CITATION.cff`](CITATION.cff), in APA and BibTeX. The two are kept in step by
 `tests/test_citation.py`, which fails if the versions drift apart.
 
-<!-- TODO(maintainer): once the repository is connected to Zenodo and a release
-     is published, add the concept DOI badge here and a `doi` field to
-     CITATION.cff. Deliberately absent rather than faked: a DOI that does not
-     resolve is worse than no DOI. See issue #24 for the steps. -->
+The DOI above is this release's. The badge carries the *concept* DOI,
+[10.5281/zenodo.22161335](https://doi.org/10.5281/zenodo.22161335), which always resolves to the
+latest version; cite it if you mean the project rather than one release.
 
 ---
 
