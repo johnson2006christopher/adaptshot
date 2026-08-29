@@ -122,6 +122,8 @@ def run(out: Out) -> int:
         out.line(f"   {name}")
         out.line(f"   top-1: {result.prediction}  ({result.calibrated_confidence:.0%})")
         out.line(f"   set:   {{{', '.join(members)}}}   size {len(members)}")
+        if not result.conformal_calibrated:
+            out.warn("   (no calibration yet: that set is the top-1 alone, and no coverage guarantee applies)")
 
         if truth is None:
             out.warn("   a crop it was never shown -- a tomato leaf from the same dataset")

@@ -99,6 +99,9 @@ class TestConformalEngine:
         result = engine.predict_set(distances, labels, "cat", 0.9)
         assert result.prediction_set == {"cat"}
         assert result.set_size == 1
+        # And it says so: no guarantee, no number pretending to be one (#80).
+        assert result.calibrated is False
+        assert np.isnan(result.coverage_estimate) and np.isnan(result.q_hat)
 
     def test_predict_set_includes_valid_classes_after_fitting(
         self, engine: ConformalEngine
