@@ -25,7 +25,7 @@ import adaptshot
 from adaptshot.api import EXPERIMENTAL, STABLE
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-REFERENCE = REPO_ROOT / "docs" / "api" / "reference.md"
+REFERENCE = REPO_ROOT / "docs" / "reference" / "api.md"
 TESTS_DIR = REPO_ROOT / "tests"
 
 MARKER = "**Experimental.**"
@@ -99,7 +99,7 @@ def test_stable_names_do_not_claim_to_be_experimental(name: str) -> None:
 
 
 def test_reference_documents_every_name_under_its_own_heading() -> None:
-    """``docs/api/reference.md`` reflects the supported surface, by construction."""
+    """``docs/reference/api.md`` reflects the supported surface, by construction."""
 
     text = REFERENCE.read_text(encoding="utf-8")
     stable_region = _region(text, "Stable")
