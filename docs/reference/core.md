@@ -206,4 +206,4 @@ Dataclass returned by `FewShotLearner.predict()`. Extended in v0.2.0 with confor
 ## Next Steps
 - [Training & Continual Learning API](training.md) → `FeedbackRouter`, `CAEWCFinetuner`, `UPUGFPruner`
 - [Configuration Reference](config.md) → `AdaptShotConfig` dataclass and validation rules
-- [Full API Reference](reference.md) → Every class and method
+- [Full API Reference](api.md) → Every class and method
