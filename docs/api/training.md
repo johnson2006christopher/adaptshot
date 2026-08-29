@@ -119,10 +119,6 @@ finetuner.finetune(
 
 ## `UPUGFPruner`
 
-> **Experimental.** May change in a minor release without a deprecation cycle. See [`adaptshot.api`](reference.md#stable-and-experimental) and the deprecation policy in CONTRIBUTING.md.
-
-No test names this class; it is exercised only through `FewShotLearner`. That is the whole reason it is experimental.
-
 Uncertainty-Guided Forgetting with LSH-accelerated redundancy scoring (v0.2.0).
 
 ### Initialization
