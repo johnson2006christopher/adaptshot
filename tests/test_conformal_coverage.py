@@ -175,3 +175,34 @@ def test_engine_says_when_its_sets_cannot_be_informative(caplog: pytest.LogCaptu
     with caplog.at_level(logging.WARNING, logger="adaptshot.core.conformal"):
         ConformalEngine(alpha=0.05, min_calibration_size=19)
     assert not caplog.records, "no warning when the floor is high enough"
+
+
+def test_cold_start_sets_do_not_claim_a_coverage_they_lack() -> None:
+    """Below the floor the set is the top-1 alone, and its real coverage is the
+    top-1 accuracy. It must be flagged, and must not report a number (#80)."""
+
+    rng = np.random.default_rng(42)
+    labels, _, _, d_test, y_test = _episode(rng, 5, TEST_POINTS)
+    engine = ConformalEngine(alpha=0.05, min_calibration_size=10)  # 0 scores: cold
+    covered = calibrated = 0
+    for row, truth in zip(d_test, y_test, strict=True):
+        top = labels[int(np.argmin(row))]
+        result = engine.predict_set(row, labels, top, 0.5)
+        assert result.calibrated is False
+        assert math.isnan(result.coverage_estimate)
+        calibrated += int(result.calibrated)
+        covered += int(truth in result.prediction_set)
+    assert calibrated == 0
+    # The point of the flag: this is well under the 95% the old field claimed.
+    assert covered / TEST_POINTS < 0.9
+
+
+def test_calibrated_sets_say_so() -> None:
+    rng = np.random.default_rng(7)
+    labels, d_cal, y_cal, d_test, _ = _episode(rng, 50, 20)
+    engine = ConformalEngine(alpha=0.10, min_calibration_size=1)
+    for row, truth in zip(d_cal, y_cal, strict=True):
+        engine.update_calibration(engine.softmax_nonconformity(row, labels, truth), truth)
+    result = engine.predict_set(d_test[0], labels, labels[int(np.argmin(d_test[0]))], 0.5)
+    assert result.calibrated is True and not math.isnan(result.q_hat)
+

@@ -33,7 +33,11 @@ class ConformalPredictionSet:
         set_size: Number of classes in the prediction set.
         alpha: Significance level used (e.g., 0.05 = 95% coverage target).
         q_hat: Computed nonconformity quantile threshold.
-        coverage_estimate: Empirical coverage on calibration data.
+        coverage_estimate: Running empirical coverage observed so far; NaN until the
+            engine has calibrated, because a singleton fallback has no basis for one.
+        calibrated: False while the set is the top-1 alone because the engine has
+            fewer than ``min_calibration_size`` scores. No guarantee applies then, and
+            consumers should say so rather than show the set (#80).
         prediction: The single best-guess prediction (for backward compat).
         confidence: Calibrated confidence of the top prediction.
     """
@@ -45,6 +49,7 @@ class ConformalPredictionSet:
     coverage_estimate: float = 0.0
     prediction: str | int = ""
     confidence: float = 0.0
+    calibrated: bool = True
 
     def contains(self, label: str | int) -> bool:
         """Check whether a label is within the conformal prediction set."""
@@ -333,12 +338,17 @@ class ConformalEngine:
             confidence=confidence,
         )
 
-        # If not enough calibration data, return a singleton set
+        # Not enough calibration data: the top-1 alone, and said plainly. This
+        # used to report coverage_estimate = 1 - alpha and q_hat = 1.0 -- the
+        # target restated as if measured, on a set whose real coverage is the
+        # top-1 accuracy (about 74% on the harness data, against a 95% claim).
+        # A consumer could not tell it from a calibrated singleton (#80).
         if len(self._calibration_scores) < self.min_calibration_size:
             result.prediction_set = {top_prediction}
             result.set_size = 1
-            result.q_hat = 1.0
-            result.coverage_estimate = 1.0 - self.alpha
+            result.q_hat = float("nan")
+            result.coverage_estimate = float("nan")
+            result.calibrated = False
             return result
 
         # Compute quantile threshold based on mode

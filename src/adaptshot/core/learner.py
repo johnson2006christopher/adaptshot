@@ -116,6 +116,9 @@ class PredictionResult:
     debiased_ece: float = 0.0
     # v0.2.0 fields
     conformal_set: list[str | int] | None = None
+    #: False while conformal has too few calibration scores: `conformal_set` is
+    #: then the top-1 alone and no coverage guarantee applies to it (#80).
+    conformal_calibrated: bool = True
     uncertainty_report: dict[str, float] | None = None
     nearest_neighbors: list[dict[str, Any]] | None = None
 
@@ -441,6 +444,7 @@ class FewShotLearner:
             ood_flag=bool(ood_flag),
             debiased_ece=float(calibration_summary["debiased_ece"]),
             conformal_set=conformal_list,
+            conformal_calibrated=conformal_result.calibrated,
             uncertainty_report=uncertainty_report.to_dict(),
             nearest_neighbors=nearest_neighbors,
         )

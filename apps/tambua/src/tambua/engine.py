@@ -409,7 +409,7 @@ class TambuaEngine:
         # work from. Before that it returns the top label as a singleton and a
         # coverage figure equal to `1 - alpha` -- the target restated, not
         # measured. Saying so is the difference between this and #17.
-        measured = conformal.calibration_size >= conformal.min_calibration_size
+        measured = result.conformal_calibrated
         raw_set = result.conformal_set or []
 
         identification = Identification(
