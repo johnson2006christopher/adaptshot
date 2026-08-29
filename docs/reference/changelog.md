@@ -135,7 +135,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **The `gui` and `ui` extras** and the `adaptshot-studio` console script, which existed
   only for the above.
 
-The maintained application is [Tambua](apps/tambua/README.md), a separate distribution
+The maintained application is [Tambua](https://github.com/johnson2006christopher/adaptshot/blob/v0.3.0/apps/tambua/README.md), a separate distribution
 built on AdaptShot — `pip install tambua`. `tests/test_library_ships_no_gui.py` fails if
 a GUI reappears anywhere under `src/adaptshot/`, if either extra returns, or if a live
 document points at a removed entrypoint.
