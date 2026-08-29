@@ -334,7 +334,7 @@ tambua
 # → http://localhost:7860
 ```
 
-Full guide: [Tambua Complete Guide](tambua-complete-guide.md)
+Full guide: [Tambua Complete Guide](../how-to/use-tambua.md)
 
 ---
 

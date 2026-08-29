@@ -3,7 +3,7 @@
 Every name in ``adaptshot.__all__`` is exactly one of the two tuples below, and
 ``tests/test_api_surface.py`` enforces it -- the union must equal ``__all__``,
 the two must not overlap, every experimental object's docstring must say so,
-and every name must appear in ``docs/api/reference.md`` under the matching
+and every name must appear in ``docs/reference/api.md`` under the matching
 heading. The classification is therefore a fact the test suite checks, not a
 comment that drifts.
 

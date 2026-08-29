@@ -145,7 +145,7 @@ Seven lines, no dataset, no GPU, no network. The photographs ship in the wheel.
 from adaptshot import FewShotLearner
 from adaptshot.data import sample_images
 
-paths, labels = sample_images()                      # nine real maize-leaf photos, three per class
+paths, labels = sample_images()                      # twelve real maize-leaf photos, four per class
 learner = FewShotLearner()
 learner.load_support_images(paths[:-1], labels[:-1])  # teach it eight
 result = learner.predict(paths[-1])                   # ask about the ninth
@@ -162,7 +162,7 @@ PlantVillage's, CC BY-SA 3.0, with citation and checksums in
 | step | wall clock | what it does |
 |---|---|---|
 | `pip install adaptshot` | 4.5 s | a 3.5 MB wheel, plus numpy, Pillow and onnxruntime from PyPI |
-| the block above, fresh process, network blocked | 0.4 s | load the backbone, embed nine photos, predict |
+| the block above, fresh process, network blocked | 0.4 s | load the backbone, embed eleven photos, predict |
 
 Site-packages afterwards: 176 MB. That is one machine on a fast connection; on a
 poor one the install is the part that grows, and it is the only part that
@@ -194,9 +194,12 @@ The conformal guarantee is the core contribution. It is **marginal** coverage �
 the whole distribution, not conditional on any particular class or subgroup. That
 distinction matters in deployment and is documented rather than glossed over.
 
-📖 [Algorithm theory](docs/guides/algorithm-theory.md) ·
-[Architecture](docs/guides/architecture.md) ·
-[Tutorials](docs/tutorials.md)
+📖 [Start here](docs/tutorials/00-what-is-this.md) — six tutorials for someone who has never coded, every command executed by the tests ·
+[How-to guides](docs/how-to/run-the-offline-demo.md) ·
+[How it works](docs/understand/how-it-works.md) ·
+[The guarantee](docs/understand/the-guarantee.md) ·
+[API reference](docs/reference/api.md) ·
+[Contributing](docs/contributing/development-setup.md)
 
 ---
 
@@ -286,7 +289,7 @@ versions, and each change is documented in the [changelog](CHANGELOG.md).
 | :--- | :--- |
 | **v0.1.x** | *Built it.* Few-shot inference, calibration, human corrections, eco mode |
 | **v0.2.0** | *Made it honest.* Conformal prediction, multi-signal uncertainty, OOD detection — plus a substantial pass replacing claims that the code did not yet support |
-| **v0.3.0** *(in progress)* | *Make it provable.* Validation on real public datasets, a narrower and better-defended API, GUIs split into their own project |
+| **v0.3.0** | *Made it provable.* Validation on real public datasets, a narrower and better-defended API, GUIs split into their own project |
 
 Quality gates on every change: `ruff`, `mypy --strict`, 232 tests, and a
 deterministic smoke benchmark. See [ROADMAP.md](ROADMAP.md) for what's planned.

@@ -167,14 +167,14 @@ Enforces capacity by returning the top-K highest-scoring examples.
 
 ## Next Steps
 - [Configuration & Utils API](config.md) → `AdaptShotConfig`, determinism, I/O helpers
-- [Architecture Deep-Dive](../guides/architecture-deep-dive.md) → Module map and data flow
-- [Migration Guide](../guides/migration-v0.1-to-v0.2.md) → Upgrade from v0.1.x
+- [Architecture Deep-Dive](../understand/how-it-works.md) → Module map and data flow
+- [Migration Guide](migration-v0.1-to-v0.2.md) → Upgrade from v0.1.x
 
 ---
 
 ## `ContrastivePrototypeLearner` and `ContrastiveConfig`
 
-> **Experimental.** May change in a minor release without a deprecation cycle. See [`adaptshot.api`](reference.md#stable-and-experimental) and the deprecation policy in CONTRIBUTING.md.
+> **Experimental.** May change in a minor release without a deprecation cycle. See [`adaptshot.api`](api.md#stable-and-experimental) and the deprecation policy in CONTRIBUTING.md.
 
 Moved here from `adaptshot.core` in 0.3.0, because training a projection head by
 InfoNCE gradient descent is training. The old import path
@@ -185,4 +185,4 @@ from the top level:
 from adaptshot import ContrastiveConfig, ContrastivePrototypeLearner
 ```
 
-Full method table in the [API reference](reference.md#contrastiveprototypelearner).
+Full method table in the [API reference](api.md#contrastiveprototypelearner).

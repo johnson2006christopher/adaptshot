@@ -175,6 +175,6 @@ Safely converts PyTorch tensors to NumPy arrays, detaching gradients and moving 
 | `validate_path` | No cloud storage paths (S3, GCS) | Mount cloud storage to local dir |
 
 ## Next Steps
-- [Full API Reference](reference.md) → Every class, method, and data structure
+- [Full API Reference](api.md) → Every class, method, and data structure
 - [Config Reference (Detailed)](../reference/config-reference.md) → Parameter-by-parameter guide
-- [Memory Profiling Tutorial](../tutorials/13_profiling_memory.md) → Hands-on profiling walkthrough
+- [Memory Profiling Tutorial](results-and-artifacts.md) → Hands-on profiling walkthrough

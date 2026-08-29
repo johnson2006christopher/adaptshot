@@ -176,6 +176,6 @@ print("✅ Migration verified — v0.1.x code works on v0.2.0")
 
 ## Getting Help
 
-- [Changelog](../changelog.md) — full list of v0.2.0 changes
-- [API Reference](../api/reference.md) — updated for v0.2.0
-- [Troubleshooting Guide](troubleshooting.md) — common upgrade issues
+- [Changelog](changelog.md) — full list of v0.2.0 changes
+- [API Reference](api.md) — updated for v0.2.0
+- [Troubleshooting Guide](../how-to/troubleshoot.md) — common upgrade issues

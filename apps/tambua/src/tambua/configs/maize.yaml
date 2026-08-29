@@ -13,7 +13,7 @@ application:
   description: "Maize disease identification for smallholder farmers — powered by AdaptShot"
 
 engine:
-  backbone: "resnet18"           # resnet18 | mobilenet_v3_small
+  backbone: "mobilenet_v3_small" # bundled; resnet18 needs the torch extra
   device: "cpu"                  # cpu | cuda | mps
   seed: 42
   inference_mode: "prototypical" # prototypical | nearest_neighbor

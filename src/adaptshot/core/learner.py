@@ -270,7 +270,7 @@ class FewShotLearner:
         if not self._sim_embeddings:
             raise ConfigValidationError(
                 "Support set cannot be empty. Provide at least one RGB image path and label. "
-                "See docs/getting-started/quickstart.md."
+                "See docs/tutorials/03-your-own-photos.md."
             )
 
         self._rebuild_label_index()
@@ -800,7 +800,7 @@ class FewShotLearner:
         if config.device != "cpu":
             raise ConfigValidationError(
                 "AdaptShot is CPU-first. Set device='cpu'. "
-                "See docs/getting-started/quickstart.md."
+                "See docs/tutorials/03-your-own-photos.md."
             )
         if config.ece_n_bins <= 1:
             raise ConfigValidationError(
@@ -842,7 +842,7 @@ class FewShotLearner:
         if not image_paths:
             raise ConfigValidationError(
                 "image_paths cannot be empty. Provide at least one support image path. "
-                "See docs/getting-started/quickstart.md."
+                "See docs/tutorials/03-your-own-photos.md."
             )
         if len(image_paths) != len(labels):
             raise ConfigValidationError(
@@ -852,7 +852,7 @@ class FewShotLearner:
         if not labels:
             raise ConfigValidationError(
                 "labels cannot be empty. Provide one label per support image. "
-                "See docs/getting-started/quickstart.md."
+                "See docs/tutorials/03-your-own-photos.md."
             )
 
     def _validate_label(self, label: str | int) -> None:
@@ -903,7 +903,7 @@ class FewShotLearner:
             raise InvalidImageError(
                 "Expected 3-channel RGB image, got "
                 f"{channels}-channel mode '{mode}' from '{source}'. "
-                "Convert before loading. See docs/getting-started/quickstart.md."
+                "Convert before loading. See docs/tutorials/03-your-own-photos.md."
             )
         if image.width <= 0 or image.height <= 0:
             raise InvalidImageError(
@@ -922,7 +922,7 @@ class FewShotLearner:
             if image.ndim == 2:
                 raise InvalidImageError(
                     "Expected 3-channel RGB image, got 1-channel grayscale array. "
-                    "Convert before loading. See docs/getting-started/quickstart.md."
+                    "Convert before loading. See docs/tutorials/03-your-own-photos.md."
                 )
             if image.ndim != 3:
                 raise InvalidImageError(
@@ -1001,7 +1001,7 @@ class FewShotLearner:
         if not self._is_initialized:
             raise AdaptShotError(
                 "FewShotLearner is not initialized. Call load_support_images() first. "
-                "See docs/getting-started/quickstart.md."
+                "See docs/tutorials/03-your-own-photos.md."
             )
 
     def _calibrate_or_raise(self, raw_confidence: float) -> float:
