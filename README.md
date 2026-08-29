@@ -407,19 +407,20 @@ photographs** are fed through `correct()`, the library's human-in-the-loop path.
 | downscale 0.25 | 82% | **92.8% ± 2.3** | 1.77 | 3.0% | **94.0% ± 1.4** | 1.26 |
 | downscale 0.125 | 68% | **86.9% ± 3.6** | 2.12 | 13.7% | **90.2% ± 2.3** | 1.48 |
 
-**The guarantee fails silently.** Under strong blur, JPEG or downscale, coverage falls to
-**85.5% ± 3.6** (jpeg 5) against a 90% target while the mean set size
-barely moves from 1.34. The sets do not widen to say "less sure"; the top-1
-is simply wrong more often and the set is wrong with it. Mechanism: the nonconformity
-score is nearly constant for everything (#86), so nothing in it can express "far from
-every class".
+**Under shift the sets widen, and the guarantee still bends.** Under strong blur, JPEG or
+downscale, coverage falls to **85.5% ± 3.6** (jpeg 5) against a
+90% target, while the mean set size grows from 1.34 to
+2.01. The set does say "less sure" — that is the nonconformity score doing its
+job (#86) — but not by enough: the calibration quantile was set on clean photographs and cannot
+know the queries have moved. That is exchangeability breaking, and no score fixes it.
 
-**The OOD flag is a partial early warning.** Across the shifted cells its rate correlates 0.92 with the coverage lost — it rises as the guarantee fails, but it fires on a
+**The OOD flag is a partial early warning.** Across the shifted cells its rate correlates 0.92 with the coverage lost — it rises as the guarantee bends — but fires on a
 minority of the affected queries at the worst levels.
 
-**A handful of in-situ corrections helps, and is not a fix.** 10 labelled photographs
-of the shifted condition per episode, through `correct()`, move the worst cell from
-85.5% ± 3.6 to 87.8% ± 2.4.
+**A handful of in-situ corrections closes most of the gap.** 10 labelled photographs of the
+shifted condition per episode, through `correct()`, move the worst cell from
+85.5% ± 3.6 to 87.8% ± 2.4, with the sets back down to
+1.48. Real help; the right move in the field.
 
 Every cell traces to `results/plantvillage_shift.json`; reproduce with
 `python -m benchmarks.run_shift --seed 42`.
