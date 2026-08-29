@@ -37,6 +37,16 @@ Produced by `python -m benchmarks.run_shift --seed 42` on the core install.
 
 Produced by `python -m benchmarks.run_benchmark --smoke-test --seed 42`. The committed file records **68% accuracy on the 5-way 10-shot CIFAR-10 smoke split** with `resnet18` — a smoke check, not a result, and quoted here only so a test can hold this page to the file. `accuracy` is present only when CIFAR-10 was cached (`data_source: cifar10`); on the synthetic fixture it is `null` and only latency and determinism are reported. `results/smoke_test.<backbone>.json` holds runs on a non-default backbone so the canonical file is never overwritten by one.
 
+## `results/device_<machine>.json` — what one machine costs
+
+Produced by `python -m benchmarks.run_device --seed 42` on that machine, on a core install. Two are committed: `device_x86_64.json` from the laptop the other artifacts came from, and `device_aarch64.json` from the ARM runner CI uses (the `device-arm` job regenerates it on every change and uploads it as a workflow artifact; the committed copy is the one the README quotes). Fields:
+
+- `hardware` — CPU model (from `/proc/cpuinfo`, or `lscpu` on ARM), core count, RAM, platform, Python, numpy, and `install: core`. A profile taken with torch installed is rejected by the test.
+- `quickstart` — the README's split, eleven teach and one asks, with the predicted and expected label and `correct`.
+- `timing.embedding_ms`, `timing.predict_ms` — median, p95 and n over the bundled photographs, after warm-up; `timing.support_fit_ms` — one `load_support_images` of eleven.
+- `cold_start` — fresh interpreter from before `import adaptshot` to the first answer, repeated: `seconds_min`, `seconds_median`, `peak_rss_mb_max`, `n`.
+- `export` — a graph exported on that machine compared with the bundled one through onnxruntime: `verified`, cosine and max absolute difference, file sizes, providers.
+
 ## The measured spread, so you know what is noise
 
 On the laptop these were taken on (11th Gen Intel i7-11800H, 16 cores, 31 GB, Linux):
@@ -45,7 +55,7 @@ On the laptop these were taken on (11th Gen Intel i7-11800H, 16 cores, 31 GB, Li
 - **p95 latencies were not**: the support-fit p95 ranged from 1.5 s to 4.0 s across three runs while its median held within 2%. The slow episodes fall mid-run, not at the start. The tail is the machine's; plan around the median.
 - **Cold start** varied between 0.9 s and 1.3 s across runs.
 - **resnet18 latency is bimodal** on this machine — about 6.7 ms or about 11 ms per process, decided at start-up. `benchmarks/onnx_parity.py` reports min and median across processes so the spread is visible rather than averaged away.
-- **This laptop is faster than the project's target hardware.** The figures are what the library costs *here*; ARM and phone-class measurement is open work (#31).
+- **This laptop is faster than the project's target hardware.** The figures are what the library costs *here*. The README's device table puts the same measurement on an ARM server core beside it (#31); phone-class hardware is still unmeasured.
 
 ## Regenerating everything
 
