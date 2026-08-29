@@ -349,6 +349,68 @@ jobs:
           chmod +x "$RUNNER_TEMP/inside.sh"
           unshare -rn bash "$RUNNER_TEMP/inside.sh"
 
+  # The claim is "hardware people already own". In the target setting that is
+  # an ARM board or a phone, not a laptop, and every published number so far was
+  # taken on a laptop (#31). This is the same measurement on real ARM silicon --
+  # GitHub's Neoverse runners, which are server-class ARM, and the artifact says
+  # so -- with the full suite, the ONNX export path end to end, and the
+  # torch-free device profile on a core-only venv, because with torch present
+  # the memory figure describes torch's import, not the library.
+  device-arm:
+    name: ARM (ubuntu-24.04-arm) -- tests, ONNX export, device profile
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - name: Confirm the runner is ARM
+        run: |
+          test "$(uname -m)" = "aarch64" || { echo "not ARM: $(uname -m)"; exit 1; }
+          lscpu | grep -E 'Model name|Architecture|^CPU\(s\)' || true
+      - name: Install with the torch and onnx extras
+        # The aarch64 torch wheel on PyPI is CPU-only; no index override needed.
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev,torch,onnx]"
+      - name: Full test suite on ARM
+        run: python -m pytest tests/ -q --tb=short -rs
+      - name: Export the bundled backbone here and verify it with onnxruntime
+        run: |
+          python scripts/export_backbones.py --backbone mobilenet_v3_small \
+            --output-dir "$RUNNER_TEMP/onnx" --verify
+          ls -l "$RUNNER_TEMP/onnx"
+      - name: Core-only venv for the device profile (numpy, Pillow, onnxruntime)
+        run: |
+          python -m venv "$RUNNER_TEMP/core"
+          "$RUNNER_TEMP/core/bin/pip" install --upgrade pip
+          "$RUNNER_TEMP/core/bin/pip" install -e .
+          "$RUNNER_TEMP/core/bin/python" - <<'PYY'
+          import importlib.util, sys
+          if importlib.util.find_spec("torch") is not None:
+              sys.exit("torch leaked into the core venv; the memory figure would be torch's")
+          print("confirmed: core venv has no torch")
+          PYY
+      - name: Device profile, torch-free, against the graph exported above
+        run: |
+          "$RUNNER_TEMP/core/bin/python" -m benchmarks.run_device --seed 42 \
+            --verify-export "$RUNNER_TEMP/onnx" --output "$RUNNER_TEMP/device_aarch64.json"
+          python - <<'PYY'
+          import json, os, sys
+          path = os.path.join(os.environ["RUNNER_TEMP"], "device_aarch64.json")
+          record = json.load(open(path))
+          if not record["quickstart"]["correct"]:
+              sys.exit("the quickstart prediction is wrong on ARM")
+          if not record["export"]["verified"]:
+              sys.exit(f"the export disagrees with the bundled graph: {record['export']}")
+          print(json.dumps(record["hardware"], indent=1))
+          PYY
+      - uses: actions/upload-artifact@v7
+        with:
+          name: device-aarch64
+          path: ${{ runner.temp }}/device_aarch64.json
+
   # A broken link or an orphaned page fails here, on the pull request, rather
   # than on the deploy that only happens after merge to main (#25).
   docs:
