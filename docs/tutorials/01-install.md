@@ -51,6 +51,9 @@ pip install adaptshot
 
 This downloads AdaptShot and the three libraries it needs — numpy, Pillow and onnxruntime — about 200 MB in total. It takes between ten seconds and a few minutes depending on your connection. When the prompt comes back without red text, it is installed. The model it uses to look at pictures is inside the download; nothing else is fetched later.
 
+!!! note "Already using uv or Poetry?"
+    Then you already have a private Python and do not need Step 3. Inside your project, `uv add adaptshot` or `poetry add adaptshot` installs the same package from the same place; `uv pip install adaptshot` works for a plain environment. Everything from Step 5 on is identical.
+
 ## Step 5 — Ask your computer what it can do
 
 Type `python3` and press Enter. The prompt changes to `>>>`: you are now talking to Python directly. Type these two lines, pressing Enter after each:
