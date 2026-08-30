@@ -352,6 +352,43 @@ def test_a_non_bundled_backbone_fails_with_an_actionable_error() -> None:
     assert fallback in message, (
         f"the error does not name a backbone that would work: {message}"
     )
-    assert "adaptshot[training]" in message, (
+    assert "adaptshot[torch]" in message, (
         f"the error does not name the extra that installs torch: {message}"
     )
+
+
+def test_every_install_hint_in_src_names_a_declared_extra() -> None:
+    """Every extra suggested in an error message or docstring in src/ must exist in pyproject.toml."""
+    import re
+
+    try:
+        import tomllib
+    except ModuleNotFoundError:
+        try:
+            import tomli as tomllib  # type: ignore[no-redef]
+        except ModuleNotFoundError:
+            tomllib = None  # type: ignore[assignment]
+
+    if tomllib is not None:
+        with open(REPO_ROOT / "pyproject.toml", "rb") as f:
+            data = tomllib.load(f)
+        declared = set(data.get("project", {}).get("optional-dependencies", {}).keys())
+    else:
+        text = (REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8")
+        match = re.search(r"\[project\.optional-dependencies\](.*?)(?=\n\[|\Z)", text, re.DOTALL)
+        declared = {m.group(1) for m in re.finditer(r"^([a-zA-Z0-9_-]+)\s*=", match.group(1), re.MULTILINE)} if match else set()
+
+    assert declared, "failed to discover declared extras from pyproject.toml"
+
+    hint_pattern = re.compile(r"adaptshot\[([^\]]+)\]")
+    for path in (REPO_ROOT / "src").rglob("*.py"):
+        text = path.read_text(encoding="utf-8")
+        for match in hint_pattern.finditer(text):
+            extras_str = match.group(1)
+            for extra in extras_str.split(","):
+                extra = extra.strip().strip("'\"")
+                assert extra in declared, (
+                    f"{path.relative_to(REPO_ROOT)} suggests undeclared extra {extra!r}; "
+                    f"declared extras are: {sorted(declared)}"
+                )
+
