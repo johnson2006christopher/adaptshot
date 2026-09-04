@@ -6,10 +6,11 @@
 
 ## Commands that matter
 - Install dev deps: `pip install -e ".[dev]"`
-- Lint: `ruff check src/ tests/`
+- Lint: `ruff check src/ tests/ benchmarks/ apps/ examples/ scripts/`
 - Typecheck (strict): `mypy src/adaptshot --strict`
 - Tests: `pytest tests/ -v`
 - Benchmark smoke test (CPU-only): `python -m benchmarks.run_benchmark --smoke-test --seed 42`
+- Docs build (strict): `mkdocs build --strict`
 
 ## Optional/UI
 - The library ships no GUI (#22). The application is `apps/tambua/` — `pip install -e apps/tambua`, then `tambua`.
