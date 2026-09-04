@@ -11,7 +11,7 @@ Everything AdaptShot raises on purpose derives from `AdaptShotError`, so `except
 | `AdaptShotError` | base class; also raised directly for embedding failures and unreadable checkpoints | `Failed to read checkpoint JSON at '…'. The file may be corrupted.` |
 | `InvalidImageError` | an image path is missing, the file is unreadable, or it cannot be converted to RGB | `Image not found: …` |
 | `ConfigValidationError` | a configuration value is outside its supported range, or inputs to `load_support_images` are malformed | `image_paths and labels must have the same length. Got 12 image_paths and 11 labels.` |
-| `BackboneError` | no usable backend exists for the requested backbone on this install — its ONNX weights are not bundled and torch is absent | `Backbone 'resnet18' needs PyTorch on this install: its ONNX weights are not bundled. Either use one of the bundled backbones (mobilenet_v3_small), or install torch with pip install 'adaptshot[training]'.` |
+| `BackboneError` | no usable backend exists for the requested backbone on this install — its ONNX weights are not bundled and torch is absent | `Backbone 'resnet18' needs PyTorch on this install: its ONNX weights are not bundled. Either use one of the bundled backbones (mobilenet_v3_small), or install torch with pip install 'adaptshot[torch]'.` |
 | `CalibrationNotReadyError` | calibration is asked for a verdict before it has enough observations; rarely raised, since the learner falls back gracefully | — |
 | `BufferCapacityError` | pruning the correction buffer failed; a deterministic FIFO fallback was applied and the failure is reported rather than hidden | `UP-UGF pruning failed. Applied deterministic FIFO fallback to enforce capacity 100. Error: …` |
 
