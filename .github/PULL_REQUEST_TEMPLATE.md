@@ -8,12 +8,13 @@
 
 ## Validation
 
-All four stages must pass locally before review:
+All five stages must pass locally before review:
 
-- [ ] `ruff check src/ tests/ benchmarks/`
+- [ ] `ruff check src/ tests/ benchmarks/ apps/ examples/ scripts/`
 - [ ] `mypy src/adaptshot --strict`
 - [ ] `pytest tests/ -v`
 - [ ] `python -m benchmarks.run_benchmark --smoke-test --seed 42`
+- [ ] `mkdocs build --strict`
 
 ## Constraints
 

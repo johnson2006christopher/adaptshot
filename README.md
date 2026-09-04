@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/images/adaptshot-logo.png" width="300" alt="AdaptShot Logo">
+<img src="https://raw.githubusercontent.com/johnson2006christopher/adaptshot/main/docs/images/adaptshot-logo.png" width="300" alt="AdaptShot Logo">
 
 # AdaptShot
 
@@ -9,7 +9,7 @@
 [![PyPI](https://img.shields.io/pypi/v/adaptshot.svg)](https://pypi.org/project/adaptshot/)
 [![PyPI Downloads](https://static.pepy.tech/personalized-badge/adaptshot?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/adaptshot)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/johnson2006christopher/adaptshot/blob/main/LICENSE)
 [![Docs](https://img.shields.io/badge/docs-MkDocs-blue)](https://johnson2006christopher.github.io/adaptshot/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22161335.svg)](https://doi.org/10.5281/zenodo.22161335)
 [![Code Style: Ruff](https://img.shields.io/badge/code%20style-ruff-black)](https://github.com/astral-sh/ruff)
@@ -18,7 +18,7 @@
 
 **[Documentation](https://johnson2006christopher.github.io/adaptshot/)** ·
 **[Source](https://github.com/johnson2006christopher/adaptshot)** ·
-**[Changelog](CHANGELOG.md)** ·
+**[Changelog](https://github.com/johnson2006christopher/adaptshot/blob/main/CHANGELOG.md)** ·
 **[Cite](#citing)**
 
 </div>
@@ -123,7 +123,7 @@ Measured, on a full support-set-to-prediction cycle:
 
 | | core install | with torch |
 |---|---|---|
-| peak RSS | **119 MB** | 775 MB |
+| peak RSS | **120 MB** | 592 MB |
 | install size for the inference component | ~23 MB | ~1.2 GB |
 
 The default backbone is `mobilenet_v3_small`, whose ONNX weights (4.0 MB) ship in
@@ -206,12 +206,12 @@ The conformal guarantee is the core contribution. It is **marginal** coverage �
 the whole distribution, not conditional on any particular class or subgroup. That
 distinction matters in deployment and is documented rather than glossed over.
 
-📖 [Start here](docs/tutorials/00-what-is-this.md) — six tutorials for someone who has never coded, every command executed by the tests ·
-[How-to guides](docs/how-to/run-the-offline-demo.md) ·
-[How it works](docs/understand/how-it-works.md) ·
-[The guarantee](docs/understand/the-guarantee.md) ·
-[API reference](docs/reference/api.md) ·
-[Contributing](docs/contributing/development-setup.md)
+📖 [Start here](https://github.com/johnson2006christopher/adaptshot/blob/main/docs/tutorials/00-what-is-this.md) — six tutorials for someone who has never coded, every command executed by the tests ·
+[How-to guides](https://github.com/johnson2006christopher/adaptshot/blob/main/docs/how-to/run-the-offline-demo.md) ·
+[How it works](https://github.com/johnson2006christopher/adaptshot/blob/main/docs/understand/how-it-works.md) ·
+[The guarantee](https://github.com/johnson2006christopher/adaptshot/blob/main/docs/understand/the-guarantee.md) ·
+[API reference](https://github.com/johnson2006christopher/adaptshot/blob/main/docs/reference/api.md) ·
+[Contributing](https://github.com/johnson2006christopher/adaptshot/blob/main/docs/contributing/development-setup.md)
 
 ---
 
@@ -232,7 +232,7 @@ real-world data at scale.*
 | Contrastive prototypes (InfoNCE) | **Experimental** — requires torch |
 | Explainability (embedding-space attribution) | **Experimental** |
 | ONNX backbone export | **Experimental** |
-| Graphical interfaces | **Removed** — the library ships none. See [Tambua](apps/tambua/README.md) |
+| Graphical interfaces | **Removed** — the library ships none. See [Tambua](https://github.com/johnson2006christopher/adaptshot/blob/main/apps/tambua/README.md) |
 
 Memory: **the 250 MB target is met on a core install.** Measured peak resident set size
 for a full support-set-to-prediction cycle, by `tests/test_memory_ceiling.py`, which
@@ -263,8 +263,8 @@ config alone. The most common fields:
 
 | Parameter | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `backbone` | `str` | `"resnet18"` | Feature extractor (`resnet18` or `mobilenet_v3_small`) |
-| `device` | `str` | `"cpu"` | Execution device (`cpu`, `cuda`, or `mps`) |
+| `backbone` | `str` | `"mobilenet_v3_small"` | Feature extractor (`mobilenet_v3_small` or `resnet18`) |
+| `device` | `str` | `"cpu"` | Execution device (`cpu` is the only value accepted in 0.3.x) |
 | `seed` | `int` | `42` | Random seed for deterministic reproducibility |
 | `n_way` | `int` | `5` | Number of classes per episode |
 | `k_shot` | `int` | `10` | Support examples per class |
@@ -278,13 +278,13 @@ config alone. The most common fields:
 | `max_buffer_size` | `int` | `100` | Replay buffer capacity, enforced by UP-UGF pruning |
 | `eco_mode` | `bool` | `False` | Energy-saving early-exit thresholds |
 
-📖 **[Full configuration reference — every field](docs/reference/config-reference.md)**
+📖 **[Full configuration reference — every field](https://github.com/johnson2006christopher/adaptshot/blob/main/docs/reference/config-reference.md)**
 
 ---
 
 ## Deployment
 
-Runs anywhere a CPU and Python 3.9+ exist:
+Runs anywhere a CPU and Python 3.10+ exist:
 
 - **Edge devices** — single-board computers and older laptops with limited RAM
 - **Offline stations** — fully functional without internet once backbone weights are cached
@@ -294,8 +294,8 @@ Runs anywhere a CPU and Python 3.9+ exist:
 
 ## Project status
 
-**Current release: v0.2.0.** Pre-1.0 — the API may still change between minor
-versions, and each change is documented in the [changelog](CHANGELOG.md).
+**Current release: v0.3.0.** Pre-1.0 — the API may still change between minor
+versions, and each change is documented in the [changelog](https://github.com/johnson2006christopher/adaptshot/blob/main/CHANGELOG.md).
 
 | Version | Theme |
 | :--- | :--- |
@@ -303,8 +303,8 @@ versions, and each change is documented in the [changelog](CHANGELOG.md).
 | **v0.2.0** | *Made it honest.* Conformal prediction, multi-signal uncertainty, OOD detection — plus a substantial pass replacing claims that the code did not yet support |
 | **v0.3.0** | *Made it provable.* Validation on real public datasets, a narrower and better-defended API, GUIs split into their own project |
 
-Quality gates on every change: `ruff`, `mypy --strict`, 232 tests, and a
-deterministic smoke benchmark. See [ROADMAP.md](ROADMAP.md) for what's planned.
+Quality gates on every change: `ruff`, `mypy --strict`, 366 tests, a
+deterministic smoke benchmark, and a strict docs build. See [ROADMAP.md](https://github.com/johnson2006christopher/adaptshot/blob/main/ROADMAP.md) for what's planned.
 
 ---
 
@@ -319,7 +319,7 @@ is pre-fetched: the backbone and the sample photographs ship in the wheel.
 
 Any dependency that adds a download, a telemetry call, or a version check in a patch
 release fails that job. The job is `offline-wheel` in
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml); its runs are under
+[`.github/workflows/ci.yml`](https://github.com/johnson2006christopher/adaptshot/blob/main/.github/workflows/ci.yml); its runs are under
 [Actions](https://github.com/johnson2006christopher/adaptshot/actions/workflows/ci.yml).
 
 ---
@@ -485,14 +485,15 @@ git clone https://github.com/johnson2006christopher/adaptshot.git
 cd adaptshot
 pip install -e ".[dev,torch]"
 
-ruff check src/ tests/
+ruff check src/ tests/ benchmarks/ apps/ examples/ scripts/
 mypy src/adaptshot --strict
 pytest tests/ -v
 python -m benchmarks.run_benchmark --smoke-test --seed 42
+mkdocs build --strict
 ```
 
-All four must pass before a pull request. See [CONTRIBUTING.md](CONTRIBUTING.md),
-[SECURITY.md](SECURITY.md), and the [Code of Conduct](CODE_OF_CONDUCT.md).
+All five must pass before a pull request. See [CONTRIBUTING.md](https://github.com/johnson2006christopher/adaptshot/blob/main/CONTRIBUTING.md),
+[SECURITY.md](https://github.com/johnson2006christopher/adaptshot/blob/main/SECURITY.md), and the [Code of Conduct](https://github.com/johnson2006christopher/adaptshot/blob/main/CODE_OF_CONDUCT.md).
 
 ---
 
@@ -513,7 +514,7 @@ If AdaptShot is useful in your work:
 ```
 
 GitHub also renders a **Cite this repository** button from
-[`CITATION.cff`](CITATION.cff), in APA and BibTeX. The two are kept in step by
+[`CITATION.cff`](https://github.com/johnson2006christopher/adaptshot/blob/main/CITATION.cff), in APA and BibTeX. The two are kept in step by
 `tests/test_citation.py`, which fails if the versions drift apart.
 
 The DOI above is this release's. The badge carries the *concept* DOI,
@@ -524,12 +525,12 @@ latest version; cite it if you mean the project rather than one release.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT — see [LICENSE](https://github.com/johnson2006christopher/adaptshot/blob/main/LICENSE).
 
 ---
 
 <div align="center">
-<img src="docs/images/johnson.jpeg" width="140" style="border-radius: 50%;" alt="Johnson Christopher Hassan">
+<img src="https://raw.githubusercontent.com/johnson2006christopher/adaptshot/main/docs/images/johnson.jpeg" width="140" style="border-radius: 50%;" alt="Johnson Christopher Hassan">
 
 **Johnson Christopher Hassan**
 
