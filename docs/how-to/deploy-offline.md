@@ -40,7 +40,7 @@ Either copy a saved learner's two files ([save, load and migrate](save-load-and-
 
 **A tablet or phone-class device.** AdaptShot runs wherever Python 3.10 and onnxruntime run, and CI validates it on ARM on every change — the full test suite, the ONNX export, and a device profile on a Neoverse-N2 server core, in the README's device table. A server core is not a phone: measure on the device itself with `python -m benchmarks.run_device` and treat its numbers, not the README's, as the specification. The lowest device actually measured is the one in that table.
 
-**A small server for several users.** Run Tambua with `--host 0.0.0.0 --port 7860` on the office network. One learner is shared, so one person's corrections teach everyone's — decide who is allowed to correct. Do not expose it to the internet; there is no authentication.
+**A small server for several users.** Run Tambua with `--host 0.0.0.0 --port 7860 --auth user:pass` on the office network — since v0.3.1 `--auth` puts a password on the page, and you should always pair it with `0.0.0.0`. One learner is shared, so one person's corrections teach everyone's — decide who is allowed to correct. Do not expose it to the internet.
 
 **A container.** The image below is offline after build:
 
@@ -53,7 +53,7 @@ RUN pip install --no-index --find-links /wheels adaptshot
 CMD ["python", "-c", "import adaptshot; print(adaptshot.check_environment())"]
 ```
 
-Replace the `CMD` with your script or with `tambua --host 0.0.0.0` after installing it the same way.
+Replace the `CMD` with your script, or install `"adaptshot[app]"` from the wheels instead and use `tambua --host 0.0.0.0 --auth user:pass`.
 
 ## Updating
 
