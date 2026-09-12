@@ -29,25 +29,23 @@ pip install "adaptshot[torch]"
 
 ## It happens on its own
 
-There is no `finetune()` call to make. `correct()` queues each correction; when **five** are pending, the head is fine-tuned on them and the queue clears. Nothing else in your code changes:
+There is no `finetune()` call to make. `correct()` queues each correction; when **ten** are pending (at the default buffer size — the rule is `max(5, max_buffer_size // 10)`), the head is fine-tuned on them and the queue clears. Nothing else in your code changes:
 
 ```python
 from adaptshot import AdaptShotConfig, FewShotLearner
-from adaptshot.data import sample_images, demo_images
+from adaptshot.data import sample_images
 
 paths, labels = sample_images()
 learner = FewShotLearner(config=AdaptShotConfig(conformal_alpha=0.10))
 learner.load_support_images(paths[:-1], labels[:-1])
 
-# Five corrections trip the fine-tune. Here the "corrections" re-teach known photographs,
+# Ten corrections trip the fine-tune. Here the "corrections" re-teach known photographs,
 # which is enough to see the mechanism; in use they would be photographs it got wrong.
-truths = dict(zip(demo_images(), ("healthy_maize", "gray_leaf_spot", "gray_leaf_spot", "tomato"), strict=True))
-summaries = [learner.correct(image_path=p, true_label=t) for p, t in list(truths.items())[:3]]
-summaries += [learner.correct(image_path=paths[i], true_label=labels[i]) for i in (0, 4)]
+summaries = [learner.correct(image_path=paths[i], true_label=labels[i]) for i in range(10)]
 print([s["fine_tuned"] for s in summaries])
 ```
 
-The last summary reports `fine_tuned: True`; the four before it `False`. The threshold is the router's `fine_tune_trigger_threshold` (default 5).
+The last summary reports `fine_tuned: True`; the nine before it `False`. The threshold is the router's `fine_tune_trigger_threshold` — `max(5, max_buffer_size // 10)`, which is 10 at the default buffer size of 100.
 
 ## What it costs
 
@@ -55,7 +53,7 @@ Training runs on the CPU and takes a few seconds for a handful of corrections. M
 
 ## What is saved
 
-`save()` stores the corrections and everything derived from them, but **not** the fine-tuned head's weights: on `load()` the head is rebuilt fresh and retrained as corrections continue. See [save, load and migrate](save-load-and-migrate.md).
+`save()` stores the corrections and everything derived from them, **and** the fine-tuned head's weights: a third file, `<name>.head.pt`, appears beside the JSON and the embeddings whenever the head exists, and `load()` restores it. See [save, load and migrate](save-load-and-migrate.md).
 
 ## Turning it off while keeping torch installed
 

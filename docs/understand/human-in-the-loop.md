@@ -61,10 +61,10 @@ The pipeline makes three sequential gating decisions:
 
 ## Step 2: Interpreting the Result
 
-Use the decision tree from [Tutorial 2](../tutorials/05-teaching-corrections.md):
+Use the signals the library already computed, as [tutorial 4](../tutorials/04-reading-the-answer.md) teaches — `act_action` compares the calibrated confidence against a per-class threshold that adapts as you correct, which an ad-hoc fixed cutoff cannot:
 
 ```
-if calibrated_confidence >= 0.8 AND uncertainty_flag == False:
+if act_action == "ACCEPT":
     -> ACCEPT the prediction
 else:
     -> REQUEST human review
@@ -182,9 +182,10 @@ Monitor how well the model is learning from corrections:
 report = learner.calibration_report()
 print(report)
 # {
-#     "current_temperature": 0.82,
-#     "current_ece": 0.043,
+#     "window_size": 32,
+#     "ece": 0.043,
 #     "debiased_ece": 0.038,
+#     "temperature": 0.82,
 #     "ood_distance_threshold": 0.27,
 #     "support_size": 47,
 #     "prototype_count": 12,

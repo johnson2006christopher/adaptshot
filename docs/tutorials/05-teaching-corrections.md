@@ -60,7 +60,7 @@ A learner that has been taught and corrected is worth keeping. Everything it kno
 learner.save("leaves.json")
 ```
 
-That writes `leaves.json` and `leaves.embeddings.npy` next to it — the numbers for every teaching photograph and every correction, the calibration, the thresholds — with a checksum so a corrupted file is detected rather than loaded. **The photographs themselves are not saved**, only what was computed from them; you can delete or move the originals.
+That writes `leaves.json` and `leaves.embeddings.npy` next to it (plus `leaves.head.pt` if the optional torch extra has fine-tuned a head) — the numbers for every teaching photograph and every correction, the calibration, the thresholds — with a checksum so a corrupted file is detected rather than loaded. **The photographs themselves are not saved**, only what was computed from them; you can delete or move the originals.
 
 ## Step 5 — Load it back
 

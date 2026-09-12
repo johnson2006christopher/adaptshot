@@ -132,6 +132,7 @@ What `predict()` returns. A frozen dataclass.
 | `ood_flag` | `bool` | Out-of-distribution flag (leave-one-out-calibrated Mahalanobis, #54) |
 | `debiased_ece` | `float` | Current debiased ECE |
 | `conformal_set` | `list[str \| int] \| None` | Conformal prediction set |
+| `conformal_calibrated` | `bool` | Whether the set carries a measured guarantee, or is a cold-start singleton (tutorial 4 turns on this) |
 | `uncertainty_report` | `dict[str, float] \| None` | Multi-signal uncertainty |
 | `nearest_neighbors` | `list[dict] \| None` | Top-5 nearest support examples |
 
