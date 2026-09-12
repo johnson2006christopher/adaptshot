@@ -28,7 +28,7 @@ The wheel's contents are named explicitly in `pyproject.toml` (`package-data`), 
 
 ## Agreement with torch
 
-`tests/test_onnx_parity.py` enforces that the bundled graph and the torch path agree to within 1e-4 absolute (measured: 1.8e-6) and to cosine > 0.9999 on every bundled backbone. A re-export at a different opset or from different pretrained weights would move every downstream number silently; the test is what makes it loud. `python -m benchmarks.onnx_parity` reports the same agreement alongside latency, each in its own process, because the two runtimes' thread pools contend if measured together.
+`tests/test_onnx_parity.py` enforces that the bundled graph and the torch path agree to within 1e-4 absolute and to cosine > 0.9999 on every bundled backbone. A re-export at a different opset or from different pretrained weights would move every downstream number silently; the test is what makes it loud. `python -m benchmarks.onnx_parity` reports the same agreement alongside latency, each in its own process, because the two runtimes' thread pools contend if measured together.
 
 ## Using an exported graph without bundling it
 
