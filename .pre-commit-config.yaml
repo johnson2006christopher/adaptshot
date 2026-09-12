@@ -29,4 +29,7 @@ repos:
       - id: mypy
         args: ["--strict"]
         files: ^src/adaptshot/
+        # The app needs gradio's on-first-import stub files, which a pre-commit
+        # venv cannot materialise (see ci.yml); CI's mypy still covers it.
+        exclude: ^src/adaptshot/app/
         additional_dependencies: ["numpy>=1.24.0", "types-Pillow"]
