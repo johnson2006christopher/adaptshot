@@ -1,6 +1,6 @@
 # Use Tambua, the web application
 
-> **For:** someone who wants a point-and-click interface — for themselves, or for people who will never open a terminal — rather than Python scripts. Assumes AdaptShot is installed; Tambua is a separate, small install on top.
+> **For:** someone who wants a point-and-click interface — for themselves, or for people who will never open a terminal — rather than Python scripts. Since v0.3.1, Tambua ships inside AdaptShot as the `app` extra.
 
 ## What Tambua is
 
@@ -9,14 +9,14 @@
 ## Install and start
 
 ```bash
-pip install tambua
+pip install "adaptshot[app]"
 tambua --list-configs
-tambua --config maize
+tambua
 ```
 
-Then open the address it prints (by default `http://127.0.0.1:7860`) in a browser. `--port` and `--host` change where it listens; `--share` creates a temporary public link through Gradio's tunnel — which needs the network, and which you should not use for anything you would not put on the internet.
+Then open the address it prints (by default `http://127.0.0.1:7860`) in a browser. `--config` points it at a different domain file; `--port` and `--host` change where it listens; `--share` creates a temporary public link through Gradio's tunnel — which needs the network, and which you should not use for anything you would not put on the internet.
 
-Tambua is installed from the repository during 0.3.0 (`pip install ./apps/tambua`); the PyPI name is reserved for it.
+There is no separate `tambua` package on PyPI, and there never was — earlier docs said the name was reserved, which was wrong. The `tambua` command arrives with the `adaptshot` wheel; on an install without the `app` extra it prints the line above instead of starting.
 
 ## The two bundled configurations
 
@@ -25,7 +25,7 @@ Tambua is installed from the repository during 0.3.0 (`pip install ./apps/tambua
 | `maize` | maize leaf disease | healthy, gray leaf spot, northern leaf blight |
 | `solar_panel` | photovoltaic module inspection | as named in the file |
 
-Each is a YAML file under `tambua/configs/`. A configuration names the domain, the classes with a local-language label and an advice line for each, the backbone and α, and where photographs live.
+Each is a YAML file under `adaptshot/app/configs/` inside the installed package. A configuration names the domain, the classes with a local-language label and an advice line for each, the backbone and α, and where photographs live.
 
 ## Write your own configuration
 
