@@ -27,9 +27,13 @@ import sys
 
 
 class _Blocker:
+    _blocked = ("torch", "gradio")
+
     def find_spec(self, fullname, path=None, target=None):
-        if fullname == "torch" or fullname.startswith("torch."):
-            raise ImportError("torch is blocked: the quickstart must run on a core install")
+        if fullname in self._blocked or fullname.startswith(
+            tuple(name + "." for name in self._blocked)
+        ):
+            raise ImportError(fullname + " is blocked: the quickstart must run on a core install")
         return None
 
 
