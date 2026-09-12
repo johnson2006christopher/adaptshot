@@ -69,7 +69,7 @@ CITATION = (
 )
 
 #: PlantVillage's directory names mapped onto the class keys in
-#: `apps/tambua/src/tambua/configs/maize.yaml`. The mapping lives here, in a
+#: `src/adaptshot/app/configs/maize.yaml`. The mapping lives here, in a
 #: script, and not in the application -- Tambua knows nothing about maize, and a
 #: test enforces that.
 CLASS_MAP = {
