@@ -60,19 +60,26 @@ DOCUMENTED_CEILING_MB = 250
 #: variance and version drift. A regression guard, not an endorsement.
 MEASURED_BUDGET_MB = 900
 
-#: Blocks torch at the import system, so the core-install path can be measured
-#: without a second environment. Matches the harness in test_torch_optional.py.
+#: Blocks torch and gradio at the import system, so the core-install path can be
+#: measured without a second environment. Matches the harness in
+#: test_torch_optional.py. gradio joined the list with the `app` extra (#102):
+#: the 120 MB core figure must stay a measurement of the core install even in an
+#: environment where the app happens to be installed.
 _BLOCK_TORCH = textwrap.dedent(
     """
     import sys
 
-    class _TorchBlocker:
+    class _ExtrasBlocker:
+        _blocked = ("torch", "gradio")
+
         def find_spec(self, fullname, path=None, target=None):
-            if fullname == "torch" or fullname.startswith("torch."):
-                raise ImportError("torch is blocked: simulating a core-only install")
+            if fullname in self._blocked or fullname.startswith(
+                tuple(name + "." for name in self._blocked)
+            ):
+                raise ImportError(fullname + " is blocked: simulating a core-only install")
             return None
 
-    sys.meta_path.insert(0, _TorchBlocker())
+    sys.meta_path.insert(0, _ExtrasBlocker())
     """
 )
 
