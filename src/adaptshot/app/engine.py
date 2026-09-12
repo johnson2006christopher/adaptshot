@@ -20,10 +20,11 @@ from dataclasses import dataclass, field
 from importlib import resources
 from typing import Any
 
-import numpy as np
+from PIL import Image
 
 from adaptshot import AdaptShotConfig, FewShotLearner
 from adaptshot.app.config import ClassInfo, TambuaConfig, load_config
+from adaptshot.utils.arrays import FloatArray
 from adaptshot.utils.exceptions import AdaptShotError, ConfigValidationError
 
 #: The config loaded when the caller names none. MziziGuard is the flagship
@@ -378,12 +379,15 @@ class TambuaEngine:
 
     def identify(
         self,
-        image: str | np.ndarray | Any,
+        image: str | Image.Image | FloatArray,
     ) -> Identification:
         """Identify one image.
 
         Args:
-            image: File path, NumPy array, or PIL Image.
+            image: File path, PIL image, or float array -- exactly the types
+                `FewShotLearner.predict` accepts. The bare `np.ndarray` this
+                used to say fails mypy --strict under the numpy the 3.10 job
+                resolves, and `FloatArray` is the library's own name for it.
 
         Returns:
             An `Identification` carrying the predicted label together with the
