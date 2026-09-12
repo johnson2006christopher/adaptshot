@@ -14,6 +14,7 @@ reaching a user comes out of the config file.
 from __future__ import annotations
 
 import logging
+import threading
 import time
 from collections.abc import Sequence
 from dataclasses import dataclass, field
@@ -167,6 +168,11 @@ class Identification:
     empirical_coverage: float = 0.0
     calibration_size: int = 0
 
+    #: How many classes the engine knew when this prediction was made. What
+    #: makes the full-set half of `is_abstention` decidable from the result
+    #: alone; zero means unknown (a legacy or error row) and disables it.
+    known_classes: int = 0
+
     timestamp: float = field(default_factory=time.time)
 
     @property
@@ -175,10 +181,14 @@ class Identification:
 
         Two ways that happens: an empty set (nothing was plausible enough) and a
         set containing every class the model knows (everything was). Both mean
-        the same thing to the person holding the phone.
+        the same thing to the person holding the phone. The docstring always
+        said so; until #107 the code checked only the empty half, so a
+        3-of-3 set was presented as "one of these 3" with conflicting advice.
         """
 
-        return len(self.prediction_set) == 0
+        return len(self.prediction_set) == 0 or (
+            0 < self.known_classes <= len(self.prediction_set)
+        )
 
 
 @dataclass
@@ -277,6 +287,13 @@ class TambuaEngine:
         self._last_image_path: str | None = None
         self._data_dir: str | None = None
 
+        # One writer at a time. Gradio's concurrency limit is per event
+        # listener, not per app, so two phones on a shared laptop can reach
+        # identify() and load_images_from_dir() together -- and the learner has
+        # no locks of its own: load_support_images() clears the embedding list
+        # another thread may be reading (#104).
+        self._engine_lock = threading.Lock()
+
     # ------------------------------------------------------------------
     # Configuration
     # ------------------------------------------------------------------
@@ -368,8 +385,9 @@ class TambuaEngine:
             raise ImageFolderError(image_data.render_problems(problems))
 
         paths, labels = image_data.load_from_folders(image_dir, max_per_class)
-        self.learner.load_support_images(paths, labels)
-        self._data_dir = image_dir
+        with self._engine_lock:
+            self.learner.load_support_images(paths, labels)
+            self._data_dir = image_dir
         return len(paths)
 
     # ------------------------------------------------------------------
@@ -395,7 +413,8 @@ class TambuaEngine:
                 "folder of photographs, one subfolder per class."
             )
 
-        result = self.learner.predict(image)
+        with self._engine_lock:
+            result = self.learner.predict(image)
 
         # Store for later correction
         if isinstance(image, str):
@@ -413,6 +432,7 @@ class TambuaEngine:
         raw_set = result.conformal_set or []
 
         identification = Identification(
+            known_classes=len(self.classes),
             prediction_set=tuple(sorted(str(member) for member in raw_set)),
             alpha=float(conformal.alpha),
             coverage_is_measured=measured,
@@ -457,11 +477,12 @@ class TambuaEngine:
         if not self.is_trained:
             raise RuntimeError("Model not trained yet.")
 
-        result = self.learner.correct(
-            image_path=image_path,
-            true_label=true_label,
-            confidence_weight=confidence_weight,
-        )
+        with self._engine_lock:
+            result = self.learner.correct(
+                image_path=image_path,
+                true_label=true_label,
+                confidence_weight=confidence_weight,
+            )
 
         predicted = result.get("predicted_label", "unknown")
         self.history.record_correction(
@@ -483,13 +504,24 @@ class TambuaEngine:
         self,
         true_label: str,
         confidence_weight: float = 1.0,
+        image_path: str | None = None,
     ) -> str:
-        """Correction convenience for Gradio UI (uses last predicted image)."""
-        if self._last_image_path is None:
+        """Correction convenience for the Gradio UI.
+
+        Args:
+            true_label: The correct label.
+            confidence_weight: How confident the person is (0.0-1.0).
+            image_path: The image being corrected. The UI passes the photo from
+                the caller's own session; the process-wide "last image" is only
+                a fallback for single-user scripting, because with two phones on
+                one laptop it can be someone else's photograph (#104).
+        """
+        target = image_path or self._last_image_path
+        if target is None:
             return "❌ Make a prediction first before correcting."
         try:
             result = self.teach(
-                image_path=self._last_image_path,
+                image_path=target,
                 true_label=true_label,
                 confidence_weight=confidence_weight,
             )
