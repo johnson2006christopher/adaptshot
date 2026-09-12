@@ -87,6 +87,10 @@ def mypy_result() -> subprocess.CompletedProcess[str]:
     # import, which is the very condition this module exists to detect -- so the
     # assertion would be true but meaningless. Skip rather than fail.
     pytest.importorskip("torch", reason="mypy needs the torch extra to resolve imports")
+    # Same reasoning for gradio since the app moved into the package (#102):
+    # adaptshot/app/ui.py imports it, and mypy without it reports
+    # import-not-found there -- a fact about the environment, not the code.
+    pytest.importorskip("gradio", reason="mypy needs the app extra to resolve the UI's import")
 
     # This used to skip on any interpreter older than mypy's `python_version`,
     # because 3.10 and 3.11 resolve numpy 2.2, whose `ndarray` is generic with no
