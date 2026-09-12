@@ -67,9 +67,9 @@ is formatted from a committed artifact and held to it by a test.
 - **Conformal coverage, measured**: 98.1% ± 0.6 at a 90% target, mean set size
   1.66, against a calibrated top-1 threshold that reached 83.9%. (#14, #86)
 - **Coverage under distribution shift**: blur, brightness, JPEG and downscale
-  applied to queries only; the sets widen, the bound still bends (85.5% at
+  applied to queries only; the sets widen, the bound still bends (85.8% at
   blur σ=4), the OOD flag correlates 0.92 with the loss, and ten in-situ
-  corrections recover the worst cell to 89%. (`benchmarks/run_shift.py`, #29)
+  corrections recover that cell to 89.0%. (`benchmarks/run_shift.py`, #29)
 - **Latency by stage** (median and p95), cold start, and peak memory for one
   cycle *and* for the harness, named apart, with the CPU model recorded. 120 MB
   for one fresh process on the core install. (#20)

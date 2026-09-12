@@ -39,7 +39,7 @@ Before 0.3.0 the library clamped that rank and returned the largest observed sco
 
 ## Measured on real photographs, in distribution
 
-PlantVillage, 5-way 5-shot, 100 episodes, α = 0.10, 25 calibration photographs per episode — above the floor:
+PlantVillage, 5-way 5-shot, 100 episodes, α = 0.10, the 25 support photographs supplying the calibration scores (leave-one-out) — above the floor:
 
 | | conformal sets | top-1 with a threshold calibrated to the same target |
 |---|---|---|
@@ -55,10 +55,10 @@ Same photographs, queries blurred, darkened, re-compressed or downscaled, suppor
 | queries | coverage | mean set size |
 |---|---|---|
 | clean | 96.9% ± 1.0 | 1.34 |
-| blur σ = 4 | **85.5% ± 3.6** | 2.13 |
+| blur σ = 4 | **85.8% ± 3.4** | 2.13 |
 | after 10 corrections on blurred photographs | 89.0% ± 2.3 | 1.56 |
 
-Three things to take from it. **The set does widen** — 1.34 to 2.13 — which is the nonconformity score expressing "less sure" (an earlier score could not; see the [changelog](../reference/changelog.md) for 0.3.0). **The promise still bends**: the threshold was set on clean photographs and cannot know the queries moved, so coverage falls under the target anyway. And **a handful of in-situ corrections closes most of the gap** — ten labelled photographs of the shifted condition through `correct()` bring the worst cell back to 89%. That is what the human-in-the-loop path is for.
+Three things to take from it. **The set does widen** — 1.34 to 2.13 — which is the nonconformity score expressing "less sure" (an earlier score could not; see the [changelog](../reference/changelog.md) for 0.3.0). **The promise still bends**: the threshold was set on clean photographs and cannot know the queries moved, so coverage falls under the target anyway. And **a handful of in-situ corrections closes most of the gap** — ten labelled photographs of the shifted condition through `correct()` bring that cell back to 89.0% ± 2.3 (the worst cell of all, JPEG q=5 at 85.5% ± 3.6, recovers to 87.8% ± 2.4). That is what the human-in-the-loop path is for.
 
 The OOD flag rate correlates 0.92 with the coverage lost across the shifted cells — it rises as the bound bends — but fires on a minority of the affected queries. A signal, not a guard.
 
