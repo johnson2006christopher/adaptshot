@@ -5,7 +5,7 @@
 ## Command line
 
 ```text
-tambua [--config CONFIG] [--list-configs] [--port PORT] [--host HOST] [--share]
+tambua [--config CONFIG] [--list-configs] [--port PORT] [--host HOST] [--auth USER:PASS] [--share]
 ```
 
 | option | meaning | default |
@@ -13,8 +13,9 @@ tambua [--config CONFIG] [--list-configs] [--port PORT] [--host HOST] [--share]
 | `--config` | a bundled configuration name (`maize`, `solar_panel`) or a path to a YAML file | `maize` |
 | `--list-configs` | print the bundled configurations and exit | — |
 | `--port` | port to serve on | `7860` |
-| `--host` | interface to bind; `0.0.0.0` for other machines on the network | `127.0.0.1` |
-| `--share` | a temporary public link through Gradio's tunnel (needs the network; no authentication) | off |
+| `--host` | interface to bind; `0.0.0.0` for other machines on the network — use `--auth` with it: the Setup tab's folder field browses *this* machine | `127.0.0.1` |
+| `--auth` | username and password required to open the page | off |
+| `--share` | a temporary public link through Gradio's tunnel, live for 72 hours (needs the network). Refused without `--auth`: a share link would publish the page — folder field included — to the whole internet | off |
 
 The configuration is validated before anything starts. A mistake is reported with the file and line, and a renamed key from an earlier version is named:
 
