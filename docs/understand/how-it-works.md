@@ -29,7 +29,7 @@ Everything from [2] onward is numpy. The only neural network is the frozen backb
 
 ## [1] Embedding — `core/extractor.py`
 
-A photograph is resized to 224×224, normalised with ImageNet statistics, and pushed through MobileNetV3-Small with its classifier removed. Out come 576 numbers that describe the image in a space where similar-looking images are close. The backbone is ImageNet-pretrained and frozen: AdaptShot never trains it. It ships as an ONNX graph (4 MB) and runs through onnxruntime, so no PyTorch is needed; with the torch extra installed the torch path is available too, and a test enforces the two agree to within 1.8 × 10⁻⁶.
+A photograph is resized to 224×224, normalised with ImageNet statistics, and pushed through MobileNetV3-Small with its classifier removed. Out come 576 numbers that describe the image in a space where similar-looking images are close. The backbone is ImageNet-pretrained and frozen: AdaptShot never trains it. It ships as an ONNX graph (4 MB) and runs through onnxruntime, so no PyTorch is needed; with the torch extra installed the torch path is available too, and a test enforces the two agree to within 1e-4 (cosine > 0.9999).
 
 An *eco mode* keeps a tiny preview signature of the top support image and skips the forward pass when a query is near-identical to it — useful for repeated frames from a camera, deterministic, and off by default in the benchmarks.
 
