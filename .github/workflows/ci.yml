@@ -35,8 +35,7 @@ jobs:
           # repository's 10 GB cache limit -- which evicted the CIFAR-10 cache and
           # turned a two-minute benchmark job into a thirty-five-minute download.
           pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
-          pip install -e ".[dev]"
-          pip install -e "apps/tambua[dev]"
+          pip install -e ".[dev,app]"
       - name: Materialise gradio's event-listener stubs
         # gradio attaches .click()/.change() to components dynamically, in a
         # metaclass, and writes the matching .pyi files into site-packages the
@@ -63,13 +62,12 @@ jobs:
           print(f"gradio stubs generated: {stub}")
           PY
       - name: Lint with ruff
-        run: ruff check src/ tests/ benchmarks/ apps/ examples/ scripts/
+        run: ruff check src/ tests/ benchmarks/ examples/ scripts/
       - name: Type check with mypy (strict)
+        # One invocation covers the application too: since #102 it lives at
+        # src/adaptshot/app, inside the tree this checks. The gradio stub step
+        # above is what keeps this honest on a fresh runner.
         run: mypy src/adaptshot --strict
-      - name: Type check the application (strict)
-        # A separate invocation: the app is its own distribution, and mypy should
-        # resolve `adaptshot` through the install rather than the source tree.
-        run: mypy apps/tambua/src/tambua --strict
 
   # The full suite. Needs the torch extra: two test modules and the benchmark
   # exercise torch-backed paths directly. See #33.
@@ -98,11 +96,10 @@ jobs:
           # repository's 10 GB cache limit -- which evicted the CIFAR-10 cache and
           # turned a two-minute benchmark job into a thirty-five-minute download.
           pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
-          pip install -e ".[dev]"
-          # The application is a separate distribution. Installing it here is what
-          # makes apps/tambua/tests meaningful -- they assert that `tambua` resolves
-          # by installation, not by happening to sit under the working directory.
-          pip install -e "apps/tambua[dev]"
+          # The app extra in every matrix job, deliberately: tests/app/ must RUN
+          # here (not skip), and `import adaptshot` staying gradio-free is only a
+          # real assertion in an environment where gradio exists to be imported.
+          pip install -e ".[dev,app]"
       - name: Test with pytest
         run: pytest tests/ -v --tb=short --cov=src/adaptshot --cov-report=xml --cov-report=term-missing
       - name: Upload coverage artifact
@@ -138,15 +135,19 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
-      - name: Assert torch really is absent
-        # Guards against a transitive dependency quietly pulling torch in, which
+      - name: Assert torch and gradio really are absent
+        # Guards against a transitive dependency quietly pulling either in, which
         # would make this job pass without testing anything it claims to test.
+        # gradio joined torch with the `app` extra (#102): this job is also what
+        # proves a core install gets a working `tambua --help` and the install
+        # hint, rather than a traceback, from the unconditional console script.
         run: |
           python - <<'PY'
           import importlib.util, sys
-          if importlib.util.find_spec("torch") is not None:
-              sys.exit("torch is installed in the core-only job; it no longer proves anything")
-          print("confirmed: torch is not installed")
+          for name in ("torch", "gradio"):
+              if importlib.util.find_spec(name) is not None:
+                  sys.exit(f"{name} is installed in the core-only job; it no longer proves anything")
+          print("confirmed: torch and gradio are not installed")
           PY
       - name: Test with pytest
         run: pytest tests/ -v --tb=short -rs
@@ -323,7 +324,11 @@ jobs:
         run: |
           python -m venv "$RUNNER_TEMP/wheelenv"
           "$RUNNER_TEMP/wheelenv/bin/pip" install --upgrade pip
-          "$RUNNER_TEMP/wheelenv/bin/pip" install dist/*.whl pytest
+          # The [app] extra from the wheel itself, so the namespace below also
+          # proves the packaged application: configs resolve from package data
+          # and `tambua --list-configs` runs with the network gone (#102).
+          WHEEL="$(ls dist/*.whl)"
+          "$RUNNER_TEMP/wheelenv/bin/pip" install "${WHEEL}[app]" pytest
           "$RUNNER_TEMP/wheelenv/bin/pip" install --index-url https://download.pytorch.org/whl/cpu torch torchvision
       - name: Enter a namespace with no network and run the inference path
         run: |
@@ -345,6 +350,7 @@ jobs:
           PYY
           "$PY" -m pytest tests/test_quickstart.py tests/test_demo.py tests/test_conformal*.py tests/test_calibration.py -q
           "$PY" -m benchmarks.run_benchmark --smoke-test --seed 42 --backbone mobilenet_v3_small
+          GRADIO_ANALYTICS_ENABLED=False "$RUNNER_TEMP/wheelenv/bin/tambua" --list-configs
           SH
           chmod +x "$RUNNER_TEMP/inside.sh"
           unshare -rn bash "$RUNNER_TEMP/inside.sh"
