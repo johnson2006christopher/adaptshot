@@ -217,6 +217,18 @@ class FewShotLearner:
             ")"
         )
 
+    @property
+    def support_size(self) -> int:
+        """Number of support images currently loaded.
+
+        Zero until :meth:`load_support_images` succeeds, so ``support_size > 0``
+        is the public way to ask "has this learner been taught anything yet?".
+        Consumers used to reach for the private ``_sim_embeddings`` list to
+        answer that (apps/tambua did), which coupled them to an implementation
+        detail this property now hides.
+        """
+        return len(self._sim_embeddings)
+
     def load_support_images(
         self, image_paths: Sequence[str], labels: Sequence[str | int]
     ) -> None:

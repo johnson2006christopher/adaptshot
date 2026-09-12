@@ -10,7 +10,7 @@
 
 All five stages must pass locally before review:
 
-- [ ] `ruff check src/ tests/ benchmarks/ apps/ examples/ scripts/`
+- [ ] `ruff check src/ tests/ benchmarks/ examples/ scripts/`
 - [ ] `mypy src/adaptshot --strict`
 - [ ] `pytest tests/ -v`
 - [ ] `python -m benchmarks.run_benchmark --smoke-test --seed 42`

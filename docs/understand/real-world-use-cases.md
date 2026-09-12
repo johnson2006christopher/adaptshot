@@ -287,7 +287,7 @@ else:
     is corrected here.
 
     Its sample images are **generated procedurally** — see
-    `apps/tambua/src/tambua/data.py`, which draws them with `ImageDraw.ellipse()`. Any
+    the app's former `data.py`, which drew them with `ImageDraw.ellipse()`. Any
     accuracy you observe on them measures the classifier's ability to tell drawn shapes
     apart, and nothing else.
 
@@ -313,8 +313,8 @@ Farmer takes photo → MziziGuard Web UI → MziziGuard Engine → AdaptShot Few
 
 | Property | Value | Backed by |
 |----------|-------|-----------|
-| Training images needed | 5 per disease class | `apps/tambua/src/tambua/configs/maize.yaml` |
-| Supported crops | Configurable via YAML | `apps/tambua/src/tambua/configs/maize.yaml` |
+| Training images needed | 5 per disease class | `src/adaptshot/app/configs/maize.yaml` |
+| Supported crops | Configurable via YAML | `src/adaptshot/app/configs/maize.yaml` |
 | Languages | English + Swahili | `localization` block in the config |
 | Internet required | No (after install) | no network calls after backbone download |
 
@@ -329,7 +329,7 @@ Farmer takes photo → MziziGuard Web UI → MziziGuard Engine → AdaptShot Few
 ### How to Run It
 
 ```bash
-pip install tambua
+pip install "adaptshot[app]"
 tambua
 # → http://localhost:7860
 ```

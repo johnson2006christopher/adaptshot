@@ -8,12 +8,13 @@
 git clone https://github.com/johnson2006christopher/adaptshot.git
 cd adaptshot
 python3 -m venv .venv && source .venv/bin/activate     # Windows: .venv\Scripts\Activate.ps1
-pip install -e ".[dev]"                                # the library, tests, linters
-pip install -e "apps/tambua[dev]"                      # the application, as its own distribution
+pip install -e ".[dev,app]"                            # the library, tests, linters, and the Tambua app
 pip install mkdocs mkdocs-material "mkdocstrings[python]"   # for the docs gate
 ```
 
-With [uv](https://docs.astral.sh/uv/) the same three lines are `uv venv .venv`, `uv pip install -e ".[dev]" -e "apps/tambua[dev]"` and `uv pip install mkdocs mkdocs-material "mkdocstrings[python]"`, and they take seconds rather than minutes. The gate commands below are unchanged; they do not care which tool populated the environment.
+The `app` extra pulls in gradio for the Tambua application (`src/adaptshot/app/`); leave it off if you are only touching the library — the app's tests skip cleanly without it.
+
+With [uv](https://docs.astral.sh/uv/) the same three lines are `uv venv .venv`, `uv pip install -e ".[dev,app]"` and `uv pip install mkdocs mkdocs-material "mkdocstrings[python]"`, and they take seconds rather than minutes. The gate commands below are unchanged; they do not care which tool populated the environment.
 
 That is the *core* install — numpy, Pillow, onnxruntime — and it is enough for every test that matters to a user. Add the torch extra only if you are working on fine-tuning or a non-bundled backbone, and prefer the CPU build:
 
@@ -28,7 +29,7 @@ Dev tooling is not assumed to be on the machine; if a command below says "not fo
 Every pull request must pass all five. Run them locally first; a later stage's failure is usually noise if an earlier one is red.
 
 ```bash
-ruff check src/ tests/ benchmarks/ apps/ examples/ scripts/     # 1. lint, all six directories
+ruff check src/ tests/ benchmarks/ examples/ scripts/     # 1. lint, all five directories
 mypy src/adaptshot --strict                                     # 2. types, strict
 pytest tests/ -v                                                # 3. tests
 python -m benchmarks.run_benchmark --smoke-test --seed 42       # 4. deterministic smoke benchmark
@@ -74,7 +75,6 @@ Two things about stage 2. Import gradio once (`python -c "import gradio"`) on a 
 
 ```text
 src/adaptshot/       the library (core/, training/, config/, utils/, data/, api.py, preflight.py)
-apps/tambua/         the application, its own distribution
 benchmarks/          every published number's script
 scripts/             maintainer tools: fetch data, export backbones
 examples/demo/       the offline conference demo and handout

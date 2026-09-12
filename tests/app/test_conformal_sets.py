@@ -17,10 +17,8 @@ from pathlib import Path
 
 import pytest
 
-pytest.importorskip("tambua", reason="the application is not installed in this environment")
-
-from support.images import make_placeholder
-from tambua import ClassInfo, TambuaEngine, bundled_config, combined_action
+from adaptshot.app import ClassInfo, TambuaEngine, bundled_config, combined_action
+from tests.app.support.images import make_placeholder
 
 
 def _info(key: str, action: str, local: str | None = None) -> ClassInfo:
@@ -38,7 +36,6 @@ def _info(key: str, action: str, local: str | None = None) -> ClassInfo:
 def trained(tmp_path_factory: pytest.TempPathFactory) -> TambuaEngine:
     """An engine trained on deterministic images. Module-scoped: training is slow."""
 
-    pytest.importorskip("torch", reason="inference needs the torch extra (#35)")
     root: Path = tmp_path_factory.mktemp("support")
     engine = TambuaEngine(bundled_config("maize"))
     for key in engine.cfg.labels:
@@ -93,7 +90,7 @@ def test_the_csv_export_carries_the_set(trained: TambuaEngine, tmp_path: Path) -
 def test_coverage_is_not_reported_as_measured_before_calibration() -> None:
     """`1 - alpha` is the target. Quoting it as a result is the #17 mistake."""
 
-    from tambua.engine import Identification
+    from adaptshot.app.engine import Identification
 
     fresh = Identification(
         label="x", local_name="x", confidence=0.9, raw_confidence=0.9,
@@ -108,8 +105,9 @@ def test_coverage_is_not_reported_as_measured_before_calibration() -> None:
 
 
 def test_the_interface_says_when_coverage_is_not_yet_measured() -> None:
-    from tambua.app import _render_prediction_set
-    from tambua.engine import Identification
+    pytest.importorskip("gradio", reason="the UI needs the app extra")
+    from adaptshot.app.engine import Identification
+    from adaptshot.app.ui import _render_prediction_set
 
     engine = TambuaEngine(bundled_config("maize"))
     label = engine.cfg.labels[0]
@@ -132,8 +130,9 @@ def test_the_interface_says_when_coverage_is_not_yet_measured() -> None:
 def test_a_multi_member_set_is_presented_as_a_set_not_a_winner() -> None:
     """A person reading a top-1 has stopped reading before the caveat arrives."""
 
-    from tambua.app import _render_prediction_set
-    from tambua.engine import Identification
+    pytest.importorskip("gradio", reason="the UI needs the app extra")
+    from adaptshot.app.engine import Identification
+    from adaptshot.app.ui import _render_prediction_set
 
     engine = TambuaEngine(bundled_config("maize"))
     members = tuple(sorted(engine.cfg.labels[:2]))
@@ -186,8 +185,9 @@ def test_an_empty_set_routes_to_a_human() -> None:
 
 
 def test_abstention_is_rendered_as_abstention() -> None:
-    from tambua.app import _render_prediction_set
-    from tambua.engine import Identification
+    pytest.importorskip("gradio", reason="the UI needs the app extra")
+    from adaptshot.app.engine import Identification
+    from adaptshot.app.ui import _render_prediction_set
 
     engine = TambuaEngine(bundled_config("maize"))
     abstained = Identification(
@@ -212,8 +212,7 @@ def test_alpha_outside_the_open_unit_interval_is_rejected(
 ) -> None:
     """alpha=0 asks for every class; alpha=1 asks for no guarantee. Neither is a setting."""
 
-    from tambua.config import load_config
-
+    from adaptshot.app.config import load_config
     from adaptshot.utils.exceptions import ConfigValidationError
 
     source = Path(bundled_config("maize")).read_text(encoding="utf-8")
