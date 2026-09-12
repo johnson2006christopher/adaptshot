@@ -7,11 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - unreleased
+
 ### Added
+- **Tambua ships with the library**: `pip install "adaptshot[app]"` installs the
+  Gradio application as `adaptshot.app`, and the `tambua` command with it. The
+  separate `tambua` distribution was never published to PyPI — `pip install
+  tambua` has always failed — so this makes the app installable for the first
+  time. On a core install the `tambua` command explains the extra instead of
+  crashing, and `import adaptshot` still never touches gradio or the app.
+  Gradio floor raised from 3.50 to `>=6,<7`: the UI drives the Gradio 6 API,
+  and the old range admitted every published gradio CVE. (#102)
+- `FewShotLearner.support_size`: the public way to ask how many support images
+  are loaded, replacing the app's reach into the private `_sim_embeddings`.
+- `adaptshot.check_environment()` now reports whether the Tambua app is
+  available, with the install hint when it is not.
 - Citable: the 0.3.0 release is archived on Zenodo. Version DOI
   [10.5281/zenodo.22161336](https://doi.org/10.5281/zenodo.22161336); concept DOI
   [10.5281/zenodo.22161335](https://doi.org/10.5281/zenodo.22161335) on the README badge and in
   `CITATION.cff`. (#24)
+
+### Changed
+- The `tambua` launcher no longer phones home: `GRADIO_ANALYTICS_ENABLED` is
+  set to `False` before gradio loads, so Gradio's PyPI version check and
+  telemetry posts stay off. (#106, first slice)
 
 ## [0.3.0] - 2026-08-29
 
@@ -149,10 +168,11 @@ is formatted from a committed artifact and held to it by a test.
 - **The `gui` and `ui` extras** and the `adaptshot-studio` console script, which existed
   only for the above.
 
-The maintained application is [Tambua](https://github.com/johnson2006christopher/adaptshot/blob/v0.3.0/apps/tambua/README.md), a separate distribution
-built on AdaptShot — `pip install tambua`. `tests/test_library_ships_no_gui.py` fails if
-a GUI reappears anywhere under `src/adaptshot/`, if either extra returns, or if a live
-document points at a removed entrypoint.
+The maintained application is Tambua — at the time a separate distribution under
+`apps/tambua/`, and since v0.3.1 the `app` extra of the library itself
+(`pip install "adaptshot[app]"`, #102). `tests/test_library_ships_no_gui.py` still fails if
+the library *core* grows a GUI import outside the app's one permitted module, if
+either retired extra returns, or if a live document points at a removed entrypoint.
 
 ### Corrected
 
