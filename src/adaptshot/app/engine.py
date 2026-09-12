@@ -1,7 +1,7 @@
 """The Tambua engine: AdaptShot wrapped in whatever domain the config describes.
 
 Adds to `FewShotLearner`:
-  - a validated domain configuration (see `tambua.config`)
+  - a validated domain configuration (see `adaptshot.app.config`)
   - human-readable results -- local label, advice, severity -- for each prediction
   - session history, so corrections and accuracy are visible
   - batch prediction and CSV export
@@ -23,8 +23,8 @@ from typing import Any
 import numpy as np
 
 from adaptshot import AdaptShotConfig, FewShotLearner
+from adaptshot.app.config import ClassInfo, TambuaConfig, load_config
 from adaptshot.utils.exceptions import AdaptShotError, ConfigValidationError
-from tambua.config import ClassInfo, TambuaConfig, load_config
 
 #: The config loaded when the caller names none. MziziGuard is the flagship
 #: domain, but it is one config among several, not a special case in the code.
@@ -36,7 +36,7 @@ def bundled_configs() -> list[str]:
 
     return sorted(
         entry.name.removesuffix(".yaml")
-        for entry in (resources.files("tambua") / "configs").iterdir()
+        for entry in (resources.files("adaptshot.app") / "configs").iterdir()
         if entry.name.endswith(".yaml")
     )
 
@@ -58,7 +58,7 @@ def bundled_config(name: str) -> str:
         ConfigValidationError: If no config of that name ships with the package.
     """
 
-    path = resources.files("tambua") / "configs" / f"{name}.yaml"
+    path = resources.files("adaptshot.app") / "configs" / f"{name}.yaml"
     if not path.is_file():
         raise ConfigValidationError(
             f"no bundled config named {name!r}. "
@@ -322,7 +322,7 @@ class TambuaEngine:
     @property
     def is_trained(self) -> bool:
         """True if the learner has support images loaded."""
-        return self._learner is not None and len(self._learner._sim_embeddings) > 0
+        return self._learner is not None and self._learner.support_size > 0
 
     # ------------------------------------------------------------------
     # Initialization: sample data or real images
@@ -359,7 +359,7 @@ class TambuaEngine:
             ImageFolderError: If the folder cannot support training. The message
                 names every problem and its remedy.
         """
-        from tambua import data as image_data
+        from adaptshot.app import data as image_data
 
         problems = image_data.inspect_folder(image_dir, self.cfg.labels)
         if problems:
@@ -626,7 +626,7 @@ class TambuaEngine:
         from adaptshot.core.learner import FewShotLearner as FSL
 
         self._learner = FSL.load(path)
-        return len(self._learner._sim_embeddings) if self._learner else 0
+        return self._learner.support_size if self._learner else 0
 
     # ------------------------------------------------------------------
     # Re-export key info for UI display
