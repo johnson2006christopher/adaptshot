@@ -127,7 +127,7 @@ Measured, on a full support-set-to-prediction cycle:
 | install size for the inference component | ~23 MB | ~1.2 GB |
 
 The default backbone is `mobilenet_v3_small`, whose ONNX weights (4.0 MB) ship in
-the wheel. Embeddings agree with the torch path to `4e-06` (cosine 0.99999994),
+the wheel. Embeddings agree with the torch path within the enforced `1e-4` bound (cosine > 0.9999),
 and the smoke benchmark returns the same accuracy through either. `resnet18` is
 44.8 MB and is not bundled; `scripts/export_backbones.py` generates it.
 
