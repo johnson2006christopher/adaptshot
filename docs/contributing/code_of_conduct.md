@@ -133,5 +133,5 @@ For answers to common questions about this code of conduct, see the FAQ at
 ---
 
 *Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
-*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
+*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-christopher-hassan)*  
 *Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*
