@@ -375,11 +375,14 @@ jobs:
         run: |
           test "$(uname -m)" = "aarch64" || { echo "not ARM: $(uname -m)"; exit 1; }
           lscpu | grep -E 'Model name|Architecture|^CPU\(s\)' || true
-      - name: Install with the torch and onnx extras
+      - name: Install with the torch, onnx and app extras
         # The aarch64 torch wheel on PyPI is CPU-only; no index override needed.
+        # The app extra keeps tests/test_mypy_coverage.py meaningful here: with
+        # torch present but gradio absent it would skip, and ARM would stop
+        # holding the strict-typing line (#102).
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[dev,torch,onnx]"
+          pip install -e ".[dev,torch,onnx,app]"
       - name: Full test suite on ARM
         run: python -m pytest tests/ -q --tb=short -rs
       - name: Export the bundled backbone here and verify it with onnxruntime
