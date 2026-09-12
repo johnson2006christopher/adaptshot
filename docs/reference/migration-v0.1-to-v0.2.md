@@ -51,10 +51,10 @@ config = AdaptShotConfig(
     device="cpu",
     seed=42,
     # --- New in v0.2.0 ---
-    conformal_alpha=0.10,         # default: 0.10 (90% coverage)
+    conformal_alpha=0.10,         # library default is 0.05; 0.10 targets 90% coverage
     conformal_mode="cross",       # optional: "cross" for k-fold cross-conformal
-    uncertainty_mode="entropy",   # default: "entropy"
-    explainability_enabled=True,  # default: False
+    uncertainty_mode="entropy",   # default is "ensemble"
+    explainability_enabled=True,  # already the default
 )
 ```
 
@@ -80,7 +80,6 @@ print(result.act_action)
 print(result.conformal_set)        # list[str]: prediction set
 print(result.uncertainty_report)   # dict: epistemic, aleatoric, distributional
 print(result.nearest_neighbors)    # list[dict]: top-k neighbor info
-print(result.historical_penalties) # dict: per-class penalty history
 ```
 
 All existing code using only v0.1.x fields continues to work.
@@ -134,7 +133,7 @@ print(explanation.summary)
 
 ### Phase 4: Add production monitoring (30 minutes)
 ```python
-from adaptshot.profiling import MemoryTracker
+from adaptshot.utils.profiling import MemoryTracker
 
 tracker = MemoryTracker()
 tracker.start()
@@ -158,7 +157,8 @@ No APIs were deprecated in v0.2.0. All v0.1.x methods are preserved.
 from adaptshot import FewShotLearner, AdaptShotConfig
 from adaptshot import __version__
 
-assert __version__ >= "0.2.0", f"Expected >= 0.2.0, got {__version__}"
+parts = tuple(int(x) for x in __version__.split("+")[0].split(".")[:2])
+assert parts >= (0, 2), f"Expected >= 0.2.0, got {__version__}"  # tuple compare; "0.10.0" would sort before "0.2.0" as a string
 
 # v0.1.x code should still work
 config = AdaptShotConfig(device="cpu", seed=42)
