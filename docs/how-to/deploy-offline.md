@@ -17,7 +17,7 @@ pip download adaptshot --dest wheels --python-version 3.11 --platform manylinux2
 
 For a Raspberry Pi 4 or 5 (64-bit OS) use `--platform manylinux2014_aarch64`. For a Windows laptop, `--platform win_amd64`. The folder is about 60 MB. Copy it to the target on a USB stick.
 
-If you use Tambua, add `pip download tambua --dest wheels ...` (once it is on PyPI) or copy the repository's `apps/tambua` folder.
+If you use Tambua, download the app extra too: `pip download "adaptshot[app]" --dest wheels ...` — the `tambua` command ships inside the adaptshot wheel since v0.3.1.
 
 ## Install on the target, with no network
 
