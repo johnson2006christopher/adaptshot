@@ -1,32 +1,38 @@
 """Tambua web application — a Gradio interface over whatever the config describes.
 
-Run::
-
-    python -m examples.mziziengine.app
-
-Then open http://localhost:7860 in your browser.
+Run ``tambua`` after ``pip install "adaptshot[app]"``, then open
+http://localhost:7860 in your browser.
 
 Tabs:
-  - **Setup** — Load support images (generate samples or upload real photos)
-  - **Diagnose** — Upload a crop photo and get instant diagnosis
+  - **Setup** — Load support images from your own photo folders
+  - **Diagnose** — Upload a photo and get an identification with its set
   - **Teach** — Correct wrong predictions (human-in-the-loop)
   - **Health** — View system calibration and session metrics
   - **Batch** — Process multiple images at once and export results
+
+This is the ONE module in the library allowed to import gradio, and nothing on
+the core import path reaches it: `adaptshot.app.cli.launch` imports it lazily,
+inside the function, only when the UI is actually being served. A missing
+gradio therefore surfaces as the CLI's install hint, never as an ImportError
+from here -- which is why this module needs no import guard of its own.
+`tests/test_library_ships_no_gui.py` enforces the boundary.
 """
 
 from __future__ import annotations
 
-import argparse
 import logging
 import os
 from dataclasses import dataclass
 from typing import cast
 
-# No sys.path manipulation here. This is an installed package that declares
-# `adaptshot` as a dependency, so the import resolves the way it does for any
-# other user of the library. The previous version inserted the repository root
-# into sys.path, which only worked when launched from one specific directory --
-# the same defect #11 removed from the library itself.
+import gradio as gr
+
+import adaptshot
+from adaptshot.app import data
+from adaptshot.app.engine import (
+    Identification,
+    TambuaEngine,
+)
 
 # Gradio callbacks are a UI boundary: an exception escaping one takes down the tab
 # instead of telling the user anything, so they catch broadly on purpose. What they
@@ -34,38 +40,6 @@ from typing import cast
 # the maintainer nothing to work with. Every broad handler here logs before it
 # returns its friendly message.
 logger = logging.getLogger(__name__)
-
-# ---------------------------------------------------------------------------
-# Gradio is a hard dependency of this application (see pyproject.toml), not an
-# optional extra of the library. Reaching this branch means the install is broken
-# or was made with --no-deps, so name the package that actually provides it.
-# ---------------------------------------------------------------------------
-try:
-    import gradio as gr
-except ImportError:
-    raise ImportError(
-        "Gradio is not installed, but Tambua requires it. Reinstall the "
-        "application with: pip install tambua"
-    ) from None
-
-# ---------------------------------------------------------------------------
-# Local imports
-#
-# Below the gradio guard, and E402 is silenced per-line rather than repo-wide.
-# The guard has to run first: without it a missing gradio surfaces as a
-# ModuleNotFoundError from somewhere inside this file, rather than as the
-# sentence above telling the user which package to install.
-# ---------------------------------------------------------------------------
-import adaptshot  # noqa: E402
-from tambua import data  # noqa: E402
-from tambua.config import load_config  # noqa: E402
-from tambua.engine import (  # noqa: E402
-    DEFAULT_CONFIG,
-    Identification,
-    TambuaEngine,
-    bundled_config,
-    bundled_configs,
-)
 
 # ---------------------------------------------------------------------------
 # Process state (single-user Gradio app)
@@ -653,69 +627,34 @@ def build_app() -> gr.Blocks:
 
 
 # ===================================================================
-# Entry point
+# Entry point (argument parsing lives in adaptshot.app.cli)
 # ===================================================================
 
-def launch(argv: list[str] | None = None) -> None:
-    """Console-script entry point for ``tambua``.
+def serve(
+    config_path: str | None = None,
+    host: str = "127.0.0.1",
+    port: int = 7860,
+    share: bool = False,
+) -> None:
+    """Configure the process state, build the app, and serve it.
+
+    Called by :func:`adaptshot.app.cli.launch` after argument parsing; the CLI
+    owns the flags and their defaults, this owns everything gradio.
 
     Args:
-        argv: Command-line arguments. ``None`` reads them from ``sys.argv``.
+        config_path: Domain config path; ``None`` loads the bundled default.
+        host: Interface to bind. ``127.0.0.1`` serves this machine only.
+        port: Port for the Gradio server.
+        share: Create a public Gradio share link.
     """
 
-    parser = argparse.ArgumentParser(
-        prog="tambua",
-        description="Tambua — few-shot image classification, powered by AdaptShot",
-    )
-    parser.add_argument(
-        "--config", type=str, default=None,
-        help=(
-            "Path to a domain config. Defaults to the bundled "
-            f"{DEFAULT_CONFIG!r} configuration; run with --list-configs to see "
-            "what else ships."
-        ),
-    )
-    parser.add_argument(
-        "--list-configs", action="store_true",
-        help="List the configurations bundled with this installation, and exit.",
-    )
-    parser.add_argument(
-        "--port", type=int, default=7860,
-        help="Port for the Gradio server (default: 7860)",
-    )
-    parser.add_argument(
-        # Previously hardcoded to 0.0.0.0, which serves the UI to every machine on
-        # the network the moment the app starts. That is a reasonable thing to ask
-        # for -- a phone reaching a laptop over shared wifi -- but not a reasonable
-        # default for a `pip install`-able app that accepts file uploads and writes
-        # model files. Opt in explicitly.
-        "--host", type=str, default="127.0.0.1",
-        help="Interface to bind (default: 127.0.0.1, this machine only). "
-             "Pass 0.0.0.0 to serve other devices on your network.",
-    )
-    parser.add_argument(
-        "--share", action="store_true",
-        help="Create a public shareable link",
-    )
-    args = parser.parse_args(argv)
-
-    if args.list_configs:
-        for name in bundled_configs():
-            cfg = load_config(bundled_config(name))
-            print(f"{name:16} {cfg.application.name} — {', '.join(cfg.domains)}")
-        return
-
-    _state.configure(args.config)
+    _state.configure(config_path)
 
     demo = build_app()
     demo.launch(
-        server_name=args.host,
-        server_port=args.port,
-        share=args.share,
+        server_name=host,
+        server_port=port,
+        share=share,
         theme=gr.themes.Soft(),
         css=_CSS,
     )
-
-
-if __name__ == "__main__":
-    launch()
