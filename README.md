@@ -232,7 +232,7 @@ real-world data at scale.*
 | Contrastive prototypes (InfoNCE) | **Experimental** — requires torch |
 | Explainability (embedding-space attribution) | **Experimental** |
 | ONNX backbone export | **Experimental** |
-| Graphical interfaces | **Removed** — the library ships none. See [Tambua](https://github.com/johnson2006christopher/adaptshot/blob/main/apps/tambua/README.md) |
+| Graphical interfaces | **Moved** — the core library imports none; the Tambua app is the `app` extra: `pip install "adaptshot[app]"` |
 
 Memory: **the 250 MB target is met on a core install.** Measured peak resident set size
 for a full support-set-to-prediction cycle, by `tests/test_memory_ceiling.py`, which
@@ -485,7 +485,7 @@ git clone https://github.com/johnson2006christopher/adaptshot.git
 cd adaptshot
 pip install -e ".[dev,torch]"
 
-ruff check src/ tests/ benchmarks/ apps/ examples/ scripts/
+ruff check src/ tests/ benchmarks/ examples/ scripts/
 mypy src/adaptshot --strict
 pytest tests/ -v
 python -m benchmarks.run_benchmark --smoke-test --seed 42
