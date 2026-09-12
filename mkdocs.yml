@@ -3,7 +3,7 @@ site_description: Human-aligned few-shot vision learning for resource-constraine
 site_url: https://johnson2006christopher.github.io/adaptshot
 repo_url: https://github.com/johnson2006christopher/adaptshot
 repo_name: johnson2006christopher/adaptshot
-edit_uri: edit/v0.3.0/docs/
+edit_uri: edit/main/docs/
 docs_dir: docs
 site_dir: site
 # Built and reachable by URL, but deliberately unlinked: these are historical

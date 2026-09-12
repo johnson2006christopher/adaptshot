@@ -10,7 +10,7 @@ Thank you for your interest in contributing to AdaptShot. This document outlines
 
 ## 🛠️ Getting Started
 ### Prerequisites
-- Python ≥ 3.9
+- Python ≥ 3.10
 - Git
 - Virtual environment tool (`venv`, `virtualenv`, or `conda`)
 
@@ -25,7 +25,7 @@ python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # 3. Install development dependencies
-pip install -e ".[dev]"
+pip install -e ".[dev]"        # add ,app inside the brackets to work on the Tambua app
 
 # 4. Install pre-commit hooks (optional but recommended)
 pre-commit install
@@ -40,10 +40,13 @@ pytest tests/ -v
 mypy src/adaptshot --strict
 
 # Run linting
-ruff check src/adaptshot tests/
+ruff check src/ tests/ benchmarks/ examples/ scripts/
 
-# Run smoke benchmark
-python -m benchmarks.run_benchmark --smoke-test
+# Run smoke benchmark (deterministic, offline)
+python -m benchmarks.run_benchmark --smoke-test --seed 42
+
+# Build the docs strictly (the fifth gate stage)
+mkdocs build --strict
 ```
 
 The smoke benchmark runs **offline by default**. With no CIFAR-10 cache it uses a
@@ -67,7 +70,7 @@ adaptshot/
 │   ├── config/             # Configuration dataclasses
 │   ├── core/               # Inference engine (extractor, similarity, calibration, ACT, learner)
 │   ├── training/           # Continual learning (feedback_router, finetune, up_ugf)
-│   ├── ui/                 # Gradio interface for pilots
+│   ├── app/                # Tambua, the optional web app (`pip install "adaptshot[app]"`)
 │   └── utils/              # Determinism, I/O helpers
 ├── benchmarks/             # Reproducible evaluation scripts
 ├── tests/                  # Unit and integration tests
@@ -110,10 +113,11 @@ def test_new_component_basic():
 2. **Make changes**: Follow testing and style guidelines above
 3. **Run full validation**:
    ```bash
-   pytest tests/ -v
+   ruff check src/ tests/ benchmarks/ examples/ scripts/
    mypy src/adaptshot --strict
-   ruff check src/adaptshot tests/
-   python -m benchmarks.run_benchmark --smoke-test
+   pytest tests/ -v
+   python -m benchmarks.run_benchmark --smoke-test --seed 42
+   mkdocs build --strict
    ```
 4. **Commit with clear messages**:
    ```bash
@@ -135,8 +139,8 @@ def test_new_component_basic():
 
 ## 📚 Documentation
 - **API docs**: Auto-generated from docstrings via MkDocs + mkdocstrings
-- **Tutorials**: Jupyter notebooks in `docs/tutorials/` with executable examples
-- **Examples**: Minimal runnable scripts in `docs/examples/`
+- **Tutorials**: Markdown pages in `docs/tutorials/` whose code blocks the test suite executes (`tests/test_docs_tutorials_run.py`)
+- **Examples**: Minimal runnable scripts in `examples/`
 
 To preview docs locally:
 ```bash
@@ -153,7 +157,7 @@ mkdocs serve
 - Code that violates our CPU-first, <250MB RAM constraint for core functionality
 
 ## 🙏 Thank You
-Every contribution—code, docs, testing, or feedback—helps make trustworthy AI accessible to more people. We review all PRs within 7 days and provide constructive feedback.
+Every contribution—code, docs, testing, or feedback—helps make trustworthy AI accessible to more people. Every PR gets a reply within 48 hours.
 
 If you're unsure where to start, look for issues labeled [`good first issue`](https://github.com/johnson2006christopher/adaptshot/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) or open a Discussion to propose an idea.
 
@@ -162,5 +166,5 @@ If you're unsure where to start, look for issues labeled [`good first issue`](ht
 ---
 
 *Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
-*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
+*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-christopher-hassan)*  
 *Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*

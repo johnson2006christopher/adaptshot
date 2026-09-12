@@ -414,5 +414,5 @@ if prediction_count % 1000 == 0:
 ---
 
 *Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
-*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
+*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-christopher-hassan)*  
 *Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*
