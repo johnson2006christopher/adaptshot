@@ -132,7 +132,7 @@ def _setup_status() -> str:
             f"🟢 **Trained** — {len(labels)} classes loaded.\n"
             + "\n".join(f"  • {label}" for label in labels)
         )
-    return "⚪ **Not trained** — Generate samples or load images first."
+    return "⚪ **Not trained** — load a folder of photographs above."
 
 
 # ===================================================================
@@ -591,8 +591,10 @@ def build_app() -> gr.Blocks:
                         )
                         gr.Markdown(
                             """
-                            💡 **Tip:** Every correction you make teaches the
-                            model. The next person to use it gets the benefit.
+                            💡 **Tip:** Corrections teach the model for this
+                            session. They are **not yet saved automatically** —
+                            on restart the model starts from your photo folder
+                            again (tracked as #107).
                             """
                         )
 
