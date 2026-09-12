@@ -15,14 +15,12 @@ from pathlib import Path
 
 import pytest
 
-pytest.importorskip("tambua", reason="the application is not installed in this environment")
-
-from support.images import make_placeholder
-from tambua.data import (
+from adaptshot.app.data import (
     MIN_IMAGES_PER_CLASS,
     inspect_folder,
     render_problems,
 )
+from tests.app.support.images import make_placeholder
 
 CLASSES = ("widget_ok", "widget_cracked")
 
@@ -125,8 +123,8 @@ def test_every_problem_names_a_location_and_a_remedy(tmp_path: Path) -> None:
 def test_loading_a_bad_folder_raises_before_training(tmp_path: Path) -> None:
     """The engine must refuse the folder, not train on what it can salvage."""
 
-    from tambua import TambuaEngine, bundled_config
-    from tambua.engine import ImageFolderError
+    from adaptshot.app import TambuaEngine, bundled_config
+    from adaptshot.app.engine import ImageFolderError
 
     engine = TambuaEngine(bundled_config("maize"))
     _populate(tmp_path, engine.cfg.labels[0], 1)
