@@ -29,8 +29,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - The `tambua` launcher no longer phones home: `GRADIO_ANALYTICS_ENABLED` is
-  set to `False` before gradio loads, so Gradio's PyPI version check and
-  telemetry posts stay off. (#106, first slice)
+  set to `False` before gradio loads and `analytics_enabled=False` is passed to
+  the app, so Gradio's PyPI version check and telemetry posts stay off. The
+  theme uses system font stacks instead of Google Fonts, so opening the page
+  makes no request to fonts.googleapis.com; uploaded photographs are swept from
+  Gradio's cache after a day instead of accumulating forever. (#106)
+- `tambua --share` is refused without `--auth USER:PASS` (new flag): a share
+  link publishes the page — its server-side folder field included — to the
+  whole internet for 72 hours, which must be a decision, not a default. (#105,
+  first slice)
+
+### Fixed
+- A correction now names the photograph from the correcting user's own browser
+  session. Previously it was applied to the last image *the process* saw, so
+  with two phones on one laptop, user A's correction could be taught onto user
+  B's photo; the engine also gained a lock so concurrent requests cannot clear
+  the support set mid-prediction. (#104)
+- The Teach tab's "Refresh Label List" button now updates the dropdown's
+  choices; it used to set the whole list as the selected value and never
+  refresh anything. (#107)
+- A prediction set containing every known class is presented as "not confident
+  enough to name it", as `is_abstention`'s docstring always promised, instead
+  of as "one of these N" with conflicting advice. (#107)
 
 ## [0.3.0] - 2026-08-29
 

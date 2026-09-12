@@ -156,10 +156,19 @@ def _render_prediction_set(
     """
 
     if result.is_abstention:
+        # Two roads here: an empty set (nothing was plausible) and a set of
+        # every known class (everything was). Both mean "ask a person", and
+        # the message says which road it was rather than guessing (#107).
+        if result.prediction_set:
+            detail = (
+                "Every class it knows was plausible, which is the same as "
+                "naming none of them."
+            )
+        else:
+            detail = "Nothing was plausible enough to include."
         return (
             "## 🤷 Not confident enough to name it\n\n"
-            "Nothing was plausible enough to include. This needs someone who "
-            "can look at it directly."
+            f"{detail} This needs someone who can look at it directly."
         )
 
     members = engine.set_members(result)
@@ -244,7 +253,7 @@ def _identify(image: str | None) -> tuple[str, str, float, str, str]:
 # ===================================================================
 
 
-def _get_label_choices() -> list[str]:
+def _label_choices() -> list[str]:
     """Labels offered in the correction dropdown.
 
     Before training there are no learned labels, but the config always describes
@@ -260,17 +269,36 @@ def _get_label_choices() -> list[str]:
     return engine.cfg.labels
 
 
-def _teach(true_label: str, confidence_weight: float) -> str:
-    """Submit a human correction."""
+def _refreshed_dropdown() -> gr.Dropdown:
+    """A Dropdown update carrying new *choices*.
+
+    Returning a bare list here hands Dropdown.postprocess a value, not a choice
+    list: after a correction added a label, the list stayed stale and the
+    selected value became a Python list rendered as text (#107).
+    """
+
+    return gr.Dropdown(choices=_label_choices())
+
+
+def _teach(true_label: str, confidence_weight: float, image: str | None) -> str:
+    """Submit a human correction for the photo in the caller's own session.
+
+    The image comes from the Diagnose tab's component, per browser session --
+    never from process state. With two phones on one laptop, "the last image
+    the process saw" can be the other person's photograph (#104).
+    """
     engine = _get_engine()
     if not engine.is_trained:
         return "❌ Model not trained yet."
     if not true_label:
         return "❌ Select the correct label."
+    if image is None:
+        return "❌ Upload and diagnose a photo on the Diagnose tab first."
 
     return engine.teach_from_ui(
         true_label=true_label,
         confidence_weight=confidence_weight,
+        image_path=image,
     )
 
 
@@ -383,7 +411,18 @@ def build_app() -> gr.Blocks:
     _layout_example = data.describe_expected_layout(cfg.labels)
     domains = ", ".join(cfg.domains)
 
-    with gr.Blocks(title=app_name) as app:
+    with gr.Blocks(
+        title=app_name,
+        # The header below says "Offline": so no telemetry, and no version
+        # check. The env var in cli.py covers launches through `tambua`; this
+        # covers embedding build_app() elsewhere (#106).
+        analytics_enabled=False,
+        # Gradio writes every upload to its temp dir and, by default, never
+        # deletes it. Field photographs can carry EXIF GPS; on a shared laptop
+        # they must not accumulate forever: sweep files older than a day, once
+        # a day (#106).
+        delete_cache=(86400, 86400),
+    ) as app:
         # ── Header ──
         gr.Markdown(
             f"""
@@ -531,7 +570,7 @@ def build_app() -> gr.Blocks:
                     with gr.Column(scale=1):
                         true_label = gr.Dropdown(
                             label="Correct Label",
-                            choices=_get_label_choices(),
+                            choices=_label_choices(),
                             interactive=True,
                             info="What disease is this actually?",
                             allow_custom_value=True,
@@ -559,14 +598,17 @@ def build_app() -> gr.Blocks:
 
                 refresh_btn = gr.Button("🔄 Refresh Label List")
                 refresh_btn.click(
-                    fn=_get_label_choices,
+                    fn=_refreshed_dropdown,
                     inputs=[],
                     outputs=[true_label],
                 )
 
+                # query_image crosses tabs on purpose: the correction must name
+                # the photo from this browser session, not whatever the process
+                # saw last (#104).
                 teach_btn.click(
                     fn=_teach,
-                    inputs=[true_label, conf_weight],
+                    inputs=[true_label, conf_weight, query_image],
                     outputs=[teach_status],
                 )
 
@@ -635,6 +677,7 @@ def serve(
     host: str = "127.0.0.1",
     port: int = 7860,
     share: bool = False,
+    auth: tuple[str, str] | None = None,
 ) -> None:
     """Configure the process state, build the app, and serve it.
 
@@ -646,6 +689,8 @@ def serve(
         host: Interface to bind. ``127.0.0.1`` serves this machine only.
         port: Port for the Gradio server.
         share: Create a public Gradio share link.
+        auth: ``(username, password)`` required to open the page. The CLI
+            refuses ``--share`` without it (#105).
     """
 
     _state.configure(config_path)
@@ -655,6 +700,13 @@ def serve(
         server_name=host,
         server_port=port,
         share=share,
-        theme=gr.themes.Soft(),
+        auth=auth,
+        # System font stacks, not Gradio's default GoogleFont pair: the header
+        # says "Offline", and a page whose fonts load from fonts.googleapis.com
+        # makes every browser that opens it phone Google (#106).
+        theme=gr.themes.Soft(
+            font=["ui-sans-serif", "system-ui", "sans-serif"],
+            font_mono=["ui-monospace", "Consolas", "monospace"],
+        ),
         css=_CSS,
     )
