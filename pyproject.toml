@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "adaptshot"
-version = "0.3.0"
+version = "0.3.1"
 description = "Human-aligned few-shot vision learning for resource-constrained environments"
 readme = "README.md"
 license = "MIT"
@@ -33,6 +33,12 @@ dependencies = [
 [project.optional-dependencies]
 torch = ["torch>=2.0.0", "torchvision>=0.15.0"]
 faiss = ["faiss-cpu>=1.7.4"]
+# The Tambua application (adaptshot.app), folded in from the never-published
+# `tambua` distribution in v0.3.1 (#102). Gradio 6 is a floor, not a preference:
+# ui.py drives the Gradio 6 API, and the 3.x/4.x/5.x range admits every
+# published gradio CVE. The library itself must never import gradio --
+# tests/test_library_ships_no_gui.py holds that line.
+app = ["gradio>=6,<7", "pyyaml>=6.0"]
 # Upper bounds are deliberate. Linters and type checkers add rules in minor
 # releases, so an unbounded pin means a tool release can turn CI red without any
 # code change -- which is exactly what happened (see #15). Dependabot proposes
@@ -43,14 +49,21 @@ dev = [
     "mypy>=1.5.0,<3",
     "ruff>=0.16.0,<0.17",
     "pre-commit>=3.4.0,<5",
+    # Stubs for the app's YAML loading; harmless on a core install.
+    "types-PyYAML",
 ]
 # Export tooling only. onnxruntime is a *core* dependency since #36 -- it is what
 # runs inference without torch. These two are needed solely to produce the ONNX
 # graphs, which is a maintainer task (scripts/export_backbones.py), not a user one.
 onnx = ["onnx>=1.16.0", "onnxscript>=0.3.0"]
-all = ["adaptshot[torch,faiss,onnx,dev]"]
+all = ["adaptshot[torch,faiss,onnx,app,dev]"]
 
 [project.scripts]
+# pip installs this unconditionally, extras or not, so the module it points at
+# must work on a core install: adaptshot.app.cli imports gradio only inside
+# launch(), and a core user who types `tambua` gets the install hint for the
+# app extra rather than a traceback.
+tambua = "adaptshot.app.cli:launch"
 
 [project.urls]
 Homepage = "https://github.com/johnson2006christopher/adaptshot"
@@ -80,6 +93,10 @@ where = ["src"]
     "data/samples/*.jpg",
     "data/samples/demo/*.jpg",
     "data/samples/README.md",
+    # The Tambua domain configs are the application's identity, not examples: an
+    # installed app with no config on disk has nothing to run. Two files, named
+    # by glob because everything in that directory is meant to ship.
+    "app/configs/*.yaml",
 ]
 
 [tool.ruff]
@@ -122,7 +139,6 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 # Tests legitimately use assert, and fixtures shadow names by design.
 "tests/**" = ["S101"]
-"apps/*/tests/**" = ["S101"]
 
 [tool.mypy]
 # NOT the 3.10 floor from `requires-python`, deliberately. numpy's bundled stubs
@@ -156,10 +172,10 @@ module = [
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
-# `apps/` holds separately-installable applications built on the library. Their
-# tests run here so a change to the library cannot break them unnoticed, but they
-# are skipped cleanly when the app is not installed.
-testpaths = ["tests", "apps"]
+# tests/app/ covers the Tambua application (the `app` extra). Those tests skip
+# cleanly when gradio is not installed, so the core-only CI job still runs the
+# whole tree.
+testpaths = ["tests"]
 addopts = "-ra --strict-markers"
 filterwarnings = ["error::DeprecationWarning:adaptshot.*"]
 
