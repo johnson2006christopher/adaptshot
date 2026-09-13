@@ -385,8 +385,8 @@ def test_every_install_hint_in_src_names_a_declared_extra() -> None:
         text = path.read_text(encoding="utf-8")
         for match in hint_pattern.finditer(text):
             extras_str = match.group(1)
-            for extra in extras_str.split(","):
-                extra = extra.strip().strip("'\"")
+            for raw in extras_str.split(","):
+                extra = raw.strip().strip("'\"")
                 assert extra in declared, (
                     f"{path.relative_to(REPO_ROOT)} suggests undeclared extra {extra!r}; "
                     f"declared extras are: {sorted(declared)}"
