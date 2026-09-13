@@ -283,7 +283,7 @@ def _require_a_usable_backend(backbone_name: str, return_numpy: bool) -> None:
     if not return_numpy:
         raise BackboneError(
             "return_numpy=False asks for a torch.Tensor, which requires torch: "
-            "pip install 'adaptshot[training]'"
+            "pip install 'adaptshot[torch]'"
         )
 
     bundled = bundled_onnx_backbones()
@@ -295,7 +295,7 @@ def _require_a_usable_backend(backbone_name: str, return_numpy: bool) -> None:
     raise BackboneError(
         f"Backbone {backbone_name!r} needs PyTorch on this install: its ONNX "
         f"weights are not bundled. Either {suggestion}, or install torch with "
-        "pip install 'adaptshot[training]'."
+        "pip install 'adaptshot[torch]'."
     )
 
 
