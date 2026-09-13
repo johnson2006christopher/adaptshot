@@ -254,7 +254,7 @@ jobs:
         # Measured on this runner: the download took 34m48s while the benchmark
         # itself took 56s -- 97% of the job was waiting for cs.toronto.edu, which
         # served roughly 80KB/s. The dataset never changes, so fetch it once.
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ./data
           key: cifar10-v1
