@@ -30,7 +30,7 @@ PlantVillage crop-disease photographs, 5-way 5-shot, 100 episodes, seed 42, CPU:
 | | |
 |---|---|
 | Accuracy | **91.4% ± 1.0** — identical to a nearest-centroid baseline, and we say so |
-| Conformal coverage at a 90% target | **97.5% ± 0.7**, mean set size 2.05 |
+| Conformal coverage at a 90% target | **98.1% ± 0.6**, mean set size 1.66 |
 | The same target, top-1 with a calibrated threshold | 83.9% — it misses the target; conformal clears it |
 | Peak memory, full cycle, core install | 120 MB |
 
@@ -42,7 +42,7 @@ README's figures drift from the benchmark artifact.
 
 - **Repository:** https://github.com/johnson2006christopher/adaptshot
 - **Install:** `pip install adaptshot` (Python 3.10+; numpy, Pillow, onnxruntime)
-- **DOI:** _pending — the Zenodo archive is tracked as issue #24; the badge will appear on the repository_
+- **DOI:** [10.5281/zenodo.22161335](https://doi.org/10.5281/zenodo.22161335)
 - **Licence:** MIT. Sample photographs are PlantVillage's, CC BY-SA 3.0, cited in the package.
 
 Johnson Christopher Hassan — Tanzania. Built for the field, where the network is

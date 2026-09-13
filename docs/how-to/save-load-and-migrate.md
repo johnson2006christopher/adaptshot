@@ -14,7 +14,7 @@ learner.load_support_images(paths, labels)
 learner.save("maize.json")
 ```
 
-Two files appear: `maize.json` (labels, calibration state, thresholds, a schema version and a SHA-256 checksum of the embeddings) and `maize.embeddings.npy` (the numbers computed from every teaching photograph and every correction). Together they are typically well under a megabyte for a few dozen photographs. **Keep them together**; one is useless without the other.
+Two files appear: `maize.json` (labels, calibration state, thresholds, a schema version and a SHA-256 checksum of the embeddings) and `maize.embeddings.npy` (the numbers computed from every teaching photograph and every correction). On an install with the torch extra and a fine-tuned head there is a third, `maize.head.pt` — the head's weights. Together they are typically well under a megabyte for a few dozen photographs. **Keep them together**; one is useless without the others.
 
 The photographs themselves are not saved. Only what was computed from them.
 
@@ -61,4 +61,4 @@ A learner that fails to load never half-loads: you get the error and no object, 
 
 ## What is not in the file
 
-The learner's *configuration* is saved, so the same α, thresholds and calibration apply. The optional fine-tuned head from the [torch extra](fine-tune-with-corrections.md) is **not** saved: it is rebuilt fresh on load. The corrections that trained it *are* saved, so on an install with torch it is retrained from them as corrections continue.
+The learner's *configuration* is saved, so the same α, thresholds and calibration apply. The optional fine-tuned head from the [torch extra](fine-tune-with-corrections.md) **is** saved (`<name>.head.pt`) whenever it exists, and restored on load; on a core install the head file is simply absent and everything else loads the same way.

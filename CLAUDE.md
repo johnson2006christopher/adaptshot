@@ -17,7 +17,7 @@ pip install -e ".[dev]"
 Full validation gate (all five must pass before a PR):
 
 ```bash
-ruff check src/ tests/ benchmarks/ apps/ examples/ scripts/
+ruff check src/ tests/ benchmarks/ examples/ scripts/
 mypy src/adaptshot --strict
 pytest tests/ -v
 python -m benchmarks.run_benchmark --smoke-test --seed 42

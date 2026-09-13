@@ -1,9 +1,14 @@
-"""Smoke tests for the Tambua application package.
+"""Smoke tests for the Tambua application package (`adaptshot.app`).
 
 These exist to catch the failure mode a move like this invites: the package
 imports fine from the repository root, where the old layout happened to be on
 `sys.path`, and fails everywhere else. Each test here asserts something that is
 only true once the package is genuinely installed.
+
+Everything in this module runs on a core install: the engine, config and data
+modules are deliberately gradio-free, and the CLI imports gradio only inside
+`launch()`. UI-level tests that need gradio live in the conformal-set suite
+and skip cleanly without it.
 """
 
 from __future__ import annotations
@@ -13,9 +18,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-import pytest
-
-APP_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
+APP_SOURCE = REPO_ROOT / "src" / "adaptshot" / "app"
 
 
 def _code_lines(path: Path) -> list[tuple[int, str]]:
@@ -52,36 +56,34 @@ def _code_lines(path: Path) -> list[tuple[int, str]]:
 
 
 def test_package_imports_without_path_manipulation() -> None:
-    """`tambua` must resolve as an installed package, from any directory.
+    """`adaptshot.app` must resolve as an installed package, from any directory.
 
-    The previous version inserted the repository root into `sys.path` at import
-    time, so it only worked when launched from one place. Running this in a
-    subprocess with a different working directory is what makes the test real --
-    inside pytest the repository root is already importable.
+    The pre-fold application inserted the repository root into `sys.path` at
+    import time, so it only worked when launched from one place. Running this
+    in a subprocess with a different working directory is what makes the test
+    real -- inside pytest the repository root is already importable.
     """
 
-    pytest.importorskip("tambua", reason="the application is not installed in this environment")
-
     result = subprocess.run(
-        [sys.executable, "-c", "import tambua; print(tambua.__file__)"],
+        [sys.executable, "-c", "import adaptshot.app; print(adaptshot.app.__file__)"],
         cwd=Path(sys.prefix),  # deliberately not the repository
         capture_output=True,
         text=True,
         check=False,
     )
     assert result.returncode == 0, (
-        "`import tambua` failed outside the repository, which means it is still "
-        f"resolving by path rather than by installation:\n{result.stderr}"
+        "`import adaptshot.app` failed outside the repository, which means it "
+        f"is still resolving by path rather than by installation:\n{result.stderr}"
     )
-    assert "src/tambua" in result.stdout or "tambua" in result.stdout
+    assert "adaptshot/app" in result.stdout
 
 
 def test_app_does_not_manipulate_sys_path() -> None:
     """No module in the package may edit `sys.path`. That is #11's lesson."""
 
     offenders = [
-        f"{path.relative_to(APP_ROOT)}:{n}"
-        for path in (APP_ROOT / "src").rglob("*.py")
+        f"{path.relative_to(REPO_ROOT)}:{n}"
+        for path in APP_SOURCE.rglob("*.py")
         for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1)
         if "sys.path" in line and not line.lstrip().startswith("#")
     ]
@@ -89,30 +91,99 @@ def test_app_does_not_manipulate_sys_path() -> None:
 
 
 def test_console_script_entry_point_resolves() -> None:
-    """`tambua = "tambua.app:launch"` must point at something callable.
+    """`tambua = "adaptshot.app.cli:launch"` must point at something callable.
 
     A broken entry point is invisible until someone runs the installed command,
-    which is the worst moment to discover it.
+    which is the worst moment to discover it. No gradio skip, deliberately: pip
+    installs the script on core installs too, so resolving it must not need the
+    `app` extra.
     """
 
-    pytest.importorskip("tambua", reason="the application is not installed in this environment")
-    pytest.importorskip("gradio", reason="app.py imports gradio at module scope")
-    from tambua.app import launch
+    from adaptshot.app.cli import launch
 
     assert callable(launch)
+
+
+def test_the_cli_helper_paths_work_without_gradio() -> None:
+    """`tambua --help` and `--list-configs` are core-install features.
+
+    Run in a subprocess with gradio blocked at the import system, so the test
+    means the same thing in every environment -- including CI jobs where the
+    app extra is installed.
+    """
+
+    blocker = (
+        "import sys\n"
+        "class _B:\n"
+        "    def find_spec(self, fullname, path=None, target=None):\n"
+        "        if fullname == 'gradio' or fullname.startswith('gradio.'):\n"
+        "            raise ModuleNotFoundError('gradio blocked: simulating a core install', name=fullname)\n"
+        "        return None\n"
+        "sys.meta_path.insert(0, _B())\n"
+    )
+    for flag, expect in (("--help", "usage: tambua"), ("--list-configs", "MziziGuard")):
+        code = (
+            blocker
+            + "from adaptshot.app.cli import launch\n"
+            + "try:\n"
+            + f"    launch(['{flag}'])\n"
+            + "except SystemExit as exc:\n"
+            + "    raise SystemExit(exc.code or 0)\n"
+        )
+        result = subprocess.run(
+            [sys.executable, "-c", code], capture_output=True, text=True, check=False,
+        )
+        assert result.returncode == 0, (
+            f"`tambua {flag}` should work without gradio:\n{result.stderr}"
+        )
+        assert expect in result.stdout, (
+            f"`tambua {flag}` printed something unexpected:\n{result.stdout}"
+        )
+
+
+def test_bare_tambua_without_gradio_prints_the_install_hint() -> None:
+    """A core user who types `tambua` gets one sentence, not a traceback.
+
+    pip installs the console script unconditionally, so this is the first thing
+    a core user hits. It must name the extra and exit non-zero.
+    """
+
+    code = (
+        "import sys\n"
+        "class _B:\n"
+        "    def find_spec(self, fullname, path=None, target=None):\n"
+        "        if fullname == 'gradio' or fullname.startswith('gradio.'):\n"
+        "            raise ModuleNotFoundError('gradio blocked: simulating a core install', name=fullname)\n"
+        "        return None\n"
+        "sys.meta_path.insert(0, _B())\n"
+        "from adaptshot.app.cli import launch\n"
+        "launch([])\n"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", code], capture_output=True, text=True, check=False,
+    )
+    assert result.returncode == 1, (
+        f"bare `tambua` without gradio must exit 1, got {result.returncode}:\n"
+        f"{result.stdout}\n{result.stderr}"
+    )
+    assert 'pip install "adaptshot[app]"' in result.stderr, (
+        f"the install hint must name the extra:\n{result.stderr}"
+    )
+    assert "Traceback" not in result.stderr, (
+        f"a missing extra is not a crash:\n{result.stderr}"
+    )
 
 
 def test_bundled_configs_ship_inside_the_package() -> None:
     """The configs must be package data, not files beside the source tree.
 
     An installed application whose configs stayed in the repository has nothing
-    to run: `pip install tambua` copies the package, not its sibling directories.
-    Resolving them through `importlib.resources` is what proves they were built
-    into the distribution.
+    to run: pip copies the package, not its sibling directories. Resolving them
+    through `importlib.resources` is what proves they were built into the
+    distribution.
     """
 
-    pytest.importorskip("tambua", reason="the application is not installed in this environment")
-    from tambua import bundled_config, load_config
+    from adaptshot.app import bundled_config, load_config
 
     flagship = load_config(bundled_config("maize"))
     assert flagship.application.name == "MziziGuard"
@@ -127,8 +198,7 @@ def test_a_second_domain_ships_and_shares_no_vocabulary() -> None:
     are what make the claim falsifiable.
     """
 
-    pytest.importorskip("tambua", reason="the application is not installed in this environment")
-    from tambua import bundled_config, load_config
+    from adaptshot.app import bundled_config, load_config
 
     flagship = load_config(bundled_config("maize"))
     second = load_config(bundled_config("solar_panel"))
@@ -146,8 +216,7 @@ def test_no_domain_vocabulary_is_hard_coded_in_the_application() -> None:
     the next config will hit that special case.
     """
 
-    pytest.importorskip("tambua", reason="the application is not installed in this environment")
-    from tambua import bundled_config, load_config
+    from adaptshot.app import bundled_config, load_config
 
     vocabulary = set()
     for name in ("maize", "solar_panel"):
@@ -160,8 +229,8 @@ def test_no_domain_vocabulary_is_hard_coded_in_the_application() -> None:
     permitted = 'DEFAULT_CONFIG = "maize"'
 
     offenders = [
-        f"{path.relative_to(APP_ROOT)}:{n}: {word}"
-        for path in (APP_ROOT / "src").rglob("*.py")
+        f"{path.relative_to(REPO_ROOT)}:{n}: {word}"
+        for path in APP_SOURCE.rglob("*.py")
         for n, line in _code_lines(path)
         for word in vocabulary
         if word in line and line.strip() != permitted
@@ -173,21 +242,21 @@ def test_no_domain_vocabulary_is_hard_coded_in_the_application() -> None:
 
 
 def test_the_package_ships_no_image_generation() -> None:
-    """No module in the distribution may draw an image (#53).
+    """No module in the application may draw an image (#53).
 
     Drawn shapes are not data. A number measured on them is not a result, and
     offering them through the interface as "samples" invites exactly the
     confusion that #17 already cost a release to correct.
 
-    The generator still exists under tests/support/, where deterministic
+    The generator still exists under tests/app/support/, where deterministic
     licence-free images are the right tool for checking that the pipeline runs.
     This test is what keeps it from drifting back into the product.
     """
 
     drawing = ("ImageDraw", "Image.new(", "make_placeholder", "generate_samples")
     offenders = [
-        f"{path.relative_to(APP_ROOT)}:{n}: {marker}"
-        for path in (APP_ROOT / "src").rglob("*.py")
+        f"{path.relative_to(REPO_ROOT)}:{n}: {marker}"
+        for path in APP_SOURCE.rglob("*.py")
         for n, line in _code_lines(path)
         for marker in drawing
         if marker in line
@@ -206,9 +275,8 @@ def test_the_generator_survives_where_it_belongs() -> None:
     identically would make a test that "passes" while measuring nothing.
     """
 
-    pytest.importorskip("tambua", reason="the application is not installed in this environment")
-    from support.images import make_placeholder
-    from tambua import bundled_config, load_config
+    from adaptshot.app import bundled_config, load_config
+    from tests.app.support.images import make_placeholder
 
     assert make_placeholder("a_class", 2).tobytes() == make_placeholder("a_class", 2).tobytes()
 

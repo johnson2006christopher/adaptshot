@@ -19,10 +19,7 @@ from pathlib import Path
 
 import pytest
 
-pytest.importorskip("tambua", reason="the application is not installed in this environment")
-
-from tambua.config import load_config
-
+from adaptshot.app.config import load_config
 from adaptshot.utils.exceptions import ConfigValidationError
 
 VALID = """

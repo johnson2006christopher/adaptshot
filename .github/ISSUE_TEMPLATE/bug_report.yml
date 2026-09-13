@@ -27,7 +27,7 @@ body:
         from adaptshot.utils.determinism import set_deterministic_seed
 
         set_deterministic_seed(42)
-        learner = FewShotLearner(config=AdaptShotConfig(backbone="resnet18", device="cpu"))
+        learner = FewShotLearner(config=AdaptShotConfig(backbone="mobilenet_v3_small", device="cpu"))
         ...
     validations:
       required: true
@@ -57,8 +57,6 @@ body:
         - none (core only)
         - torch
         - faiss
-        - ui
-        - gui
         - dev
     validations:
       required: true

@@ -6,7 +6,8 @@ AdaptShot is pre-1.0. Only the latest released minor version receives security f
 
 | Version | Supported |
 | :------ | :-------- |
-| 0.2.x   | ✅ |
+| 0.3.x   | ✅ |
+| 0.2.x   | ❌ |
 | 0.1.x   | ❌ |
 
 ## Reporting a Vulnerability

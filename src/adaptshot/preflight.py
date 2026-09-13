@@ -292,6 +292,12 @@ def check_environment(*, measure: bool = True) -> EnvironmentReport:
             "faiss present" if deps["faiss"] else "numpy search is used; fine below ~100 images",
             None if deps["faiss"] else 'pip install "adaptshot[faiss]"',
         ),
+        Capability(
+            "the Tambua web app (`tambua` command)",
+            deps["gradio"] is not None,
+            "gradio present" if deps["gradio"] else "the web interface needs gradio",
+            None if deps["gradio"] else 'pip install "adaptshot[app]"',
+        ),
     ]
 
     peak = _peak_rss_mb() if measure else None

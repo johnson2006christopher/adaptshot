@@ -28,7 +28,7 @@ Because it learns from few examples, it has to say when it does not know — whi
 - It dissolves the constraint that makes the numbers mean anything.
 - GPU determinism is materially harder to guarantee, and reproducibility at a fixed seed is a stated constraint of the project.
 
-GPU support exists and stays opt-in: set `device="cuda"` yourself if you have one and want it.
+In 0.3.x the constraint is enforced, not merely defaulted: `cpu` is the only accepted device, and `FewShotLearner` raises `ConfigValidationError` for anything else. A GPU path would have to earn its way back behind an extra, with the determinism questions answered first.
 
 ## What is *not* claimed
 

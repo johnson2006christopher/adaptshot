@@ -97,18 +97,17 @@ jobs:
           # repository's 10 GB cache limit -- which evicted the CIFAR-10 cache and
           # turned a two-minute benchmark job into a thirty-five-minute download.
           pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
-          pip install -e ".[dev]"
-          pip install -e "apps/tambua[dev]"
+          pip install -e ".[dev,app]"
       # gradio writes its component stubs into site-packages on first import;
       # they are not in the wheel, and mypy needs them on disk (see ci.yml).
       - name: Materialise gradio stubs
         run: python -c "import gradio"
       - name: ruff
-        run: ruff check src/ tests/ benchmarks/ apps/ examples/ scripts/
+        run: ruff check src/ tests/ benchmarks/ examples/ scripts/
       - name: mypy
         run: mypy src/adaptshot --strict
       - name: pytest
-        run: pytest tests/ apps/tambua/tests -q
+        run: pytest tests/ -q
       - name: Deterministic smoke benchmark
         run: python -m benchmarks.run_benchmark --smoke-test --seed 42
 

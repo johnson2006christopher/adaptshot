@@ -7,11 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - unreleased
+
 ### Added
+- **Tambua ships with the library**: `pip install "adaptshot[app]"` installs the
+  Gradio application as `adaptshot.app`, and the `tambua` command with it. The
+  separate `tambua` distribution was never published to PyPI — `pip install
+  tambua` has always failed — so this makes the app installable for the first
+  time. On a core install the `tambua` command explains the extra instead of
+  crashing, and `import adaptshot` still never touches gradio or the app.
+  Gradio floor raised from 3.50 to `>=6,<7`: the UI drives the Gradio 6 API,
+  and the old range admitted every published gradio CVE. (#102)
+- `FewShotLearner.support_size`: the public way to ask how many support images
+  are loaded, replacing the app's reach into the private `_sim_embeddings`.
+- `adaptshot.check_environment()` now reports whether the Tambua app is
+  available, with the install hint when it is not.
 - Citable: the 0.3.0 release is archived on Zenodo. Version DOI
   [10.5281/zenodo.22161336](https://doi.org/10.5281/zenodo.22161336); concept DOI
   [10.5281/zenodo.22161335](https://doi.org/10.5281/zenodo.22161335) on the README badge and in
   `CITATION.cff`. (#24)
+
+### Changed
+- The `tambua` launcher no longer phones home: `GRADIO_ANALYTICS_ENABLED` is
+  set to `False` before gradio loads and `analytics_enabled=False` is passed to
+  the app, so Gradio's PyPI version check and telemetry posts stay off. The
+  theme uses system font stacks instead of Google Fonts, so opening the page
+  makes no request to fonts.googleapis.com; uploaded photographs are swept from
+  Gradio's cache after a day instead of accumulating forever. (#106)
+- `tambua --share` is refused without `--auth USER:PASS` (new flag): a share
+  link publishes the page — its server-side folder field included — to the
+  whole internet for 72 hours, which must be a decision, not a default. (#105,
+  first slice)
+
+### Fixed
+- A correction now names the photograph from the correcting user's own browser
+  session. Previously it was applied to the last image *the process* saw, so
+  with two phones on one laptop, user A's correction could be taught onto user
+  B's photo; the engine also gained a lock so concurrent requests cannot clear
+  the support set mid-prediction. (#104)
+- The Teach tab's "Refresh Label List" button now updates the dropdown's
+  choices; it used to set the whole list as the selected value and never
+  refresh anything. (#107)
+- A prediction set containing every known class is presented as "not confident
+  enough to name it", as `is_abstention`'s docstring always promised, instead
+  of as "one of these N" with conflicting advice. (#107)
 
 ## [0.3.0] - 2026-08-29
 
@@ -28,9 +67,9 @@ is formatted from a committed artifact and held to it by a test.
 - **Conformal coverage, measured**: 98.1% ± 0.6 at a 90% target, mean set size
   1.66, against a calibrated top-1 threshold that reached 83.9%. (#14, #86)
 - **Coverage under distribution shift**: blur, brightness, JPEG and downscale
-  applied to queries only; the sets widen, the bound still bends (85.5% at
+  applied to queries only; the sets widen, the bound still bends (85.8% at
   blur σ=4), the OOD flag correlates 0.92 with the loss, and ten in-situ
-  corrections recover the worst cell to 89%. (`benchmarks/run_shift.py`, #29)
+  corrections recover that cell to 89.0%. (`benchmarks/run_shift.py`, #29)
 - **Latency by stage** (median and p95), cold start, and peak memory for one
   cycle *and* for the harness, named apart, with the CPU model recorded. 120 MB
   for one fresh process on the core install. (#20)
@@ -149,10 +188,11 @@ is formatted from a committed artifact and held to it by a test.
 - **The `gui` and `ui` extras** and the `adaptshot-studio` console script, which existed
   only for the above.
 
-The maintained application is [Tambua](https://github.com/johnson2006christopher/adaptshot/blob/v0.3.0/apps/tambua/README.md), a separate distribution
-built on AdaptShot — `pip install tambua`. `tests/test_library_ships_no_gui.py` fails if
-a GUI reappears anywhere under `src/adaptshot/`, if either extra returns, or if a live
-document points at a removed entrypoint.
+The maintained application is Tambua — at the time a separate distribution under
+`apps/tambua/`, and since v0.3.1 the `app` extra of the library itself
+(`pip install "adaptshot[app]"`, #102). `tests/test_library_ships_no_gui.py` still fails if
+the library *core* grows a GUI import outside the app's one permitted module, if
+either retired extra returns, or if a live document points at a removed entrypoint.
 
 ### Corrected
 

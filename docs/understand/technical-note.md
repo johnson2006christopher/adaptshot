@@ -12,7 +12,7 @@ The second half is the part that matters. A classifier that is 91% accurate and 
 
 Nothing in the components is new, and this note claims none of it is. The contribution is the combination under the constraints above.
 
-**Embeddings.** A frozen ImageNet-pretrained MobileNetV3-Small, exported once to ONNX and shipped in the wheel (4.0 MB), so inference needs only numpy, Pillow and onnxruntime. The torch path produces the same embeddings to 1.8 × 10⁻⁶; a test enforces it.
+**Embeddings.** A frozen ImageNet-pretrained MobileNetV3-Small, exported once to ONNX and shipped in the wheel (4.0 MB), so inference needs only numpy, Pillow and onnxruntime. The torch path produces the same embeddings to within the enforced 1e-4 bound (cosine > 0.9999); `tests/test_onnx_parity.py` holds it.
 
 **Prototypes.** One mean embedding per class from the support photographs (Snell et al., 2017); a query is assigned to the nearest by cosine distance. As §3 shows, that is the whole of the accuracy.
 
@@ -60,8 +60,8 @@ Peak resident memory for that cold-start cycle — one process, one support set,
 
 Each is stated with the condition that triggers it.
 
-1. **The guarantee assumes exchangeability, and the field violates it.** The moment query photographs come from a different camera, season, light, or background than the support set, calibration and test are no longer drawn from the same distribution and the 1 − α bound no longer applies. Measured (`benchmarks/run_shift.py`, 40 episodes): with the queries blurred, re-compressed or downscaled and the support left alone, coverage falls from 96.9% ± 1.0 to 85.5% ± 3.6 at a 90% target. The sets do widen — mean size 1.34 to 2.01 — but the quantile was set on clean photographs and cannot know the queries moved, so the shortfall remains. The OOD flag rate correlates 0.92 with the coverage lost, a partial warning. 10 labelled in-situ corrections through `correct()` recover the worst cell to 87.8% ± 2.4.
-2. **Coverage is marginal, not per-class.** The 97.5% is an average over all queries. A class with few or unrepresentative support photographs can be under-covered while the average holds; nothing here promises otherwise for any single class.
+1. **The guarantee assumes exchangeability, and the field violates it.** The moment query photographs come from a different camera, season, light, or background than the support set, calibration and test are no longer drawn from the same distribution and the 1 − α bound no longer applies. Measured (`benchmarks/run_shift.py`, 40 episodes): with the queries blurred, re-compressed or downscaled and the support left alone, coverage falls from 96.9% ± 1.0 to 85.5% ± 3.6 at a 90% target (JPEG q=5, the worst cell). The sets do widen — mean size 1.34 to 2.01 in that cell — but the quantile was set on clean photographs and cannot know the queries moved, so the shortfall remains. The OOD flag rate correlates 0.92 with the coverage lost, a partial warning. 10 labelled in-situ corrections through `correct()` recover it to 87.8% ± 2.4.
+2. **Coverage is marginal, not per-class.** The 98.1% is an average over all queries. A class with few or unrepresentative support photographs can be under-covered while the average holds; nothing here promises otherwise for any single class.
 3. **Small calibration sets give sets of every class.** At α = 0.05 the engine needs 19 calibration scores before any finite quantile exists; below that the set is all classes by construction. A user with eight support photographs at the default α gets no informative set, and is told so at construction rather than shown a set that is quietly too small.
 4. **One dataset, in the lab.** PlantVillage photographs are single leaves on uniform backgrounds under controlled lighting. The 91.4% is a statement about that; a field photograph is a distribution shift of exactly the kind in (1). No field deployment has taken place.
 5. **The out-of-distribution flag is sensitive to the support set.** A healthy tomato leaf presented to a maize model was flagged with twelve support photographs and not with eleven. The confidence gate caught it in both cases; the OOD flag alone should not be relied on at few-shot sizes.
@@ -69,7 +69,7 @@ Each is stated with the condition that triggers it.
 
 ## 5. Reproducibility
 
-Seed 42 throughout. Hardware as in §3, recorded in the artifact with the CPU model, core count, memory, OS, Python and library versions. The artifact was produced at commit `5c1365f`. One command each:
+Seed 42 throughout. Hardware as in §3, recorded in the artifact with the CPU model, core count, memory, OS, Python and library versions. One command each:
 
 ```
 python scripts/fetch_plantvillage.py --out data/pv_bench --per-class 20 --preset benchmark

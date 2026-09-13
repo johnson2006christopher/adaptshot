@@ -11,7 +11,7 @@ If the tools are missing (`ModuleNotFoundError`, `command not found`), the dev e
 
 ## 1. Lint
 ```bash
-ruff check src/ tests/ benchmarks/ apps/ examples/ scripts/
+ruff check src/ tests/ benchmarks/ examples/ scripts/
 ```
 All six directories: CI lints all of them, and `scripts/` was missed for months because it was not in this list. Auto-fixable issues: rerun with `--fix`, then show the diff.
 

@@ -152,10 +152,11 @@ class ConformalEngine:
         0.72 and 0.80 for clean photographs, blurred ones, and a crop the model
         had never seen (#86). A score that cannot tell those apart cannot widen
         a prediction set when it should. Measured on real PlantVillage
-        episodes, the ratio gives tighter sets at the same clean coverage --
-        1.11 against 1.22 -- and sets that widen under shift, from 1.09 to 1.43
-        at blur radius 4, though coverage there stays far below the target:
-        that failure is exchangeability breaking, not the score.
+        episodes (``results/plantvillage_shift.json``), sets under the ratio
+        score widen under shift -- mean size 1.34 on clean queries to 2.13 at
+        blur radius 4 -- though coverage there stays below the target: that
+        failure is exchangeability breaking, not the score. #86 records the
+        comparison against the old score.
         """
 
         if len(distances) == 0 or len(labels) == 0:

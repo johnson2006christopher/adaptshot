@@ -117,7 +117,7 @@ The following rules are checked in `AdaptShotConfig.__post_init__()` in addition
 | `calibration_eval_bins >= ece_n_bins` | `ValueError` |
 | `0.5 <= ood_threshold_quantile <= 1.0` | `ValueError` |
 | `ood_absolute_min_distance >= 0.0` | `ValueError` |
-| `device == "cuda"` but CUDA unavailable | `RuntimeWarning` (falls back to CPU) |
+| `device != "cpu"` | `ConfigValidationError` from `FewShotLearner` — 0.3.x accepts only `cpu` (the config itself warns first when CUDA is absent) |
 
 ---
 
@@ -204,5 +204,5 @@ AdaptShotConfig(
 ---
 
 *Created by [Johnson Christopher Hassan](https://github.com/johnson2006christopher)*  
-*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-hassan-935124311/)*  
+*Connect on [LinkedIn](https://www.linkedin.com/in/johnson-christopher-hassan)*  
 *Project: [github.com/johnson2006christopher/adaptshot](https://github.com/johnson2006christopher/adaptshot)*

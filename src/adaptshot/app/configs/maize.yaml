@@ -5,7 +5,7 @@
 # set from it. Nothing here is compiled into the code.
 #
 # Every value is validated on load. A mistake is reported with the file, the
-# line and the fix -- see apps/tambua/src/tambua/config.py.
+# line and the fix -- see adaptshot/app/config.py.
 
 application:
   name: "MziziGuard"
