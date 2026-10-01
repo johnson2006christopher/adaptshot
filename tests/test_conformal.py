@@ -106,17 +106,46 @@ class TestConformalEngine:
     def test_predict_set_includes_valid_classes_after_fitting(
         self, engine: ConformalEngine
     ) -> None:
-        """After calibration, prediction set may include multiple classes."""
-        # Add enough calibration scores
+        """After calibration, prediction set may include multiple classes.
+
+        Calibration scores of 1.2 — a value the ratio score can actually
+        produce (it is d_true/min(d), never below 1.0). This test used to seed
+        impossible 0.5s, and only the force-added top-1 kept it passing (#115).
+        """
+        for _ in range(15):
+            engine.update_calibration(1.2, "cat")
+
+        distances = np.array([0.1, 1.0, 2.0], dtype=np.float32)
+        labels = np.array(["cat", "dog", "bird"], dtype=object)
+        result = engine.predict_set(distances, labels, "cat", 0.9)
+        # The top-1's own score is exactly 1.0, the minimum, so any finite
+        # quantile admits it — by arithmetic, not by a force-add.
+        assert "cat" in result.prediction_set
+        assert result.set_size >= 1
+        assert result.calibrated is True
+
+    def test_an_empty_set_is_an_abstention_not_a_forced_singleton(
+        self, engine: ConformalEngine
+    ) -> None:
+        """When no class clears the quantile, the set is honestly empty.
+
+        The engine used to force-add the top prediction "for safety", which
+        under non-default score methods turned an abstention the theory issued
+        into a singleton it never did (#115). Scores below 1.0 cannot arise
+        under the default ratio score, which is exactly what makes them the
+        right probe here: a quantile of 0.5 admits nothing.
+        """
         for _ in range(15):
             engine.update_calibration(0.5, "cat")
 
         distances = np.array([0.1, 1.0, 2.0], dtype=np.float32)
         labels = np.array(["cat", "dog", "bird"], dtype=object)
         result = engine.predict_set(distances, labels, "cat", 0.9)
-        # Top prediction is always included
-        assert "cat" in result.prediction_set
-        assert result.set_size >= 1
+        assert result.prediction_set == set(), (
+            "no class cleared the quantile; the set must say so, not smuggle "
+            "the top-1 back in"
+        )
+        assert result.set_size == 0
 
     def test_calibration_summary_tracks_state(self, engine: ConformalEngine) -> None:
         """Calibration summary reflects buffer state."""
