@@ -346,59 +346,19 @@ class FewShotLearner:
         support_embeddings = np.array(self._sim_embeddings, dtype=np.float32)
         support_labels = np.array(self._sim_labels, dtype=object)
 
-        if self.config.inference_mode == "contrastive" and self.contrastive.is_fitted:
-            pred_label_raw, raw_conf, _proto_idx = self.contrastive.nearest_prototype(
-                query_emb, self._contrastive_prototype_embeddings, self._contrastive_prototype_labels
-            )
-            pred_label = self._coerce_label(pred_label_raw)
-            neighbor_idx = self._nearest_support_index_for_label(query_emb, pred_label)
-            distance_to_prototype = self._distance_to_label_prototype(query_emb, pred_label)
-            # Contrastive prototype margin: confidence gap to second-closest class
-            sims = self.contrastive.project_query(query_emb) @ self._contrastive_prototype_embeddings.T
-            sorted_sims = np.sort(sims)[::-1]
-            prototype_margin = float(sorted_sims[0] - sorted_sims[1]) if len(sorted_sims) > 1 else 0.0
-        elif self.config.inference_mode == "prototypical" and self._prototype_embeddings.size > 0:
-            result = find_nearest_prototype(
-                query=query_emb,
-                prototypes=self._prototype_embeddings,
-                prototype_labels=self._prototype_labels,
-                metric=self.config.similarity_metric,
-            )
-            pred_label_raw = cast(str | int, result[0])
-            raw_conf = result[1]
-            distance_to_prototype = result[3]
-            prototype_margin = result[4]
-            pred_label = self._coerce_label(pred_label_raw)
-            neighbor_idx = self._nearest_support_index_for_label(query_emb, pred_label)
-        else:
-            _, raw_conf, neighbor_idx = find_nearest_neighbor(
-                query=query_emb,
-                support_embeddings=support_embeddings,
-                support_labels=support_labels,
-                use_faiss=self.config.use_faiss,
-                metric=self.config.similarity_metric,
-            )
-            if neighbor_idx < 0 or neighbor_idx >= len(self._sim_labels):
-                raise AdaptShotError(
-                    "Nearest-neighbor index is out of bounds. "
-                    "Rebuild support set with load_support_images()."
-                )
-            pred_label = self._coerce_label(self._sim_labels[neighbor_idx])
-            distance_to_prototype = self._distance_to_label_prototype(query_emb, pred_label)
-            prototype_margin = 0.0
+        pred_label, raw_conf, neighbor_idx, distance_to_prototype, prototype_margin = (
+            self._infer(query_emb)
+        )
 
         try:
             calibrated_conf = self._calibrate_or_raise(raw_conf)
         except CalibrationNotReadyError:
             calibrated_conf = self._raw_to_unit_interval(raw_conf)
 
-        recent_unc = float(np.mean(self._sim_uncertainties[-10:])) if self._sim_uncertainties else 0.0
         class_idx = self._label_to_idx.get(pred_label, 0)
         accept, act_action = self.act.should_accept(
             confidence=calibrated_conf,
             class_idx=class_idx,
-            recent_incorrect_rate=recent_unc,
-            recent_correct_rate=1.0 - recent_unc,
         )
 
         ood_flag = False
@@ -551,19 +511,23 @@ class FewShotLearner:
         image = self._load_rgb_image_from_path(image_path)
         query_emb = self._extract_embedding_checked(image=image, source=image_path)
 
-        support_embeddings = np.array(self._sim_embeddings, dtype=np.float32)
-        support_labels = np.array(self._sim_labels, dtype=object)
-        _, raw_conf, neighbor_idx = find_nearest_neighbor(
-            query_emb,
-            support_embeddings,
-            support_labels,
-            use_faiss=self.config.use_faiss,
-            metric=self.config.similarity_metric,
-        )
-
-        predicted_label = self._sim_labels[int(neighbor_idx)]
+        # The same dispatch predict() uses, so the label being corrected is
+        # the label the user actually saw, and the raw confidence recorded
+        # here comes from the same distribution the calibrator is applied to
+        # at prediction time (#116). A 1-NN lookup regardless of
+        # inference_mode gave the calibrator one distribution to learn on and
+        # another to calibrate.
+        predicted_label, raw_conf, _neighbor_idx, _distance, _margin = self._infer(query_emb)
         predicted_idx = self._label_to_idx.get(predicted_label, 0)
         corrected_idx = self._ensure_label_index(true_label)
+
+        # The calibration window is fed by the router below
+        # (route_feedback -> calibrator.update), now with a raw confidence
+        # from the same dispatch predict() uses. The predicted class's ACT
+        # threshold adapts here on the real outcome -- the only call that
+        # moves a threshold (#116).
+        was_correct = predicted_label == true_label
+        self.act.record_outcome(predicted_idx, bool(was_correct))
 
         correction = Correction(
             image_path=image_path,
@@ -1016,15 +980,78 @@ class FewShotLearner:
                 "See docs/tutorials/03-your-own-photos.md."
             )
 
+    def _infer(
+        self, query_emb: FloatArray
+    ) -> tuple[str | int, float, int, float, float]:
+        """One inference-mode dispatch for `predict()` and `correct()` alike.
+
+        Returns ``(pred_label, raw_conf, neighbor_idx, distance_to_prototype,
+        prototype_margin)``. `correct()` used to run its own 1-NN lookup
+        regardless of ``inference_mode``, so in the default prototypical mode
+        the calibrator learned on 1-NN confidences and was applied to
+        prototype confidences -- two different distributions -- and the replay
+        buffer recorded a predicted label the user never saw (#116). One
+        dispatch means what the calibrator learns on is what it calibrates.
+        """
+
+        support_embeddings = np.array(self._sim_embeddings, dtype=np.float32)
+        support_labels = np.array(self._sim_labels, dtype=object)
+
+        if self.config.inference_mode == "contrastive" and self.contrastive.is_fitted:
+            pred_label_raw, raw_conf, _proto_idx = self.contrastive.nearest_prototype(
+                query_emb, self._contrastive_prototype_embeddings, self._contrastive_prototype_labels
+            )
+            pred_label = self._coerce_label(pred_label_raw)
+            neighbor_idx = self._nearest_support_index_for_label(query_emb, pred_label)
+            distance_to_prototype = self._distance_to_label_prototype(query_emb, pred_label)
+            # Contrastive prototype margin: confidence gap to second-closest class
+            sims = self.contrastive.project_query(query_emb) @ self._contrastive_prototype_embeddings.T
+            sorted_sims = np.sort(sims)[::-1]
+            prototype_margin = float(sorted_sims[0] - sorted_sims[1]) if len(sorted_sims) > 1 else 0.0
+        elif self.config.inference_mode == "prototypical" and self._prototype_embeddings.size > 0:
+            result = find_nearest_prototype(
+                query=query_emb,
+                prototypes=self._prototype_embeddings,
+                prototype_labels=self._prototype_labels,
+                metric=self.config.similarity_metric,
+            )
+            pred_label_raw = cast(str | int, result[0])
+            raw_conf = result[1]
+            distance_to_prototype = result[3]
+            prototype_margin = result[4]
+            pred_label = self._coerce_label(pred_label_raw)
+            neighbor_idx = self._nearest_support_index_for_label(query_emb, pred_label)
+        else:
+            _, raw_conf, neighbor_idx = find_nearest_neighbor(
+                query=query_emb,
+                support_embeddings=support_embeddings,
+                support_labels=support_labels,
+                use_faiss=self.config.use_faiss,
+                metric=self.config.similarity_metric,
+            )
+            if neighbor_idx < 0 or neighbor_idx >= len(self._sim_labels):
+                raise AdaptShotError(
+                    "Nearest-neighbor index is out of bounds. "
+                    "Rebuild support set with load_support_images()."
+                )
+            pred_label = self._coerce_label(self._sim_labels[neighbor_idx])
+            distance_to_prototype = self._distance_to_label_prototype(query_emb, pred_label)
+            prototype_margin = 0.0
+
+        return pred_label, float(raw_conf), int(neighbor_idx), float(distance_to_prototype), float(prototype_margin)
+
     def _calibrate_or_raise(self, raw_confidence: float) -> float:
         min_samples = max(10, self.calibrator.window_size // 2)
         observed = len(self.calibrator._window_confidences)
         if self.calibrator.method in {"temperature", "scaling_binning"} and observed < min_samples:
-            # v0.2.0: Instead of raising, fall back gracefully.
-            # This allows autonomous predict() to work from the first call
-            # without requiring a separate calibration step.
-            self.calibrator._window_confidences.append(float(raw_confidence))
-            self.calibrator._window_correct.append(True)  # optimistic prior
+            # Not enough real observations to trust the fitted calibration, so
+            # fall back to the raw confidence mapped onto [0, 1]. The fallback
+            # used to also APPEND the confidence with a fabricated
+            # `correct=True` to the window -- an "optimistic prior" that let
+            # forty predictions of the same photograph manufacture forty
+            # perfect outcomes and steer the temperature fit (#116). predict()
+            # must observe, never testify: the window now fills only from the
+            # LOO bootstrap and from real outcomes via correct().
             return self._raw_to_unit_interval(raw_confidence)
         return float(self.calibrator.calibrate(raw_confidence))
 
@@ -1310,24 +1337,16 @@ class FewShotLearner:
         if len(raw_confs) < 5:
             return
 
-        # Grid search temperature that minimizes ECE on these LOO predictions
-        best_temp = 1.0
-        best_ece = float("inf")
-        for temp_candidate in np.linspace(0.5, 3.0, 26):
-            ece_sum = 0.0
-            for raw, correct in zip(raw_confs, correctness, strict=True):
-                calibrated = float(np.clip(raw ** (1.0 / max(temp_candidate, 0.1)), 0.0, 1.0))
-                ece_sum += abs(calibrated - float(correct))
-            avg_ece = ece_sum / len(raw_confs)
-            if avg_ece < best_ece:
-                best_ece = avg_ece
-                best_temp = temp_candidate
-
-        # Seed the calibration window with these bootstrapped observations
+        # Seed the calibration window with these bootstrapped observations and
+        # let the engine fit its own temperature on them. The grid that lived
+        # here searched `raw ** (1/T)` by mean |p - y|, while the engine
+        # applies `sigmoid(logit(p) / T)` -- it minimised one function and
+        # deployed another, and picked T = 3.0, the edge of its grid, on the
+        # bundled photographs (#116). One objective, one function, one place.
         for raw, correct in zip(raw_confs, correctness, strict=True):
             self.calibrator._window_confidences.append(float(raw))
             self.calibrator._window_correct.append(bool(correct))
-        self.calibrator.temperature = float(best_temp)
+        self.calibrator._refit_temperature()
 
     def _ensure_label_index(self, label: str | int) -> int:
         if label in self._label_to_idx:
