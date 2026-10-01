@@ -51,6 +51,7 @@ from .extractor import (
 )
 from .similarity import (
     compute_class_prototypes,
+    cosine_similarity_numpy,
     euclidean_distance_numpy,
     find_nearest_neighbor,
     find_nearest_prototype,
@@ -559,7 +560,13 @@ class FewShotLearner:
             proto_labels = self._prototype_labels
             if true_label in proto_labels:
                 score = self.conformal.nonconformity(query_distances, proto_labels, true_label)
-                self.conformal.update_calibration(score, true_label)
+                # Was the truth inside the set the engine would have issued
+                # for this photograph? That is the coverage observation
+                # empirical_coverage reports; NaN q_hat means no calibrated
+                # set existed, so there is nothing to observe (#115).
+                q_hat = self.conformal.current_q_hat()
+                covered = bool(score <= q_hat) if not math.isnan(q_hat) else None
+                self.conformal.update_calibration(score, true_label, predicted_in_set=covered)
             else:
                 logger.debug(
                     "correction introduces class %r; no conformal score stored "
@@ -1172,18 +1179,35 @@ class FewShotLearner:
         return int(candidates[local_idx])
 
     def _compute_all_prototype_distances(self, query_embedding: FloatArray) -> FloatArray:
-        """Compute distances from query to all class prototypes.
+        """Distances from query to every class prototype, in the classifier's geometry.
 
         Used by conformal prediction to build candidate set scores.
         Returns [K] array of distances for K prototype classes.
         """
         if self._prototype_embeddings.size == 0:
             return np.array([], dtype=np.float32)
-        query_2d = np.asarray(query_embedding, dtype=np.float32).reshape(1, -1)
-        diffs = query_2d - self._prototype_embeddings
-        distances = np.sqrt(np.sum(diffs ** 2, axis=1))
-        result: FloatArray = np.asarray(distances, dtype=np.float32)
-        return result
+        return self._prototype_distances_in_classifier_geometry(
+            query_embedding, self._prototype_embeddings
+        )
+
+    def _prototype_distances_in_classifier_geometry(
+        self, query_embedding: FloatArray, prototypes: FloatArray
+    ) -> FloatArray:
+        """The one definition of "distance to a prototype" conformal may use.
+
+        Conformal scores used raw Euclidean distances while the classifier
+        ranks prototypes by L2-normalised Euclidean (or cosine) — so the top-1
+        could fall outside its own level set, and `predict_set` force-added it
+        "for safety", making the reported set sizes not the sets the theory
+        describes (#115). Calibration (the LOO bootstrap), correction scoring
+        and prediction all come through here now, in the metric the classifier
+        actually decides with.
+        """
+        if self.config.similarity_metric == "cosine":
+            sims = cosine_similarity_numpy(query_embedding, prototypes).reshape(-1)
+            return np.asarray(1.0 - np.clip(sims, -1.0, 1.0), dtype=np.float32)
+        distances = euclidean_distance_numpy(query_embedding, prototypes, normalize=True)
+        return np.asarray(distances.reshape(-1), dtype=np.float32)
 
     def _update_ood_threshold(self) -> None:
         if not self.config.enable_ood_detection:
@@ -1263,7 +1287,30 @@ class FewShotLearner:
                 label_to_indices[key] = []
             label_to_indices[key].append(i)
 
+        # A class with a single photograph has no leave-one-out prototype: its
+        # own example's score would be +inf by construction, and one +inf in
+        # the buffer is enough to make q_hat infinite at small alpha — one
+        # photo silently disabled the feature for everyone (#115). Skip those
+        # examples and say so once, naming the fix.
+        singleton_classes = sorted(
+            str(key) for key, indices in label_to_indices.items() if len(indices) == 1
+        )
+        if singleton_classes:
+            logger.warning(
+                "conformal calibration skips class(es) with a single support "
+                "photograph: %s. One photo cannot be scored leave-one-out; add "
+                "at least one more photograph per class to include them.",
+                ", ".join(singleton_classes),
+            )
+        skip = {
+            indices[0]
+            for indices in label_to_indices.values()
+            if len(indices) == 1
+        }
+
         for i in range(n):
+            if i in skip:
+                continue
             emb_i = np.asarray(support_embeddings[i], dtype=np.float32)
             label_i = support_labels[i]
 
@@ -1287,11 +1334,17 @@ class FewShotLearner:
 
             loo_proto_arr = np.array(loo_prototypes, dtype=np.float32)
             loo_labels_arr = np.array(loo_labels, dtype=object)
-            diffs = emb_i.reshape(1, -1) - loo_proto_arr
-            distances_i = np.sqrt(np.sum(diffs ** 2, axis=1))
+            distances_i = self._prototype_distances_in_classifier_geometry(
+                emb_i, loo_proto_arr
+            )
 
             score = self.conformal.nonconformity(distances_i, loo_labels_arr, label_i)
-            self.conformal.update_calibration(score, label_i)
+            if not np.isfinite(score):
+                continue
+            # Seeded, not observed: bootstrap scores are calibration data but
+            # not observations of deployed sets, so they stay out of the
+            # empirical-coverage counters (#115).
+            self.conformal.seed_calibration(score, label_i)
 
     def _bootstrap_temperature_calibration(
         self,
