@@ -38,6 +38,7 @@ from __future__ import annotations
 import argparse
 import io
 import json
+import math
 import os
 import tempfile
 import time
@@ -143,19 +144,82 @@ def _recalibrate(
         learner.correct(image_path=target, true_label=str(labels[index]))
 
 
+def _recalibrate_conformal_only(
+    learner: FewShotLearner, paths: list[Path], labels: np.ndarray, indices: np.ndarray, shift: Shift, level: float, workdir: str
+) -> None:
+    """Ablation arm: store the held-out conformal scores, touch nothing else.
+
+    Mirrors the scoring block of ``FewShotLearner.correct()`` (held-out score
+    against the current prototypes, coverage observed against the current
+    quantile) without the prototype adaptation, the ACT outcome or the replay
+    buffer. Private learner helpers on purpose: the arm must use the same
+    arithmetic as the real correction path, or the ablation compares two
+    different scoring rules instead of two mechanisms.
+    """
+
+    for position, index in enumerate(indices):
+        target = os.path.join(workdir, f"recal_{position}.png")
+        shift(_load(paths[index]), level).save(target)
+        image = learner._load_rgb_image_from_path(target)
+        embedding = learner._extract_embedding_checked(image=image, source=target)
+        label = str(labels[index])
+        if learner._prototype_embeddings.size == 0 or label not in learner._prototype_labels:
+            continue
+        distances = learner._compute_all_prototype_distances(embedding)
+        score = learner.conformal.nonconformity(distances, learner._prototype_labels, label)
+        q_hat = learner.conformal.current_q_hat()
+        covered = bool(score <= q_hat) if not math.isnan(q_hat) else None
+        learner.conformal.update_calibration(score, label, predicted_in_set=covered)
+
+
+def _adapt_prototypes_only(
+    learner: FewShotLearner, paths: list[Path], labels: np.ndarray, indices: np.ndarray, shift: Shift, level: float, workdir: str
+) -> None:
+    """Ablation arm: the full correction path with conformal updates muted.
+
+    Prototypes move, ACT learns, the replay buffer fills -- but no calibration
+    score is stored, so whatever the sets do afterwards is the work of
+    prototype adaptation alone.
+    """
+
+    engine = learner.conformal
+    original = engine.update_calibration
+
+    def _muted(score: float, true_label: object, predicted_in_set: object = None) -> None:
+        return None
+
+    engine.update_calibration = _muted  # type: ignore[method-assign]
+    try:
+        _recalibrate(learner, paths, labels, indices, shift, level, workdir)
+    finally:
+        engine.update_calibration = original  # type: ignore[method-assign]
+
+
 def run_cell(
     kind: str, level: float, episodes: list[Episode], paths: list[Path], labels: np.ndarray,
-    config: AdaptShotConfig, recalibrate_k: int, workdir: str,
+    config: AdaptShotConfig, recalibrate_k: int, workdir: str, ablation: bool = False,
 ) -> dict[str, Any]:
     shift = SUITE[kind][0]
     before: dict[str, list[float]] = {"accuracy": [], "coverage": [], "set_size": [], "ood_rate": []}
     after: dict[str, list[float]] = {"accuracy": [], "coverage": [], "set_size": []}
+    arms: dict[str, dict[str, list[float]]] = {
+        "recalibrate_only": {"accuracy": [], "coverage": [], "set_size": []},
+        "adapt_only": {"accuracy": [], "coverage": [], "set_size": []},
+    }
+    arm_runners = {
+        "recalibrate_only": _recalibrate_conformal_only,
+        "adapt_only": _adapt_prototypes_only,
+    }
 
-    for episode in episodes:
+    def fresh_learner(episode: Episode) -> FewShotLearner:
         learner = FewShotLearner(config=config)
         learner.load_support_images(
             [str(paths[i]) for i in episode.support], [str(labels[i]) for i in episode.support]
         )
+        return learner
+
+    for episode in episodes:
+        learner = fresh_learner(episode)
         measured = _predict_all(learner, paths, labels, episode.query, shift, level)
         for key, value in measured.items():
             before[key].append(value)
@@ -171,16 +235,29 @@ def run_cell(
         # and coverage fell from 0.66 to 0.40. That was this harness's mistake,
         # and it is the mistake a field user makes by correcting one crop's
         # photos and not another's -- worth knowing, but not what is measured.
-        _recalibrate(learner, paths, labels, _balanced(episode.calibration, labels, recalibrate_k), shift, level, workdir)
+        chosen = _balanced(episode.calibration, labels, recalibrate_k)
+        _recalibrate(learner, paths, labels, chosen, shift, level, workdir)
         again = _predict_all(learner, paths, labels, episode.query, shift, level)
         for key in after:
             after[key].append(again[key])
+
+        if ablation:
+            # Which mechanism does the work -- moving the prototypes, or
+            # recalibrating the quantile? Each arm gets a fresh learner
+            # (deterministic, so identical to the one above before its
+            # corrections), the same k photographs, and one mechanism (#112).
+            for arm, runner in arm_runners.items():
+                arm_learner = fresh_learner(episode)
+                runner(arm_learner, paths, labels, chosen, shift, level, workdir)
+                arm_measured = _predict_all(arm_learner, paths, labels, episode.query, shift, level)
+                for key in arms[arm]:
+                    arms[arm][key].append(arm_measured[key])
 
     def summarise(values: list[float]) -> dict[str, float]:
         mean, half = mean_and_ci(values)
         return {"mean": mean, "ci95_half_width": half}
 
-    return {
+    cell: dict[str, Any] = {
         "kind": kind,
         "level": level,
         "identity": level == SUITE[kind][1][0],
@@ -195,6 +272,12 @@ def run_cell(
             "set_size": summarise(after["set_size"]),
         },
     }
+    if ablation:
+        cell["ablation"] = {
+            arm: {key: summarise(values) for key, values in measures.items()}
+            for arm, measures in arms.items()
+        }
+    return cell
 
 
 def early_warning(cells: list[dict[str, Any]], target: float) -> dict[str, Any]:
@@ -229,6 +312,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--recalibrate-k", type=int, default=10, help="shifted labelled photos fed to correct() per episode")
     parser.add_argument("--backbone", default="mobilenet_v3_small")
     parser.add_argument("--output", type=Path, default=Path("results/plantvillage_shift.json"))
+    parser.add_argument(
+        "--ablation", action="store_true",
+        help="per cell, also measure recalibrate-only and adapt-prototypes-only arms, "
+             "so the mechanism behind any recovery is attributable (#112)",
+    )
     args = parser.parse_args(argv)
 
     set_deterministic_seed(args.seed)
@@ -251,7 +339,10 @@ def main(argv: list[str] | None = None) -> int:
     with tempfile.TemporaryDirectory() as workdir:
         for kind, (_, levels) in SUITE.items():
             for level in levels:
-                cell = run_cell(kind, level, episodes, paths, labels, config, args.recalibrate_k, workdir)
+                cell = run_cell(
+                    kind, level, episodes, paths, labels, config, args.recalibrate_k, workdir,
+                    ablation=args.ablation,
+                )
                 cells.append(cell)
                 c, a = cell["coverage"], cell["after_in_situ_corrections"]["coverage"]
                 print(
