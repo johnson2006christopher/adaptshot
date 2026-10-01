@@ -201,6 +201,7 @@ class FewShotLearner:
         self._label_to_idx: dict[str | int, int] = {}
         self._idx_to_label: dict[int, str | int] = {}
         self._is_initialized = False
+        self._warned_unfitted_contrastive = False
         self._embedding_cache = EmbeddingCache()
 
     def __repr__(self) -> str:
@@ -750,7 +751,11 @@ class FewShotLearner:
             ) from exc
 
         schema_version = str(state.get("schema_version", "0.1.0"))
-        legacy_checkpoint = schema_version == "0.1.0"
+        # Both 0.1.x schemas predate the integrity hash, so both are legacy.
+        # 0.1.1 used to be rejected outright even though it is the very schema
+        # migrate_v0_1_0_to_v0_1_1 *produces* -- the migrator's own output
+        # could not be loaded (#118).
+        legacy_checkpoint = schema_version in {"0.1.0", "0.1.1"}
         if schema_version != SCHEMA_VERSION:
             warnings.warn(
                 f"Checkpoint schema {schema_version} loaded; migrating to {SCHEMA_VERSION}.",
@@ -761,11 +766,14 @@ class FewShotLearner:
             )
             if schema_version == "0.1.0":
                 state = migrate_v0_1_0_to_v0_1_1(state)
-            else:
+                schema_version = str(state.get("schema_version", "0.1.1"))
+            if schema_version != "0.1.1":
                 raise AdaptShotError(
                     f"Unsupported checkpoint schema_version '{schema_version}'. "
-                    f"Expected '{SCHEMA_VERSION}' or legacy '0.1.0'."
+                    f"Expected '{SCHEMA_VERSION}', '0.1.1', or legacy '0.1.0'."
                 )
+            # The 0.2.0 reader tolerates 0.1.1 payloads: every field it reads
+            # beyond the 0.1.1 schema has a default.
 
         config_payload = state.get("config")
         if not isinstance(config_payload, dict):
@@ -1021,6 +1029,19 @@ class FewShotLearner:
 
         support_embeddings = np.array(self._sim_embeddings, dtype=np.float32)
         support_labels = np.array(self._sim_labels, dtype=object)
+
+        if (
+            self.config.inference_mode == "contrastive"
+            and not self.contrastive.is_fitted
+            and not self._warned_unfitted_contrastive
+        ):
+            logger.warning(
+                "inference_mode='contrastive' but the projection is not "
+                "fitted; falling back to %s. Load a support set (or a "
+                "checkpoint) to fit it.",
+                "prototypical" if self._prototype_embeddings.size > 0 else "nearest_neighbor",
+            )
+            self._warned_unfitted_contrastive = True
 
         if self.config.inference_mode == "contrastive" and self.contrastive.is_fitted:
             pred_label_raw, raw_conf, _proto_idx = self.contrastive.nearest_prototype(
@@ -1485,7 +1506,10 @@ class FewShotLearner:
             expected_integrity = self._build_integrity_payload(state["config"], embeddings)
             if integrity.get("checksum_sha256") != expected_integrity["checksum_sha256"]:
                 raise AdaptShotError(
-                    "Checkpoint integrity check failed. The checkpoint may be corrupted or tampered with."
+                    "Checkpoint integrity check failed: the files do not match "
+                    "the checksum recorded at save time, so the checkpoint is "
+                    "corrupted or was edited. (The checksum is unkeyed -- it "
+                    "detects accidental damage, not deliberate tampering.)"
                 )
 
         learner_state = self._validate_and_normalize_state(state=state, embeddings=embeddings)
@@ -1547,7 +1571,16 @@ class FewShotLearner:
 
         for key, threshold in state["act_thresholds"].items():
             class_idx = int(key)
-            if class_idx in learner.act._class_state:
+            if class_idx not in learner.act._class_state:
+                # A fresh engine preallocates max(10, n_way) slots, so a saved
+                # eleventh class used to lose its threshold silently (#118).
+                learner.act._class_state[class_idx] = {
+                    "threshold": float(threshold),
+                    "correct": 0.0,
+                    "incorrect": 0.0,
+                    "total": 0.0,
+                }
+            else:
                 learner.act._class_state[class_idx]["threshold"] = float(threshold)
 
         learner._sim_labels = list(state["buffer"]["labels"])
@@ -1577,6 +1610,32 @@ class FewShotLearner:
                 learner._contrastive_prototype_embeddings = np.asarray(
                     c_embs, dtype=np.float32
                 )
+
+        # load() RECALIBRATES: everything derivable from the restored buffer is
+        # refit rather than trusted to survive serialisation. Before #118 none
+        # of this ran, so a round trip silently dropped the conformal
+        # calibration (24 scores -> 0), the OOD Gaussians (threshold -> inf,
+        # flags flipped), the contrastive projection (is_fitted False, silent
+        # fall-through to nearest-neighbour) and the calibration window. The
+        # fits are deterministic in the seed and support set, and cost
+        # milliseconds at few-shot sizes.
+        if learner._sim_embeddings:
+            support_arr = np.array(learner._sim_embeddings, dtype=np.float32)
+            label_arr = np.array(learner._sim_labels, dtype=object)
+            learner.uncertainty_q.fit_class_distributions(support_arr, label_arr)
+            if learner.config.inference_mode == "contrastive":
+                (
+                    learner._contrastive_prototype_embeddings,
+                    learner._contrastive_prototype_labels,
+                ) = learner.contrastive.refine_prototypes(
+                    support_arr, label_arr, seed=learner.config.seed
+                )
+            if learner._prototype_embeddings.size > 0:
+                learner._self_calibrate_conformal(support_arr, label_arr)
+            learner._bootstrap_temperature_calibration(support_arr, label_arr)
+            # The persisted temperature was fitted on real outcomes, which the
+            # bootstrap cannot see; it wins over the bootstrap's refit.
+            learner.calibrator.temperature = float(state["calibration"]["temperature"])
 
         if learner._sim_embeddings:
             learner._init_or_rebuild_model_head(embedding_dim=learner._embedding_dim())
