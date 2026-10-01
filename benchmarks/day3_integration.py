@@ -83,11 +83,10 @@ def run_day3_simulation() -> None:
         # Calibrate confidence
         cal_conf = calibrator.calibrate(raw_conf)
 
-        # ACT decision
-        # Compute recent rates from router state for simulation
-        recent_incorrect = 0.6 if is_shifted else 0.1
-        recent_correct = 1.0 - recent_incorrect
-        accept, act_action = act.should_accept(cal_conf, pred_class, recent_incorrect, recent_correct)
+        # ACT decision -- a pure read since #116; the engine learns below,
+        # from the simulated outcome, through record_outcome.
+        accept, act_action = act.should_accept(cal_conf, pred_class)
+        act.record_outcome(pred_class, correct=pred_class == true_class)
 
         # Route feedback if ACT rejects
         if not accept:

@@ -134,7 +134,11 @@ class CalibrationEngine:
         confs = self._clip_logit_input(confs)
         logits = np.log(confs / (1.0 - confs))
 
-        candidates = np.linspace(0.5, 3.0, 25, dtype=np.float64)
+        # Log-spaced: temperature acts multiplicatively on logits, so the
+        # candidates 0.5 and 0.6 differ as much as 2.5 and 3.0 do. A linear
+        # grid spent most of its points where the function barely changes
+        # (#116).
+        candidates = np.geomspace(0.5, 3.0, 25, dtype=np.float64)
         best_loss = np.inf
         best_temp = max(float(self.temperature), 1e-6)
 
