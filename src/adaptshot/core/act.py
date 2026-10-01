@@ -1,11 +1,20 @@
 """Adaptive Confidence Thresholding (ACT) engine for few-shot predictions.
 
-Dynamically adjusts per-class decision thresholds based on real-time
-correction history and model uncertainty, reducing false acceptances
-by requesting human feedback when the model is genuinely unsure.
+Dynamically adjusts per-class decision thresholds based on correction
+history, reducing false acceptances by requesting human feedback when the
+model is genuinely unsure.
+
+Since #116 the engine separates reading from learning: ``should_accept`` is a
+pure decision (asking does not move the threshold), and thresholds move only
+when :meth:`record_outcome` reports a real outcome from a human correction or
+confirmation. Before that split, every ``predict()`` nudged the threshold off
+a proxy built from recent confidences -- forty identical predictions moved a
+threshold from 0.6500 to 0.6357 with no human in the loop at all, and nothing
+`correct()` learned ever reached the decision.
 """
 
 import logging
+import warnings
 
 import numpy as np
 
@@ -63,27 +72,66 @@ class ACTEngine:
         self,
         confidence: float,
         class_idx: int,
-        recent_incorrect_rate: float = 0.0,
-        recent_correct_rate: float = 1.0,
+        recent_incorrect_rate: float | None = None,
+        recent_correct_rate: float | None = None,
     ) -> tuple[bool, str]:
-        """
-        Evaluate whether to accept a prediction or request human feedback.
+        """Decide whether to accept a prediction or request human feedback.
+
+        A pure read: asking the question does not move the threshold (#116).
+        Thresholds move only through :meth:`record_outcome`, when a human
+        correction or confirmation supplies a real outcome.
 
         Args:
             confidence: Calibrated confidence score [0, 1]
             class_idx: Predicted class index
-            recent_incorrect_rate: Fraction of recent corrections that were wrong [0, 1]
-            recent_correct_rate: Fraction of recent confirmations that were right [0, 1]
+            recent_incorrect_rate: Deprecated in 0.3.1, ignored, removed in
+                0.4.0. The proxy it fed moved thresholds on every prediction;
+                report real outcomes through :meth:`record_outcome` instead.
+            recent_correct_rate: Deprecated alongside ``recent_incorrect_rate``.
 
         Returns:
             (accept: bool, action: str) where action is "ACCEPT" or "REQUEST_FEEDBACK"
         """
-        # Ensure class state exists (handles dynamic class expansion)
+        if recent_incorrect_rate is not None or recent_correct_rate is not None:
+            warnings.warn(
+                "should_accept's recent_incorrect_rate/recent_correct_rate are "
+                "deprecated since 0.3.1 and ignored; they moved thresholds on "
+                "every prediction. Report real outcomes with "
+                "ACTEngine.record_outcome(). They will be removed in 0.4.0.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
+        threshold = self.get_threshold(class_idx)
+        accept = confidence >= threshold
+        action = "ACCEPT" if accept else "REQUEST_FEEDBACK"
+
+        logger.debug(
+            "ACT | Class %s | Conf: %.3f | τ: %.3f | Action: %s",
+            class_idx, confidence, threshold, action,
+        )
+
+        return accept, action
+
+    def record_outcome(self, class_idx: int, correct: bool) -> None:
+        """Adapt the class threshold from one real outcome.
+
+        Called when ground truth arrives -- a human correction (the prediction
+        was wrong) or confirmation (it was right). This is the only place a
+        threshold moves, which is what the class docstring's "adapts based on
+        correction history" has always promised.
+
+        The update keeps the v0.2.0 shape: a symmetric bounded step plus slow
+        mean reversion, clamped to [min_threshold, max_threshold].
+
+        Args:
+            class_idx: The class that was *predicted* -- its threshold is the
+                one that let the prediction through or held it back.
+            correct: Whether the prediction matched the human's label.
+        """
         if class_idx not in self._class_state:
-            existing_thresholds = [s["threshold"] for s in self._class_state.values()]
-            default_thresh = float(np.mean(existing_thresholds)) if existing_thresholds else 0.65
             self._class_state[class_idx] = {
-                "threshold": default_thresh,
+                "threshold": self.get_threshold(class_idx),
                 "correct": 0.0,
                 "incorrect": 0.0,
                 "total": 0.0,
@@ -92,43 +140,26 @@ class ACTEngine:
         state = self._class_state[class_idx]
         threshold = float(np.clip(state["threshold"], self.min_threshold, self.max_threshold))
 
-        # v0.2.0 fix: Symmetric bounded update with mean reversion.
-        # Previous formula (v0.2.0-dev): delta = η * (incorrect - γ * correct)
-        # This monotonically decreased thresholds because γ=0.5 multiplied the
-        # (usually larger) correct rate, creating a permanent downward bias.
-        #
-        # New formula: delta = η * (incorrect_rate - correct_rate) + μ * (base - τ)
-        # - Symmetric: equal weight to incorrect vs correct signals
-        # - Mean-reversion: thresholds drift back toward base_threshold slowly
-        # - Clamped: thresholds stay within [min_threshold, max_threshold]
-        error_signal = recent_incorrect_rate - recent_correct_rate
+        # delta = η * (±1) + μ * (base - τ): a wrong prediction raises the
+        # class's bar, a confirmed one lowers it, and everything drifts slowly
+        # back toward base so one bad streak is not a life sentence.
+        error_signal = -1.0 if correct else 1.0
         delta = self.eta * error_signal
-        # Mean-reversion toward base (prevents runaway drift)
         delta += self._mean_reversion_strength * (self._base_threshold - threshold)
         state["threshold"] = float(np.clip(
             threshold + delta, self.min_threshold, self.max_threshold
         ))
 
-        # Update counters (EMA-style tracking)
         state["total"] += 1.0
-        if recent_incorrect_rate > 0.5:
-            state["incorrect"] += 1.0
-        else:
+        if correct:
             state["correct"] += 1.0
-
-        # Re-read threshold after update for decision
-        threshold_updated = float(np.clip(
-            state["threshold"], self.min_threshold, self.max_threshold
-        ))
-        accept = confidence >= threshold_updated
-        action = "ACCEPT" if accept else "REQUEST_FEEDBACK"
+        else:
+            state["incorrect"] += 1.0
 
         logger.debug(
-            "ACT | Class %s | Conf: %.3f | τ: %.3f | Action: %s",
-            class_idx, confidence, threshold_updated, action,
+            "ACT outcome | Class %s | correct=%s | τ -> %.4f",
+            class_idx, correct, state["threshold"],
         )
-
-        return accept, action
 
     def get_threshold(self, class_idx: int) -> float:
         """Return the current adaptive threshold for a given class."""
