@@ -41,7 +41,17 @@ import adaptshot
 from adaptshot.config.settings import AdaptShotConfig
 from adaptshot.core.learner import FewShotLearner
 from adaptshot.utils.determinism import set_deterministic_seed
-from benchmarks.baselines import knn, linear_probe, nearest_centroid, top1_with_threshold
+from benchmarks.baselines import (
+    aps_sets,
+    class_probabilities,
+    knn,
+    lac_sets,
+    linear_probe,
+    nearest_centroid,
+    threshold_or_full_sets,
+    top1_with_threshold,
+    top_k_sets,
+)
 from benchmarks.plantvillage import (
     DatasetMissing,
     Episode,
@@ -123,12 +133,43 @@ def adaptshot_episode(
         flagged += int(result.ood_flag)
 
     n = len(query_labels)
+
+    # The split-conformal column (#114): the same learner and the same engine,
+    # recalibrated on the episode's held-out calibration split instead of
+    # leave-one-out over the support set. The library's own LOO construction
+    # is a jackknife and carries no finite-sample guarantee; this column is
+    # the construction the theorem actually covers, so the two can be
+    # compared in one table. Private helpers on purpose: the scores must be
+    # the engine's own arithmetic.
+    learner.conformal.reset()
+    for index in episode.calibration:
+        image_path = str(paths[index])
+        image = learner._load_rgb_image_from_path(image_path)
+        embedding = learner._extract_embedding_checked(image=image, source=image_path)
+        distances = learner._compute_all_prototype_distances(embedding)
+        label = str(labels[index])
+        score = learner.conformal.nonconformity(distances, learner._prototype_labels, label)
+        learner.conformal.seed_calibration(score, label)
+
+    split_covered = 0
+    split_sizes: list[int] = []
+    for index, true_label in zip(episode.query, query_labels, strict=True):
+        result = learner.predict(str(paths[index]))
+        members = result.conformal_set or [result.prediction]
+        split_covered += int(true_label in members)
+        split_sizes.append(len(members))
+
     return (
         correct / n,
         covered / n,
         float(np.mean(set_sizes)),
         flagged / n,
-        {"fit_ms": fit_ms, "predict_ms": predict_ms},
+        {
+            "fit_ms": fit_ms,
+            "predict_ms": predict_ms,
+            "split_coverage": split_covered / n,
+            "split_set_size": float(np.mean(split_sizes)),
+        },
     )
 
 
@@ -155,6 +196,52 @@ def baseline_episode(
         raise ValueError(f"unknown baseline: {name}")
 
     return float(np.mean(predictions == query_labels))
+
+
+def set_baseline_episode(
+    embeddings: np.ndarray,
+    labels: np.ndarray,
+    episode: Episode,
+    alpha: float,
+    threshold: float,
+) -> dict[str, tuple[float, float]]:
+    """Every set-valued baseline of #113 on one episode: (coverage, mean size).
+
+    Same embeddings, same episodes, same held-out calibration split, all at
+    the same alpha, so the published comparison is a frontier rather than one
+    flattering cell. `threshold` is the per-episode abstention threshold
+    `top1_episode` already calibrates, reused so "top-1 or the full set" and
+    "top-1 or the empty set" differ only in how abstention is priced.
+    """
+
+    support = embeddings[episode.support]
+    support_labels = labels[episode.support]
+    classes, calibration_probs = class_probabilities(
+        support, support_labels, embeddings[episode.calibration]
+    )
+    _, query_probs = class_probabilities(support, support_labels, embeddings[episode.query])
+    calibration_labels = labels[episode.calibration]
+    query_labels = labels[episode.query]
+
+    variants: dict[str, list[set[str]]] = {
+        "singleton_top1": top_k_sets(classes, query_probs, 1),
+        "top_2": top_k_sets(classes, query_probs, 2),
+        "top_3": top_k_sets(classes, query_probs, 3),
+        "threshold_or_full": threshold_or_full_sets(classes, query_probs, threshold),
+        "lac": lac_sets(classes, calibration_probs, calibration_labels, query_probs, alpha),
+        "aps": aps_sets(classes, calibration_probs, calibration_labels, query_probs, alpha),
+        "raps": aps_sets(
+            classes, calibration_probs, calibration_labels, query_probs, alpha,
+            lam=0.1, k_reg=2,
+        ),
+    }
+    return {
+        name: (
+            float(np.mean([str(t) in s for s, t in zip(sets, query_labels, strict=True)])),
+            float(np.mean([len(s) for s in sets])),
+        )
+        for name, sets in variants.items()
+    }
 
 
 def top1_episode(
@@ -404,9 +491,16 @@ def main(argv: list[str] | None = None) -> int:
     print(f"{len(episodes)} episodes, {args.n_way}-way {args.k_shot}-shot\n")
 
     adaptshot_accuracy, coverage, set_size, ood_rate = [], [], [], []
+    split_coverage: list[float] = []
+    split_size: list[float] = []
     top1_accuracy, top1_coverage, top1_size, thresholds = [], [], [], []
     baseline_names = ("nearest_centroid", "knn_1", "knn_5", "linear_probe")
     baseline_accuracy: dict[str, list[float]] = {name: [] for name in baseline_names}
+    set_names = (
+        "singleton_top1", "top_2", "top_3", "threshold_or_full", "lac", "aps", "raps",
+    )
+    set_coverage: dict[str, list[float]] = {name: [] for name in set_names}
+    set_sizes_by_name: dict[str, list[float]] = {name: [] for name in set_names}
 
     latencies: list[float] = []
     fit_ms: list[float] = []
@@ -425,6 +519,8 @@ def main(argv: list[str] | None = None) -> int:
         coverage.append(episode_coverage)
         set_size.append(episode_size)
         ood_rate.append(episode_ood)
+        split_coverage.append(stage["split_coverage"])
+        split_size.append(stage["split_set_size"])
 
         t_accuracy, t_coverage, t_size, threshold = top1_episode(
             embeddings, labels, episode, args.alpha
@@ -438,6 +534,12 @@ def main(argv: list[str] | None = None) -> int:
             baseline_accuracy[name].append(
                 baseline_episode(name, embeddings, labels, episode)
             )
+
+        for name, (covered_rate, mean_size) in set_baseline_episode(
+            embeddings, labels, episode, args.alpha, threshold
+        ).items():
+            set_coverage[name].append(covered_rate)
+            set_sizes_by_name[name].append(mean_size)
 
     def report(label: str, values: list[float], unit: str = "%") -> dict[str, float]:
         mean, half = mean_and_ci(values)
@@ -464,6 +566,34 @@ def main(argv: list[str] | None = None) -> int:
         "mean_set_size": report("mean prediction-set size", set_size, unit=""),
         "ood_flag_rate": report("OOD flagged (all in-distribution)", ood_rate),
     }
+
+    print("\nSplit conformal (same engine, calibrated on the held-out split -- "
+          "the construction the guarantee covers, #114):")
+    results["conformal"]["split_calibration"] = {
+        "empirical_coverage": report("empirical coverage", split_coverage),
+        "mean_set_size": report("mean prediction-set size", split_size, unit=""),
+        "note": (
+            "same learner and nonconformity score, calibrated on the episode's "
+            "25 held-out photographs instead of leave-one-out over the support "
+            "set. The LOO construction above is a jackknife and has no "
+            "finite-sample guarantee; this one does."
+        ),
+    }
+
+    print(f"\nSet-valued baselines at the same {(1 - args.alpha) * 100:.0f}% target "
+          "(coverage | mean set size), the frontier #113 asks for:")
+    results["set_baselines"] = {
+        "references": {
+            "lac": "Sadinle, Lei, Wasserman (2019)",
+            "aps": "Romano, Sesia, Candes (2020), deterministic variant",
+            "raps": "Angelopoulos, Bates, Jordan, Malik (2021), k_reg=2, lam=0.1, untuned",
+        },
+    }
+    for name in set_names:
+        results["set_baselines"][name] = {
+            "coverage": report(f"{name} coverage", set_coverage[name]),
+            "mean_set_size": report(f"{name} set size", set_sizes_by_name[name], unit=""),
+        }
 
     print(f"\nTop-1 with a threshold calibrated to the same {(1 - args.alpha) * 100:.0f}% "
           "target, the alternative:")
