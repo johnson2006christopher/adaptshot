@@ -1280,15 +1280,25 @@ class FewShotLearner:
         support_embeddings: FloatArray,
         support_labels: LabelArray,
     ) -> None:
-        """Bootstrap conformal calibration via TRUE leave-one-out.
+        """Bootstrap conformal calibration by leave-one-out over the support set.
 
         For each support example i, recomputes class prototypes excluding
-        example i, then computes the nonconformity score against those
-        leave-one-out prototypes. This guarantees valid marginal coverage
-        under the exchangeability assumption.
+        example i, then scores example i against those leave-one-out
+        prototypes. Honesty about what that buys (#114): this is a *jackknife*
+        construction, not split conformal. LOO scores are computed against
+        (n-1)-example prototypes while test points meet n-example prototypes,
+        so the two are not exchangeable, and plain jackknife conformal carries
+        **no finite-sample coverage guarantee** (jackknife+ would give 1 - 2α;
+        Barber, Candes, Ramdas, Tibshirani 2021). What it buys instead is
+        calibration from the support set alone -- no photographs spent on a
+        split -- which is the few-shot trade (cf. Fisch et al. 2021). The
+        measured behaviour is over-coverage. The guaranteed construction is
+        split calibration on held-out photographs, which this engine runs
+        whenever `update_calibration` is fed held-out scores (corrections do
+        exactly that), and which the benchmark reports as its own column.
 
         Previous implementation (v0.2.0-dev) used full prototypes including
-        the example itself, which violates the exchangeability requirement.
+        the example itself -- in-sample even by jackknife standards.
 
         Args:
             support_embeddings: [N, D] support set embeddings (512-dim).
