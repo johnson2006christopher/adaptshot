@@ -317,7 +317,21 @@ def main(argv: list[str] | None = None) -> int:
         help="per cell, also measure recalibrate-only and adapt-prototypes-only arms, "
              "so the mechanism behind any recovery is attributable (#112)",
     )
+    parser.add_argument(
+        "--cells", type=str, default=None,
+        help="comma-separated kind:level filters (e.g. 'blur:4,jpeg:5') to run a "
+             "subset of the suite -- for development iteration, and for running "
+             "the full suite as resumable chunks. The early-warning correlation "
+             "is only meaningful over all cells; a partial artifact says so.",
+    )
     args = parser.parse_args(argv)
+
+    wanted: set[tuple[str, float]] | None = None
+    if args.cells:
+        wanted = set()
+        for spec in args.cells.split(","):
+            kind_name, _, level_text = spec.strip().partition(":")
+            wanted.add((kind_name, float(level_text)))
 
     set_deterministic_seed(args.seed)
     config = AdaptShotConfig(backbone=args.backbone, device="cpu", seed=args.seed, conformal_alpha=args.alpha)
@@ -335,10 +349,13 @@ def main(argv: list[str] | None = None) -> int:
     print(f"{'shift':<11} {'level':>6} {'acc':>6} {'coverage':>15} {'set':>5} {'ood%':>5}  | after k corrections: {'coverage':>15} {'set':>5}")
 
     started = time.perf_counter()
+    partial = wanted is not None
     cells: list[dict[str, Any]] = []
     with tempfile.TemporaryDirectory() as workdir:
         for kind, (_, levels) in SUITE.items():
             for level in levels:
+                if wanted is not None and (kind, float(level)) not in wanted:
+                    continue
                 cell = run_cell(
                     kind, level, episodes, paths, labels, config, args.recalibrate_k, workdir,
                     ablation=args.ablation,
@@ -366,7 +383,11 @@ def main(argv: list[str] | None = None) -> int:
             "suite": {kind: levels for kind, (_, levels) in SUITE.items()},
         },
         "cells": cells,
-        "early_warning": warning,
+        "early_warning": warning if not partial else {
+            "note": "partial run (--cells); the correlation is only meaningful "
+                    "over the full suite -- assemble all chunks first",
+        },
+        "partial_cells": sorted(f"{k}:{v}" for k, v in wanted) if partial else None,
         "dataset": dataset_provenance(args.data),
         "hardware": hardware(),
     }
