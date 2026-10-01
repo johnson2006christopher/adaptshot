@@ -4,11 +4,13 @@
 
 ## The promise, stated exactly
 
-AdaptShot's prediction set comes from *split conformal prediction*. Given a level α, the promise is:
+AdaptShot's prediction set comes from conformal prediction. Given a level α, the promise is:
 
 > Over many queries, the true label is inside the set at least **1 − α** of the time.
 
 That is the whole of it. It is a strong promise — it needs no assumption about the model being good, or the classes being separable, or the number of classes — and it holds for *any* scoring rule. It costs one assumption and buys one thing.
+
+**One honesty about the construction.** The theorem above belongs to *split* conformal prediction: a calibration set held out from both support and queries. Out of the box AdaptShot has no held-out photographs to spend, so it self-calibrates by **leave-one-out over the support set** — a *jackknife* construction. Jackknife scores (measured against prototypes built from n−1 photographs) are not exchangeable with test scores (measured against n-photograph prototypes), and plain jackknife conformal carries **no finite-sample guarantee** — the jackknife+ variant proves 1 − 2α (Barber, Candès, Ramdas & Tibshirani, 2021; for few-shot conformal see Fisch et al., 2021). In practice the self-calibrated sets *over*-cover, and the benchmark reports a true split-conformal column beside the self-calibrated one so the gap is measured rather than assumed. Every correction you feed through `correct()` is a genuinely held-out score, so the calibration drifts toward the guaranteed construction as you use it.
 
 ## The assumption: exchangeability
 
