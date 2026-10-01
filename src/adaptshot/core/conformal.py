@@ -239,7 +239,7 @@ class ConformalEngine:
         self,
         score: float,
         true_label: str | int,
-        predicted_in_set: bool = False,
+        predicted_in_set: bool | None = None,
     ) -> None:
         """Add a nonconformity score to the calibration buffer.
 
@@ -248,8 +248,32 @@ class ConformalEngine:
         Args:
             score: Nonconformity score of the prediction.
             true_label: Ground-truth class label.
-            predicted_in_set: Whether the true label was in the prediction set.
+            predicted_in_set: Whether the true label was inside the prediction
+                set the engine had issued for this point. ``None`` — the
+                default — means the caller does not know (or no calibrated set
+                existed), and the coverage counters are left alone. The old
+                default of ``False`` counted every bootstrap score and every
+                correction as a miss, which is why ``empirical_coverage``
+                printed 0.000 forever (#115).
         """
+        self._append_score(score, true_label)
+
+        if predicted_in_set is not None:
+            self._total_predictions += 1
+            if predicted_in_set:
+                self._covered += 1
+
+    def seed_calibration(self, score: float, true_label: str | int) -> None:
+        """Add a bootstrap score without touching the coverage counters.
+
+        The leave-one-out bootstrap manufactures calibration scores from the
+        support set; they are legitimate calibration data but they are not
+        *observations of the deployed sets*, so they must not enter the
+        empirical-coverage denominator (#115).
+        """
+        self._append_score(score, true_label)
+
+    def _append_score(self, score: float, true_label: str | int) -> None:
         # Update global buffer
         self._calibration_scores.append(float(score))
         if len(self._calibration_scores) > self.max_calibration_size:
@@ -261,10 +285,6 @@ class ConformalEngine:
         self._class_scores[true_label].append(float(score))
         if len(self._class_scores[true_label]) > self.max_calibration_size // 10:
             self._class_scores[true_label].pop(0)
-
-        self._total_predictions += 1
-        if predicted_in_set:
-            self._covered += 1
 
     @property
     def calibration_size(self) -> int:
@@ -318,12 +338,22 @@ class ConformalEngine:
         return float(sorted_scores[rank - 1])
 
     def _compute_cross_quantile(self, scores: list[float]) -> float:
-        """Compute cross-conformal quantile via k-fold averaging.
+        """Quantile via k-fold averaging — a smoothing heuristic, not CV+.
 
         Partitions calibration scores into n_bins folds, computes the
-        conformal quantile per fold, and averages them. This provides
-        more stable estimates than a single split, at the cost of
-        slightly conservative coverage (average of valid bounds).
+        conformal quantile per fold, and averages them. Plainly: averaging
+        per-fold quantiles is NOT cross-conformal prediction (CV+ aggregates
+        per-fold scores, not quantiles) and carries no finite-sample
+        guarantee of its own; what it buys is a smoother estimate when the
+        buffer is large. The honest construction is tracked in #114.
+
+        Each fold must be able to certify the level on its own: a fold of
+        m scores returns +inf whenever m < (1-alpha)/alpha, and the mean of
+        anything with +inf is +inf — which made this mode return "every
+        class, always" for every buffer between 2*n_bins and
+        n_bins*ceil((1-alpha)/alpha) scores (40 ≤ n < 380 at the defaults,
+        the entire practical regime, #115). Too small to split honestly
+        means fall back to the single split quantile.
 
         Args:
             scores: Nonconformity scores from calibration set.
@@ -332,8 +362,8 @@ class ConformalEngine:
             Cross-conformal quantile threshold q_hat.
         """
         n = len(scores)
-        if n < self.n_bins * 2:
-            # Not enough data for cross-conformal; fall back to split
+        if n < self.n_bins * 2 or n // self.n_bins < self.min_informative_size:
+            # Not enough data for per-fold quantiles; fall back to split
             return self._compute_quantile(scores)
 
         rng = np.random.default_rng(42)
@@ -350,6 +380,21 @@ class ConformalEngine:
             q_hats.append(q_fold)
 
         return float(np.mean(q_hats))
+
+    def current_q_hat(self) -> float:
+        """The quantile a set issued right now would use.
+
+        NaN while the buffer holds fewer than ``min_calibration_size`` scores
+        (no calibrated set exists at all); +inf when the scores cannot certify
+        the level (the set is honestly everything); a finite threshold
+        otherwise. One place for the mode dispatch, so `predict_set` and a
+        caller asking "would this score have been covered?" cannot disagree.
+        """
+        if len(self._calibration_scores) < self.min_calibration_size:
+            return float("nan")
+        if self.mode == "cross":
+            return self._compute_cross_quantile(self._calibration_scores)
+        return self._compute_quantile(self._calibration_scores)
 
     # ------------------------------------------------------------------
     # Prediction set generation
@@ -392,15 +437,22 @@ class ConformalEngine:
             result.calibrated = False
             return result
 
-        # Compute quantile threshold based on mode
-        if self.mode == "cross":
-            q_hat = self._compute_cross_quantile(self._calibration_scores)
-        else:
-            q_hat = self._compute_quantile(self._calibration_scores)
+        q_hat = self.current_q_hat()
         result.q_hat = q_hat
         result.coverage_estimate = self.empirical_coverage
+        # A non-finite quantile means the buffer could not certify the level
+        # (every class is included by construction): coverage holds vacuously,
+        # but nothing was measured — consumers must not present the full set
+        # as a calibrated one (#115).
+        result.calibrated = bool(np.isfinite(q_hat))
 
-        # Build prediction set: include classes with score <= q_hat
+        # Build prediction set: include classes with score <= q_hat. The top-1
+        # used to be force-added "for safety"; under the ratio score its own
+        # score is exactly 1.0, the minimum possible, and every calibration
+        # score is >= 1.0, so any finite quantile admits it — the force-add
+        # only ever did anything under the non-default score methods, where it
+        # silently turned an honest empty set (an abstention) into a singleton
+        # that the theory never issued (#115).
         prediction_set: set[str | int] = set()
         for i in range(len(distances)):
             label = labels[i]
@@ -409,8 +461,6 @@ class ConformalEngine:
             if score <= q_hat:
                 prediction_set.add(label)
 
-        # Always include the top prediction for safety
-        prediction_set.add(top_prediction)
         result.prediction_set = prediction_set
         result.set_size = len(prediction_set)
 
@@ -445,10 +495,14 @@ class ConformalEngine:
 
         n_total = sum(len(s) for s in self._class_scores.values())
         if n_total < self.min_calibration_size:
+            # The same cold-start honesty predict_set learned in #80: the set
+            # is the top-1 alone and says so, instead of restating the target
+            # as if it were measured (#115).
             result.prediction_set = {top_prediction}
             result.set_size = 1
-            result.q_hat = 1.0
-            result.coverage_estimate = 1.0 - self.alpha
+            result.q_hat = float("nan")
+            result.coverage_estimate = float("nan")
+            result.calibrated = False
             return result
 
         prediction_set: set[str | int] = set()
@@ -457,9 +511,12 @@ class ConformalEngine:
         for i in range(len(distances)):
             label = labels[i]
             class_scores = self._class_scores.get(label, [])
-            if len(class_scores) >= 3:
+            if len(class_scores) >= self.min_informative_size:
                 q_class = self._compute_quantile(class_scores)
             else:
+                # Below the informative floor a per-class quantile is +inf by
+                # construction (it used to engage from 3 scores and return inf
+                # until 19, silently); the global buffer is the honest basis.
                 q_class = self._compute_quantile(self._calibration_scores)
             q_hats.append(q_class)
 
@@ -468,11 +525,11 @@ class ConformalEngine:
             if score <= q_class:
                 prediction_set.add(label)
 
-        prediction_set.add(top_prediction)
         result.prediction_set = prediction_set
         result.set_size = len(prediction_set)
-        result.q_hat = float(np.mean(q_hats)) if q_hats else 1.0
+        result.q_hat = float(np.mean(q_hats)) if q_hats else float("nan")
         result.coverage_estimate = self.empirical_coverage
+        result.calibrated = bool(np.isfinite(result.q_hat))
 
         return result
 
