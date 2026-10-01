@@ -578,6 +578,31 @@ class FewShotLearner:
             },
         )
 
+        # Conformal calibration FIRST, against the prototypes as they stand
+        # before this correction touches them. Scored after the update, the
+        # point sits inside the prototype it is measured against, the score is
+        # biased low (exactly the in-sample bias `_self_calibrate_conformal`
+        # does leave-one-out to avoid), and a loop of corrections *tightens*
+        # the sets instead of recalibrating them (#112). Scoring the point
+        # against the state that would have predicted it is what keeps stored
+        # scores exchangeable with test scores.
+        #
+        # A correction that introduces a class with no prototype yet stores
+        # nothing: `nonconformity` would return +inf by construction, which is
+        # a statement about the label space, not a measurement of this point.
+        if self._prototype_embeddings.size > 0:
+            query_distances = self._compute_all_prototype_distances(query_emb)
+            proto_labels = self._prototype_labels
+            if true_label in proto_labels:
+                score = self.conformal.nonconformity(query_distances, proto_labels, true_label)
+                self.conformal.update_calibration(score, true_label)
+            else:
+                logger.debug(
+                    "correction introduces class %r; no conformal score stored "
+                    "(no pre-correction prototype to score against)",
+                    true_label,
+                )
+
         result = self.router.route_feedback(correction)
         self._append_correction_to_similarity_buffer(
             query_emb,
@@ -596,13 +621,6 @@ class FewShotLearner:
 
         if self.config.recalibrate_after_feedback:
             result["calibration_summary"] = self.calibrator.calibration_summary()
-
-        # v0.2.0: Update conformal calibration buffer with ground-truth score
-        if self._prototype_embeddings.size > 0:
-            query_distances = self._compute_all_prototype_distances(query_emb)
-            proto_labels = self._prototype_labels
-            score = self.conformal.nonconformity(query_distances, proto_labels, true_label)
-            self.conformal.update_calibration(score, true_label)
 
         return result
 
