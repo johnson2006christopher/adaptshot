@@ -779,7 +779,16 @@ class FewShotLearner:
         if not isinstance(config_payload, dict):
             raise AdaptShotError("Checkpoint config is missing or malformed.")
 
-        learner = cls(AdaptShotConfig(**config_payload))
+        try:
+            learner = cls(AdaptShotConfig(**config_payload))
+        except TypeError as exc:
+            # An unknown or missing config key used to surface as a bare
+            # TypeError from the dataclass constructor (#121). Structurally
+            # untrusted input gets a named error like every other bad file.
+            raise AdaptShotError(
+                f"Checkpoint config is malformed: {exc}. The file may come from "
+                "an incompatible version or have been edited."
+            ) from exc
 
         emb_path = target.with_suffix(".embeddings.npy")
         if not emb_path.exists():
@@ -797,12 +806,24 @@ class FewShotLearner:
         if not isinstance(embeddings, np.ndarray):
             raise AdaptShotError("Loaded embeddings payload is invalid.")
 
-        learner._load_state_payload(
-            state=state,
-            embeddings=embeddings,
-            source_path=target,
-            legacy_checkpoint=legacy_checkpoint,
-        )
+        try:
+            learner._load_state_payload(
+                state=state,
+                embeddings=embeddings,
+                source_path=target,
+                legacy_checkpoint=legacy_checkpoint,
+            )
+        except AdaptShotError:
+            raise
+        except (KeyError, TypeError, ValueError) as exc:
+            # Missing or mistyped checkpoint fields surfaced as bare KeyErrors
+            # three frames deep (#121). No code-execution risk -- the payload is
+            # JSON -- but untrusted structure deserves a named error.
+            raise AdaptShotError(
+                f"Checkpoint is structurally malformed ({type(exc).__name__}: "
+                f"{exc}). The file may come from an incompatible version or "
+                "have been edited."
+            ) from exc
         return learner
 
     def _validate_config(self, config: AdaptShotConfig) -> None:
@@ -1658,7 +1679,16 @@ class FewShotLearner:
             if head_path.exists() and learner._model_head is not None:
                 try:
                     learner._model_head.load_state_dict(
-                        _get_torch().load(head_path, map_location=_get_torch().device("cpu"))
+                        # weights_only=True (#121): before torch 2.6 the default
+                        # unpickles arbitrary objects, so a crafted .head.pt
+                        # beside a checkpoint would execute code on load. The
+                        # head is a state_dict of tensors; nothing more is ever
+                        # legitimate here.
+                        _get_torch().load(
+                            head_path,
+                            map_location=_get_torch().device("cpu"),
+                            weights_only=True,
+                        )
                     )
                 except Exception as exc:
                     raise AdaptShotError(
