@@ -55,8 +55,8 @@ All other fields use sensible defaults. You only need to set what you want to ch
 
 | # | Field | Type | Default | Description |
 |---|-------|------|---------|-------------|
-| 13 | `eco_mode` | `bool` | `False` | Enable energy-saving early-exit. When `True`, the pipeline can exit early if a high-confidence match is found before full similarity computation. Reduces carbon footprint by up to 40% in benchmark testing. |
-| 14 | `early_exit_threshold` | `float` | `0.95` | Confidence threshold for early-exit. Must be in [0.5, 1.0]. Higher values (e.g., 0.98) are more conservative and exit less often. Lower values (e.g., 0.85) save more energy but may miss subtle distinctions. Only active when `eco_mode=True`. |
+| 13 | `eco_mode` | `bool` | `False` | Energy-saving early exit: when the query's mean-centred 32×32 preview is near-identical to the cached support preview, the cached embedding is returned without running the backbone. Only worth switching on for duplicate-heavy batches; a false match returns another photograph's embedding, which is why it is off by default. (An earlier "up to 40% carbon reduction" claim here was not supported by any committed artifact and is retracted — the committed profile measured a 6.7% latency reduction, with eco mode off in both runs.) |
+| 14 | `early_exit_threshold` | `float` | `0.95` | Mean-centred preview cosine needed for the early exit. Must be in [0.5, 1.0]. Higher is safer; lowering it trades correctness for speed on non-duplicate photographs. Only active when `eco_mode=True`. |
 
 ### Category 5: Calibration & Uncertainty (5 fields)
 
