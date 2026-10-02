@@ -20,7 +20,10 @@ pytest.importorskip("torchvision")
 
 def test_resnet18_embedding_shape() -> None:
     """Verify ResNet-18 extracts 512-dimensional embeddings as expected."""
-    config = AdaptShotConfig(backbone="resnet18", device="cpu", seed=42)
+    config = AdaptShotConfig(
+        backbone="resnet18", device="cpu", seed=42,
+        allow_download=True,  # this test exercises the torch path; CI has no warm cache (#121)
+    )
     dummy_img = Image.new("RGB", (224, 224), color="red")
     emb = extract_embedding(dummy_img, config)
     assert emb.shape == (512,), f"Expected (512,), got {emb.shape}"
@@ -36,7 +39,10 @@ def test_mobilenet_v3_embedding_shape() -> None:
 
 def test_deterministic_extraction() -> None:
     """Verify that extraction is bit-exact across multiple independent runs."""
-    config = AdaptShotConfig(backbone="resnet18", device="cpu", seed=123)
+    config = AdaptShotConfig(
+        backbone="resnet18", device="cpu", seed=123,
+        allow_download=True,  # deliberate: the determinism check needs the real torch backbone
+    )
     dummy_img = Image.new("RGB", (224, 224), color="green")
 
     def extract_fn() -> Any:
