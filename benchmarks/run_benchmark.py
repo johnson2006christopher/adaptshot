@@ -429,6 +429,12 @@ def main() -> int:
         n_way=5,
         k_shot=10,
         use_faiss=False,  # Disable for smoke test to avoid FAISS dependency
+        # Backbone weights are the gate's one documented download exception
+        # (see ci.yml): this harness pins resnet18 for comparability with every
+        # published number, and fetching its weights on a cold cache is the
+        # benchmark's own, stated behaviour. The LIBRARY default stays False --
+        # a user's predict() never downloads silently (#121).
+        allow_download=True,
     )
 
     if args.smoke_test or args.full_benchmark:
