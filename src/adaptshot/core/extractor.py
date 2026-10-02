@@ -342,13 +342,19 @@ def extract_embedding(
     support_preview = active_cache.preview
     if config.eco_mode and support_embedding is not None and support_preview is not None:
         query_preview = compute_preview_signature(pil_image)
-        preview_norm = np.linalg.norm(query_preview) + 1e-8
-        support_norm = np.linalg.norm(support_preview) + 1e-8
+        # Mean-centred cosine (#120). Raw 32x32 pixel vectors are all-positive,
+        # so natural photographs are nearly parallel whatever they show: on the
+        # bundled maize set, a quarter of CROSS-CLASS pairs cleared the 0.95
+        # bar and the early exit returned a different photograph's embedding --
+        # a different image's answer, deterministically. Centring removes the
+        # shared brightness component, so only near-duplicates stay near 1.0.
+        query_centred = query_preview - float(np.mean(query_preview))
+        support_centred = support_preview - float(np.mean(support_preview))
+        preview_norm = float(np.linalg.norm(query_centred)) + 1e-8
+        support_norm = float(np.linalg.norm(support_centred)) + 1e-8
         quick_similarity = float(
-            np.dot(query_preview, support_preview) / (preview_norm * support_norm)
+            np.dot(query_centred, support_centred) / (preview_norm * support_norm)
         )
-        # v0.2.0: Stricter eco-mode: require >= threshold AND also check
-        # that the cached embedding is not stale (preview norms differ by <2x)
         norm_ratio = min(preview_norm, support_norm) / max(preview_norm, support_norm)
         if quick_similarity >= config.early_exit_threshold and norm_ratio > 0.3:
             if return_numpy:
