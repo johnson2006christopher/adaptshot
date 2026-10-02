@@ -39,6 +39,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   whole internet for 72 hours, which must be a decision, not a default. (#105,
   first slice)
 
+### Corrected
+- eco mode's "reduces carbon footprint by up to 40% in benchmark testing"
+  (config reference, and the 0.1.1 notes) was never supported by a committed
+  artifact: `results/energy_profile.json` recorded a 6.7% latency reduction,
+  measured with `eco_mode: false` in both runs, on random tensors. The claim is
+  retracted, that artifact and the orphaned `day1_smoke_test.json` are retired,
+  and the early exit itself compared raw all-positive pixel previews — on the
+  bundled photographs a quarter of cross-class pairs cleared the bar, so eco
+  mode could return a *different photograph's* embedding. Previews are now
+  mean-centred before the cosine, and Tambua's configs no longer switch eco
+  mode on by default. (#120)
+
 ### Fixed
 - A correction now names the photograph from the correcting user's own browser
   session. Previously it was applied to the last image *the process* saw, so
