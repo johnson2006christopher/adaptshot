@@ -1,6 +1,36 @@
 {
   "cells": [
     {
+      "ablation": {
+        "adapt_only": {
+          "accuracy": {
+            "ci95_half_width": 0.013719999999999996,
+            "mean": 0.9469999999999998
+          },
+          "coverage": {
+            "ci95_half_width": 0.009094917712938815,
+            "mean": 0.9745000000000001
+          },
+          "set_size": {
+            "ci95_half_width": 0.11675843969934524,
+            "mean": 1.2434999999999998
+          }
+        },
+        "recalibrate_only": {
+          "accuracy": {
+            "ci95_half_width": 0.015991017991680713,
+            "mean": 0.9279999999999999
+          },
+          "coverage": {
+            "ci95_half_width": 0.013893897941182665,
+            "mean": 0.9544999999999998
+          },
+          "set_size": {
+            "ci95_half_width": 0.06255881532093599,
+            "mean": 1.133
+          }
+        }
+      },
       "accuracy": {
         "ci95_half_width": 0.015991017991680713,
         "mean": 0.9279999999999999
@@ -11,18 +41,18 @@
           "mean": 0.9469999999999998
         },
         "coverage": {
-          "ci95_half_width": 0.011800762687216448,
-          "mean": 0.9674999999999999
+          "ci95_half_width": 0.011034000599545445,
+          "mean": 0.968
         },
         "k": 10,
         "set_size": {
-          "ci95_half_width": 0.053738938849943324,
-          "mean": 1.1115
+          "ci95_half_width": 0.05350012039286717,
+          "mean": 1.1164999999999998
         }
       },
       "coverage": {
-        "ci95_half_width": 0.010116529251801929,
-        "mean": 0.969
+        "ci95_half_width": 0.012008653290280046,
+        "mean": 0.9640000000000001
       },
       "identity": true,
       "kind": "blur",
@@ -32,11 +62,41 @@
         "mean": 0.018
       },
       "set_size": {
-        "ci95_half_width": 0.1440433323691173,
-        "mean": 1.341
+        "ci95_half_width": 0.1285287648539104,
+        "mean": 1.2865
       }
     },
     {
+      "ablation": {
+        "adapt_only": {
+          "accuracy": {
+            "ci95_half_width": 0.016052498487534816,
+            "mean": 0.932
+          },
+          "coverage": {
+            "ci95_half_width": 0.011112946942354658,
+            "mean": 0.9675
+          },
+          "set_size": {
+            "ci95_half_width": 0.14468505424914116,
+            "mean": 1.3199999999999998
+          }
+        },
+        "recalibrate_only": {
+          "accuracy": {
+            "ci95_half_width": 0.020827401822278904,
+            "mean": 0.8975
+          },
+          "coverage": {
+            "ci95_half_width": 0.01701467119568979,
+            "mean": 0.9410000000000001
+          },
+          "set_size": {
+            "ci95_half_width": 0.10660596529227356,
+            "mean": 1.222
+          }
+        }
+      },
       "accuracy": {
         "ci95_half_width": 0.020827401822278904,
         "mean": 0.8975
@@ -47,18 +107,18 @@
           "mean": 0.932
         },
         "coverage": {
-          "ci95_half_width": 0.012597127877783519,
-          "mean": 0.9570000000000001
+          "ci95_half_width": 0.01280170461405984,
+          "mean": 0.9625
         },
         "k": 10,
         "set_size": {
-          "ci95_half_width": 0.06870402369435774,
-          "mean": 1.1600000000000001
+          "ci95_half_width": 0.08805693239938434,
+          "mean": 1.191
         }
       },
       "coverage": {
-        "ci95_half_width": 0.015805141649605753,
-        "mean": 0.952
+        "ci95_half_width": 0.016813022730411485,
+        "mean": 0.9445
       },
       "identity": false,
       "kind": "blur",
@@ -68,11 +128,41 @@
         "mean": 0.0165
       },
       "set_size": {
-        "ci95_half_width": 0.17922496380605588,
-        "mean": 1.439
+        "ci95_half_width": 0.1724810708008719,
+        "mean": 1.3855
       }
     },
     {
+      "ablation": {
+        "adapt_only": {
+          "accuracy": {
+            "ci95_half_width": 0.01986891167834945,
+            "mean": 0.8734999999999999
+          },
+          "coverage": {
+            "ci95_half_width": 0.016889743208261795,
+            "mean": 0.9419999999999998
+          },
+          "set_size": {
+            "ci95_half_width": 0.21730109334568654,
+            "mean": 1.518
+          }
+        },
+        "recalibrate_only": {
+          "accuracy": {
+            "ci95_half_width": 0.029488235115998553,
+            "mean": 0.8065
+          },
+          "coverage": {
+            "ci95_half_width": 0.021653457117241228,
+            "mean": 0.9
+          },
+          "set_size": {
+            "ci95_half_width": 0.15936718962259805,
+            "mean": 1.48
+          }
+        }
+      },
       "accuracy": {
         "ci95_half_width": 0.029488235115998553,
         "mean": 0.8065
@@ -83,18 +173,18 @@
           "mean": 0.8734999999999999
         },
         "coverage": {
-          "ci95_half_width": 0.01592620804096513,
-          "mean": 0.9350000000000002
+          "ci95_half_width": 0.015077111537283663,
+          "mean": 0.9465
         },
         "k": 10,
         "set_size": {
-          "ci95_half_width": 0.09996529649115288,
-          "mean": 1.2805000000000002
+          "ci95_half_width": 0.1297195760091745,
+          "mean": 1.3995000000000002
         }
       },
       "coverage": {
-        "ci95_half_width": 0.023992686065036246,
-        "mean": 0.916
+        "ci95_half_width": 0.031315994766335106,
+        "mean": 0.892
       },
       "identity": false,
       "kind": "blur",
@@ -104,11 +194,41 @@
         "mean": 0.026000000000000002
       },
       "set_size": {
-        "ci95_half_width": 0.25975309568501526,
-        "mean": 1.7724999999999997
+        "ci95_half_width": 0.27488306838008647,
+        "mean": 1.6875
       }
     },
     {
+      "ablation": {
+        "adapt_only": {
+          "accuracy": {
+            "ci95_half_width": 0.030054016157237406,
+            "mean": 0.7795
+          },
+          "coverage": {
+            "ci95_half_width": 0.03234304569962768,
+            "mean": 0.8895000000000002
+          },
+          "set_size": {
+            "ci95_half_width": 0.31841142042397014,
+            "mean": 1.8329999999999997
+          }
+        },
+        "recalibrate_only": {
+          "accuracy": {
+            "ci95_half_width": 0.03747828622631427,
+            "mean": 0.6695
+          },
+          "coverage": {
+            "ci95_half_width": 0.028914790998060803,
+            "mean": 0.8664999999999999
+          },
+          "set_size": {
+            "ci95_half_width": 0.2303032612971483,
+            "mean": 1.9689999999999999
+          }
+        }
+      },
       "accuracy": {
         "ci95_half_width": 0.03747828622631427,
         "mean": 0.6695
@@ -119,18 +239,18 @@
           "mean": 0.7795
         },
         "coverage": {
-          "ci95_half_width": 0.02289178108024015,
-          "mean": 0.89
+          "ci95_half_width": 0.016171713195957553,
+          "mean": 0.945
         },
         "k": 10,
         "set_size": {
-          "ci95_half_width": 0.17195808565029103,
-          "mean": 1.557
+          "ci95_half_width": 0.19135137444649855,
+          "mean": 1.9144999999999999
         }
       },
       "coverage": {
-        "ci95_half_width": 0.034046344131462174,
-        "mean": 0.8584999999999999
+        "ci95_half_width": 0.044296122305254336,
+        "mean": 0.8295
       },
       "identity": false,
       "kind": "blur",
@@ -140,11 +260,41 @@
         "mean": 0.1
       },
       "set_size": {
-        "ci95_half_width": 0.3150977941642554,
-        "mean": 2.1294999999999997
+        "ci95_half_width": 0.3724501207837028,
+        "mean": 2.031
       }
     },
     {
+      "ablation": {
+        "adapt_only": {
+          "accuracy": {
+            "ci95_half_width": 0.013719999999999996,
+            "mean": 0.9469999999999998
+          },
+          "coverage": {
+            "ci95_half_width": 0.009094917712938815,
+            "mean": 0.9745000000000001
+          },
+          "set_size": {
+            "ci95_half_width": 0.11675843969934524,
+            "mean": 1.2434999999999998
+          }
+        },
+        "recalibrate_only": {
+          "accuracy": {
+            "ci95_half_width": 0.015991017991680713,
+            "mean": 0.9279999999999999
+          },
+          "coverage": {
+            "ci95_half_width": 0.013893897941182665,
+            "mean": 0.9544999999999998
+          },
+          "set_size": {
+            "ci95_half_width": 0.06255881532093599,
+            "mean": 1.133
+          }
+        }
+      },
       "accuracy": {
         "ci95_half_width": 0.015991017991680713,
         "mean": 0.9279999999999999
@@ -155,18 +305,18 @@
           "mean": 0.9469999999999998
         },
         "coverage": {
-          "ci95_half_width": 0.011800762687216448,
-          "mean": 0.9674999999999999
+          "ci95_half_width": 0.011034000599545445,
+          "mean": 0.968
         },
         "k": 10,
         "set_size": {
-          "ci95_half_width": 0.053738938849943324,
-          "mean": 1.1115
+          "ci95_half_width": 0.05350012039286717,
+          "mean": 1.1164999999999998
         }
       },
       "coverage": {
-        "ci95_half_width": 0.010116529251801929,
-        "mean": 0.969
+        "ci95_half_width": 0.012008653290280046,
+        "mean": 0.9640000000000001
       },
       "identity": true,
       "kind": "brightness",
@@ -176,11 +326,41 @@
         "mean": 0.018
       },
       "set_size": {
-        "ci95_half_width": 0.1440433323691173,
-        "mean": 1.341
+        "ci95_half_width": 0.1285287648539104,
+        "mean": 1.2865
       }
     },
     {
+      "ablation": {
+        "adapt_only": {
+          "accuracy": {
+            "ci95_half_width": 0.017086163242781397,
+            "mean": 0.9425000000000001
+          },
+          "coverage": {
+            "ci95_half_width": 0.010022374456364608,
+            "mean": 0.9744999999999999
+          },
+          "set_size": {
+            "ci95_half_width": 0.12011892892953834,
+            "mean": 1.259
+          }
+        },
+        "recalibrate_only": {
+          "accuracy": {
+            "ci95_half_width": 0.017960954803013598,
+            "mean": 0.925
+          },
+          "coverage": {
+            "ci95_half_width": 0.014515405079273003,
+            "mean": 0.9509999999999998
+          },
+          "set_size": {
+            "ci95_half_width": 0.068499413435632,
+            "mean": 1.145
+          }
+        }
+      },
       "accuracy": {
         "ci95_half_width": 0.017960954803013598,
         "mean": 0.925
@@ -191,18 +371,18 @@
           "mean": 0.9425000000000001
         },
         "coverage": {
-          "ci95_half_width": 0.012154390997200167,
-          "mean": 0.9655000000000001
+          "ci95_half_width": 0.013585624000655232,
+          "mean": 0.9675
         },
         "k": 10,
         "set_size": {
-          "ci95_half_width": 0.05469278966212676,
-          "mean": 1.1184999999999998
+          "ci95_half_width": 0.05683891687739019,
+          "mean": 1.1315000000000002
         }
       },
       "coverage": {
-        "ci95_half_width": 0.014619368606801677,
-        "mean": 0.9604999999999999
+        "ci95_half_width": 0.012787269310148135,
+        "mean": 0.96
       },
       "identity": false,
       "kind": "brightness",
@@ -212,11 +392,41 @@
         "mean": 0.013500000000000002
       },
       "set_size": {
-        "ci95_half_width": 0.15205555310730756,
-        "mean": 1.3575
+        "ci95_half_width": 0.13623852853143362,
+        "mean": 1.307
       }
     },
     {
+      "ablation": {
+        "adapt_only": {
+          "accuracy": {
+            "ci95_half_width": 0.021879727181536374,
+            "mean": 0.9199999999999999
+          },
+          "coverage": {
+            "ci95_half_width": 0.012977471208766325,
+            "mean": 0.9605
+          },
+          "set_size": {
+            "ci95_half_width": 0.1483317097347041,
+            "mean": 1.3215
+          }
+        },
+        "recalibrate_only": {
+          "accuracy": {
+            "ci95_half_width": 0.02521330845162774,
+            "mean": 0.8924999999999998
+          },
+          "coverage": {
+            "ci95_half_width": 0.016137414720027297,
+            "mean": 0.9425000000000001
+          },
+          "set_size": {
+            "ci95_half_width": 0.09137274665221148,
+            "mean": 1.221
+          }
+        }
+      },
       "accuracy": {
         "ci95_half_width": 0.02521330845162774,
         "mean": 0.8924999999999998
@@ -227,18 +437,18 @@
           "mean": 0.9199999999999999
         },
         "coverage": {
-          "ci95_half_width": 0.018110464180150457,
-          "mean": 0.9445
+          "ci95_half_width": 0.016958857907844543,
+          "mean": 0.9545000000000001
         },
         "k": 10,
         "set_size": {
-          "ci95_half_width": 0.06433547324725852,
-          "mean": 1.1455
+          "ci95_half_width": 0.06837905444783136,
+          "mean": 1.1785
         }
       },
       "coverage": {
-        "ci95_half_width": 0.01960942081284872,
-        "mean": 0.9425000000000001
+        "ci95_half_width": 0.01818983542587763,
+        "mean": 0.9489999999999998
       },
       "identity": false,
       "kind": "brightness",
@@ -248,11 +458,41 @@
         "mean": 0.008499999999999999
       },
       "set_size": {
-        "ci95_half_width": 0.20169083993285494,
-        "mean": 1.4920000000000002
+        "ci95_half_width": 0.1885114013011224,
+        "mean": 1.4335
       }
     },
     {
+      "ablation": {
+        "adapt_only": {
+          "accuracy": {
+            "ci95_half_width": 0.01366604776584882,
+            "mean": 0.9420000000000002
+          },
+          "coverage": {
+            "ci95_half_width": 0.010043237806655067,
+            "mean": 0.974
+          },
+          "set_size": {
+            "ci95_half_width": 0.1248243204031272,
+            "mean": 1.2655
+          }
+        },
+        "recalibrate_only": {
+          "accuracy": {
+            "ci95_half_width": 0.01694796379873042,
+            "mean": 0.9280000000000002
+          },
+          "coverage": {
+            "ci95_half_width": 0.013719999999999998,
+            "mean": 0.9570000000000001
+          },
+          "set_size": {
+            "ci95_half_width": 0.07145268644354809,
+            "mean": 1.163
+          }
+        }
+      },
       "accuracy": {
         "ci95_half_width": 0.01694796379873042,
         "mean": 0.9280000000000002
@@ -263,18 +503,18 @@
           "mean": 0.9420000000000002
         },
         "coverage": {
-          "ci95_half_width": 0.01174218736448044,
-          "mean": 0.9654999999999999
+          "ci95_half_width": 0.012105667670293519,
+          "mean": 0.9664999999999999
         },
         "k": 10,
         "set_size": {
-          "ci95_half_width": 0.05955238297456044,
-          "mean": 1.116
+          "ci95_half_width": 0.05818618075427558,
+          "mean": 1.1330000000000002
         }
       },
       "coverage": {
-        "ci95_half_width": 0.01122429416431962,
-        "mean": 0.969
+        "ci95_half_width": 0.012315409984118394,
+        "mean": 0.9655000000000001
       },
       "identity": false,
       "kind": "brightness",
@@ -284,11 +524,41 @@
         "mean": 0.0245
       },
       "set_size": {
-        "ci95_half_width": 0.16123819993397567,
-        "mean": 1.3805
+        "ci95_half_width": 0.14343926094165146,
+        "mean": 1.318
       }
     },
     {
+      "ablation": {
+        "adapt_only": {
+          "accuracy": {
+            "ci95_half_width": 0.01295563079246893,
+            "mean": 0.9460000000000001
+          },
+          "coverage": {
+            "ci95_half_width": 0.009029700849745656,
+            "mean": 0.9734999999999999
+          },
+          "set_size": {
+            "ci95_half_width": 0.1146668724655279,
+            "mean": 1.2425000000000002
+          }
+        },
+        "recalibrate_only": {
+          "accuracy": {
+            "ci95_half_width": 0.015182094717133067,
+            "mean": 0.93
+          },
+          "coverage": {
+            "ci95_half_width": 0.013893897941182665,
+            "mean": 0.9544999999999998
+          },
+          "set_size": {
+            "ci95_half_width": 0.06298466195055459,
+            "mean": 1.1324999999999998
+          }
+        }
+      },
       "accuracy": {
         "ci95_half_width": 0.015182094717133067,
         "mean": 0.93
@@ -299,18 +569,18 @@
           "mean": 0.9460000000000001
         },
         "coverage": {
-          "ci95_half_width": 0.012135128072391052,
-          "mean": 0.9649999999999999
+          "ci95_half_width": 0.010907175243612425,
+          "mean": 0.9665000000000001
         },
         "k": 10,
         "set_size": {
-          "ci95_half_width": 0.05470021834672587,
-          "mean": 1.1119999999999999
+          "ci95_half_width": 0.0530935189438989,
+          "mean": 1.1164999999999998
         }
       },
       "coverage": {
-        "ci95_half_width": 0.010213433085139171,
-        "mean": 0.9690000000000001
+        "ci95_half_width": 0.012307409067253671,
+        "mean": 0.9635
       },
       "identity": true,
       "kind": "jpeg",
@@ -320,11 +590,41 @@
         "mean": 0.017499999999999998
       },
       "set_size": {
-        "ci95_half_width": 0.14560936064584687,
-        "mean": 1.346
+        "ci95_half_width": 0.13032715186338,
+        "mean": 1.2925
       }
     },
     {
+      "ablation": {
+        "adapt_only": {
+          "accuracy": {
+            "ci95_half_width": 0.014713395605923541,
+            "mean": 0.9435
+          },
+          "coverage": {
+            "ci95_half_width": 0.010012541366475579,
+            "mean": 0.9715
+          },
+          "set_size": {
+            "ci95_half_width": 0.1311804080118439,
+            "mean": 1.2810000000000001
+          }
+        },
+        "recalibrate_only": {
+          "accuracy": {
+            "ci95_half_width": 0.01671902064362776,
+            "mean": 0.9235
+          },
+          "coverage": {
+            "ci95_half_width": 0.013151825065902546,
+            "mean": 0.952
+          },
+          "set_size": {
+            "ci95_half_width": 0.07249062121476518,
+            "mean": 1.1585
+          }
+        }
+      },
       "accuracy": {
         "ci95_half_width": 0.01671902064362776,
         "mean": 0.9235
@@ -335,18 +635,18 @@
           "mean": 0.9435
         },
         "coverage": {
-          "ci95_half_width": 0.011889120215019254,
-          "mean": 0.9650000000000001
+          "ci95_half_width": 0.01174218736448044,
+          "mean": 0.9655000000000001
         },
         "k": 10,
         "set_size": {
-          "ci95_half_width": 0.055815898020141815,
-          "mean": 1.1215
+          "ci95_half_width": 0.06300831170242338,
+          "mean": 1.136
         }
       },
       "coverage": {
-        "ci95_half_width": 0.010090937797896963,
-        "mean": 0.9675
+        "ci95_half_width": 0.011358421251799622,
+        "mean": 0.9605
       },
       "identity": false,
       "kind": "jpeg",
@@ -356,11 +656,41 @@
         "mean": 0.022
       },
       "set_size": {
-        "ci95_half_width": 0.1628490734013931,
-        "mean": 1.3845
+        "ci95_half_width": 0.14729880571173198,
+        "mean": 1.3335000000000001
       }
     },
     {
+      "ablation": {
+        "adapt_only": {
+          "accuracy": {
+            "ci95_half_width": 0.01651749003096647,
+            "mean": 0.9205
+          },
+          "coverage": {
+            "ci95_half_width": 0.013933720028985573,
+            "mean": 0.9570000000000001
+          },
+          "set_size": {
+            "ci95_half_width": 0.17116805824715828,
+            "mean": 1.381
+          }
+        },
+        "recalibrate_only": {
+          "accuracy": {
+            "ci95_half_width": 0.01984969159483986,
+            "mean": 0.8800000000000001
+          },
+          "coverage": {
+            "ci95_half_width": 0.01828974323746256,
+            "mean": 0.9280000000000002
+          },
+          "set_size": {
+            "ci95_half_width": 0.11998713738756141,
+            "mean": 1.2765
+          }
+        }
+      },
       "accuracy": {
         "ci95_half_width": 0.01984969159483986,
         "mean": 0.8800000000000001
@@ -371,18 +701,18 @@
           "mean": 0.9205
         },
         "coverage": {
-          "ci95_half_width": 0.015207215224090005,
-          "mean": 0.9465
+          "ci95_half_width": 0.016000255126171082,
+          "mean": 0.951
         },
         "k": 10,
         "set_size": {
-          "ci95_half_width": 0.08209413458544607,
-          "mean": 1.1789999999999998
+          "ci95_half_width": 0.09703015227898001,
+          "mean": 1.2105000000000001
         }
       },
       "coverage": {
-        "ci95_half_width": 0.015579162941208292,
-        "mean": 0.9440000000000002
+        "ci95_half_width": 0.018083248800464122,
+        "mean": 0.9344999999999999
       },
       "identity": false,
       "kind": "jpeg",
@@ -392,11 +722,41 @@
         "mean": 0.0395
       },
       "set_size": {
-        "ci95_half_width": 0.20949184330244558,
-        "mean": 1.53
+        "ci95_half_width": 0.20972534261107628,
+        "mean": 1.4925000000000002
       }
     },
     {
+      "ablation": {
+        "adapt_only": {
+          "accuracy": {
+            "ci95_half_width": 0.02517421045027771,
+            "mean": 0.8074999999999999
+          },
+          "coverage": {
+            "ci95_half_width": 0.0278090566321339,
+            "mean": 0.9129999999999999
+          },
+          "set_size": {
+            "ci95_half_width": 0.3031402356192296,
+            "mean": 1.7755000000000003
+          }
+        },
+        "recalibrate_only": {
+          "accuracy": {
+            "ci95_half_width": 0.03767488982169587,
+            "mean": 0.7205
+          },
+          "coverage": {
+            "ci95_half_width": 0.022364511952461537,
+            "mean": 0.9035
+          },
+          "set_size": {
+            "ci95_half_width": 0.23355415494550225,
+            "mean": 1.9064999999999999
+          }
+        }
+      },
       "accuracy": {
         "ci95_half_width": 0.03767488982169587,
         "mean": 0.7205
@@ -407,18 +767,18 @@
           "mean": 0.8074999999999999
         },
         "coverage": {
-          "ci95_half_width": 0.02356184312149733,
-          "mean": 0.8779999999999999
+          "ci95_half_width": 0.01856503357914743,
+          "mean": 0.9410000000000001
         },
         "k": 10,
         "set_size": {
-          "ci95_half_width": 0.1442636167860945,
-          "mean": 1.4774999999999998
+          "ci95_half_width": 0.1973417140718619,
+          "mean": 1.7435000000000003
         }
       },
       "coverage": {
-        "ci95_half_width": 0.03607923758362119,
-        "mean": 0.8550000000000001
+        "ci95_half_width": 0.0431462623986639,
+        "mean": 0.8710000000000001
       },
       "identity": false,
       "kind": "jpeg",
@@ -428,11 +788,41 @@
         "mean": 0.10450000000000001
       },
       "set_size": {
-        "ci95_half_width": 0.30205057922516293,
-        "mean": 2.0149999999999997
+        "ci95_half_width": 0.3713523664827083,
+        "mean": 2.0245
       }
     },
     {
+      "ablation": {
+        "adapt_only": {
+          "accuracy": {
+            "ci95_half_width": 0.013719999999999996,
+            "mean": 0.9469999999999998
+          },
+          "coverage": {
+            "ci95_half_width": 0.009094917712938815,
+            "mean": 0.9745000000000001
+          },
+          "set_size": {
+            "ci95_half_width": 0.11675843969934524,
+            "mean": 1.2434999999999998
+          }
+        },
+        "recalibrate_only": {
+          "accuracy": {
+            "ci95_half_width": 0.015991017991680713,
+            "mean": 0.9279999999999999
+          },
+          "coverage": {
+            "ci95_half_width": 0.013893897941182665,
+            "mean": 0.9544999999999998
+          },
+          "set_size": {
+            "ci95_half_width": 0.06255881532093599,
+            "mean": 1.133
+          }
+        }
+      },
       "accuracy": {
         "ci95_half_width": 0.015991017991680713,
         "mean": 0.9279999999999999
@@ -443,18 +833,18 @@
           "mean": 0.9469999999999998
         },
         "coverage": {
-          "ci95_half_width": 0.011800762687216448,
-          "mean": 0.9674999999999999
+          "ci95_half_width": 0.011034000599545445,
+          "mean": 0.968
         },
         "k": 10,
         "set_size": {
-          "ci95_half_width": 0.053738938849943324,
-          "mean": 1.1115
+          "ci95_half_width": 0.05350012039286717,
+          "mean": 1.1164999999999998
         }
       },
       "coverage": {
-        "ci95_half_width": 0.010116529251801929,
-        "mean": 0.969
+        "ci95_half_width": 0.012008653290280046,
+        "mean": 0.9640000000000001
       },
       "identity": true,
       "kind": "downscale",
@@ -464,11 +854,41 @@
         "mean": 0.018
       },
       "set_size": {
-        "ci95_half_width": 0.1440433323691173,
-        "mean": 1.341
+        "ci95_half_width": 0.1285287648539104,
+        "mean": 1.2865
       }
     },
     {
+      "ablation": {
+        "adapt_only": {
+          "accuracy": {
+            "ci95_half_width": 0.01619909969008249,
+            "mean": 0.9339999999999999
+          },
+          "coverage": {
+            "ci95_half_width": 0.012048574764101927,
+            "mean": 0.9674999999999999
+          },
+          "set_size": {
+            "ci95_half_width": 0.14434117858704573,
+            "mean": 1.3130000000000002
+          }
+        },
+        "recalibrate_only": {
+          "accuracy": {
+            "ci95_half_width": 0.020406964874390685,
+            "mean": 0.9065
+          },
+          "coverage": {
+            "ci95_half_width": 0.0172696594772896,
+            "mean": 0.9414999999999999
+          },
+          "set_size": {
+            "ci95_half_width": 0.09154560696093589,
+            "mean": 1.19
+          }
+        }
+      },
       "accuracy": {
         "ci95_half_width": 0.020406964874390685,
         "mean": 0.9065
@@ -479,18 +899,18 @@
           "mean": 0.9339999999999999
         },
         "coverage": {
-          "ci95_half_width": 0.01331187863603454,
-          "mean": 0.959
+          "ci95_half_width": 0.014161610802194094,
+          "mean": 0.962
         },
         "k": 10,
         "set_size": {
-          "ci95_half_width": 0.0640577488657195,
-          "mean": 1.1515
+          "ci95_half_width": 0.07876101495615123,
+          "mean": 1.182
         }
       },
       "coverage": {
-        "ci95_half_width": 0.015642262279822863,
-        "mean": 0.954
+        "ci95_half_width": 0.014833411696710317,
+        "mean": 0.9524999999999999
       },
       "identity": false,
       "kind": "downscale",
@@ -500,11 +920,41 @@
         "mean": 0.014500000000000002
       },
       "set_size": {
-        "ci95_half_width": 0.18388030217564122,
-        "mean": 1.4505
+        "ci95_half_width": 0.1729898060135781,
+        "mean": 1.386
       }
     },
     {
+      "ablation": {
+        "adapt_only": {
+          "accuracy": {
+            "ci95_half_width": 0.019794407653652438,
+            "mean": 0.8915
+          },
+          "coverage": {
+            "ci95_half_width": 0.015259752997295253,
+            "mean": 0.944
+          },
+          "set_size": {
+            "ci95_half_width": 0.21526799495345803,
+            "mean": 1.5065
+          }
+        },
+        "recalibrate_only": {
+          "accuracy": {
+            "ci95_half_width": 0.02766478442778648,
+            "mean": 0.8205
+          },
+          "coverage": {
+            "ci95_half_width": 0.021877476064993392,
+            "mean": 0.909
+          },
+          "set_size": {
+            "ci95_half_width": 0.15198662707704388,
+            "mean": 1.457
+          }
+        }
+      },
       "accuracy": {
         "ci95_half_width": 0.02766478442778648,
         "mean": 0.8205
@@ -515,18 +965,18 @@
           "mean": 0.8915
         },
         "coverage": {
-          "ci95_half_width": 0.014347324953918529,
-          "mean": 0.9404999999999999
+          "ci95_half_width": 0.012151351512887095,
+          "mean": 0.9509999999999998
         },
         "k": 10,
         "set_size": {
-          "ci95_half_width": 0.09580998095857264,
-          "mean": 1.2570000000000001
+          "ci95_half_width": 0.12365736549444047,
+          "mean": 1.3679999999999999
         }
       },
       "coverage": {
-        "ci95_half_width": 0.023092601767887834,
-        "mean": 0.9275
+        "ci95_half_width": 0.03034958775540579,
+        "mean": 0.9030000000000001
       },
       "identity": false,
       "kind": "downscale",
@@ -536,11 +986,41 @@
         "mean": 0.029500000000000005
       },
       "set_size": {
-        "ci95_half_width": 0.26005364020643,
-        "mean": 1.7745000000000002
+        "ci95_half_width": 0.2717124800131046,
+        "mean": 1.6800000000000002
       }
     },
     {
+      "ablation": {
+        "adapt_only": {
+          "accuracy": {
+            "ci95_half_width": 0.030001530046452715,
+            "mean": 0.7835000000000001
+          },
+          "coverage": {
+            "ci95_half_width": 0.03371490714954683,
+            "mean": 0.8895
+          },
+          "set_size": {
+            "ci95_half_width": 0.30919662047444907,
+            "mean": 1.7990000000000002
+          }
+        },
+        "recalibrate_only": {
+          "accuracy": {
+            "ci95_half_width": 0.037517689366279146,
+            "mean": 0.6755
+          },
+          "coverage": {
+            "ci95_half_width": 0.02662375727206908,
+            "mean": 0.868
+          },
+          "set_size": {
+            "ci95_half_width": 0.2173468151630901,
+            "mean": 1.9434999999999998
+          }
+        }
+      },
       "accuracy": {
         "ci95_half_width": 0.037517689366279146,
         "mean": 0.6755
@@ -551,18 +1031,18 @@
           "mean": 0.7835000000000001
         },
         "coverage": {
-          "ci95_half_width": 0.02288317352923826,
-          "mean": 0.9019999999999999
+          "ci95_half_width": 0.016149618079154812,
+          "mean": 0.9465
         },
         "k": 10,
         "set_size": {
-          "ci95_half_width": 0.15633569718840482,
-          "mean": 1.484
+          "ci95_half_width": 0.1907300640252525,
+          "mean": 1.8645000000000003
         }
       },
       "coverage": {
-        "ci95_half_width": 0.035838177036971806,
-        "mean": 0.8690000000000001
+        "ci95_half_width": 0.0443619513570484,
+        "mean": 0.829
       },
       "identity": false,
       "kind": "downscale",
@@ -572,8 +1052,8 @@
         "mean": 0.137
       },
       "set_size": {
-        "ci95_half_width": 0.3256303942847646,
-        "mean": 2.117
+        "ci95_half_width": 0.3691522012423213,
+        "mean": 2.0244999999999997
       }
     }
   ],
@@ -586,18 +1066,18 @@
     "repo": "spMohanty/PlantVillage-Dataset"
   },
   "early_warning": {
-    "correlation": 0.9154149351873841,
+    "correlation": 0.9214439865348838,
     "n_cells": 12,
     "note": "Pearson correlation across shifted cells between coverage shortfall (target minus measured, floored at 0) and the OOD flag rate"
   },
   "hardware": {
-    "adaptshot": "0.2.0",
+    "adaptshot": "0.3.1",
     "cpu_count": 16,
     "cpu_model": "11th Gen Intel(R) Core(TM) i7-11800H @ 2.30GHz",
-    "install": "core",
+    "install": "torch",
     "numpy": "2.5.2",
     "onnxruntime": "1.29.0",
-    "platform": "Linux-7.1.10-200.fc44.x86_64-x86_64-with-glibc2.43",
+    "platform": "Linux-7.2.8-200.fc44.x86_64-x86_64-with-glibc2.43",
     "processor": "x86_64",
     "python": "3.14.7",
     "ram_gb": 31.0
