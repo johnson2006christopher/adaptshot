@@ -20,7 +20,7 @@ engine:
   seed: 42
   inference_mode: "prototypical"
   similarity_metric: "cosine"
-  eco_mode: true
+  eco_mode: false
   enable_ood_detection: true
 
   # Conformal prediction: return a *set* of labels carrying a coverage
