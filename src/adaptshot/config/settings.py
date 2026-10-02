@@ -50,6 +50,11 @@ class AdaptShotConfig:
     inference_mode: InferenceMode = "prototypical"
 
     # Energy-aware inference
+    # The library never downloads silently (#121): a torch backbone whose
+    # weights are not in the local cache raises BackboneError naming this
+    # flag instead of fetching ~45 MB from download.pytorch.org mid-call.
+    # The bundled ONNX backbone needs no download at all.
+    allow_download: bool = False
     eco_mode: bool = False
     early_exit_threshold: float = 0.95
 
