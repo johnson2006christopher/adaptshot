@@ -71,7 +71,12 @@ calls, warmup = {calls}, {warmup}
 set_deterministic_seed(seed)
 rng = np.random.default_rng(seed)
 image = Image.fromarray(rng.integers(0, 255, (224, 224, 3), dtype=np.uint8))
-config = AdaptShotConfig(backbone=backbone, device="cpu", seed=seed)
+config = AdaptShotConfig(
+        backbone=backbone, device="cpu", seed=seed,
+        # Parity needs the torch twin of the bundled graph; fetching its weights
+        # is this benchmark's stated behaviour, not the library's (#121).
+        allow_download=True,
+    )
 
 # return_numpy=False is the documented way to ask for the torch path by name:
 # it returns a tensor, which an ONNX session can never produce.
