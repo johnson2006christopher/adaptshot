@@ -18,7 +18,7 @@ engine:
   seed: 42
   inference_mode: "prototypical" # prototypical | nearest_neighbor
   similarity_metric: "euclidean" # euclidean | cosine
-  eco_mode: true                 # carbon-aware inference
+  eco_mode: false                # early exit only helps duplicate-heavy batches; see #120
   enable_ood_detection: true
 
   # Conformal prediction: return a *set* of labels carrying a coverage
