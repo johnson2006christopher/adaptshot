@@ -12,6 +12,7 @@ and deterministic: the fast path only activates when a cached support embedding
 is available and the preview similarity already exceeds the configured bound.
 """
 
+import os
 from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
@@ -81,6 +82,26 @@ BackboneRegistry: dict[str, Any] = {
     ),
 }
 
+#: Where each torch backbone's weights come from, so the download guard can
+#: check the local torch cache without triggering the download it guards.
+_TORCH_WEIGHT_URLS: dict[str, Any] = {
+    "resnet18": lambda: _get_tv_models().ResNet18_Weights.IMAGENET1K_V1.url,
+    "mobilenet_v3_small": lambda: (
+        _get_tv_models().MobileNet_V3_Small_Weights.IMAGENET1K_V1.url
+    ),
+}
+
+
+def _torch_weights_cached(backbone_name: str) -> bool:
+    """Whether the torch backbone's weights already sit in the local hub cache."""
+
+    import urllib.parse
+
+    url = _TORCH_WEIGHT_URLS[backbone_name]()
+    filename = os.path.basename(urllib.parse.urlparse(url).path)
+    cache = Path(str(_get_torch().hub.get_dir())) / "checkpoints" / filename
+    return bool(cache.is_file())
+
 # Output dimensionality for each backbone (used for dynamic dimension inference)
 BACKBONE_OUTPUT_DIM: dict[str, int] = {
     "resnet18": 512,
@@ -124,13 +145,29 @@ class EmbeddingCache:
 
 
 @lru_cache(maxsize=4)
-def _build_backbone(backbone_name: str, device: str) -> Any:
+def _build_backbone(backbone_name: str, device: str, allow_download: bool = False) -> Any:
     """Build and cache a frozen backbone on the requested device.
 
     v0.2.0: LRU cache prevents repeated backbone construction but can
     hold references to tensors on old devices. Use clear_backbone_cache()
     when switching devices or to release memory.
+
+    Raises:
+        BackboneError: When the weights are not cached locally and
+            ``allow_download`` is False -- torchvision would otherwise fetch
+            them from download.pytorch.org silently, mid-prediction, which a
+            library built for offline use must never do (#121).
     """
+    if not allow_download and not _torch_weights_cached(backbone_name):
+        raise BackboneError(
+            f"Backbone {backbone_name!r} needs its torch weights, which are not "
+            "in the local torch cache, and AdaptShot never downloads without "
+            "permission. Either pass AdaptShotConfig(allow_download=True), "
+            "pre-fetch once on a connected machine (python -c \"from "
+            f"torchvision.models import {backbone_name}; "
+            f"{backbone_name}(weights='IMAGENET1K_V1')\"), or use the bundled "
+            "ONNX backbone, which ships in the wheel and needs no network."
+        )
     nn = _get_torch_nn()
     backbone = BackboneRegistry[backbone_name]()
     if hasattr(backbone, "fc"):
@@ -342,13 +379,19 @@ def extract_embedding(
     support_preview = active_cache.preview
     if config.eco_mode and support_embedding is not None and support_preview is not None:
         query_preview = compute_preview_signature(pil_image)
-        preview_norm = np.linalg.norm(query_preview) + 1e-8
-        support_norm = np.linalg.norm(support_preview) + 1e-8
+        # Mean-centred cosine (#120). Raw 32x32 pixel vectors are all-positive,
+        # so natural photographs are nearly parallel whatever they show: on the
+        # bundled maize set, a quarter of CROSS-CLASS pairs cleared the 0.95
+        # bar and the early exit returned a different photograph's embedding --
+        # a different image's answer, deterministically. Centring removes the
+        # shared brightness component, so only near-duplicates stay near 1.0.
+        query_centred = query_preview - float(np.mean(query_preview))
+        support_centred = support_preview - float(np.mean(support_preview))
+        preview_norm = float(np.linalg.norm(query_centred)) + 1e-8
+        support_norm = float(np.linalg.norm(support_centred)) + 1e-8
         quick_similarity = float(
-            np.dot(query_preview, support_preview) / (preview_norm * support_norm)
+            np.dot(query_centred, support_centred) / (preview_norm * support_norm)
         )
-        # v0.2.0: Stricter eco-mode: require >= threshold AND also check
-        # that the cached embedding is not stale (preview norms differ by <2x)
         norm_ratio = min(preview_norm, support_norm) / max(preview_norm, support_norm)
         if quick_similarity >= config.early_exit_threshold and norm_ratio > 0.3:
             if return_numpy:
@@ -365,7 +408,7 @@ def extract_embedding(
 
     _require_a_usable_backend(config.backbone, return_numpy)
 
-    backbone = _build_backbone(config.backbone, config.device)
+    backbone = _build_backbone(config.backbone, config.device, config.allow_download)
 
     # Preprocess image
     preprocess = _get_preprocess_transform()

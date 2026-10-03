@@ -119,7 +119,11 @@ def test_no_accuracy_is_reported_for_synthetic_data(benchmark) -> None:  # type:
 
     from adaptshot.config.settings import AdaptShotConfig
 
-    config = AdaptShotConfig(backbone="resnet18", device="cpu", seed=42, n_way=2, k_shot=2)
+    config = AdaptShotConfig(
+        backbone="resnet18", device="cpu", seed=42, n_way=2, k_shot=2,
+        allow_download=True,  # this test builds its own config, so it states
+        # the download the benchmark harness is documented to make (#121)
+    )
     results = benchmark.run_smoke_test(config, dataset="synthetic")
 
     assert results["accuracy"] is None

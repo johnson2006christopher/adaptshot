@@ -608,7 +608,10 @@ def load_config(path: str) -> TambuaConfig:
         seed=v.whole_number(eng_raw, "seed", eng_at, 42),
         inference_mode=v.choice(eng_raw, "inference_mode", INFERENCE_MODES, eng_at),
         similarity_metric=v.choice(eng_raw, "similarity_metric", SIMILARITY_METRICS, eng_at),
-        eco_mode=v.flag(eng_raw, "eco_mode", eng_at, True),
+        # Default False, matching the library (#120): the early exit can
+        # return a cached embedding for a *similar-looking* photograph, so
+        # it is an opt-in for duplicate-heavy workloads, not a default.
+        eco_mode=v.flag(eng_raw, "eco_mode", eng_at, False),
         enable_ood_detection=v.flag(eng_raw, "enable_ood_detection", eng_at, True),
         conformal_alpha=v.fraction(eng_raw, "conformal_alpha", eng_at, DEFAULT_ALPHA),
         conformal_mode=v.choice(eng_raw, "conformal_mode", CONFORMAL_MODES, eng_at),

@@ -50,7 +50,10 @@ def test_onnx_embeddings_agree_with_torch(backbone: str, image: Image.Image) -> 
     pytest.importorskip("torch", reason="parity needs both paths to compare")
     pytest.importorskip("torchvision", reason="the torch path builds from torchvision")
 
-    config = AdaptShotConfig(backbone=backbone, device="cpu", seed=42)
+    config = AdaptShotConfig(
+        backbone=backbone, device="cpu", seed=42,
+        allow_download=True,  # parity needs the torch twin of the bundled graph (#121)
+    )
 
     from_onnx = np.asarray(extract_embedding(image, config, return_numpy=True))
     # `return_numpy=False` is the documented way to ask for the torch path by

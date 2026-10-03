@@ -38,8 +38,12 @@ the following are treated as security issues:
   reaching the extractor.
 - **Path traversal**: file paths supplied to support-set loading or state persistence
   escaping their intended directory.
-- **ONNX backbones**: loading a tampered `.onnx` file from `src/adaptshot/data/`
-  without SHA-256 verification.
+- **ONNX backbones**: substitution of the bundled `.onnx` graph. Honest scope
+  note (#121): the library does **not** verify a checksum at load time today --
+  the wheel's integrity is what pip's own hash checking gives you, and a
+  tampered file on disk is loaded as-is. Reports about making that verification
+  real are welcome; claims assuming it already exists were wrong and are
+  retracted.
 
 The following are **not** considered vulnerabilities:
 
