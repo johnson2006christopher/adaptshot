@@ -30,7 +30,7 @@ PlantVillage crop-disease photographs, 5-way 5-shot, 100 episodes, seed 42, CPU:
 | | |
 |---|---|
 | Accuracy | **91.4% ± 1.0** — identical to a nearest-centroid baseline, and we say so |
-| Conformal coverage at a 90% target | **98.1% ± 0.6**, mean set size 1.66 |
+| Conformal coverage at a 90% target | **98.0% ± 0.6**, mean set size 1.66 |
 | The same target, top-1 with a calibrated threshold | 83.9% — it misses the target; conformal clears it |
 | Peak memory, full cycle, core install | 120 MB |
 
