@@ -29,19 +29,32 @@
   "conformal": {
     "alpha": 0.1,
     "empirical_coverage": {
-      "ci95_half_width": 0.005526190351225682,
-      "mean": 0.9809999999999998,
+      "ci95_half_width": 0.005557559176473068,
+      "mean": 0.9797999999999999,
       "n_episodes": 100
     },
     "mean_set_size": {
-      "ci95_half_width": 0.1385597524340523,
-      "mean": 1.6636000000000002,
+      "ci95_half_width": 0.13932710058496928,
+      "mean": 1.6576,
       "n_episodes": 100
     },
     "ood_flag_rate": {
       "ci95_half_width": 0.004589595329975105,
       "mean": 0.0146,
       "n_episodes": 100
+    },
+    "split_calibration": {
+      "empirical_coverage": {
+        "ci95_half_width": 0.007578257042221501,
+        "mean": 0.9640000000000001,
+        "n_episodes": 100
+      },
+      "mean_set_size": {
+        "ci95_half_width": 0.1112256936379923,
+        "mean": 1.345,
+        "n_episodes": 100
+      },
+      "note": "same learner and nonconformity score, calibrated on the episode's 25 held-out photographs instead of leave-one-out over the support set. The LOO construction above is a jackknife and has no finite-sample guarantee; this one does."
     },
     "target_coverage": 0.9
   },
@@ -54,20 +67,20 @@
     "repo": "spMohanty/PlantVillage-Dataset"
   },
   "hardware": {
-    "adaptshot": "0.2.0",
+    "adaptshot": "0.3.1",
     "cpu_count": 16,
     "cpu_model": "11th Gen Intel(R) Core(TM) i7-11800H @ 2.30GHz",
-    "install": "core",
+    "install": "torch",
     "numpy": "2.5.2",
     "onnxruntime": "1.29.0",
-    "platform": "Linux-7.1.10-200.fc44.x86_64-x86_64-with-glibc2.43",
+    "platform": "Linux-7.2.8-200.fc44.x86_64-x86_64-with-glibc2.43",
     "processor": "x86_64",
     "python": "3.14.7",
     "ram_gb": 31.0
   },
   "latency_ms_per_query": {
-    "ci95_half_width": 1.9647521028274053,
-    "mean": 22.161587603594672
+    "ci95_half_width": 6.0109327785174775,
+    "mean": 96.12392693160072
   },
   "protocol": {
     "alpha": 0.1,
@@ -78,27 +91,118 @@
     "seed": 42,
     "task": "5-way 5-shot"
   },
+  "set_baselines": {
+    "aps": {
+      "coverage": {
+        "ci95_half_width": 0.011193600596011556,
+        "mean": 0.9148000000000001,
+        "n_episodes": 100
+      },
+      "mean_set_size": {
+        "ci95_half_width": 0.12287626322969354,
+        "mean": 1.3314,
+        "n_episodes": 100
+      }
+    },
+    "lac": {
+      "coverage": {
+        "ci95_half_width": 0.012455088942502843,
+        "mean": 0.9167999999999998,
+        "n_episodes": 100
+      },
+      "mean_set_size": {
+        "ci95_half_width": 0.09543023396908308,
+        "mean": 1.3024,
+        "n_episodes": 100
+      }
+    },
+    "raps": {
+      "coverage": {
+        "ci95_half_width": 0.011193600596011556,
+        "mean": 0.9148000000000001,
+        "n_episodes": 100
+      },
+      "mean_set_size": {
+        "ci95_half_width": 0.12287626322969354,
+        "mean": 1.3314,
+        "n_episodes": 100
+      }
+    },
+    "references": {
+      "aps": "Romano, Sesia, Candes (2020), deterministic variant",
+      "lac": "Sadinle, Lei, Wasserman (2019)",
+      "raps": "Angelopoulos, Bates, Jordan, Malik (2021), k_reg=2, lam=0.1, untuned"
+    },
+    "singleton_top1": {
+      "coverage": {
+        "ci95_half_width": 0.010380021712283395,
+        "mean": 0.9144,
+        "n_episodes": 100
+      },
+      "mean_set_size": {
+        "ci95_half_width": 0.0,
+        "mean": 1.0,
+        "n_episodes": 100
+      }
+    },
+    "threshold_or_full": {
+      "coverage": {
+        "ci95_half_width": 0.009392478779116918,
+        "mean": 0.9484,
+        "n_episodes": 100
+      },
+      "mean_set_size": {
+        "ci95_half_width": 0.06526126060998239,
+        "mean": 1.4384000000000001,
+        "n_episodes": 100
+      }
+    },
+    "top_2": {
+      "coverage": {
+        "ci95_half_width": 0.0055330674780967315,
+        "mean": 0.9748,
+        "n_episodes": 100
+      },
+      "mean_set_size": {
+        "ci95_half_width": 0.0,
+        "mean": 2.0,
+        "n_episodes": 100
+      }
+    },
+    "top_3": {
+      "coverage": {
+        "ci95_half_width": 0.0027858226937133124,
+        "mean": 0.9920000000000002,
+        "n_episodes": 100
+      },
+      "mean_set_size": {
+        "ci95_half_width": 0.0,
+        "mean": 3.0,
+        "n_episodes": 100
+      }
+    }
+  },
   "timing": {
-    "benchmark_process_peak_rss_mb": 540.73828125,
+    "benchmark_process_peak_rss_mb": 853.7109375,
     "cold_start": {
-      "peak_rss_mb": 122.58984375,
-      "seconds": 0.8508739229982893
+      "peak_rss_mb": 596.62890625,
+      "seconds": 4.009145238000201
     },
     "embedding_ms": {
-      "median": 3.1868059995758813,
+      "median": 11.552851996384561,
       "n": 100,
-      "p95": 3.8450286972874883
+      "p95": 14.984213802381419
     },
     "note": "predict_ms is the full path per query, ONNX forward included; support_fit_ms is load_support_images per episode (embed the support, leave-one-out calibration, OOD fit); cold_start is a fresh interpreter from before the first import to the first answer, with that process's peak RSS -- the single-cycle memory figure; benchmark_process_peak_rss_mb is this whole run's VmHWM and describes the harness, not the library. Both depend on which install ran them: see hardware.install",
     "predict_ms": {
-      "median": 6.429912999010412,
+      "median": 22.66117700128234,
       "n": 5000,
-      "p95": 12.743561201023114
+      "p95": 28.12252009753138
     },
     "support_fit_ms": {
-      "median": 641.1929759997292,
+      "median": 1486.0553885009722,
       "n": 100,
-      "p95": 861.3712131007541
+      "p95": 5995.51230115503
     }
   },
   "top1_threshold": {
