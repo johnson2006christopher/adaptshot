@@ -45,7 +45,7 @@ PlantVillage, 5-way 5-shot, 100 episodes, α = 0.10, the 25 support photographs 
 
 | | conformal sets | top-1 with a threshold calibrated to the same target |
 |---|---|---|
-| empirical coverage | **98.1% ± 0.6** | 83.9% ± 1.4 |
+| empirical coverage | **98.0% ± 0.6** | 83.9% ± 1.4 |
 | mean set size | 1.66 ± 0.14 | 0.89 ± 0.02 |
 
 The threshold baseline was calibrated on the same held-out photographs to the same 90% target and **missed it**. Conformal kept it, and paid with sets roughly twice as large. It over-covers — 98% against 90% — which is set size spent without need, a known effect of self-calibrating on 25 points. That is the trade; the README states it so a reader can decide whether they need the promise at all.
@@ -56,11 +56,11 @@ Same photographs, queries blurred, darkened, re-compressed or downscaled, suppor
 
 | queries | coverage | mean set size |
 |---|---|---|
-| clean | 96.9% ± 1.0 | 1.34 |
-| blur σ = 4 | **85.8% ± 3.4** | 2.13 |
-| after 10 corrections on blurred photographs | 89.0% ± 2.3 | 1.56 |
+| clean | 96.4% ± 1.2 | 1.29 |
+| blur σ = 4 | **83.0% ± 4.4** | 2.03 |
+| after 10 corrections on blurred photographs | 94.5% ± 1.6 | 1.91 |
 
-Three things to take from it. **The set does widen** — 1.34 to 2.13 — which is the nonconformity score expressing "less sure" (an earlier score could not; see the [changelog](../reference/changelog.md) for 0.3.0). **The promise still bends**: the threshold was set on clean photographs and cannot know the queries moved, so coverage falls under the target anyway. And **a handful of in-situ corrections closes most of the gap** — ten labelled photographs of the shifted condition through `correct()` bring that cell back to 89.0% ± 2.3 (the worst cell of all, JPEG q=5 at 85.5% ± 3.6, recovers to 87.8% ± 2.4). That is what the human-in-the-loop path is for.
+Three things to take from it. **The set does widen** — 1.29 to 2.03 — which is the nonconformity score expressing "less sure" (an earlier score could not; see the [changelog](../reference/changelog.md) for 0.3.0). **The promise still bends**: the threshold was set on clean photographs and cannot know the queries moved, so coverage falls under the target anyway. And **ten in-situ corrections restore the target** — labelled photographs of the shifted condition through `correct()` bring that cell back to 94.5% ± 1.6, above the 90% promise, with the sets staying wide (the worst cell of all, downscale 0.125 at 82.9% ± 4.4, recovers to 94.7% ± 1.6). The artifact's ablation attributes it: recalibrating the conformal quantile alone reaches 86.8%, adapting the prototypes alone 88.9% — only both together clear the target. That is what the human-in-the-loop path is for. (Earlier releases reported much weaker recovery with *shrinking* sets; that was the in-sample scoring bug #112, corrected in 0.3.1.)
 
 The OOD flag rate correlates 0.92 with the coverage lost across the shifted cells — it rises as the bound bends — but fires on a minority of the affected queries. A signal, not a guard.
 
