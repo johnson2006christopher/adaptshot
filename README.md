@@ -348,7 +348,7 @@ What those layers do change is what you are told alongside the prediction:
 
 | At α = 0.1 (90% target coverage) | Conformal sets | Top-1 + threshold |
 |---|---|---|
-| Empirical coverage | **98.1% ± 0.6** | 83.9% ± 1.4 |
+| Empirical coverage | **98.0% ± 0.6** | 83.9% ± 1.4 |
 | Mean set size | 1.66 ± 0.14 | 0.89 ± 0.02 |
 
 The threshold baseline is calibrated on the same held-out split, to the same
@@ -357,7 +357,7 @@ with room to spare, and the price is roughly 1.9× the set size. That is the
 trade, stated plainly: the guarantee is real, it is not free, and if you do not
 need it the cheaper thing is genuinely cheaper.
 
-Conformal over-covers here (98.1% against a 90% target), which costs set size
+Conformal over-covers here (98.0% against a 90% target), which costs set size
 it did not have to spend. That is a consequence of self-calibrating by
 leave-one-out on 25 support points. The score behind these sets is the distance ratio
 `d_true / d_min` (#86); the max-scaled softmax it replaced produced sets of 2.05 at 97.5%.
@@ -436,34 +436,37 @@ photographs** are fed through `correct()`, the library's human-in-the-loop path.
 
 | shift | top-1 | coverage | set size | OOD flagged | coverage after 10 corrections | set size |
 |---|---|---|---|---|---|---|
-| clean | 93% | **96.9% ± 1.0** | 1.34 | 1.8% | **96.7% ± 1.2** | 1.11 |
-| blur 1 | 90% | **95.2% ± 1.6** | 1.44 | 1.7% | **95.7% ± 1.3** | 1.16 |
-| blur 2 | 81% | **91.6% ± 2.4** | 1.77 | 2.6% | **93.5% ± 1.6** | 1.28 |
-| blur 4 | 67% | **85.8% ± 3.4** | 2.13 | 10.0% | **89.0% ± 2.3** | 1.56 |
-| brightness 0.6 | 92% | **96.0% ± 1.5** | 1.36 | 1.4% | **96.6% ± 1.2** | 1.12 |
-| brightness 0.3 | 89% | **94.3% ± 2.0** | 1.49 | 0.8% | **94.5% ± 1.8** | 1.15 |
-| brightness 1.6 | 93% | **96.9% ± 1.1** | 1.38 | 2.5% | **96.5% ± 1.2** | 1.12 |
-| jpeg 40 | 92% | **96.8% ± 1.0** | 1.38 | 2.2% | **96.5% ± 1.2** | 1.12 |
-| jpeg 15 | 88% | **94.4% ± 1.6** | 1.53 | 4.0% | **94.7% ± 1.5** | 1.18 |
-| jpeg 5 | 72% | **85.5% ± 3.6** | 2.01 | 10.5% | **87.8% ± 2.4** | 1.48 |
-| downscale 0.5 | 91% | **95.4% ± 1.6** | 1.45 | 1.5% | **95.9% ± 1.3** | 1.15 |
-| downscale 0.25 | 82% | **92.8% ± 2.3** | 1.77 | 3.0% | **94.0% ± 1.4** | 1.26 |
-| downscale 0.125 | 68% | **86.9% ± 3.6** | 2.12 | 13.7% | **90.2% ± 2.3** | 1.48 |
+| clean | 93% | **96.4% ± 1.2** | 1.29 | 1.8% | **96.8% ± 1.1** | 1.12 |
+| blur 1 | 90% | **94.5% ± 1.7** | 1.39 | 1.7% | **96.2% ± 1.3** | 1.19 |
+| blur 2 | 81% | **89.2% ± 3.1** | 1.69 | 2.6% | **94.7% ± 1.5** | 1.40 |
+| blur 4 | 67% | **83.0% ± 4.4** | 2.03 | 10.0% | **94.5% ± 1.6** | 1.91 |
+| brightness 0.6 | 92% | **96.0% ± 1.3** | 1.31 | 1.4% | **96.8% ± 1.4** | 1.13 |
+| brightness 0.3 | 89% | **94.9% ± 1.8** | 1.43 | 0.8% | **95.5% ± 1.7** | 1.18 |
+| brightness 1.6 | 93% | **96.6% ± 1.2** | 1.32 | 2.5% | **96.6% ± 1.2** | 1.13 |
+| jpeg 40 | 92% | **96.0% ± 1.1** | 1.33 | 2.2% | **96.6% ± 1.2** | 1.14 |
+| jpeg 15 | 88% | **93.4% ± 1.8** | 1.49 | 4.0% | **95.1% ± 1.6** | 1.21 |
+| jpeg 5 | 72% | **87.1% ± 4.3** | 2.02 | 10.5% | **94.1% ± 1.9** | 1.74 |
+| downscale 0.5 | 91% | **95.2% ± 1.5** | 1.39 | 1.5% | **96.2% ± 1.4** | 1.18 |
+| downscale 0.25 | 82% | **90.3% ± 3.0** | 1.68 | 3.0% | **95.1% ± 1.2** | 1.37 |
+| downscale 0.125 | 68% | **82.9% ± 4.4** | 2.02 | 13.7% | **94.7% ± 1.6** | 1.86 |
 
 **Under shift the sets widen, and the guarantee still bends.** Under strong blur, JPEG or
-downscale, coverage falls to **85.5% ± 3.6** (jpeg 5) against a
-90% target, while the mean set size grows from 1.34 to
-2.01. The set does say "less sure" — that is the nonconformity score doing its
+downscale, coverage falls to **82.9% ± 4.4** (downscale 0.125) against a
+90% target, while the mean set size grows from 1.29 to
+2.02. The set does say "less sure" — that is the nonconformity score doing its
 job (#86) — but not by enough: the calibration quantile was set on clean photographs and cannot
 know the queries have moved. That is exchangeability breaking, and no score fixes it.
 
 **The OOD flag is a partial early warning.** Across the shifted cells its rate correlates 0.92 with the coverage lost — it rises as the guarantee bends — but fires on a
 minority of the affected queries at the worst levels.
 
-**A handful of in-situ corrections closes most of the gap.** 10 labelled photographs of the
+**A handful of in-situ corrections restores the target.** 10 labelled photographs of the
 shifted condition per episode, through `correct()`, move the worst cell from
-85.5% ± 3.6 to 87.8% ± 2.4, with the sets back down to
-1.48. Real help; the right move in the field.
+82.9% ± 4.4 to 94.7% ± 1.6 — back above the 90% target — with the sets staying
+honestly wide (2.02 → 1.86) rather than snapping shut. The artifact's ablation
+says which mechanism does it: recalibrating the quantile alone reaches 86.8%,
+adapting the prototypes alone 88.9%, and only the two together clear the
+target. Real help; the right move in the field.
 
 Every cell traces to `results/plantvillage_shift.json`; reproduce with
 `python -m benchmarks.run_shift --seed 42`.
