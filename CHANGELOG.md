@@ -40,6 +40,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   first slice)
 
 ### Corrected
+- **Every shift and recovery figure is regenerated.** The 0.3.0 artifacts were
+  produced under three bugs fixed in this release: corrections were scored
+  in-sample (#112), `predict()` fabricated calibration entries (#116), and
+  conformal distances used a different geometry than the classifier (#115).
+  Under the fixed pipeline, coverage under shift falls further than previously
+  reported (worst cell 82.9% ± 4.4 at downscale 0.125, vs the old 85.5% at
+  JPEG q=5) — and ten in-situ corrections now genuinely restore the target
+  (94.7% ± 1.6, sets staying wide at 1.86) where the old pipeline's apparent
+  recovery (87.8%) came with sets that *shrank*, the signature of the
+  in-sample bias. A new ablation in `results/plantvillage_shift.json`
+  attributes the recovery: recalibration alone 86.8%, prototype adaptation
+  alone 88.9%, both together above target. The headline artifact now also
+  carries a true split-conformal column (96.4% ± 0.8, set 1.34 — the
+  construction the guarantee actually covers, #114) and a frontier of
+  set-valued baselines at the same target (top-k, threshold-or-full, LAC,
+  APS, RAPS — #113); the headline self-calibrated coverage moved 98.1% → 98.0%.
 - eco mode's "reduces carbon footprint by up to 40% in benchmark testing"
   (config reference, and the 0.1.1 notes) was never supported by a committed
   artifact: `results/energy_profile.json` recorded a 6.7% latency reduction,
